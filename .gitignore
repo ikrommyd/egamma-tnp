@@ -108,3 +108,7 @@ venv.bak/
 .idea
 .servicex
 dask-worker-space/
+
+root_files/*.root
+root_files/*.npz
+root_files/Icon*

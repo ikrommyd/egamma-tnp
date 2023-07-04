@@ -112,3 +112,4 @@ dask-worker-space/
 root_files/*.root
 root_files/*.npz
 root_files/Icon*
+.DS_Store

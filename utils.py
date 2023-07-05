@@ -4,6 +4,7 @@ import os
 import re
 import socket
 import subprocess
+from collections import defaultdict
 
 from rucio.client import Client
 

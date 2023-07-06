@@ -6,12 +6,11 @@ import socket
 import subprocess
 from collections import defaultdict
 
+import numpy as np
 from rucio.client import Client
 
 
 def check_port(port):
-    import socket
-
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     try:
         sock.bind(("0.0.0.0", port))
@@ -74,12 +73,12 @@ def get_xrootd_sites_map():
                 continue
             try:
                 data = json.load(open(conf))
-            except:
+            except Exception:
                 continue
             for site in data:
                 if site["type"] != "DISK":
                     continue
-                if site["rse"] == None:
+                if site["rse"] is None:
                     continue
                 for proc in site["protocols"]:
                     if proc["protocol"] == "XRootD":
@@ -145,7 +144,7 @@ def get_dataset_files(
                     meta = filedata["pfns"][rses[site][0]]
                     if (
                         meta["type"] != "DISK"
-                        or meta["volatile"] == True
+                        or meta["volatile"] is True
                         or filedata["states"][site] != "AVAILABLE"
                         or site not in sites_xrootd_prefix
                     ):
@@ -178,7 +177,7 @@ def get_dataset_files(
                         meta = filedata["pfns"][rses[site][0]]
                         if (
                             meta["type"] != "DISK"
-                            or meta["volatile"] == True
+                            or meta["volatile"] is True
                             or filedata["states"][site] != "AVAILABLE"
                             or site not in sites_xrootd_prefix
                         ):
@@ -196,7 +195,7 @@ def get_dataset_files(
                     meta = filedata["pfns"][rses[site][0]]
                     if (
                         meta["type"] != "DISK"
-                        or meta["volatile"] == True
+                        or meta["volatile"] is True
                         or filedata["states"][site] != "AVAILABLE"
                         or site not in sites_xrootd_prefix
                     ):
@@ -218,3 +217,76 @@ def get_dataset_files(
                 outsites.append(outsite[0])
 
     return outfiles, outsites
+
+
+def replace_nans(arr):
+    arr = np.array(arr)
+
+    # Find the index of first non-nan value
+    first_float_index = np.where(~np.isnan(arr))[0][0]
+
+    # Create masks for before and after the first float
+    before_first_float = np.arange(len(arr)) < first_float_index
+    after_first_float = ~before_first_float
+
+    # Replace all nans with 0 before first float number and with 1 after
+    arr[before_first_float & np.isnan(arr)] = 0
+    arr[after_first_float & np.isnan(arr)] = 1
+
+    return arr
+
+
+def get_events(custom_dataset=None):
+    from coffea.nanoevents import NanoAODSchema, NanoEventsFactory
+
+    from .config import LPC, das_dataset
+
+    if LPC:
+        egamma_datasets = (
+            os.popen(f"dasgoclient --query='dataset dataset={das_dataset} status=*'")
+            .read()
+            .splitlines()
+        )
+
+        egamma_files = {}
+        for dataset in egamma_datasets:
+            files = get_dataset_files(dataset)[0]
+            egamma_files[dataset] = files
+
+        for dataset in egamma_datasets:
+            print(f"Dataset {dataset} has {len(egamma_files[dataset])} files\n")
+            print(f"First file of dataset {dataset} is {egamma_files[dataset][0]}\n")
+            print(f"Last file of dataset {dataset} is {egamma_files[dataset][-1]}\n")
+
+        fnames = {f: "Events" for k, files in egamma_files.items() for f in files}
+
+    elif custom_dataset:
+        fnames = {f: "Events" for f in custom_dataset}
+
+    else:
+        raise Exception("No dataset specified")
+
+    events = NanoEventsFactory.from_root(
+        fnames,
+        schemaclass=NanoAODSchema,
+        permit_dask=True,
+        chunks_per_file=1,
+        metadata={"dataset": "Egamma"},
+    ).events()
+
+    return events
+
+
+def get_ratio_histograms(
+    hpt_pass, hpt_all, heta_pass, heta_all, habseta_pass, habseta_all
+):
+    hptratio = hpt_pass / hpt_all
+    hptratio[:] = replace_nans(hptratio.values())
+
+    hetaratio = heta_pass / heta_all
+    hetaratio[:] = replace_nans(hetaratio.values())
+
+    habsetaratio = habseta_pass / habseta_all
+    habsetaratio[:] = replace_nans(habsetaratio.values())
+
+    return hptratio, hetaratio, habsetaratio

@@ -1,3 +1,7 @@
+from . import version
+
+__version__ = version.__version__
+
 from .tnp import (
     DaskLumiMask,
     apply_lumimasking,

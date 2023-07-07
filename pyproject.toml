@@ -1,0 +1,65 @@
+[build-system]
+requires = ["hatchling>=1.17.1", "hatch-vcs"]
+build-backend = "hatchling.build"
+
+[project]
+name = "egamma-tnp"
+description = "Basic tools and wrappers for enabling not-too-alien syntax when running columnar Collider HEP analysis."
+readme = "README.md"
+license = {text = "BSD-3-Clause"}
+requires-python = ">=3.8"
+authors = [
+  { name = "Iason Krommydas", email = "ik23@rice.edu" },
+]
+maintainers = [
+    { name = "Iason Krommydas", email = "ik23@rice.edu" },
+]
+classifiers = [
+  "Development Status :: 4 - Beta",
+  "Intended Audience :: Developers",
+  "Intended Audience :: Information Technology",
+  "Intended Audience :: Science/Research",
+  "License :: OSI Approved :: BSD License",
+  "Operating System :: MacOS",
+  "Operating System :: POSIX",
+  "Operating System :: Unix",
+  "Operating System :: Microsoft :: Windows",
+  "Programming Language :: Python",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3 :: Only",
+  "Topic :: Scientific/Engineering",
+  "Topic :: Scientific/Engineering :: Information Analysis",
+  "Topic :: Scientific/Engineering :: Mathematics",
+  "Topic :: Scientific/Engineering :: Physics",
+  "Topic :: Software Development",
+  "Topic :: Utilities",
+]
+dependencies = [
+  "coffea>=2023.6.0.rc1",
+  "jupyterlab",
+  "notebook",
+]
+dynamic = ["version"]
+
+[project.urls]
+Homepage = "https://github.com/iasonkrom/egamma-tnp"
+"Bug Tracker" = "https://github.com/iasonkrom/egamma-tnp/issues"
+
+[project.optional-dependencies]
+dev = [
+  "pre-commit",
+  "black",
+  "flake8",
+  "pytest",
+  "pytest-mpl",
+]
+
+[tool.hatch.version]
+source = "vcs"
+path = "egamma-tnp/__init__.py"
+
+[tool.hatch.build.hooks.vcs]
+version-file = "egamma-tnp/version.py"
+
+[tool.setuptools_scm]
+write_to = "egamma-tnp/_version.py"

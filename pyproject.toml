@@ -38,6 +38,7 @@ dependencies = [
   "coffea>=2023.6.0.rc1",
   "jupyterlab",
   "notebook",
+  "rucio-clients",
 ]
 dynamic = ["version"]
 

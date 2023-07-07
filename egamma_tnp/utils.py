@@ -278,7 +278,7 @@ def get_events(custom_dataset=None):
 
 
 def get_ratio_histograms(
-    hpt_pass, hpt_all, heta_pass, heta_all, habseta_pass, habseta_all
+    hpt_all, hpt_pass, heta_all, heta_pass, habseta_all, habseta_pass
 ):
     hptratio = hpt_pass / hpt_all
     hptratio[:] = replace_nans(hptratio.values())

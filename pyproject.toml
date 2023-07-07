@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "egamma-tnp"
-description = "Basic tools and wrappers for enabling not-too-alien syntax when running columnar Collider HEP analysis."
+description = "Egamma HLT efficiency from NanoAOD using Tag and Probe."
 readme = "README.md"
 license = {text = "BSD-3-Clause"}
 requires-python = ">=3.8"

@@ -85,8 +85,9 @@ def find_probes(tags, probes, trigobjs):
     return passing_probes, all_probes
 
 
-def perform_tnp(events, goldenjson):
-    events = apply_lumimasking(events, goldenjson)
+def perform_tnp(events, *, goldenjson=None):
+    if goldenjson:
+        events = apply_lumimasking(events, goldenjson)
     good_events, good_locations = filter_events(events)
     ele_for_tnp = good_events.Electron[good_locations]
 
@@ -98,10 +99,10 @@ def perform_tnp(events, goldenjson):
     return p1, a1, p2, a2
 
 
-def get_tnp_histograms(events, goldenjson):
+def get_tnp_histograms(events, *, goldenjson=None):
     from .config import etabins, ptbins
 
-    p1, a1, p2, a2 = perform_tnp(events, goldenjson)
+    p1, a1, p2, a2 = perform_tnp(events, goldenjson=goldenjson)
 
     ptaxis = hist.axis.Variable(ptbins, name="pt")
     hpt_all = Hist(ptaxis)
@@ -139,7 +140,7 @@ def get_tnp_histograms(events, goldenjson):
 
 
 def get_and_compute_tnp_histograms(
-    events, goldenjson, scheduler="threads", progress=True
+    events, *, goldenjson=None, scheduler="threads", progress=True
 ):
     import dask
     from dask.diagnostics import ProgressBar
@@ -151,7 +152,7 @@ def get_and_compute_tnp_histograms(
         heta_pass,
         habseta_all,
         habseta_pass,
-    ) = get_tnp_histograms(events, goldenjson)
+    ) = get_tnp_histograms(events, goldenjson=goldenjson)
 
     if progress:
         pbar = ProgressBar()

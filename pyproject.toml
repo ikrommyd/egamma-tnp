@@ -56,10 +56,10 @@ dev = [
 
 [tool.hatch.version]
 source = "vcs"
-path = "egamma-tnp/__init__.py"
+path = "egamma_tnp/__init__.py"
 
 [tool.hatch.build.hooks.vcs]
-version-file = "egamma-tnp/version.py"
+version-file = "egamma_tnp/version.py"
 
 [tool.setuptools_scm]
-write_to = "egamma-tnp/_version.py"
+write_to = "egamma_tnp/_version.py"

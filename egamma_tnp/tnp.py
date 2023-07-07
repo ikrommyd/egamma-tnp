@@ -29,9 +29,7 @@ def lumimask(events, jsonfile):
     return dak.map_partitions(dask_lumimask, events.run, events.luminosityBlock)
 
 
-def apply_lumimasking(events):
-    from .config import goldenjson
-
+def apply_lumimasking(events, goldenjson):
     mask = lumimask(events, goldenjson)
     return events[mask]
 
@@ -87,8 +85,8 @@ def find_probes(tags, probes, trigobjs):
     return passing_probes, all_probes
 
 
-def perform_tnp(events):
-    events = apply_lumimasking(events)
+def perform_tnp(events, goldenjson):
+    events = apply_lumimasking(events, goldenjson)
     good_events, good_locations = filter_events(events)
     ele_for_tnp = good_events.Electron[good_locations]
 
@@ -100,10 +98,10 @@ def perform_tnp(events):
     return p1, a1, p2, a2
 
 
-def get_tnp_histograms(events):
+def get_tnp_histograms(events, goldenjson):
     from .config import etabins, ptbins
 
-    p1, a1, p2, a2 = perform_tnp(events)
+    p1, a1, p2, a2 = perform_tnp(events, goldenjson)
 
     ptaxis = hist.axis.Variable(ptbins, name="pt")
     hpt_all = Hist(ptaxis)
@@ -140,7 +138,9 @@ def get_tnp_histograms(events):
     return hpt_all, hpt_pass, heta_all, heta_pass, habseta_all, habseta_pass
 
 
-def get_and_compute_tnp_histograms(events, scheduler="threads", progress=True):
+def get_and_compute_tnp_histograms(
+    events, goldenjson, scheduler="threads", progress=True
+):
     import dask
     from dask.diagnostics import ProgressBar
 
@@ -151,7 +151,7 @@ def get_and_compute_tnp_histograms(events, scheduler="threads", progress=True):
         heta_pass,
         habseta_all,
         habseta_pass,
-    ) = get_tnp_histograms(events)
+    ) = get_tnp_histograms(events, goldenjson)
 
     if progress:
         pbar = ProgressBar()

@@ -236,35 +236,34 @@ def replace_nans(arr):
     return arr
 
 
-def get_events(custom_dataset=None):
+def get_das_dataset(das_dataset):
+    egamma_datasets = (
+        os.popen(f"dasgoclient --query='dataset dataset={das_dataset} status=*'")
+        .read()
+        .splitlines()
+    )
+
+    egamma_files = {}
+    for dataset in egamma_datasets:
+        files = get_dataset_files(dataset)[0]
+        egamma_files[dataset] = files
+
+    for dataset in egamma_datasets:
+        print(f"Dataset {dataset} has {len(egamma_files[dataset])} files\n")
+        print(f"First file of dataset {dataset} is {egamma_files[dataset][0]}\n")
+        print(f"Last file of dataset {dataset} is {egamma_files[dataset][-1]}\n")
+
+    return egamma_files
+
+
+def get_events(dataset, local=False):
     from coffea.nanoevents import NanoAODSchema, NanoEventsFactory
 
-    from .config import LPC, das_dataset
-
-    if LPC:
-        egamma_datasets = (
-            os.popen(f"dasgoclient --query='dataset dataset={das_dataset} status=*'")
-            .read()
-            .splitlines()
-        )
-
-        egamma_files = {}
-        for dataset in egamma_datasets:
-            files = get_dataset_files(dataset)[0]
-            egamma_files[dataset] = files
-
-        for dataset in egamma_datasets:
-            print(f"Dataset {dataset} has {len(egamma_files[dataset])} files\n")
-            print(f"First file of dataset {dataset} is {egamma_files[dataset][0]}\n")
-            print(f"Last file of dataset {dataset} is {egamma_files[dataset][-1]}\n")
-
-        fnames = {f: "Events" for k, files in egamma_files.items() for f in files}
-
-    elif custom_dataset:
-        fnames = {f: "Events" for f in custom_dataset}
+    if local:
+        fnames = {f: "Events" for f in dataset}
 
     else:
-        raise Exception("No dataset specified")
+        fnames = {f: "Events" for k, files in dataset.items() for f in files}
 
     events = NanoEventsFactory.from_root(
         fnames,

@@ -1,7 +1,3 @@
-LPC = False
-das_dataset = "/EGamma*/Run2023C-PromptNanoAODv12_v4-v1/NANOAOD"
-goldenjson = "json/Cert_Collisions2023_366442_368823_Golden.json"
-
 ptbins = [
     5,
     10,

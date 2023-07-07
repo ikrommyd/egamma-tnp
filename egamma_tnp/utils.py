@@ -263,7 +263,8 @@ def get_events(dataset, local=False):
         fnames = {f: "Events" for f in dataset}
 
     else:
-        fnames = {f: "Events" for k, files in dataset.items() for f in files}
+        egamma_files = get_das_dataset(dataset)
+        fnames = {f: "Events" for k, files in egamma_files.items() for f in files}
 
     events = NanoEventsFactory.from_root(
         fnames,

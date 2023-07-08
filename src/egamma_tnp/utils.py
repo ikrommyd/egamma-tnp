@@ -292,10 +292,24 @@ def get_ratio_histograms(
     return hptratio, hetaratio, habsetaratio
 
 
-def merge_json(outfile, *files):
-    output = {}
+def merge_goldenjsons(outfile, *files):
+    dicts = []
     for file in files:
         with open(file) as f:
-            output.update(json.load(f))
+            dicts.append(json.load(f))
+
+    output = {}
+    for d in dicts:
+        for key, value in d.items():
+            if key in output and isinstance(output[key], list):
+                # if the key is in the merged dictionary and its value is a list
+                for item in value:
+                    if item not in output[key]:
+                        # if the value is not in the list of values for the key in output, append it
+                        output[key].append(item)
+            else:
+                # otherwise, add the key and value to the merged dictionary
+                output[key] = value
+
     with open(outfile, "w") as f:
         json.dump(output, f, indent=2)

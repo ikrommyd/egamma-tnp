@@ -290,3 +290,12 @@ def get_ratio_histograms(
     habsetaratio[:] = replace_nans(habsetaratio.values())
 
     return hptratio, hetaratio, habsetaratio
+
+
+def merge_json(outfile, *files):
+    output = {}
+    for file in files:
+        with open(file) as f:
+            output.update(json.load(f))
+    with open(outfile, "w") as f:
+        json.dump(output, f, indent=2)

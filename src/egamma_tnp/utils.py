@@ -274,7 +274,7 @@ def get_events(dataset, local=False):
         metadata={"dataset": "Egamma"},
     ).events()
 
-    return events
+    return events, fnames
 
 
 def get_ratio_histograms(

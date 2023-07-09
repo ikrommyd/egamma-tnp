@@ -314,7 +314,7 @@ def get_das_files(*das_queries):
     return egamma_files
 
 
-def get_events(*datasets, local=False, FNAL=False):
+def get_events(*datasets, local=False, FNAL=False, invalid=False):
     from coffea.nanoevents import NanoAODSchema, NanoEventsFactory
 
     if local:
@@ -322,7 +322,7 @@ def get_events(*datasets, local=False, FNAL=False):
 
     else:
         if FNAL:
-            egamma_files = get_fnal_files(*datasets)
+            egamma_files = get_fnal_files(*datasets, invalid=invalid)
         else:
             egamma_files = get_das_files(*datasets)
         fnames = {f: "Events" for k, files in egamma_files.items() for f in files}

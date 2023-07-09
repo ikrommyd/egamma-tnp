@@ -3,7 +3,9 @@ from .utils import get_events
 
 
 class TagNProbe:
-    def __init__(self, *datasets, local=False, goldenjson=None, FNAL=False):
+    def __init__(
+        self, *datasets, local=False, goldenjson=None, FNAL=False, invalid=False
+    ):
         """Create a TagNProbe object.
 
         Parameters
@@ -16,7 +18,9 @@ class TagNProbe:
         goldenjson : str, optional
             Path to the golden JSON file for luminosity masking. The default is None.
         """
-        self.events, fnames = get_events(*datasets, local=local, FNAL=FNAL)
+        self.events, fnames = get_events(
+            *datasets, local=local, FNAL=FNAL, invalid=invalid
+        )
         self.files = list(fnames.keys())
         self.goldenjson = goldenjson
 

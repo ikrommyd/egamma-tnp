@@ -270,7 +270,9 @@ def get_das_datasets(*das_queries):
     return egamma_datasets
 
 
-def get_fnal_files(*das_queries, invalid=False):
+def redirect_files(
+    *das_queries, redirector="root://cmsxrootd.fnal.gov/", invalid=False
+):
     egamma_datasets = get_das_datasets(*das_queries)
     egamma_files = {}
     for dataset in egamma_datasets:
@@ -287,7 +289,6 @@ def get_fnal_files(*das_queries, invalid=False):
                 .splitlines()
             )
 
-    redirector = "root://cmsxrootd.fnal.gov/"
     for dataset in egamma_datasets:
         egamma_files[dataset] = [redirector + file for file in egamma_files[dataset]]
 
@@ -314,15 +315,17 @@ def get_das_files(*das_queries):
     return egamma_files
 
 
-def get_events(*datasets, local=False, FNAL=False, invalid=False):
+def get_events(*datasets, local=False, redirector=None, invalid=False):
     from coffea.nanoevents import NanoAODSchema, NanoEventsFactory
 
     if local:
         fnames = {f: "Events" for f in datasets}
 
     else:
-        if FNAL:
-            egamma_files = get_fnal_files(*datasets, invalid=invalid)
+        if redirector:
+            egamma_files = redirect_files(
+                *datasets, redirector=redirector, invalid=invalid
+            )
         else:
             egamma_files = get_das_files(*datasets)
         fnames = {f: "Events" for k, files in egamma_files.items() for f in files}

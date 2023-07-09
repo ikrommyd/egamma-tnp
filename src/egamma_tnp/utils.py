@@ -289,6 +289,8 @@ def get_fnal_files(*das_queries):
         print(f"First file of dataset {dataset} is {egamma_files[dataset][0]}\n")
         print(f"Last file of dataset {dataset} is {egamma_files[dataset][-1]}\n")
 
+    return egamma_files
+
 
 def get_das_files(*das_queries):
     egamma_datasets = get_das_datasets(*das_queries)
@@ -313,7 +315,7 @@ def get_events(*datasets, local=False, FNAL=False):
 
     else:
         if FNAL:
-            get_fnal_files(*datasets)
+            egamma_files = get_fnal_files(*datasets)
         else:
             egamma_files = get_das_files(*datasets)
         fnames = {f: "Events" for k, files in egamma_files.items() for f in files}

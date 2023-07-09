@@ -259,7 +259,7 @@ def replace_nans(arr):
     return arr
 
 
-def get_das_files(*das_queries):
+def get_das_datasets(*das_queries):
     egamma_datasets = []
     for query in das_queries:
         egamma_datasets.extend(
@@ -267,7 +267,31 @@ def get_das_files(*das_queries):
             .read()
             .splitlines()
         )
+    return egamma_datasets
 
+
+def get_fnal_files(*das_queries):
+    egamma_datasets = get_das_datasets(*das_queries)
+    egamma_files = {}
+    for dataset in egamma_datasets:
+        egamma_files[dataset] = (
+            os.popen(f'dasgoclient --query="file dataset={dataset} status=*"')
+            .read()
+            .splitlines()
+        )
+
+    redirector = "root://cmsxrootd.fnal.gov/"
+    for dataset in egamma_datasets:
+        egamma_files[dataset] = [redirector + file for file in egamma_files[dataset]]
+
+    for dataset in egamma_datasets:
+        print(f"Dataset {dataset} has {len(egamma_files[dataset])} files\n")
+        print(f"First file of dataset {dataset} is {egamma_files[dataset][0]}\n")
+        print(f"Last file of dataset {dataset} is {egamma_files[dataset][-1]}\n")
+
+
+def get_das_files(*das_queries):
+    egamma_datasets = get_das_datasets(*das_queries)
     egamma_files = {}
     for dataset in egamma_datasets:
         files = get_dataset_files(dataset)[0]
@@ -281,14 +305,17 @@ def get_das_files(*das_queries):
     return egamma_files
 
 
-def get_events(*datasets, local=False):
+def get_events(*datasets, local=False, FNAL=False):
     from coffea.nanoevents import NanoAODSchema, NanoEventsFactory
 
     if local:
         fnames = {f: "Events" for f in datasets}
 
     else:
-        egamma_files = get_das_files(*datasets)
+        if FNAL:
+            get_fnal_files(*datasets)
+        else:
+            egamma_files = get_das_files(*datasets)
         fnames = {f: "Events" for k, files in egamma_files.items() for f in files}
 
     events = NanoEventsFactory.from_root(

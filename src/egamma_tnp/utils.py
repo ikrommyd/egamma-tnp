@@ -270,15 +270,22 @@ def get_das_datasets(*das_queries):
     return egamma_datasets
 
 
-def get_fnal_files(*das_queries):
+def get_fnal_files(*das_queries, invalid=False):
     egamma_datasets = get_das_datasets(*das_queries)
     egamma_files = {}
     for dataset in egamma_datasets:
-        egamma_files[dataset] = (
-            os.popen(f'dasgoclient --query="file dataset={dataset} status=*"')
-            .read()
-            .splitlines()
-        )
+        if invalid:
+            egamma_files[dataset] = (
+                os.popen(f'dasgoclient --query="file dataset={dataset} status=*"')
+                .read()
+                .splitlines()
+            )
+        else:
+            egamma_files[dataset] = (
+                os.popen(f'dasgoclient --query="file dataset={dataset}"')
+                .read()
+                .splitlines()
+            )
 
     redirector = "root://cmsxrootd.fnal.gov/"
     for dataset in egamma_datasets:

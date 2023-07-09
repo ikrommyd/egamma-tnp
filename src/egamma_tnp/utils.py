@@ -259,7 +259,7 @@ def replace_nans(arr):
     return arr
 
 
-def get_das_dataset(das_queries):
+def get_das_files(*das_queries):
     egamma_datasets = []
     for query in das_queries:
         egamma_datasets.extend(
@@ -281,14 +281,14 @@ def get_das_dataset(das_queries):
     return egamma_files
 
 
-def get_events(datasets, local=False):
+def get_events(*datasets, local=False):
     from coffea.nanoevents import NanoAODSchema, NanoEventsFactory
 
     if local:
         fnames = {f: "Events" for f in datasets}
 
     else:
-        egamma_files = get_das_dataset(datasets)
+        egamma_files = get_das_files(*datasets)
         fnames = {f: "Events" for k, files in egamma_files.items() for f in files}
 
     events = NanoEventsFactory.from_root(

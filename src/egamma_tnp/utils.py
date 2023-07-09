@@ -10,6 +10,29 @@ import numpy as np
 from rucio.client import Client
 
 
+def merge_goldenjsons(outfile, *files):
+    dicts = []
+    for file in files:
+        with open(file) as f:
+            dicts.append(json.load(f))
+
+    output = {}
+    for d in dicts:
+        for key, value in d.items():
+            if key in output and isinstance(output[key], list):
+                # if the key is in the merged dictionary and its value is a list
+                for item in value:
+                    if item not in output[key]:
+                        # if the value is not in the list of values for the key in output, append it
+                        output[key].append(item)
+            else:
+                # otherwise, add the key and value to the merged dictionary
+                output[key] = value
+
+    with open(outfile, "w") as f:
+        json.dump(output, f, indent=2)
+
+
 def check_port(port):
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     try:
@@ -236,12 +259,14 @@ def replace_nans(arr):
     return arr
 
 
-def get_das_dataset(das_dataset):
-    egamma_datasets = (
-        os.popen(f"dasgoclient --query='dataset dataset={das_dataset} status=*'")
-        .read()
-        .splitlines()
-    )
+def get_das_dataset(das_queries):
+    egamma_datasets = []
+    for query in das_queries:
+        egamma_datasets.extend(
+            os.popen(f"dasgoclient --query='dataset dataset={query} status=*'")
+            .read()
+            .splitlines()
+        )
 
     egamma_files = {}
     for dataset in egamma_datasets:
@@ -256,14 +281,14 @@ def get_das_dataset(das_dataset):
     return egamma_files
 
 
-def get_events(dataset, local=False):
+def get_events(datasets, local=False):
     from coffea.nanoevents import NanoAODSchema, NanoEventsFactory
 
     if local:
-        fnames = {f: "Events" for f in dataset}
+        fnames = {f: "Events" for f in datasets}
 
     else:
-        egamma_files = get_das_dataset(dataset)
+        egamma_files = get_das_dataset(datasets)
         fnames = {f: "Events" for k, files in egamma_files.items() for f in files}
 
     events = NanoEventsFactory.from_root(
@@ -290,26 +315,3 @@ def get_ratio_histograms(
     habsetaratio[:] = replace_nans(habsetaratio.values())
 
     return hptratio, hetaratio, habsetaratio
-
-
-def merge_goldenjsons(outfile, *files):
-    dicts = []
-    for file in files:
-        with open(file) as f:
-            dicts.append(json.load(f))
-
-    output = {}
-    for d in dicts:
-        for key, value in d.items():
-            if key in output and isinstance(output[key], list):
-                # if the key is in the merged dictionary and its value is a list
-                for item in value:
-                    if item not in output[key]:
-                        # if the value is not in the list of values for the key in output, append it
-                        output[key].append(item)
-            else:
-                # otherwise, add the key and value to the merged dictionary
-                output[key] = value
-
-    with open(outfile, "w") as f:
-        json.dump(output, f, indent=2)

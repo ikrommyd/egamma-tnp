@@ -3,20 +3,20 @@ from .utils import get_events
 
 
 class TagNProbe:
-    def __init__(self, dataset, *, local=False, goldenjson=None):
+    def __init__(self, datasets, *, local=False, goldenjson=None):
         """Create a TagNProbe object.
 
         Parameters
         ----------
         dataset : str or list of str
-            Dataset name(s) to be used. If `local` is False, this should be a DAS query.
+            Dataset name(s) to be used. If `local` is False, this should be list of DAS queries.
             If `local` is True, this should be a list of file paths.
         local : bool, optional
             Whether to use local files or DAS. The default is False.
         goldenjson : str, optional
             Path to the golden JSON file for luminosity masking. The default is None.
         """
-        self.events, fnames = get_events(dataset, local)
+        self.events, fnames = get_events(datasets, local)
         self.files = list(fnames.keys())
         self.goldenjson = goldenjson
 

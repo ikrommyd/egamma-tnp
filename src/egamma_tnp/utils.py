@@ -429,8 +429,8 @@ def get_events(
             names = [names]
         if redirect:
             names = redirect_files(names, redirector=custom_redirector)
-        else:
-            fnames = {f: "Events" for f in names}
+
+        fnames = {f: "Events" for f in names}
 
     events = NanoEventsFactory.from_root(
         fnames,

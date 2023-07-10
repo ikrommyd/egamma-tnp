@@ -1,4 +1,4 @@
-from ._tnputils import get_and_compute_tnp_histograms, get_tnp_histograms
+from ._tnpmodules import get_and_compute_tnp_histograms, get_tnp_histograms
 from .utils import get_events
 
 

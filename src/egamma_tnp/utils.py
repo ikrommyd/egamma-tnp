@@ -132,7 +132,7 @@ def _get_pfn_for_site(path, rules):
         return rules + "/" + path
 
 
-def get_dataset_files(
+def query_rucio(
     dataset,
     whitelist_sites=None,
     blacklist_sites=None,
@@ -259,76 +259,178 @@ def replace_nans(arr):
     return arr
 
 
-def get_das_datasets(*das_queries):
-    egamma_datasets = []
-    for query in das_queries:
-        egamma_datasets.extend(
-            os.popen(f"dasgoclient --query='dataset dataset={query} status=*'")
+def get_das_datasets(names, invalid=False):
+    """Get the list of datasets from DAS for the given dataset names.
+    This function uses dasgoclient to query DAS as follows:
+    dasgoclient --query='dataset dataset=<name> status=*'.
+
+    Parameters
+    ----------
+    names : str or list of str
+        The dataset names to query that can contain wildcards.
+    invalid : bool, optional
+        Whether to include invalid datasets. The default is False.
+
+    Returns
+    -------
+    datasets: list of str
+        The list of datasets.
+    """
+    datasets = []
+    if isinstance(names, str):
+        names = [names]
+
+    if invalid:
+        for query in names:
+            datasets.extend(
+                os.popen(f"dasgoclient --query='dataset dataset={query}")
+                .read()
+                .splitlines()
+            )
+    else:
+        for query in names:
+            datasets.extend(
+                os.popen(f"dasgoclient --query='dataset dataset={query} status=*'")
+                .read()
+                .splitlines()
+            )
+    return datasets
+
+
+def get_file_of_das_datset(dataset, invalid=False):
+    """Get the list of files from DAS for the given dataset.
+
+    Parameters
+    ----------
+    dataset : str
+        The dataset name to query for its files.
+    invalid : bool, optional
+        Whether to include invalid files. The default is False.
+
+    Returns
+    -------
+    files: list of str
+        The list of files.
+    """
+    files = []
+    if invalid:
+        files.extend(
+            os.popen(f'dasgoclient --query="file dataset={dataset} status=*"')
             .read()
             .splitlines()
         )
-    return egamma_datasets
+    else:
+        files.extend(
+            os.popen(f'dasgoclient --query="file dataset={dataset}"')
+            .read()
+            .splitlines()
+        )
+    return files
 
 
-def redirect_files(
-    *das_queries, redirector="root://cmsxrootd.fnal.gov/", invalid=False
+def redirect_files(files, redirector="root://cmsxrootd.fnal.gov/"):
+    """Add an xrootd redirector to a list of files
+
+    Parameters
+    ----------
+    files : str or list of str
+        The list of files to redirect.
+    redirector : str, optional
+        The xrootd redirector to add. The default is "root://cmsxrootd.fnal.gov/".
+    """
+    if isinstance(files, str):
+        files = [files]
+    return [redirector + file for file in files]
+
+
+def get_file_dict(names, custom_redirector=None, invalid=False):
+    """Get the lists of files from DAS for the given dataset names.
+    The list of files is returned as a dictionary with the dataset names as keys
+    and the lists of files as values.
+
+    Parameters
+    ----------
+    names : str or list of str
+        The dataset names to query that can contain wildcards.
+    custom_redirector : str, optional
+        The xrootd redirector to add to the files. The default is None.
+        If None, this function will query rucio and add the redirector for the first available site.
+    invalid : bool, optional
+        Whether to include invalid files. The default is False.
+        Only used if custom_redirector is not None.
+
+    Returns
+    -------
+    file_dict: dict
+        A dictionary of {dataset : files} pairs.
+    """
+    file_dict = {}
+    datasets = get_das_datasets(names, invalid=invalid)
+
+    if custom_redirector:
+        for dataset in datasets:
+            file_dict[dataset] = redirect_files(
+                get_file_of_das_datset(dataset, invalid=invalid),
+                redirector=custom_redirector,
+            )
+    else:
+        for dataset in datasets:
+            file_dict[dataset] = query_rucio(dataset)[0]
+
+    for dataset in datasets:
+        print(f"Dataset {dataset} has {len(file_dict[dataset])} files\n")
+        print(f"First file of dataset {dataset} is {file_dict[dataset][0]}\n")
+        print(f"Last file of dataset {dataset} is {file_dict[dataset][-1]}\n")
+
+    return file_dict
+
+
+def get_events(
+    names,
+    toquery=False,
+    redirect=False,
+    custom_redirector="root://cmsxrootd.fnal.gov/",
+    invalid=False,
 ):
-    egamma_datasets = get_das_datasets(*das_queries)
-    egamma_files = {}
-    for dataset in egamma_datasets:
-        if invalid:
-            egamma_files[dataset] = (
-                os.popen(f'dasgoclient --query="file dataset={dataset} status=*"')
-                .read()
-                .splitlines()
-            )
-        else:
-            egamma_files[dataset] = (
-                os.popen(f'dasgoclient --query="file dataset={dataset}"')
-                .read()
-                .splitlines()
-            )
+    """Get the NanoEvents from the given dataset names.
 
-    for dataset in egamma_datasets:
-        egamma_files[dataset] = [redirector + file for file in egamma_files[dataset]]
-
-    for dataset in egamma_datasets:
-        print(f"Dataset {dataset} has {len(egamma_files[dataset])} files\n")
-        print(f"First file of dataset {dataset} is {egamma_files[dataset][0]}\n")
-        print(f"Last file of dataset {dataset} is {egamma_files[dataset][-1]}\n")
-
-    return egamma_files
-
-
-def get_das_files(*das_queries):
-    egamma_datasets = get_das_datasets(*das_queries)
-    egamma_files = {}
-    for dataset in egamma_datasets:
-        files = get_dataset_files(dataset)[0]
-        egamma_files[dataset] = files
-
-    for dataset in egamma_datasets:
-        print(f"Dataset {dataset} has {len(egamma_files[dataset])} files\n")
-        print(f"First file of dataset {dataset} is {egamma_files[dataset][0]}\n")
-        print(f"Last file of dataset {dataset} is {egamma_files[dataset][-1]}\n")
-
-    return egamma_files
-
-
-def get_events(*datasets, local=False, redirector=None, invalid=False):
+    Parameters
+    ----------
+    names : str or list of str
+        The dataset names to query that can contain wildcards or a list of file paths.
+    toquery : bool, optional
+        Whether to query DAS for the dataset names. The default is False.
+    redirect : bool, optional
+        Whether to add an xrootd redirector to the files. The default is False.
+    custom_redirector : str, optional
+        The xrootd redirector to add to the files. The default is "root://cmsxrootd.fnal.gov/".
+        Only used if redirect is True.
+    invalid : bool, optional
+        Whether to include invalid files. The default is False.
+        Only used if toquery is True.
+    """
     from coffea.nanoevents import NanoAODSchema, NanoEventsFactory
 
-    if local:
-        fnames = {f: "Events" for f in datasets}
+    if redirect and custom_redirector is None:
+        raise ValueError("A custom redirector must be not be None if redirect is True")
 
-    else:
-        if redirector:
-            egamma_files = redirect_files(
-                *datasets, redirector=redirector, invalid=invalid
+    if toquery:
+        if redirect:
+            file_dict = get_file_dict(
+                names, custom_redirector=custom_redirector, invalid=invalid
             )
         else:
-            egamma_files = get_das_files(*datasets)
-        fnames = {f: "Events" for k, files in egamma_files.items() for f in files}
+            file_dict = get_file_dict(names, custom_redirector=None, invalid=invalid)
+
+        fnames = {f: "Events" for k, files in file_dict.items() for f in files}
+
+    else:
+        if isinstance(names, str):
+            names = [names]
+        if redirect:
+            names = redirect_files(names, redirector=custom_redirector)
+        else:
+            fnames = {f: "Events" for f in names}
 
     events = NanoEventsFactory.from_root(
         fnames,

@@ -4,30 +4,60 @@ from .utils import get_events
 
 class TagNProbe:
     def __init__(
-        self, *datasets, local=False, goldenjson=None, redirector=None, invalid=False
+        self,
+        names,
+        *,
+        goldenjson=None,
+        toquery=False,
+        redirect=False,
+        custom_redirector="root://cmsxrootd.fnal.gov/",
+        invalid=False,
     ):
-        """Create a TagNProbe object.
+        """Tag and Probe for HLT Trigger efficiency from NanoAOD.
 
         Parameters
         ----------
-        dataset : str or list of str
-            Dataset name(s) to be used. If `local` is False, this should be list of DAS queries.
-            If `local` is True, this should be a list of file paths.
-        local : bool, optional
-            Whether to use local files or DAS. The default is False.
+        names : str or list of str
+            The dataset names to query that can contain wildcards or a list of file paths.
         goldenjson : str, optional
-            Path to the golden JSON file for luminosity masking. The default is None.
+            The golden json to use for luminosity masking. The default is None.
+        toquery : bool, optional
+            Whether to query DAS for the dataset names. The default is False.
+        redirect : bool, optional
+            Whether to add an xrootd redirector to the files. The default is False.
+        custom_redirector : str, optional
+            The xrootd redirector to add to the files. The default is "root://cmsxrootd.fnal.gov/".
+            Only used if redirect is True.
+        invalid : bool, optional
+            Whether to include invalid files. The default is False.
+            Only used if toquery is True.
         """
-        self.events, fnames = get_events(
-            *datasets, local=local, redirector=redirector, invalid=invalid
-        )
-        self.files = list(fnames.keys())
+        self.names = names
         self.goldenjson = goldenjson
+        self.toquery = toquery
+        self.redirect = redirect
+        self.custom_redirector = custom_redirector
+        self.invalid = invalid
+        self.events = None
+        self.files = None
 
     def __repr__(self):
-        return f"TagNProbe(files={self.files}, goldenjson={self.goldenjson})"
+        if self.files:
+            return f"TagNProbe(Events: {self.events}, Number of files: {self.files}, (Golden JSON: {self.goldenjson})"
+        else:
+            return f"TagNProbe(Events: {self.events}, Number of files: not loaded, (Golden JSON: {self.goldenjson})"
 
-    def get_tnp_histograms(self, compute=False, scheduler="threads", progress=True):
+    def load_events(self):
+        """Load the events from the names."""
+        self.events, self.files = get_events(
+            self.names,
+            toquery=self.toquery,
+            redirect=self.redirect,
+            custom_redirector=self.custom_redirector,
+            invalid=self.invalid,
+        )
+
+    def get_tnp_histograms(self, compute=False, scheduler=None, progress=True):
         """Get the Pt and Eta histograms of the passing and all probes.
 
         Parameters
@@ -35,7 +65,7 @@ class TagNProbe:
         compute : bool, optional
             Whether to return the computed histograms or the dask graphs. The default is False.
         scheduler : str, optional
-            The dask scheduler to use. The default is "threads".
+            The dask scheduler to use. The default is None.
         progress : bool, optional
             Whether to show a progress bar if `compute` is True. The default is True.
         """

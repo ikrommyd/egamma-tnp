@@ -43,9 +43,9 @@ class TagNProbe:
 
     def __repr__(self):
         if self.files:
-            return f"TagNProbe(Events: {self.events}, Number of files: {self.files}, (Golden JSON: {self.goldenjson})"
+            return f"TagNProbe(Events: {self.events}, Number of files: {len(self.files)}, Golden JSON: {self.goldenjson})"
         else:
-            return f"TagNProbe(Events: {self.events}, Number of files: not loaded, (Golden JSON: {self.goldenjson})"
+            return f"TagNProbe(Events: not loaded, Number of files: not loaded, Golden JSON: {self.goldenjson})"
 
     def load_events(self):
         """Load the events from the names."""

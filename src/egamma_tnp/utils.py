@@ -10,7 +10,16 @@ import numpy as np
 from rucio.client import Client
 
 
-def merge_goldenjsons(outfile, *files):
+def merge_goldenjsons(files, outfile):
+    """Merge multiple golden jsons into one.
+
+    Parameters
+    ----------
+    files : list of str
+        The list of golden jsons to merge.
+    outfile : str
+        The output file path.
+    """
     dicts = []
     for file in files:
         with open(file) as f:
@@ -259,7 +268,7 @@ def replace_nans(arr):
     return arr
 
 
-def get_das_datasets(names, invalid=False):
+def get_das_datasets(names, *, invalid=False):
     """Get the list of datasets from DAS for the given dataset names.
     This function uses dasgoclient to query DAS as follows:
     dasgoclient --query='dataset dataset=<name> status=*'.
@@ -297,7 +306,7 @@ def get_das_datasets(names, invalid=False):
     return datasets
 
 
-def get_file_of_das_datset(dataset, invalid=False):
+def get_files_of_das_datset(dataset, *, invalid=False):
     """Get the list of files from DAS for the given dataset.
 
     Parameters
@@ -328,7 +337,7 @@ def get_file_of_das_datset(dataset, invalid=False):
     return files
 
 
-def redirect_files(files, redirector="root://cmsxrootd.fnal.gov/"):
+def redirect_files(files, *, redirector="root://cmsxrootd.fnal.gov/"):
     """Add an xrootd redirector to a list of files
 
     Parameters
@@ -343,7 +352,7 @@ def redirect_files(files, redirector="root://cmsxrootd.fnal.gov/"):
     return [redirector + file for file in files]
 
 
-def get_file_dict(names, custom_redirector=None, invalid=False):
+def get_file_dict(names, *, custom_redirector=None, invalid=False):
     """Get the lists of files from DAS for the given dataset names.
     The list of files is returned as a dictionary with the dataset names as keys
     and the lists of files as values.
@@ -370,7 +379,7 @@ def get_file_dict(names, custom_redirector=None, invalid=False):
     if custom_redirector:
         for dataset in datasets:
             file_dict[dataset] = redirect_files(
-                get_file_of_das_datset(dataset, invalid=invalid),
+                get_files_of_das_datset(dataset, invalid=invalid),
                 redirector=custom_redirector,
             )
     else:
@@ -387,6 +396,7 @@ def get_file_dict(names, custom_redirector=None, invalid=False):
 
 def get_events(
     names,
+    *,
     toquery=False,
     redirect=False,
     custom_redirector="root://cmsxrootd.fnal.gov/",

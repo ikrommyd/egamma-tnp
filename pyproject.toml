@@ -55,7 +55,7 @@ Homepage = "https://github.com/iasonkrom/egamma-tnp"
 [project.optional-dependencies]
 dev = [
   "pre-commit",
-  "black",
+  "black[jupyter]",
   "flake8",
   "pytest",
   "pytest-mpl",

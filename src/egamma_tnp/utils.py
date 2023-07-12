@@ -9,6 +9,8 @@ from collections import defaultdict
 import numpy as np
 from rucio.client import Client
 
+os.environ["RUCIO_HOME"] = "/cvmfs/cms.cern.ch/rucio/x86_64/rhel7/py3/current"
+
 
 def merge_goldenjsons(files, outfile):
     """Merge multiple golden jsons into one.
@@ -70,9 +72,6 @@ def get_proxy_path() -> str:
         "voms-proxy-info -path", shell=True, text=True
     ).strip()
     return proxy
-
-
-os.environ["RUCIO_HOME"] = "/cvmfs/cms.cern.ch/rucio/x86_64/rhel7/py3/current"
 
 
 def get_rucio_client():
@@ -292,7 +291,7 @@ def get_das_datasets(names, *, invalid=False):
     if invalid:
         for query in names:
             datasets.extend(
-                os.popen(f"dasgoclient --query='dataset dataset={query}")
+                os.popen(f"dasgoclient --query='dataset dataset={query}'")
                 .read()
                 .splitlines()
             )
@@ -324,13 +323,13 @@ def get_files_of_das_datset(dataset, *, invalid=False):
     files = []
     if invalid:
         files.extend(
-            os.popen(f'dasgoclient --query="file dataset={dataset} status=*"')
+            os.popen(f"dasgoclient --query='file dataset={dataset} status=*'")
             .read()
             .splitlines()
         )
     else:
         files.extend(
-            os.popen(f'dasgoclient --query="file dataset={dataset}"')
+            os.popen(f"dasgoclient --query='file dataset={dataset}'")
             .read()
             .splitlines()
         )

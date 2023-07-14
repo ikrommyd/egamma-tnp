@@ -37,8 +37,8 @@ classifiers = [
 dependencies = [
   "coffea>=2023.6.0.rc1",
   "awkward>=2.2.4,<2.3.0",
-  "uproot>=5.0.9,<5.0.10",
-  "dask-awkward>=2023.6.3,<2023.7.0",
+  "uproot>=5.0.9",
+  "dask-awkward>=2023.6.3",
   "dask-histogram>=2023.6.0",
   "jupyterlab",
   "notebook",

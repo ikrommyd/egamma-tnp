@@ -66,8 +66,10 @@ class TagNProbe:
             Whether to return the computed histograms or the dask graphs. The default is False.
         scheduler : str, optional
             The dask scheduler to use. The default is None.
+            Only used if compute is True.
         progress : bool, optional
             Whether to show a progress bar if `compute` is True. The default is True.
+            Only used if compute is True and no distributed Client is used.
         """
         if compute:
             return get_and_compute_tnp_histograms(

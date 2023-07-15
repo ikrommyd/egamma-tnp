@@ -17,10 +17,10 @@ def merge_goldenjsons(files, outfile):
 
     Parameters
     ----------
-    files : list of str
-        The list of golden jsons to merge.
-    outfile : str
-        The output file path.
+        files : list of str
+            The list of golden jsons to merge.
+        outfile : str
+            The output file path.
     """
     dicts = []
     for file in files:
@@ -274,15 +274,15 @@ def get_das_datasets(names, *, invalid=False):
 
     Parameters
     ----------
-    names : str or list of str
-        The dataset names to query that can contain wildcards.
-    invalid : bool, optional
-        Whether to include invalid datasets. The default is False.
+        names : str or list of str
+            The dataset names to query that can contain wildcards.
+        invalid : bool, optional
+            Whether to include invalid datasets. The default is False.
 
     Returns
     -------
-    datasets: list of str
-        The list of datasets.
+        datasets: list of str
+            The list of datasets.
     """
     datasets = []
     if isinstance(names, str):
@@ -310,15 +310,15 @@ def get_files_of_das_datset(dataset, *, invalid=False):
 
     Parameters
     ----------
-    dataset : str
-        The dataset name to query for its files.
-    invalid : bool, optional
-        Whether to include invalid files. The default is False.
+        dataset : str
+            The dataset name to query for its files.
+        invalid : bool, optional
+            Whether to include invalid files. The default is False.
 
     Returns
     -------
-    files: list of str
-        The list of files.
+        files: list of str
+            The list of files.
     """
     files = []
     if invalid:
@@ -341,10 +341,10 @@ def redirect_files(files, *, redirector="root://cmsxrootd.fnal.gov/"):
 
     Parameters
     ----------
-    files : str or list of str
-        The list of files to redirect.
-    redirector : str, optional
-        The xrootd redirector to add. The default is "root://cmsxrootd.fnal.gov/".
+        files : str or list of str
+            The list of files to redirect.
+        redirector : str, optional
+            The xrootd redirector to add. The default is "root://cmsxrootd.fnal.gov/".
     """
     if isinstance(files, str):
         files = [files]
@@ -358,19 +358,19 @@ def get_file_dict(names, *, custom_redirector=None, invalid=False):
 
     Parameters
     ----------
-    names : str or list of str
-        The dataset names to query that can contain wildcards.
-    custom_redirector : str, optional
-        The xrootd redirector to add to the files. The default is None.
-        If None, this function will query rucio and add the redirector for the first available site.
-    invalid : bool, optional
-        Whether to include invalid files. The default is False.
-        Only used if custom_redirector is not None.
+        names : str or list of str
+            The dataset names to query that can contain wildcards.
+        custom_redirector : str, optional
+            The xrootd redirector to add to the files. The default is None.
+            If None, this function will query rucio and add the redirector for the first available site.
+        invalid : bool, optional
+            Whether to include invalid files. The default is False.
+            Only used if custom_redirector is not None.
 
     Returns
     -------
-    file_dict: dict
-        A dictionary of {dataset : files} pairs.
+        file_dict: dict
+            A dictionary of {dataset : files} pairs.
     """
     file_dict = {}
     datasets = get_das_datasets(names, invalid=invalid)
@@ -405,18 +405,18 @@ def get_events(
 
     Parameters
     ----------
-    names : str or list of str
-        The dataset names to query that can contain wildcards or a list of file paths.
-    toquery : bool, optional
-        Whether to query DAS for the dataset names. The default is False.
-    redirect : bool, optional
-        Whether to add an xrootd redirector to the files. The default is False.
-    custom_redirector : str, optional
-        The xrootd redirector to add to the files. The default is "root://cmsxrootd.fnal.gov/".
-        Only used if redirect is True.
-    invalid : bool, optional
-        Whether to include invalid files. The default is False.
-        Only used if toquery is True.
+        names : str or list of str
+            The dataset names to query that can contain wildcards or a list of file paths.
+        toquery : bool, optional
+            Whether to query DAS for the dataset names. The default is False.
+        redirect : bool, optional
+            Whether to add an xrootd redirector to the files. The default is False.
+        custom_redirector : str, optional
+            The xrootd redirector to add to the files. The default is "root://cmsxrootd.fnal.gov/".
+            Only used if redirect is True.
+        invalid : bool, optional
+            Whether to include invalid files. The default is False.
+            Only used if toquery is True.
     """
     from coffea.nanoevents import NanoAODSchema, NanoEventsFactory
 
@@ -452,32 +452,51 @@ def get_events(
     return events, fnames
 
 
-def get_ratio_histograms(hpt_pass, hpt_all, heta_pass, heta_all):
-    """Get the ratio histograms (efficiency) of the passing and all probes.
+def get_ratio_histogram(passing_probes, all_probes):
+    """Get the ratio (efficiency) of the passing and all probes histograms.
     NaN values are replaced with 0.
 
     Parameters
     ----------
-    hpt_pass : hist.Hist
-        The Pt histogram of the passing probes.
-    hpt_all : hist.Hist
-        The Pt histogram of all probes.
-    heta_pass : hist.Hist
-        The Eta histogram of the passing probes.
-    heta_all : hist.Hist
-        The Eta histogram of all probes.
+        passing_probes : hist.Hist
+            The histogram of the passing probes.
+        all_probes : hist.Hist
+            The histogram of all probes.
 
     Returns
     -------
-    hptratio : hist.Hist
-        The Pt ratio histogram.
-    hetaratio : hist.Hist
-        The Eta ratio histogram.
+        ratio : hist.Hist
+            The ratio histogram.
     """
-    hptratio = hpt_pass / hpt_all
-    hptratio[:] = np.nan_to_num(hptratio.values())
+    ratio = passing_probes / all_probes
+    ratio[:] = np.nan_to_num(ratio.values())
 
-    hetaratio = heta_pass / heta_all
-    hetaratio[:] = np.nan_to_num(hetaratio.values())
+    return ratio
+
+
+def get_pt_and_eta_ratios(hpt_pass, hpt_all, heta_pass, heta_all):
+    """Get the ratio histograms (efficiency) of pt and eta.
+    NaN values are replaced with 0.
+
+    Parameters
+    ----------
+        hpt_pass : hist.Hist
+            The Pt histogram of the passing probes.
+        hpt_all : hist.Hist
+            The Pt histogram of all probes.
+        heta_pass : hist.Hist
+            The Eta histogram of the passing probes.
+        heta_all : hist.Hist
+            The Eta histogram of all probes.
+
+    Returns
+    -------
+        hptratio : hist.Hist
+            The Pt ratio histogram.
+        hetaratio : hist.Hist
+            The Eta ratio histogram.
+    """
+    hptratio = get_ratio_histogram(hpt_pass, hpt_all)
+    hetaratio = get_ratio_histogram(heta_pass, heta_all)
 
     return hptratio, hetaratio

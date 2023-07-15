@@ -17,20 +17,20 @@ class TagNProbe:
 
         Parameters
         ----------
-        names : str or list of str
-            The dataset names to query that can contain wildcards or a list of file paths.
-        goldenjson : str, optional
-            The golden json to use for luminosity masking. The default is None.
-        toquery : bool, optional
-            Whether to query DAS for the dataset names. The default is False.
-        redirect : bool, optional
-            Whether to add an xrootd redirector to the files. The default is False.
-        custom_redirector : str, optional
-            The xrootd redirector to add to the files. The default is "root://cmsxrootd.fnal.gov/".
-            Only used if redirect is True.
-        invalid : bool, optional
-            Whether to include invalid files. The default is False.
-            Only used if toquery is True.
+            names : str or list of str
+                The dataset names to query that can contain wildcards or a list of file paths.
+            goldenjson : str, optional
+                The golden json to use for luminosity masking. The default is None.
+            toquery : bool, optional
+                Whether to query DAS for the dataset names. The default is False.
+            redirect : bool, optional
+                Whether to add an xrootd redirector to the files. The default is False.
+            custom_redirector : str, optional
+                The xrootd redirector to add to the files. The default is "root://cmsxrootd.fnal.gov/".
+                Only used if redirect is True.
+            invalid : bool, optional
+                Whether to include invalid files. The default is False.
+                Only used if toquery is True.
         """
         self.names = names
         self.goldenjson = goldenjson
@@ -62,26 +62,26 @@ class TagNProbe:
 
         Parameters
         ----------
-        compute : bool, optional
-            Whether to return the computed hist.Hist histograms or the delayed hist.dask.Hist histograms.
-            The default is False.
-        scheduler : str, optional
-            The dask scheduler to use. The default is None.
-            Only used if compute is True.
-        progress : bool, optional
-            Whether to show a progress bar if `compute` is True. The default is True.
-            Only used if compute is True and no distributed Client is used.
+            compute : bool, optional
+                Whether to return the computed hist.Hist histograms or the delayed hist.dask.Hist histograms.
+                The default is False.
+            scheduler : str, optional
+                The dask scheduler to use. The default is None.
+                Only used if compute is True.
+            progress : bool, optional
+                Whether to show a progress bar if `compute` is True. The default is True.
+                Only used if compute is True and no distributed Client is used.
 
         Returns
         -------
-        hpt_pass: hist.Hist or hist.dask.Hist
-            The Pt histogram of the passing probes.
-        hpt_all: hist.Hist or hist.dask.Hist
-            The Pt histogram of all probes.
-        heta_pass: hist.Hist or hist.dask.Hist
-            The Eta histogram of the passing probes.
-        heta_all: hist.Hist or hist.dask.Hist
-            The Eta histogram of all probes.
+            hpt_pass: hist.Hist or hist.dask.Hist
+                The Pt histogram of the passing probes.
+            hpt_all: hist.Hist or hist.dask.Hist
+                The Pt histogram of all probes.
+            heta_pass: hist.Hist or hist.dask.Hist
+                The Eta histogram of the passing probes.
+            heta_all: hist.Hist or hist.dask.Hist
+                The Eta histogram of all probes.
         """
         if compute:
             return get_and_compute_tnp_histograms(

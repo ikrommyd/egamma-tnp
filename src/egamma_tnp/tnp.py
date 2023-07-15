@@ -63,13 +63,25 @@ class TagNProbe:
         Parameters
         ----------
         compute : bool, optional
-            Whether to return the computed histograms or the dask graphs. The default is False.
+            Whether to return the computed hist.Hist histograms or the delayed hist.dask.Hist histograms.
+            The default is False.
         scheduler : str, optional
             The dask scheduler to use. The default is None.
             Only used if compute is True.
         progress : bool, optional
             Whether to show a progress bar if `compute` is True. The default is True.
             Only used if compute is True and no distributed Client is used.
+
+        Returns
+        -------
+        hpt_pass: hist.Hist or hist.dask.Hist
+            The Pt histogram of the passing probes.
+        hpt_all: hist.Hist or hist.dask.Hist
+            The Pt histogram of all probes.
+        heta_pass: hist.Hist or hist.dask.Hist
+            The Eta histogram of the passing probes.
+        heta_all: hist.Hist or hist.dask.Hist
+            The Eta histogram of all probes.
         """
         if compute:
             return get_and_compute_tnp_histograms(

@@ -452,16 +452,32 @@ def get_events(
     return events, fnames
 
 
-def get_ratio_histograms(
-    hpt_all, hpt_pass, heta_all, heta_pass, habseta_all, habseta_pass
-):
+def get_ratio_histograms(hpt_pass, hpt_all, heta_pass, heta_all):
+    """Get the ratio histograms (efficiency) of the passing and all probes.
+    NaN values are replaced with 0.
+
+    Parameters
+    ----------
+    hpt_pass : hist.Hist
+        The Pt histogram of the passing probes.
+    hpt_all : hist.Hist
+        The Pt histogram of all probes.
+    heta_pass : hist.Hist
+        The Eta histogram of the passing probes.
+    heta_all : hist.Hist
+        The Eta histogram of all probes.
+
+    Returns
+    -------
+    hptratio : hist.Hist
+        The Pt ratio histogram.
+    hetaratio : hist.Hist
+        The Eta ratio histogram.
+    """
     hptratio = hpt_pass / hpt_all
-    hptratio[:] = replace_nans(hptratio.values())
+    hptratio[:] = np.nan_to_num(hptratio.values())
 
     hetaratio = heta_pass / heta_all
-    hetaratio[:] = replace_nans(hetaratio.values())
+    hetaratio[:] = np.nan_to_num(hetaratio.values())
 
-    habsetaratio = habseta_pass / habseta_all
-    habsetaratio[:] = replace_nans(habsetaratio.values())
-
-    return hptratio, hetaratio, habsetaratio
+    return hptratio, hetaratio

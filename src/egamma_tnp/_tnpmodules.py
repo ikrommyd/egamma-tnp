@@ -1,7 +1,6 @@
 import awkward as ak
 import dask_awkward as dak
 import hist
-import numpy as np
 from coffea.lumi_tools import LumiMask
 from hist.dask import Hist
 
@@ -112,31 +111,21 @@ def get_tnp_histograms(events, goldenjson):
     heta_all = Hist(etaaxis)
     heta_pass = Hist(etaaxis)
 
-    absetaaxis = hist.axis.Variable(np.unique(np.abs(etabins)), name="abseta")
-    habseta_all = Hist(absetaaxis)
-    habseta_pass = Hist(absetaaxis)
-
     # Fill for p1, a1
-    hpt_all.fill(dak.flatten(a1.pt))
     hpt_pass.fill(dak.flatten(p1.pt))
+    hpt_all.fill(dak.flatten(a1.pt))
 
-    heta_all.fill(dak.flatten(a1.eta))
     heta_pass.fill(dak.flatten(p1.eta))
-
-    habseta_all.fill(abs(dak.flatten(a1.eta)))
-    habseta_pass.fill(abs(dak.flatten(p1.eta)))
+    heta_all.fill(dak.flatten(a1.eta))
 
     # Fill for p2, a2
-    hpt_all.fill(dak.flatten(a2.pt))
     hpt_pass.fill(dak.flatten(p2.pt))
+    hpt_all.fill(dak.flatten(a2.pt))
 
-    heta_all.fill(dak.flatten(a2.eta))
     heta_pass.fill(dak.flatten(p2.eta))
+    heta_all.fill(dak.flatten(a2.eta))
 
-    habseta_all.fill(abs(dak.flatten(a2.eta)))
-    habseta_pass.fill(abs(dak.flatten(p2.eta)))
-
-    return hpt_all, hpt_pass, heta_all, heta_pass, habseta_all, habseta_pass
+    return hpt_pass, hpt_all, heta_pass, heta_all
 
 
 def get_and_compute_tnp_histograms(events, goldenjson, scheduler, progress):
@@ -144,12 +133,10 @@ def get_and_compute_tnp_histograms(events, goldenjson, scheduler, progress):
     from dask.diagnostics import ProgressBar
 
     (
-        hpt_all,
         hpt_pass,
-        heta_all,
+        hpt_all,
         heta_pass,
-        habseta_all,
-        habseta_pass,
+        heta_all,
     ) = get_tnp_histograms(events, goldenjson)
 
     if progress:
@@ -157,12 +144,10 @@ def get_and_compute_tnp_histograms(events, goldenjson, scheduler, progress):
         pbar.register()
 
     res = dask.compute(
-        hpt_all,
         hpt_pass,
-        heta_all,
+        hpt_all,
         heta_pass,
-        habseta_all,
-        habseta_pass,
+        heta_all,
         scheduler=scheduler,
     )
 

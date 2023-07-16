@@ -408,7 +408,7 @@ def get_file_dict(names, *, custom_redirector=None, invalid=False):
     return file_dict
 
 
-def get_events(
+def get_nanoevents_file(
     names,
     *,
     toquery=False,
@@ -416,7 +416,7 @@ def get_events(
     custom_redirector="root://cmsxrootd.fnal.gov/",
     invalid=False,
 ):
-    """Get the NanoEvents from the given dataset names.
+    """Get the `file` for NanoEventsFactory.from_root() from the given dataset names.
 
     Parameters
     ----------
@@ -432,9 +432,12 @@ def get_events(
         invalid : bool, optional
             Whether to include invalid files. The default is False.
             Only used if toquery is True.
-    """
-    from coffea.nanoevents import NanoAODSchema, NanoEventsFactory
 
+    Returns
+    -------
+        file : a string or dict input to ``uproot.dask()``
+            The filename or dict of filenames including the treepath as it would be passed directly to ``uproot.dask()``.
+    """
     if redirect and custom_redirector is None:
         raise ValueError("A custom redirector must not be None if redirect is True")
 
@@ -446,7 +449,7 @@ def get_events(
         else:
             file_dict = get_file_dict(names, custom_redirector=None, invalid=invalid)
 
-        fnames = {f: "Events" for k, files in file_dict.items() for f in files}
+        file = {f: "Events" for k, files in file_dict.items() for f in files}
 
     else:
         if isinstance(names, str):
@@ -454,17 +457,9 @@ def get_events(
         if redirect:
             names = redirect_files(names, redirector=custom_redirector, isrucio=False)
 
-        fnames = {f: "Events" for f in names}
+        file = {f: "Events" for f in names}
 
-    events = NanoEventsFactory.from_root(
-        fnames,
-        schemaclass=NanoAODSchema,
-        permit_dask=True,
-        chunks_per_file=1,
-        metadata={"dataset": "Egamma"},
-    ).events()
-
-    return events, fnames
+    return file
 
 
 def get_ratio_histogram(passing_probes, all_probes):

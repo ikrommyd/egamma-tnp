@@ -1,5 +1,5 @@
 from ._tnpmodules import get_and_compute_tnp_histograms, get_tnp_histograms
-from .utils import get_events
+from .utils import get_nanoevents_file
 
 
 class TagNProbe:
@@ -39,23 +39,31 @@ class TagNProbe:
         self.custom_redirector = custom_redirector
         self.invalid = invalid
         self.events = None
-        self.files = None
-
-    def __repr__(self):
-        if self.files:
-            return f"TagNProbe(Events: {self.events}, Number of files: {len(self.files)}, Golden JSON: {self.goldenjson})"
-        else:
-            return f"TagNProbe(Events: not loaded, Number of files: not loaded, Golden JSON: {self.goldenjson})"
-
-    def load_events(self):
-        """Load the events from the names."""
-        self.events, self.files = get_events(
+        self.files = get_nanoevents_file(
             self.names,
             toquery=self.toquery,
             redirect=self.redirect,
             custom_redirector=self.custom_redirector,
             invalid=self.invalid,
         )
+
+    def __repr__(self):
+        if self.events:
+            return f"TagNProbe(Events: not loaded, Number of files: {len(self.files)}, Golden JSON: {self.goldenjson})"
+        else:
+            return f"TagNProbe(Events: {self.events}, Number of files: {len(self.files)}, Golden JSON: {self.goldenjson})"
+
+    def load_events(self):
+        """Load the events from the names."""
+        from coffea.nanoevents import NanoAODSchema, NanoEventsFactory
+
+        self.events = NanoEventsFactory.from_root(
+            self.files,
+            schemaclass=NanoAODSchema,
+            permit_dask=True,
+            chunks_per_file=1,
+            metadata={"dataset": self.names},
+        ).events()
 
     def get_tnp_histograms(self, compute=False, scheduler=None, progress=True):
         """Get the Pt and Eta histograms of the passing and all probes.

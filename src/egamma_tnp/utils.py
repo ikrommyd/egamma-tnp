@@ -336,7 +336,7 @@ def get_files_of_das_datset(dataset, *, invalid=False):
     return files
 
 
-def redirect_files(files, *, redirector="root://cmsxrootd.fnal.gov/"):
+def redirect_files(files, *, redirector="root://cmsxrootd.fnal.gov/", isrucio=False):
     """Add an xrootd redirector to a list of files
 
     Parameters
@@ -345,10 +345,16 @@ def redirect_files(files, *, redirector="root://cmsxrootd.fnal.gov/"):
             The list of files to redirect.
         redirector : str, optional
             The xrootd redirector to add. The default is "root://cmsxrootd.fnal.gov/".
+        isrucio : bool, optional
+            Whether the files were queried from rucio. The default is False.
     """
     if isinstance(files, str):
         files = [files]
-    return [redirector + file for file in files]
+
+    if isrucio:
+        return [redirector + "/store/" + file.split("/store/")[1] for file in files]
+    else:
+        return [redirector + file for file in files]
 
 
 def get_file_dict(names, *, custom_redirector=None, invalid=False):
@@ -365,25 +371,34 @@ def get_file_dict(names, *, custom_redirector=None, invalid=False):
             If None, this function will query rucio and add the redirector for the first available site.
         invalid : bool, optional
             Whether to include invalid files. The default is False.
-            Only used if custom_redirector is not None.
+            A custom redirector must be provided if invalid is True.
 
     Returns
     -------
         file_dict: dict
             A dictionary of {dataset : files} pairs.
     """
+    if invalid is True and custom_redirector is None:
+        raise ValueError("A custom redirector must not be None if invalid is True")
+
     file_dict = {}
     datasets = get_das_datasets(names, invalid=invalid)
 
-    if custom_redirector:
+    if invalid:
         for dataset in datasets:
             file_dict[dataset] = redirect_files(
                 get_files_of_das_datset(dataset, invalid=invalid),
                 redirector=custom_redirector,
+                isrucio=False,
             )
+
     else:
         for dataset in datasets:
             file_dict[dataset] = query_rucio(dataset)[0]
+            if custom_redirector:
+                file_dict[dataset] = redirect_files(
+                    file_dict[dataset], redirector=custom_redirector, isrucio=True
+                )
 
     for dataset in datasets:
         print(f"Dataset {dataset} has {len(file_dict[dataset])} files\n")
@@ -421,7 +436,7 @@ def get_events(
     from coffea.nanoevents import NanoAODSchema, NanoEventsFactory
 
     if redirect and custom_redirector is None:
-        raise ValueError("A custom redirector must be not be None if redirect is True")
+        raise ValueError("A custom redirector must not be None if redirect is True")
 
     if toquery:
         if redirect:
@@ -437,7 +452,7 @@ def get_events(
         if isinstance(names, str):
             names = [names]
         if redirect:
-            names = redirect_files(names, redirector=custom_redirector)
+            names = redirect_files(names, redirector=custom_redirector, isrucio=False)
 
         fnames = {f: "Events" for f in names}
 

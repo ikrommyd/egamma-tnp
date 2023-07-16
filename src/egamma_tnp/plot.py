@@ -18,7 +18,7 @@ def plot_efficiency(passing_probes, all_probes, **kwargs):
 
     Returns
     -------
-        Hist1DArtists
+        List[Hist1DArtists]
 
     """
     yerr = intervals.ratio_uncertainty(

@@ -44,6 +44,31 @@ def merge_goldenjsons(files, outfile):
         json.dump(output, f, indent=2)
 
 
+def remove_bad_xrootd_files(file, keys):
+    for key in keys:
+        try:
+            file.pop(key)
+        except KeyError:
+            pass
+
+
+def replace_nans(arr):
+    arr = np.array(arr)
+
+    # Find the index of first non-nan value
+    first_float_index = np.where(~np.isnan(arr))[0][0]
+
+    # Create masks for before and after the first float
+    before_first_float = np.arange(len(arr)) < first_float_index
+    after_first_float = ~before_first_float
+
+    # Replace all nans with 0 before first float number and with 1 after
+    arr[before_first_float & np.isnan(arr)] = 0
+    arr[after_first_float & np.isnan(arr)] = 1
+
+    return arr
+
+
 def check_port(port):
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     try:
@@ -248,23 +273,6 @@ def query_rucio(
                 outsites.append(outsite[0])
 
     return outfiles, outsites
-
-
-def replace_nans(arr):
-    arr = np.array(arr)
-
-    # Find the index of first non-nan value
-    first_float_index = np.where(~np.isnan(arr))[0][0]
-
-    # Create masks for before and after the first float
-    before_first_float = np.arange(len(arr)) < first_float_index
-    after_first_float = ~before_first_float
-
-    # Replace all nans with 0 before first float number and with 1 after
-    arr[before_first_float & np.isnan(arr)] = 0
-    arr[after_first_float & np.isnan(arr)] = 1
-
-    return arr
 
 
 def get_das_datasets(names, *, invalid=False):

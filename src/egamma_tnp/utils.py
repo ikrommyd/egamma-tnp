@@ -7,6 +7,7 @@ import subprocess
 from collections import defaultdict
 
 import numpy as np
+from hist import intervals
 from rucio.client import Client
 
 os.environ["RUCIO_HOME"] = "/cvmfs/cms.cern.ch/rucio/x86_64/rhel7/py3/current"
@@ -42,14 +43,6 @@ def merge_goldenjsons(files, outfile):
 
     with open(outfile, "w") as f:
         json.dump(output, f, indent=2)
-
-
-def remove_bad_xrootd_files(file, keys):
-    for key in keys:
-        try:
-            file.pop(key)
-        except KeyError:
-            pass
 
 
 def replace_nans(arr):
@@ -485,11 +478,16 @@ def get_ratio_histogram(passing_probes, all_probes):
     -------
         ratio : hist.Hist
             The ratio histogram.
+        yerr : np.ndarray
+            The y error of the ratio histogram.
     """
     ratio = passing_probes / all_probes
     ratio[:] = np.nan_to_num(ratio.values())
+    yerr = intervals.ratio_uncertainty(
+        passing_probes.values(), all_probes.values(), uncertainty_type="efficiency"
+    )
 
-    return ratio
+    return ratio, yerr
 
 
 def get_pt_and_eta_ratios(hpt_pass, hpt_all, heta_pass, heta_all):
@@ -514,7 +512,7 @@ def get_pt_and_eta_ratios(hpt_pass, hpt_all, heta_pass, heta_all):
         hetaratio : hist.Hist
             The Eta ratio histogram.
     """
-    hptratio = get_ratio_histogram(hpt_pass, hpt_all)
-    hetaratio = get_ratio_histogram(heta_pass, heta_all)
+    hptratio, hptratio_yerr = get_ratio_histogram(hpt_pass, hpt_all)
+    hetaratio, hetaratio_yerr = get_ratio_histogram(heta_pass, heta_all)
 
-    return hptratio, hetaratio
+    return hptratio, hptratio_yerr, hetaratio, hetaratio_yerr

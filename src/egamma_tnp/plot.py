@@ -1,4 +1,3 @@
-from hist import intervals
 from matplotlib import pyplot as plt
 
 from .utils import get_ratio_histogram
@@ -21,10 +20,7 @@ def plot_efficiency(passing_probes, all_probes, **kwargs):
         List[Hist1DArtists]
 
     """
-    yerr = intervals.ratio_uncertainty(
-        passing_probes.values(), all_probes.values(), uncertainty_type="efficiency"
-    )
-    ratio_hist = get_ratio_histogram(passing_probes, all_probes)
+    ratio_hist, yerr = get_ratio_histogram(passing_probes, all_probes)
 
     return ratio_hist.plot1d(
         histtype="errorbar", yerr=yerr, xerr=True, flow="none", **kwargs

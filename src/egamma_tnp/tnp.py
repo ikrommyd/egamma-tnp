@@ -53,6 +53,14 @@ class TagNProbe:
         else:
             return f"TagNProbe(Events: {self.events}, Number of files: {len(self.file)}, Golden JSON: {self.goldenjson})"
 
+    def remove_bad_xrootd_files(self, keys):
+        """Remove bad xrootd files from self.file."""
+        for key in keys:
+            try:
+                self.file.pop(key)
+            except KeyError:
+                pass
+
     def load_events(self):
         """Load the events from the names."""
         from coffea.nanoevents import NanoAODSchema, NanoEventsFactory

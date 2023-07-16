@@ -39,7 +39,7 @@ class TagNProbe:
         self.custom_redirector = custom_redirector
         self.invalid = invalid
         self.events = None
-        self.files = get_nanoevents_file(
+        self.file = get_nanoevents_file(
             self.names,
             toquery=self.toquery,
             redirect=self.redirect,
@@ -48,17 +48,17 @@ class TagNProbe:
         )
 
     def __repr__(self):
-        if self.events:
-            return f"TagNProbe(Events: not loaded, Number of files: {len(self.files)}, Golden JSON: {self.goldenjson})"
+        if self.events is None:
+            return f"TagNProbe(Events: not loaded, Number of files: {len(self.file)}, Golden JSON: {self.goldenjson})"
         else:
-            return f"TagNProbe(Events: {self.events}, Number of files: {len(self.files)}, Golden JSON: {self.goldenjson})"
+            return f"TagNProbe(Events: {self.events}, Number of files: {len(self.file)}, Golden JSON: {self.goldenjson})"
 
     def load_events(self):
         """Load the events from the names."""
         from coffea.nanoevents import NanoAODSchema, NanoEventsFactory
 
         self.events = NanoEventsFactory.from_root(
-            self.files,
+            self.file,
             schemaclass=NanoAODSchema,
             permit_dask=True,
             chunks_per_file=1,

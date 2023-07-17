@@ -33,12 +33,12 @@ def apply_lumimasking(events, goldenjson):
     return events[mask]
 
 
-def filter_events(events):
+def filter_events(events, pt):
     events = events[dak.num(events.Electron) >= 2]
     abs_eta = abs(events.Electron.eta)
     pass_eta_ebeegap = (abs_eta < 1.4442) | (abs_eta > 1.566)
     pass_tight_id = events.Electron.cutBased == 4
-    pass_pt = events.Electron.pt > 31
+    pass_pt = events.Electron.pt > pt
     pass_eta = abs_eta <= 2.5
     pass_selection = pass_pt & pass_eta & pass_eta_ebeegap & pass_tight_id
     n_of_tags = dak.sum(pass_selection, axis=1)
@@ -48,8 +48,8 @@ def filter_events(events):
     return good_events, good_locations
 
 
-def trigger_match(electrons, trigobjs):
-    pass_pt = trigobjs.pt > 31
+def trigger_match(electrons, trigobjs, pt):
+    pass_pt = trigobjs.pt > pt
     pass_id = abs(trigobjs.id) == 11
     pass_wptight = trigobjs.filterBits & (0x1 << 1) == 2
     trigger_cands = trigobjs[pass_pt & pass_id & pass_wptight]
@@ -62,8 +62,8 @@ def trigger_match(electrons, trigobjs):
     return trig_matched_locs
 
 
-def find_probes(tags, probes, trigobjs):
-    trig_matched_tag = trigger_match(tags, trigobjs)
+def find_probes(tags, probes, trigobjs, pt):
+    trig_matched_tag = trigger_match(tags, trigobjs, pt)
     tags = tags[trig_matched_tag]
     probes = probes[trig_matched_tag]
     trigobjs = trigobjs[trig_matched_tag]
@@ -78,30 +78,30 @@ def find_probes(tags, probes, trigobjs):
     dr_condition = dr > 0.0
 
     all_probes = probes[isZ & dr_condition]
-    trig_matched_probe = trigger_match(all_probes, trigobjs)
+    trig_matched_probe = trigger_match(all_probes, trigobjs, pt)
     passing_probes = all_probes[trig_matched_probe]
 
     return passing_probes, all_probes
 
 
-def perform_tnp(events, goldenjson):
+def perform_tnp(events, pt, goldenjson):
     if goldenjson:
         events = apply_lumimasking(events, goldenjson)
-    good_events, good_locations = filter_events(events)
+    good_events, good_locations = filter_events(events, pt)
     ele_for_tnp = good_events.Electron[good_locations]
 
     zcands1 = dak.combinations(ele_for_tnp, 2, fields=["tag", "probe"])
     zcands2 = dak.combinations(ele_for_tnp, 2, fields=["probe", "tag"])
-    p1, a1 = find_probes(zcands1.tag, zcands1.probe, good_events.TrigObj)
-    p2, a2 = find_probes(zcands2.tag, zcands2.probe, good_events.TrigObj)
+    p1, a1 = find_probes(zcands1.tag, zcands1.probe, good_events.TrigObj, pt)
+    p2, a2 = find_probes(zcands2.tag, zcands2.probe, good_events.TrigObj, pt)
 
     return p1, a1, p2, a2
 
 
-def get_tnp_histograms(events, goldenjson):
+def get_tnp_histograms(events, pt, goldenjson):
     from .config import etabins, ptbins
 
-    p1, a1, p2, a2 = perform_tnp(events, goldenjson)
+    p1, a1, p2, a2 = perform_tnp(events, pt, goldenjson)
 
     ptaxis = hist.axis.Variable(ptbins, name="pt")
     hpt_all = Hist(ptaxis)
@@ -128,7 +128,7 @@ def get_tnp_histograms(events, goldenjson):
     return hpt_pass, hpt_all, heta_pass, heta_all
 
 
-def get_and_compute_tnp_histograms(events, goldenjson, scheduler, progress):
+def get_and_compute_tnp_histograms(events, pt, goldenjson, scheduler, progress):
     import dask
     from dask.diagnostics import ProgressBar
 
@@ -137,7 +137,7 @@ def get_and_compute_tnp_histograms(events, goldenjson, scheduler, progress):
         hpt_all,
         heta_pass,
         heta_all,
-    ) = get_tnp_histograms(events, goldenjson)
+    ) = get_tnp_histograms(events, pt, goldenjson)
 
     if progress:
         pbar = ProgressBar()

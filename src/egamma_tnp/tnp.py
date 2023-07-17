@@ -6,6 +6,7 @@ class TagNProbe:
     def __init__(
         self,
         names,
+        trigger_pt,
         *,
         goldenjson=None,
         toquery=False,
@@ -33,6 +34,7 @@ class TagNProbe:
                 Only used if toquery is True.
         """
         self.names = names
+        self.pt = trigger_pt - 1
         self.goldenjson = goldenjson
         self.toquery = toquery
         self.redirect = redirect
@@ -102,9 +104,12 @@ class TagNProbe:
         if compute:
             return get_and_compute_tnp_histograms(
                 events=self.events,
+                pt=self.pt,
                 goldenjson=self.goldenjson,
                 scheduler=scheduler,
                 progress=progress,
             )
         else:
-            return get_tnp_histograms(events=self.events, goldenjson=self.goldenjson)
+            return get_tnp_histograms(
+                events=self.events, pt=self.pt, goldenjson=self.goldenjson
+            )

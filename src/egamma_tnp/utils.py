@@ -333,6 +333,8 @@ def get_file_dict(datasets, *, custom_redirector=None, invalid=False):
         raise ValueError("A custom redirector must not be None if invalid is True")
 
     file_dict = {}
+    if isinstance(datasets, str):
+        datasets = [datasets]
 
     if invalid:
         for dataset in datasets:

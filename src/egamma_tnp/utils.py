@@ -478,7 +478,7 @@ def get_ratio_histogram(passing_probes, all_probes):
     -------
         ratio : hist.Hist
             The ratio histogram.
-        yerr : np.ndarray
+        yerr : numpy.ndarray
             The y error of the ratio histogram.
     """
     ratio = passing_probes / all_probes

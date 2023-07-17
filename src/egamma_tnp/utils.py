@@ -2,7 +2,6 @@ import getpass
 import json
 import os
 import re
-import socket
 import subprocess
 from collections import defaultdict
 
@@ -60,17 +59,6 @@ def replace_nans(arr):
     arr[after_first_float & np.isnan(arr)] = 1
 
     return arr
-
-
-def check_port(port):
-    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    try:
-        sock.bind(("0.0.0.0", port))
-        available = True
-    except Exception:
-        available = False
-    sock.close()
-    return available
 
 
 def get_proxy_path() -> str:
@@ -268,44 +256,6 @@ def query_rucio(
     return outfiles, outsites
 
 
-def get_das_datasets(names, *, invalid=False):
-    """Get the list of datasets from DAS for the given dataset names.
-    This function uses dasgoclient to query DAS as follows:
-    dasgoclient --query='dataset dataset=<name> status=*'.
-
-    Parameters
-    ----------
-        names : str or list of str
-            The dataset names to query that can contain wildcards.
-        invalid : bool, optional
-            Whether to include invalid datasets. The default is False.
-
-    Returns
-    -------
-        datasets: list of str
-            The list of datasets.
-    """
-    datasets = []
-    if isinstance(names, str):
-        names = [names]
-
-    if invalid:
-        for query in names:
-            datasets.extend(
-                os.popen(f"dasgoclient --query='dataset dataset={query}'")
-                .read()
-                .splitlines()
-            )
-    else:
-        for query in names:
-            datasets.extend(
-                os.popen(f"dasgoclient --query='dataset dataset={query} status=*'")
-                .read()
-                .splitlines()
-            )
-    return datasets
-
-
 def get_files_of_das_datset(dataset, *, invalid=False):
     """Get the list of files from DAS for the given dataset.
 
@@ -358,15 +308,15 @@ def redirect_files(files, *, redirector="root://cmsxrootd.fnal.gov/", isrucio=Fa
         return [redirector + file for file in files]
 
 
-def get_file_dict(names, *, custom_redirector=None, invalid=False):
+def get_file_dict(datasets, *, custom_redirector=None, invalid=False):
     """Get the lists of files from DAS for the given dataset names.
     The list of files is returned as a dictionary with the dataset names as keys
     and the lists of files as values.
 
     Parameters
     ----------
-        names : str or list of str
-            The dataset names to query that can contain wildcards.
+        datasets : str or list of str
+            The dataset names to query.
         custom_redirector : str, optional
             The xrootd redirector to add to the files. The default is None.
             If None, this function will query rucio and add the redirector for the first available site.
@@ -383,7 +333,6 @@ def get_file_dict(names, *, custom_redirector=None, invalid=False):
         raise ValueError("A custom redirector must not be None if invalid is True")
 
     file_dict = {}
-    datasets = get_das_datasets(names, invalid=invalid)
 
     if invalid:
         for dataset in datasets:
@@ -422,7 +371,7 @@ def get_nanoevents_file(
     Parameters
     ----------
         names : str or list of str
-            The dataset names to query that can contain wildcards or a list of file paths.
+            The dataset names to query or a list of file paths.
         toquery : bool, optional
             Whether to query DAS for the dataset names. The default is False.
         redirect : bool, optional

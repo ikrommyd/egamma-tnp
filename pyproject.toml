@@ -35,7 +35,7 @@ classifiers = [
   "Topic :: Utilities",
 ]
 dependencies = [
-  "coffea>=2023.6.0.rc1,<2023.7.0rc0",
+  "coffea[dask]>=2023.6.0.rc1,<2023.7.0rc0",
   "awkward>=2.2.4,<2.3.0",
   "uproot>=5.0.9",
   "dask-awkward>=2023.6.3",

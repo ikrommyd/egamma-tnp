@@ -42,7 +42,7 @@ dependencies = [
   "dask-histogram>=2023.6.0",
   "jupyterlab",
   "notebook",
-  "rucio-clients",
+  "rucio-clients>=1.31.6",
   "distributed>=2023.4.0",
   "bokeh!=3.0.*,>=2.4.2",
   "mplhep>=0.3.28",

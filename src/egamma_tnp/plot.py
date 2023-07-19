@@ -60,10 +60,12 @@ def plot_pt_and_eta_efficiencies(
     plot_efficiency(heta_pass, heta_all, ax=ax2, **kwargs_eta)
 
     ax1.set_xlim(5, 400)
-    ax1.set_xlabel("Pt [GeV]")
+    ax1.set_xlabel(r"$P_T$ [GeV]")
+    ax1.set_ylabel(r"Efficiency")
     ax1.set_xscale("log")
 
     ax2.set_xlim(-2.5, 2.5)
-    ax2.set_xlabel("Eta")
+    ax2.set_xlabel(r"$\eta$")
+    ax2.set_ylabel(r"Efficiency")
 
     return ax1, ax2

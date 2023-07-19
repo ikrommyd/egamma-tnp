@@ -99,7 +99,17 @@ def perform_tnp(events, pt, goldenjson):
 
 
 def get_tnp_histograms(events, pt, goldenjson):
-    from .config import etabins, ptbins
+    import json
+    import os
+
+    dir_path = os.path.dirname(os.path.realpath(__file__))
+    config_path = os.path.join(dir_path, "config.json")
+
+    with open(config_path) as f:
+        config = json.load(f)
+
+    ptbins = config["ptbins"]
+    etabins = config["etabins"]
 
     p1, a1, p2, a2 = perform_tnp(events, pt, goldenjson)
 

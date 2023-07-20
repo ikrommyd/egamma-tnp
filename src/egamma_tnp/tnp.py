@@ -86,8 +86,14 @@ class TagNProbe:
 
         if isinstance(keys, str):
             keys = [keys]
-        if isinstance(redirectors, str):
-            redirectors = [redirectors] * len(keys)
+        if isinstance(redirectors, str) or (
+            isinstance(redirectors, list) and len(redirectors) == 1
+        ):
+            redirectors = (
+                [redirectors] * len(keys)
+                if isinstance(redirectors, str)
+                else redirectors * len(keys)
+            )
         if (len(keys) > 1 and (len(redirectors) != 1)) and (
             len(keys) != len(redirectors)
         ):

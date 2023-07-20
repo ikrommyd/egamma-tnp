@@ -56,12 +56,47 @@ class TagNProbe:
             return f"TagNProbe(Events: {self.events}, Number of files: {len(self.file)}, Golden JSON: {self.goldenjson})"
 
     def remove_bad_xrootd_files(self, keys):
-        """Remove bad xrootd files from self.file."""
+        """Remove bad xrootd files from self.file.
+
+        Parameters
+        ----------
+            keys : str or list of str
+                The keys of self.file to remove.
+        """
+        if isinstance(keys, str):
+            keys = [keys]
         for key in keys:
             try:
                 self.file.pop(key)
             except KeyError:
                 pass
+
+    def redirect_files(self, keys, redirectors="root://cmsxrootd.fnal.gov/"):
+        """Redirect the files in self.file.
+
+        Parameters
+        ----------
+            keys : str or list of str
+                The keys of self.file to redirect.
+            redirectors : str or list of str, optional
+                The redirectors to use. The default is "root://cmsxrootd.fnal.gov/".
+                If multiple keys are given, then either one redirector or the same number of redirectors as keys must be given.
+        """
+        from .utils import redirect_files
+
+        if isinstance(keys, str):
+            keys = [keys]
+        if isinstance(redirectors, str):
+            redirectors = [redirectors] * len(keys)
+        if len(keys) > 1 and (len(redirectors) != 1) or (len(keys) != len(redirectors)):
+            raise ValueError(
+                f"If multiple keys are given, then either one redirector or the same number of redirectors as keys must be given."
+                f"Got {len(keys)} keys and {len(redirectors)} redirectors."
+            )
+        for key, redirector in zip(keys, redirectors):
+            isrucio = True if key[:7] == "root://" else False
+            newkey = redirect_files(key, redirector=redirector, isrucio=isrucio)
+            self.file[newkey] = self.file.pop(key)
 
     def load_events(self):
         """Load the events from the names."""

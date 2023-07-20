@@ -95,7 +95,7 @@ class TagNProbe:
             )
         for key, redirector in zip(keys, redirectors):
             isrucio = True if key[:7] == "root://" else False
-            newkey = redirect_files(key, redirector=redirector, isrucio=isrucio)
+            newkey = redirect_files(key, redirector=redirector, isrucio=isrucio).pop()
             self.file[newkey] = self.file.pop(key)
 
     def load_events(self):

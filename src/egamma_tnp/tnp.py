@@ -88,7 +88,9 @@ class TagNProbe:
             keys = [keys]
         if isinstance(redirectors, str):
             redirectors = [redirectors] * len(keys)
-        if len(keys) > 1 and (len(redirectors) != 1) or (len(keys) != len(redirectors)):
+        if (len(keys) > 1 and (len(redirectors) != 1)) and (
+            len(keys) != len(redirectors)
+        ):
             raise ValueError(
                 f"If multiple keys are given, then either one redirector or the same number of redirectors as keys must be given."
                 f"Got {len(keys)} keys and {len(redirectors)} redirectors."

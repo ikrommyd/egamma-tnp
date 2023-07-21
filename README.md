@@ -8,7 +8,7 @@ To use jupyter notebooks on a cluster (LPC for instance), choose a 3-digit numbe
 # remember to `kinit USERNAME@FNAL.GOV` to set up kerberos authorization before logging in
 ssh USERNAME@cmslpc-sl7.fnal.gov -L8xxx:localhost:8xxx -L8787:localhost:8787
 ```
-The create a working directory, clone the repository and enter the directory:
+Then create a working directory, clone the repository and enter the directory:
 ```bash
 cd nobackup # if this symlink does not exist, look for /uscms_data/d1/$USER
 git@github.com:iasonkrom/egamma-tnp.git
@@ -20,17 +20,17 @@ For simplicity, we offer a `setup.sh` bash script that gives a `coffea` Singular
 ```bash
 bash setup.sh
 ```
-If you are on LPC and want to use the LPC job queue, you can make use of the [lpcjobqueue](https://github.com/CoffeaTeam/lpcjobqueue). This offers a similar setup script that gives you a `coffea` Singularity shell with the lpcjobqueue installed.
+If you are on LPC and want to use the LPC job queue, you can make use of the [lpcjobqueue](https://github.com/CoffeaTeam/lpcjobqueue). This offers a similar setup script that gives you a `coffea` Singularity shell with the `lpcjobqueue` installed.
 ```bash
 curl -OL https://raw.githubusercontent.com/CoffeaTeam/lpcjobqueue/main/bootstrap.sh
 bash bootstrap.sh
 ```
 Both of those scripts create two new files in your directory: `shell` and `.bashrc`. The `./shell`
-executable can then be used to start a singularity shell with a `coffea` environment.
-Note that the singularity environment does inherit from your calling environment, so
-it should be "clean" (i.e. no cmsenv, LCG release, etc.). For more info, refer to the README of the lpcjobqueue repository.
+executable can then be used to start a Singularity shell with a `coffea` environment.
+Note that the Singularity environment does inherit from your calling environment, so
+it should be "clean" (i.e. no cmsenv, LCG release, etc.). For more info, refer to the README of the `lpcjobqueue` repository.
 
-If you are on LXPLUS you can try using a similar job queue implementation available in https://github.com/cernops/dask-lxplus but it is not recommended as LXPLUS can have unexpected reactions to the dask job queue.
+If you are on LXPLUS, you can try using a similar job queue implementation available in https://github.com/cernops/dask-lxplus but it is not recommended as LXPLUS can have unexpected reactions to the dask job queue.
 
 Be sure your x509 grid proxy certificate is up to date before starting the shell.
 ```bash
@@ -40,7 +40,7 @@ Once you are in your Singularity shell, you can install the `egamma-tnp` package
 ```bash
 pip install .
 ```
-This works the same way in any other python virtual environment. To start the jupyter noteboo, do
+This works the same way in any other python virtual environment. To start the jupyter notebook, do
 ```bash
 jupyter notebook --no-browser --port 8xxx
 ```
@@ -82,7 +82,7 @@ tag_n_probe = TagNProbe(
     redirect=False,
 )
 ```
-Please refer to it's docstring for more information on the arguments.
+Please refer to its docstring for more information on the arguments.
 Then you can load the events using
 ```python
 tag_n_probe.load_events()
@@ -94,11 +94,11 @@ and then perform tag and probe to get the $P_T$ and $\eta$ histograms of the pas
     hpt_all,
     heta_pass,
     heta_all,
-) = tag_n_probe.get_tnp_histograms(compute=True, scheduler=None, progress=True)
+) = tag_n_probe.get_tnp_histograms(compute=True, scheduler=None)
 ```
 You can do whatever you want with those histograms but to plot the efficiencies as a function of $P_T$ and $\eta$ you would do:
 ```python
 plot_efficiency(hpt_pass, hpt_all)
 plot_efficiency(heta_pass, heta_all)
 ```
-The customization of those plots is up to the user.
+The customization of those plots is up to the user. Using [mplhep](https://github.com/scikit-hep/mplhep) is recommended.

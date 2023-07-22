@@ -73,8 +73,8 @@ After that, you can define a `TagNProbe` object:
 ```python
 tag_n_probe = TagNProbe(
     [
-        "/EGamma0/Run2023C-PromptNanoAODv12_v4-v1/NANOAOD",
-        "/EGamma1/Run2023C-PromptNanoAODv12_v4-v1/NANOAOD",
+        "/EGamma0/Run2023C-PromptNanoAODv12_v3-v1/NANOAOD",
+        "/EGamma1/Run2023C-PromptNanoAODv12_v3-v1/NANOAOD",
     ],
     32,
     goldenjson="json/Cert_Collisions2023_366442_368823_Golden.json",

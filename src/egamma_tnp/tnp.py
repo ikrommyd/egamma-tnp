@@ -1,3 +1,5 @@
+import os
+
 from ._tnpmodules import get_and_compute_tnp_histograms, get_tnp_histograms
 from .utils import get_nanoevents_file
 
@@ -48,6 +50,8 @@ class TagNProbe:
             custom_redirector=self.custom_redirector,
             invalid=self.invalid,
         )
+        if not os.path.isfile(goldenjson):
+            raise ValueError(f"Golden JSON {goldenjson} does not exist.")
 
     def __repr__(self):
         if self.events is None:

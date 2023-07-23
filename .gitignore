@@ -111,3 +111,4 @@ dask-worker-space/
 
 root_files/
 .DS_Store
+notebooks/*.pdf

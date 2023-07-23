@@ -22,6 +22,8 @@ class TagNProbe:
         ----------
             names : str or list of str
                 The dataset names to query that can contain wildcards or a list of file paths.
+            trigger_pt : int or float
+                The Pt threshold of the trigger.
             goldenjson : str, optional
                 The golden json to use for luminosity masking. The default is None.
             toquery : bool, optional

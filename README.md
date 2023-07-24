@@ -11,7 +11,7 @@ ssh USERNAME@cmslpc-sl7.fnal.gov -L8xxx:localhost:8xxx -L8787:localhost:8787
 Then create a working directory, clone the repository and enter the directory:
 ```bash
 cd nobackup # if this symlink does not exist, look for /uscms_data/d1/$USER
-git@github.com:iasonkrom/egamma-tnp.git
+git clone git@github.com:iasonkrom/egamma-tnp.git
 cd egamma-tnp
 ```
 The package can in principle be installed in any python virtual environment with python 3.8 or higher. That means that you can use it within a conda environment, a Singularity or Docker container, an LCG release, or any other python environment without any conflicting packages.

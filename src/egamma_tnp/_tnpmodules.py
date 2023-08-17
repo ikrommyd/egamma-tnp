@@ -1,35 +1,12 @@
-import awkward as ak
 import dask_awkward as dak
 import hist
 from coffea.lumi_tools import LumiMask
 from hist.dask import Hist
 
 
-class DaskLumiMask:
-    def __init__(self, lumimask):
-        self._lumimask = lumimask
-
-    def __call__(self, runs, lumis):
-        out = self._lumimask(
-            ak.typetracer.length_zero_if_typetracer(runs).to_numpy(),
-            ak.typetracer.length_zero_if_typetracer(lumis).to_numpy(),
-        )
-        out = ak.Array(out)
-        if ak.backend(runs, lumis) == "typetracer":
-            out = ak.Array(
-                out.layout.to_typetracer(forget_length=True), behavior=out.behavior
-            )
-        return out
-
-
-def lumimask(events, jsonfile):
-    eager_lumimask = LumiMask(jsonfile)
-    dask_lumimask = DaskLumiMask(eager_lumimask)
-    return dak.map_partitions(dask_lumimask, events.run, events.luminosityBlock)
-
-
 def apply_lumimasking(events, goldenjson):
-    mask = lumimask(events, goldenjson)
+    lumimask = LumiMask(goldenjson)
+    mask = lumimask(events.run, events.luminosityBlock)
     return events[mask]
 
 

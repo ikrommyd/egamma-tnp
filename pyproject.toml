@@ -35,7 +35,7 @@ classifiers = [
   "Topic :: Utilities",
 ]
 dependencies = [
-  "coffea[dask]>=2023.7.0rc0",
+  "coffea[dask] @ git+https://github.com/CoffeaTeam/coffea",
   "awkward>=2.3.3",
   "uproot>=5.0.10",
   "dask-awkward>=2023.6.3",
@@ -72,3 +72,6 @@ version-file = "src/egamma_tnp/version.py"
 
 [tool.setuptools_scm]
 write_to = "src/egamma_tnp/_version.py"
+
+[tool.hatch.metadata]
+allow-direct-references = true

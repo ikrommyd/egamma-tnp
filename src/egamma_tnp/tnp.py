@@ -52,7 +52,7 @@ class TagNProbe:
             custom_redirector=self.custom_redirector,
             invalid=self.invalid,
         )
-        if not os.path.isfile(goldenjson):
+        if goldenjson is not None and not os.path.isfile(goldenjson):
             raise ValueError(f"Golden JSON {goldenjson} does not exist.")
 
     def __repr__(self):

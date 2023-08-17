@@ -75,3 +75,15 @@ write_to = "src/egamma_tnp/_version.py"
 
 [tool.hatch.metadata]
 allow-direct-references = true
+
+[tool.pytest.ini_options]
+minversion = "6.0"
+testpaths = ["tests"]
+addopts = [
+  "-rfesxX",
+  "-v",
+]
+log_cli_level = "DEBUG"
+filterwarnings = [
+  "ignore:There is no current event loop",
+]

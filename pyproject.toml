@@ -35,9 +35,9 @@ classifiers = [
   "Topic :: Utilities",
 ]
 dependencies = [
-  "coffea[dask]>=2023.6.0.rc1,<2023.7.0rc0",
-  "awkward>=2.2.4,<2.3.0",
-  "uproot>=5.0.9",
+  "coffea[dask]>=2023.7.0rc0",
+  "awkward>=2.3.3",
+  "uproot>=5.0.10",
   "dask-awkward>=2023.6.3",
   "dask-histogram>=2023.6.0",
   "jupyterlab",

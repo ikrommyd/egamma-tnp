@@ -19,7 +19,7 @@ if __name__ == "__main__":
     exceptions = []
 
     for i, dataset in enumerate(datasets):
-        files = utils.query_rucio(dataset)[0]
+        files = utils.get_dataset_files_replicas(dataset, mode="first")[0]
         for j, file in enumerate(files):
             # file = utils.redirect_files(file, isrucio=True).pop()
             print(f"Running on {file}")

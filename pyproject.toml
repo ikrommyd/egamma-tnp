@@ -43,7 +43,7 @@ dependencies = [
   "jupyterlab",
   "notebook",
   "nbclassic",
-  "rucio>=32.2.0",
+  "rucio",
   "distributed>=2023.4.0",
   "bokeh!=3.0.*,>=2.4.2",
   "mplhep>=0.3.28",

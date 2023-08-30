@@ -35,7 +35,7 @@ classifiers = [
   "Topic :: Utilities",
 ]
 dependencies = [
-  "coffea[dask] @ git+https://github.com/CoffeaTeam/coffea",
+  "coffea[dask] @ git+https://github.com/CoffeaTeam/coffea.git@local_executors_to_dask",
   "jupyterlab",
   "notebook",
   "nbclassic",

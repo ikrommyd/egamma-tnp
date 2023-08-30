@@ -15,6 +15,8 @@ class TagNProbe:
         redirect=False,
         custom_redirector="root://cmsxrootd.fnal.gov/",
         invalid=False,
+        preprocess=False,
+        preprocess_args={},
     ):
         """Tag and Probe for HLT Trigger efficiency from NanoAOD.
 
@@ -36,6 +38,11 @@ class TagNProbe:
             invalid : bool, optional
                 Whether to include invalid files. The default is False.
                 Only used if toquery is True.
+            preprocess : bool, optional
+                Whether to preprocess the files using coffea.dataset_tools.preprocess.preprocess().
+                The default is False.
+            preprocess_args : dict, optional
+                Extra arguments to pass to coffea.dataset_tools.preprocess.preprocess(). The default is {}.
         """
         self.names = names
         self.pt = trigger_pt - 1
@@ -45,12 +52,16 @@ class TagNProbe:
         self.custom_redirector = custom_redirector
         self.invalid = invalid
         self.events = None
+        self.preprocess = preprocess
+        self.preprocess_args = preprocess_args
         self.file = get_nanoevents_file(
             self.names,
             toquery=self.toquery,
             redirect=self.redirect,
             custom_redirector=self.custom_redirector,
             invalid=self.invalid,
+            preprocess=self.preprocess,
+            preprocess_args=self.preprocess_args,
         )
         if goldenjson is not None and not os.path.isfile(goldenjson):
             raise ValueError(f"Golden JSON {goldenjson} does not exist.")
@@ -116,11 +127,13 @@ class TagNProbe:
         """Load the events from the names."""
         from coffea.nanoevents import NanoAODSchema, NanoEventsFactory
 
+        steps_per_file = 1 if self.preprocess else None
+
         self.events = NanoEventsFactory.from_root(
             self.file,
             schemaclass=NanoAODSchema,
             permit_dask=True,
-            chunks_per_file=1,
+            chunks_per_file=steps_per_file,
             metadata={"dataset": self.names},
         ).events()
 

@@ -438,6 +438,32 @@ def get_file_dict(datasets, *, custom_redirector=None, invalid=False):
     return file_dict
 
 
+def create_fileset(file_dict):
+    """Create the fileset to pass into coffea.dataset_tools.preprocess()
+
+    Parameters
+    ----------
+        file_dict : dict
+            The dictionary of {dataset : files} pairs.
+
+    Returns
+    -------
+        fileset : dict
+            The fileset to pass into coffea.dataset_tools.preprocess().
+            It is a dict of the form:
+            fileset = {
+                "dataset": {"files": <something that uproot expects>, "metadata": {...}, ...},
+                ...
+            }
+    """
+    fileset = {}
+    for dataset, files in file_dict.items():
+        uproot_expected = {f: "Events" for f in files}
+        fileset[dataset] = {"files": uproot_expected}
+
+    return fileset
+
+
 def get_nanoevents_file(
     names,
     *,
@@ -445,6 +471,8 @@ def get_nanoevents_file(
     redirect=False,
     custom_redirector="root://cmsxrootd.fnal.gov/",
     invalid=False,
+    preprocess=False,
+    preprocess_args={},
 ):
     """Get the `file` for NanoEventsFactory.from_root() from the given dataset names.
 
@@ -462,6 +490,11 @@ def get_nanoevents_file(
         invalid : bool, optional
             Whether to include invalid files. The default is False.
             Only used if toquery is True.
+        preprocess : bool, optional
+            Whether to preprocess the files using coffea.dataset_tools.preprocess.preprocess().
+            The default is False.
+        preprocess_args : dict, optional
+            Extra arguments to pass to coffea.dataset_tools.preprocess.preprocess(). The default is {}.
 
     Returns
     -------
@@ -479,7 +512,17 @@ def get_nanoevents_file(
         else:
             file_dict = get_file_dict(names, custom_redirector=None, invalid=invalid)
 
-        file = {f: "Events" for k, files in file_dict.items() for f in files}
+        if preprocess:
+            from coffea.dataset_tools.preprocess import preprocess
+
+            fileset = create_fileset(file_dict)
+            out_available, out_updated = preprocess(fileset, **preprocess_args)
+            file = {}
+            for category, details in out_available.items():
+                file.update(details["files"])
+
+        else:
+            file = {f: "Events" for k, files in file_dict.items() for f in files}
 
     else:
         if isinstance(names, str):
@@ -488,6 +531,13 @@ def get_nanoevents_file(
             names = redirect_files(names, redirector=custom_redirector, isrucio=False)
 
         file = {f: "Events" for f in names}
+
+        if preprocess:
+            from coffea.dataset_tools.preprocess import preprocess
+
+            fileset = {"dataset": {"files": file}}
+            out_available, out_updated = preprocess(fileset, **preprocess_args)
+            file = out_available["dataset"]["files"]
 
     return file
 

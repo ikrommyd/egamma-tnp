@@ -123,18 +123,21 @@ class TagNProbe:
             newkey = redirect_files(key, redirector=redirector, isrucio=isrucio).pop()
             self.file[newkey] = self.file.pop(key)
 
-    def load_events(self):
-        """Load the events from the names."""
-        from coffea.nanoevents import NanoAODSchema, NanoEventsFactory
+    def load_events(self, from_root_args={}):
+        """Load the events from the names.
 
-        steps_per_file = 1 if self.preprocess else None
+        Parameters
+        ----------
+            from_root_args : dict, optional
+                Extra arguments to pass to coffea.nanoevents.NanoEventsFactory.from_root().
+                The default is {}.
+        """
+        from coffea.nanoevents import NanoEventsFactory
 
         self.events = NanoEventsFactory.from_root(
             self.file,
-            schemaclass=NanoAODSchema,
             permit_dask=True,
-            chunks_per_file=steps_per_file,
-            metadata={"dataset": self.names},
+            **from_root_args,
         ).events()
 
     def get_tnp_histograms(self, compute=False, scheduler=None, progress=True):

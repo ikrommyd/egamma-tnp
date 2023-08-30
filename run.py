@@ -15,6 +15,8 @@ if __name__ == "__main__":
         goldenjson="json/Cert_Collisions2023_366442_370790_Golden.json",
         toquery=True,
         redirect=False,
+        preprocess=True,
+        preprocess_args={"maybe_step_size": 100_000},
     )
 
     # tag_n_probe.remove_bad_xrootd_files(

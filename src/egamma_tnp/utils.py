@@ -491,10 +491,10 @@ def get_nanoevents_file(
             Whether to include invalid files. The default is False.
             Only used if toquery is True.
         preprocess : bool, optional
-            Whether to preprocess the files using coffea.dataset_tools.preprocess.preprocess().
+            Whether to preprocess the files using coffea.dataset_tools.preprocess().
             The default is False.
         preprocess_args : dict, optional
-            Extra arguments to pass to coffea.dataset_tools.preprocess.preprocess(). The default is {}.
+            Extra arguments to pass to coffea.dataset_tools.preprocess(). The default is {}.
 
     Returns
     -------
@@ -513,7 +513,7 @@ def get_nanoevents_file(
             file_dict = get_file_dict(names, custom_redirector=None, invalid=invalid)
 
         if preprocess:
-            from coffea.dataset_tools.preprocess import preprocess
+            from coffea.dataset_tools import preprocess
 
             fileset = create_fileset(file_dict)
             out_available, out_updated = preprocess(fileset, **preprocess_args)
@@ -533,7 +533,7 @@ def get_nanoevents_file(
         file = {f: "Events" for f in names}
 
         if preprocess:
-            from coffea.dataset_tools.preprocess import preprocess
+            from coffea.dataset_tools import preprocess
 
             fileset = {"dataset": {"files": file}}
             out_available, out_updated = preprocess(fileset, **preprocess_args)

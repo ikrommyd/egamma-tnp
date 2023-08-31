@@ -34,7 +34,7 @@ if __name__ == "__main__":
     #     redirectors="root://cmsdcadisk.fnal.gov//dcache/uscmsdisk/",
     # )
 
-    tag_n_probe.load_events()
+    tag_n_probe.load_events(from_root_args={"uproot_options": {"timeout": 120}})
     print(tag_n_probe)
 
     client = Client()

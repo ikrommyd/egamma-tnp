@@ -515,6 +515,7 @@ def get_nanoevents_file(
         if preprocess:
             from coffea.dataset_tools import preprocess
 
+            print("Starting preprocessing")
             fileset = create_fileset(file_dict)
             out_available, out_updated = preprocess(fileset, **preprocess_args)
             file = {}
@@ -535,6 +536,7 @@ def get_nanoevents_file(
         if preprocess:
             from coffea.dataset_tools import preprocess
 
+            print("Starting preprocessing")
             fileset = {"dataset": {"files": file}}
             out_available, out_updated = preprocess(fileset, **preprocess_args)
             file = out_available["dataset"]["files"]

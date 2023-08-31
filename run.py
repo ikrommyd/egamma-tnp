@@ -6,8 +6,8 @@ from egamma_tnp import TagNProbe
 if __name__ == "__main__":
     tag_n_probe = TagNProbe(
         [
-            "/EGamma0/Run2023C-PromptNanoAODv12_v3-v1/NANOAOD",
-            "/EGamma1/Run2023C-PromptNanoAODv12_v3-v1/NANOAOD",
+            "/EGamma0/Run2023D-PromptReco-v1/NANOAOD",
+            "/EGamma1/Run2023D-PromptReco-v1/NANOAOD",
         ],
         32,
         goldenjson="json/Cert_Collisions2023_366442_370790_Golden.json",
@@ -16,6 +16,7 @@ if __name__ == "__main__":
         preprocess=True,
         preprocess_args={"maybe_step_size": 100_000},
     )
+    print("Done preprocessing")
 
     # tag_n_probe.remove_bad_xrootd_files(
     #     [
@@ -34,6 +35,7 @@ if __name__ == "__main__":
     #     redirectors="root://cmsdcadisk.fnal.gov//dcache/uscmsdisk/",
     # )
 
+    print("Starting to load events")
     tag_n_probe.load_events(from_root_args={"uproot_options": {"timeout": 120}})
     print(tag_n_probe)
 
@@ -48,7 +50,7 @@ if __name__ == "__main__":
     print(f"Passing probes: {hpt_pass.sum(flow=True)}")
     print(f"All probes: {hpt_all.sum(flow=True)}")
 
-    with uproot.recreate("root_files/Run2023Cv3.root") as file:
+    with uproot.recreate("root_files/Run2023Dv1.root") as file:
         file["hpt_pass"] = hpt_pass
         file["hpt_all"] = hpt_all
         file["heta_pass"] = heta_pass

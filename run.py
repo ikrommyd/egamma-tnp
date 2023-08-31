@@ -4,8 +4,6 @@ from distributed import Client
 from egamma_tnp import TagNProbe
 
 if __name__ == "__main__":
-    client = Client()
-
     tag_n_probe = TagNProbe(
         [
             "/EGamma0/Run2023C-PromptNanoAODv12_v3-v1/NANOAOD",
@@ -39,6 +37,7 @@ if __name__ == "__main__":
     tag_n_probe.load_events()
     print(tag_n_probe)
 
+    client = Client()
     (
         hpt_pass,
         hpt_all,

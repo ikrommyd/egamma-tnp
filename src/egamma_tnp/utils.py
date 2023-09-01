@@ -491,10 +491,10 @@ def get_nanoevents_file(
             Whether to include invalid files. The default is False.
             Only used if toquery is True.
         preprocess : bool, optional
-            Whether to preprocess the files using coffea.dataset_tools.preprocess.preprocess().
+            Whether to preprocess the files using coffea.dataset_tools.preprocess().
             The default is False.
         preprocess_args : dict, optional
-            Extra arguments to pass to coffea.dataset_tools.preprocess.preprocess(). The default is {}.
+            Extra arguments to pass to coffea.dataset_tools.preprocess(). The default is {}.
 
     Returns
     -------
@@ -513,8 +513,9 @@ def get_nanoevents_file(
             file_dict = get_file_dict(names, custom_redirector=None, invalid=invalid)
 
         if preprocess:
-            from coffea.dataset_tools.preprocess import preprocess
+            from coffea.dataset_tools import preprocess
 
+            print("Starting preprocessing")
             fileset = create_fileset(file_dict)
             out_available, out_updated = preprocess(fileset, **preprocess_args)
             file = {}
@@ -533,8 +534,9 @@ def get_nanoevents_file(
         file = {f: "Events" for f in names}
 
         if preprocess:
-            from coffea.dataset_tools.preprocess import preprocess
+            from coffea.dataset_tools import preprocess
 
+            print("Starting preprocessing")
             fileset = {"dataset": {"files": file}}
             out_available, out_updated = preprocess(fileset, **preprocess_args)
             file = out_available["dataset"]["files"]
@@ -595,3 +597,68 @@ def get_pt_and_eta_ratios(hpt_pass, hpt_all, heta_pass, heta_all):
     hetaratio, hetaratio_yerr = get_ratio_histogram(heta_pass, heta_all)
 
     return hptratio, hptratio_yerr, hetaratio, hetaratio_yerr
+
+
+def fill_eager_pt_and_eta_histograms(res):
+    """Fill eager Pt and Eta histograms of the passing and all probes.
+
+    Parameters
+    ----------
+        res : tuple
+            The output of TagNProbe.get_pt_and_eta_arrays() with compute=True.
+
+    Returns
+    -------
+        hpt_pass: hist.Hist
+            The Pt histogram of the passing probes.
+        hpt_all: hist.Hist
+            The Pt histogram of all probes.
+        heta_pass: hist.Hist
+            The Eta histogram of the passing probes.
+        heta_all: hist.Hist
+            The Eta histogram of all probes.
+    """
+    import json
+    import os
+
+    import hist
+    from hist import Hist
+
+    dir_path = os.path.dirname(os.path.realpath(__file__))
+    config_path = os.path.join(dir_path, "config.json")
+
+    with open(config_path) as f:
+        config = json.load(f)
+
+    ptbins = config["ptbins"]
+    etabins = config["etabins"]
+
+    (
+        pt_pass1,
+        pt_pass2,
+        pt_all1,
+        pt_all2,
+        eta_pass1,
+        eta_pass2,
+        eta_all1,
+        eta_all2,
+    ) = res
+
+    ptaxis = hist.axis.Variable(ptbins, name="pt")
+    hpt_all = Hist(ptaxis)
+    hpt_pass = Hist(ptaxis)
+
+    etaaxis = hist.axis.Variable(etabins, name="eta")
+    heta_all = Hist(etaaxis)
+    heta_pass = Hist(etaaxis)
+
+    hpt_pass.fill(pt_pass1)
+    hpt_pass.fill(pt_pass2)
+    hpt_all.fill(pt_all1)
+    hpt_all.fill(pt_all2)
+    heta_pass.fill(eta_pass1)
+    heta_pass.fill(eta_pass2)
+    heta_all.fill(eta_all1)
+    heta_all.fill(eta_all2)
+
+    return hpt_pass, hpt_all, heta_pass, heta_all

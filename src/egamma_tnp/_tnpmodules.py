@@ -1,7 +1,5 @@
 import dask_awkward as dak
-import hist
 from coffea.lumi_tools import LumiMask
-from hist.dask import Hist
 
 
 def apply_lumimasking(events, goldenjson):
@@ -75,9 +73,74 @@ def perform_tnp(events, pt, goldenjson):
     return p1, a1, p2, a2
 
 
+def get_pt_and_eta_arrays(events, pt, goldenjson):
+    p1, a1, p2, a2 = perform_tnp(events, pt, goldenjson)
+
+    pt_pass1 = dak.flatten(p1.pt)
+    pt_pass2 = dak.flatten(p2.pt)
+    pt_all1 = dak.flatten(a1.pt)
+    pt_all2 = dak.flatten(a2.pt)
+
+    eta_pass1 = dak.flatten(p1.eta)
+    eta_pass2 = dak.flatten(p2.eta)
+    eta_all1 = dak.flatten(a1.eta)
+    eta_all2 = dak.flatten(a2.eta)
+
+    return (
+        pt_pass1,
+        pt_pass2,
+        pt_all1,
+        pt_all2,
+        eta_pass1,
+        eta_pass2,
+        eta_all1,
+        eta_all2,
+    )
+
+
+def get_and_compute_pt_and_eta_arrays(events, pt, goldenjson, scheduler, progress):
+    import dask
+    from dask.diagnostics import ProgressBar
+
+    (
+        pt_pass1,
+        pt_pass2,
+        pt_all1,
+        pt_all2,
+        eta_pass1,
+        eta_pass2,
+        eta_all1,
+        eta_all2,
+    ) = get_pt_and_eta_arrays(events, pt, goldenjson)
+
+    if progress:
+        pbar = ProgressBar()
+        pbar.register()
+
+    res = dask.compute(
+        pt_pass1,
+        pt_pass2,
+        pt_all1,
+        pt_all2,
+        eta_pass1,
+        eta_pass2,
+        eta_all1,
+        eta_all2,
+        scheduler=scheduler,
+    )
+
+    if progress:
+        pbar.unregister()
+
+    return res
+
+
 def get_tnp_histograms(events, pt, goldenjson):
     import json
     import os
+
+    import hist
+    from hist.dask import Hist
 
     dir_path = os.path.dirname(os.path.realpath(__file__))
     config_path = os.path.join(dir_path, "config.json")
@@ -88,7 +151,16 @@ def get_tnp_histograms(events, pt, goldenjson):
     ptbins = config["ptbins"]
     etabins = config["etabins"]
 
-    p1, a1, p2, a2 = perform_tnp(events, pt, goldenjson)
+    (
+        pt_pass1,
+        pt_pass2,
+        pt_all1,
+        pt_all2,
+        eta_pass1,
+        eta_pass2,
+        eta_all1,
+        eta_all2,
+    ) = get_pt_and_eta_arrays(events, pt, goldenjson)
 
     ptaxis = hist.axis.Variable(ptbins, name="pt")
     hpt_all = Hist(ptaxis)
@@ -98,19 +170,14 @@ def get_tnp_histograms(events, pt, goldenjson):
     heta_all = Hist(etaaxis)
     heta_pass = Hist(etaaxis)
 
-    # Fill for p1, a1
-    hpt_pass.fill(dak.flatten(p1.pt))
-    hpt_all.fill(dak.flatten(a1.pt))
-
-    heta_pass.fill(dak.flatten(p1.eta))
-    heta_all.fill(dak.flatten(a1.eta))
-
-    # Fill for p2, a2
-    hpt_pass.fill(dak.flatten(p2.pt))
-    hpt_all.fill(dak.flatten(a2.pt))
-
-    heta_pass.fill(dak.flatten(p2.eta))
-    heta_all.fill(dak.flatten(a2.eta))
+    hpt_pass.fill(pt_pass1)
+    hpt_pass.fill(pt_pass2)
+    hpt_all.fill(pt_all1)
+    hpt_all.fill(pt_all2)
+    heta_pass.fill(eta_pass1)
+    heta_pass.fill(eta_pass2)
+    heta_all.fill(eta_all1)
+    heta_all.fill(eta_all2)
 
     return hpt_pass, hpt_all, heta_pass, heta_all
 

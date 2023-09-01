@@ -1,6 +1,11 @@
 import os
 
-from ._tnpmodules import get_and_compute_tnp_histograms, get_tnp_histograms
+from ._tnpmodules import (
+    get_and_compute_pt_and_eta_arrays,
+    get_and_compute_tnp_histograms,
+    get_pt_and_eta_arrays,
+    get_tnp_histograms,
+)
 from .utils import get_nanoevents_file
 
 
@@ -39,10 +44,10 @@ class TagNProbe:
                 Whether to include invalid files. The default is False.
                 Only used if toquery is True.
             preprocess : bool, optional
-                Whether to preprocess the files using coffea.dataset_tools.preprocess.preprocess().
+                Whether to preprocess the files using coffea.dataset_tools.preprocess().
                 The default is False.
             preprocess_args : dict, optional
-                Extra arguments to pass to coffea.dataset_tools.preprocess.preprocess(). The default is {}.
+                Extra arguments to pass to coffea.dataset_tools.preprocess(). The default is {}.
         """
         self.names = names
         self.pt = trigger_pt - 1
@@ -139,6 +144,54 @@ class TagNProbe:
             permit_dask=True,
             **from_root_args,
         ).events()
+
+    def get_pt_and_eta_arrays(self, compute=False, scheduler=None, progress=True):
+        """Get the Pt and Eta arrays of the passing and all probes.
+        WARNING: Not recommended to be used for large datasets as the arrays can be very large.
+
+        Parameters
+        ----------
+            compute : bool, optional
+                Whether to return the computed arrays or the delayed arrays.
+                The default is False.
+            scheduler : str, optional
+                The dask scheduler to use. The default is None.
+                Only used if compute is True.
+            progress : bool, optional
+                Whether to show a progress bar if `compute` is True. The default is True.
+                Only used if compute is True and no distributed Client is used.
+
+        Returns
+        -------
+            pt_pass1: numpy.ndarray or dask_awkward.Array
+                The Pt array of the passing probes when the firsts electrons are the tags.
+            pt_pass2: numpy.ndarray or dask_awkward.Array
+                The Pt array of the passing probes when the seconds electrons are the tags.
+            pt_all1: numpy.ndarray or dask_awkward.Array
+                The Pt array of all probes when the firsts electrons are the tags.
+            pt_all2: numpy.ndarray or dask_awkward.Array
+                The Pt array of all probes when the seconds electrons are the tags.
+            eta_pass1: numpy.ndarray or dask_awkward.Array
+                The Eta array of the passing probes when the firsts electrons are the tags.
+            eta_pass2: numpy.ndarray or dask_awkward.Array
+                The Eta array of the passing probes when the seconds electrons are the tags.
+            eta_all1: numpy.ndarray or dask_awkward.Array
+                The Eta array of all probes when the firsts electrons are the tags.
+            eta_all2: numpy.ndarray or dask_awkward.Array
+                The Eta array of all probes when the seconds electrons are the tags.
+        """
+        if compute:
+            return get_and_compute_pt_and_eta_arrays(
+                events=self.events,
+                pt=self.pt,
+                goldenjson=self.goldenjson,
+                scheduler=scheduler,
+                progress=progress,
+            )
+        else:
+            return get_pt_and_eta_arrays(
+                events=self.events, pt=self.pt, goldenjson=self.goldenjson
+            )
 
     def get_tnp_histograms(self, compute=False, scheduler=None, progress=True):
         """Get the Pt and Eta histograms of the passing and all probes.

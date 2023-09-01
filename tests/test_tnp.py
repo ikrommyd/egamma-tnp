@@ -18,7 +18,21 @@ tag_n_probe.load_events()
 
 
 @pytest.mark.parametrize("scheduler", ["threads", "processes", "single-threaded"])
-def test_local_compute(scheduler):
+@pytest.mark.parametrize("preprocess", [False, True])
+def test_local_compute(scheduler, preprocess):
+    tag_n_probe = TagNProbe(
+        [
+            os.path.abspath("root_files/Egamma0.root"),
+            os.path.abspath("root_files/Egamma1.root"),
+        ],
+        32,
+        goldenjson="json/Cert_Collisions2023_366442_370790_Golden.json",
+        toquery=False,
+        redirect=False,
+        preprocess=preprocess,
+    )
+    tag_n_probe.load_events()
+
     (
         hpt_pass,
         hpt_all,
@@ -30,8 +44,22 @@ def test_local_compute(scheduler):
     assert hpt_all.sum(flow=True) == 16896.0
 
 
-def test_distributed_compute():
+@pytest.mark.parametrize("preprocess", [False, True])
+def test_distributed_compute(preprocess):
     from distributed import Client
+
+    tag_n_probe = TagNProbe(
+        [
+            os.path.abspath("root_files/Egamma0.root"),
+            os.path.abspath("root_files/Egamma1.root"),
+        ],
+        32,
+        goldenjson="json/Cert_Collisions2023_366442_370790_Golden.json",
+        toquery=False,
+        redirect=False,
+        preprocess=preprocess,
+    )
+    tag_n_probe.load_events()
 
     with Client():
         (

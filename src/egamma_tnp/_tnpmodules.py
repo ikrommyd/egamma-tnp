@@ -1,7 +1,5 @@
 import dask_awkward as dak
-import hist
 from coffea.lumi_tools import LumiMask
-from hist.dask import Hist
 
 
 def apply_lumimasking(events, goldenjson):
@@ -140,6 +138,9 @@ def get_and_compute_pt_and_eta_arrays(events, pt, goldenjson, scheduler, progres
 def get_tnp_histograms(events, pt, goldenjson):
     import json
     import os
+
+    import hist
+    from hist.dask import Hist
 
     dir_path = os.path.dirname(os.path.realpath(__file__))
     config_path = os.path.join(dir_path, "config.json")

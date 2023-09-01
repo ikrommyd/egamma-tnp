@@ -75,6 +75,68 @@ def perform_tnp(events, pt, goldenjson):
     return p1, a1, p2, a2
 
 
+def get_pt_and_eta_arrays(events, pt, goldenjson):
+    p1, a1, p2, a2 = perform_tnp(events, pt, goldenjson)
+
+    pt_pass1 = dak.flatten(p1.pt)
+    pt_pass2 = dak.flatten(p2.pt)
+    pt_all1 = dak.flatten(a1.pt)
+    pt_all2 = dak.flatten(a2.pt)
+
+    eta_pass1 = dak.flatten(p1.eta)
+    eta_pass2 = dak.flatten(p2.eta)
+    eta_all1 = dak.flatten(a1.eta)
+    eta_all2 = dak.flatten(a2.eta)
+
+    return (
+        pt_pass1,
+        pt_pass2,
+        pt_all1,
+        pt_all2,
+        eta_pass1,
+        eta_pass2,
+        eta_all1,
+        eta_all2,
+    )
+
+
+def get_and_compute_pt_and_eta_arrays(events, pt, goldenjson, scheduler, progress):
+    import dask
+    from dask.diagnostics import ProgressBar
+
+    (
+        pt_pass1,
+        pt_pass2,
+        pt_all1,
+        pt_all2,
+        eta_pass1,
+        eta_pass2,
+        eta_all1,
+        eta_all2,
+    ) = get_pt_and_eta_arrays(events, pt, goldenjson)
+
+    if progress:
+        pbar = ProgressBar()
+        pbar.register()
+
+    res = dask.compute(
+        pt_pass1,
+        pt_pass2,
+        pt_all1,
+        pt_all2,
+        eta_pass1,
+        eta_pass2,
+        eta_all1,
+        eta_all2,
+        scheduler=scheduler,
+    )
+
+    if progress:
+        pbar.unregister()
+
+    return res
+
+
 def get_tnp_histograms(events, pt, goldenjson):
     import json
     import os

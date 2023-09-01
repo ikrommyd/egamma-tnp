@@ -2,6 +2,7 @@ import uproot
 from distributed import Client
 
 from egamma_tnp import TagNProbe
+from egamma_tnp.utils import fill_eager_pt_and_eta_histograms
 
 if __name__ == "__main__":
     tag_n_probe = TagNProbe(
@@ -18,34 +19,20 @@ if __name__ == "__main__":
     )
     print("Done preprocessing")
 
-    # tag_n_probe.remove_bad_xrootd_files(
-    #     [
-    #         "root://cmsdcadisk.fnal.gov//dcache/uscmsdisk/store/data/Run2023C/EGamma0/NANOAOD/PromptNanoAODv12_v3-v1/80000/0a9e4a46-1546-4af0-ba06-73da06adab06.root",
-    #     ]
-    # )
-    # tag_n_probe.redirect_files(
-    #     [
-    #         "root://cmsxrootd.fnal.gov//store/data/Run2023B/EGamma0/NANOAOD/PromptNanoAODv11p9_v1-v1/70000/a4252c75-26ad-4c46-b8dd-ac8b49b4cb68.root",
-    #         "root://cmsxrootd.fnal.gov//store/data/Run2023B/EGamma1/NANOAOD/PromptNanoAODv11p9_v1-v1/70000/a22f4952-e686-46d8-8209-ec2602cf6b6d.root",
-    #         "root://cmsxrootd.fnal.gov//store/data/Run2023B/EGamma1/NANOAOD/PromptNanoAODv11p9_v1-v1/2810000/67696448-126e-4ad8-83dd-4de09b867c8c.root",
-    #         "root://cmsxrootd.fnal.gov//store/data/Run2023B/EGamma1/NANOAOD/PromptNanoAODv11p9_v1-v1/2820000/6aa674c1-803c-48fa-babb-33319a35d3ac.root",
-    #         "root://cmsxrootd.fnal.gov//store/data/Run2023B/EGamma1/NANOAOD/PromptNanoAODv11p9_v1-v1/2820000/1e3c8eb9-329a-4a47-ab4d-b1b2f0f8fe9f.root",
-    #         "root://cmsxrootd.fnal.gov//store/data/Run2023B/EGamma0/NANOAOD/PromptNanoAODv11p9_v1-v1/70000/ec91ee77-3fca-4994-b27f-1f4894423044.root",
-    #     ],
-    #     redirectors="root://cmsdcadisk.fnal.gov//dcache/uscmsdisk/",
-    # )
-
     print("Starting to load events")
     tag_n_probe.load_events(from_root_args={"uproot_options": {"timeout": 120}})
     print(tag_n_probe)
 
+    # from lpcjobqueue import LPCCondorCluster
+
+    # cluster = LPCCondorCluster(ship_env=True)
+    # cluster.adapt(minimum=1, maximum=100)
+    # client = Client(cluster)
+
     client = Client()
-    (
-        hpt_pass,
-        hpt_all,
-        heta_pass,
-        heta_all,
-    ) = tag_n_probe.get_tnp_histograms(compute=True, scheduler=None, progress=True)
+    res = tag_n_probe.get_pt_and_eta_arrays(compute=True, scheduler=None, progress=True)
+
+    hpt_pass, hpt_all, heta_pass, heta_all = fill_eager_pt_and_eta_histograms(res)
 
     print(f"Passing probes: {hpt_pass.sum(flow=True)}")
     print(f"All probes: {hpt_all.sum(flow=True)}")

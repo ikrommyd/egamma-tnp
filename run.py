@@ -1,22 +1,24 @@
 import uproot
+from dask.diagnostics import ProgressBar
 from distributed import Client
 
 from egamma_tnp import TagNProbe
 from egamma_tnp.utils import fill_eager_pt_and_eta_histograms
 
 if __name__ == "__main__":
-    tag_n_probe = TagNProbe(
-        [
-            "/EGamma0/Run2023D-PromptReco-v1/NANOAOD",
-            "/EGamma1/Run2023D-PromptReco-v1/NANOAOD",
-        ],
-        32,
-        goldenjson="json/Cert_Collisions2023_366442_370790_Golden.json",
-        toquery=True,
-        redirect=False,
-        preprocess=True,
-        preprocess_args={"maybe_step_size": 100_000},
-    )
+    with ProgressBar():
+        tag_n_probe = TagNProbe(
+            [
+                "/EGamma0/Run2023D-PromptReco-v1/NANOAOD",
+                "/EGamma1/Run2023D-PromptReco-v1/NANOAOD",
+            ],
+            32,
+            goldenjson="json/Cert_Collisions2023_366442_370790_Golden.json",
+            toquery=True,
+            redirect=False,
+            preprocess=True,
+            preprocess_args={"maybe_step_size": 100_000},
+        )
     print("Done preprocessing")
 
     print("Starting to load events")

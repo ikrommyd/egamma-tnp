@@ -32,7 +32,12 @@ if __name__ == "__main__":
             )
 
             try:
-                tag_n_probe.load_events()
+                tag_n_probe.load_events(
+                    from_root_args={
+                        "uproot_options": {"timeout": 120},
+                        "chunks_per_file": 10,
+                    }
+                )
 
                 (
                     hpt_pass,
@@ -40,7 +45,7 @@ if __name__ == "__main__":
                     heta_pass,
                     heta_all,
                 ) = tag_n_probe.get_tnp_histograms(
-                    compute=True, scheduler="threads", progress=True
+                    compute=True, scheduler="processes", progress=True
                 )
 
                 print(f"Passing probes: {hpt_pass.sum(flow=True)}")

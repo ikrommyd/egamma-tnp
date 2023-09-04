@@ -22,6 +22,8 @@ class TagNProbe:
         invalid=False,
         preprocess=False,
         preprocess_args={},
+        extra_filter=None,
+        extra_filter_args={},
     ):
         """Tag and Probe for HLT Trigger efficiency from NanoAOD.
 
@@ -48,6 +50,11 @@ class TagNProbe:
                 The default is False.
             preprocess_args : dict, optional
                 Extra arguments to pass to coffea.dataset_tools.preprocess(). The default is {}.
+            extra_filter : Callable, optional
+                A extra function to filter the events. The default is None.
+                Must take in a coffea NanoEventsArray and return a filtered NanoEventsArray of the events you want to keep.
+            extra_filter_args : dict, optional
+                Extra arguments to pass to extra_filter. The default is {}.
         """
         self.names = names
         self.pt = trigger_pt - 1
@@ -59,6 +66,8 @@ class TagNProbe:
         self.events = None
         self.preprocess = preprocess
         self.preprocess_args = preprocess_args
+        self.extra_filter = extra_filter
+        self.extra_filter_args = extra_filter_args
         self.file = get_nanoevents_file(
             self.names,
             toquery=self.toquery,
@@ -187,10 +196,16 @@ class TagNProbe:
                 goldenjson=self.goldenjson,
                 scheduler=scheduler,
                 progress=progress,
+                extra_filter=self.extra_filter,
+                extra_filter_args=self.extra_filter_args,
             )
         else:
             return get_pt_and_eta_arrays(
-                events=self.events, pt=self.pt, goldenjson=self.goldenjson
+                events=self.events,
+                pt=self.pt,
+                goldenjson=self.goldenjson,
+                extra_filter=self.extra_filter,
+                extra_filter_args=self.extra_filter_args,
             )
 
     def get_tnp_histograms(self, compute=False, scheduler=None, progress=True):
@@ -226,8 +241,14 @@ class TagNProbe:
                 goldenjson=self.goldenjson,
                 scheduler=scheduler,
                 progress=progress,
+                extra_filter=self.extra_filter,
+                extra_filter_args=self.extra_filter_args,
             )
         else:
             return get_tnp_histograms(
-                events=self.events, pt=self.pt, goldenjson=self.goldenjson
+                events=self.events,
+                pt=self.pt,
+                goldenjson=self.goldenjson,
+                extra_filter=self.extra_filter,
+                extra_filter_args=self.extra_filter_args,
             )

@@ -4,18 +4,6 @@ import pytest
 
 from egamma_tnp import TagNProbe
 
-tag_n_probe = TagNProbe(
-    [
-        os.path.abspath("root_files/Egamma0.root"),
-        os.path.abspath("root_files/Egamma1.root"),
-    ],
-    32,
-    goldenjson="json/Cert_Collisions2023_366442_370790_Golden.json",
-    toquery=False,
-    redirect=False,
-)
-tag_n_probe.load_events()
-
 
 @pytest.mark.parametrize("scheduler", ["threads", "processes", "single-threaded"])
 @pytest.mark.parametrize("preprocess", [False, True])

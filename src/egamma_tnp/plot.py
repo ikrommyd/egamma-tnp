@@ -1,6 +1,26 @@
+import pathlib
+
+import mplhep as hep
+import numpy as np
 from matplotlib import pyplot as plt
 
 from .utils import get_ratio_histogram
+
+
+def _save_and_close(fig, path, close_figure):
+    """Saves a figure at a given location if path is provided and optionally closes it.
+
+    Args:
+        fig (matplotlib.figure.Figure): figure to save
+        path (Optional[pathlib.Path]): path where figure should be saved, or None to not
+            save it
+        close_figure (bool): whether to close figure after saving
+    """
+    if path is not None:
+        path.parent.mkdir(parents=True, exist_ok=True)
+        fig.savefig(path)
+    if close_figure:
+        plt.close(fig)
 
 
 def plot_efficiency(passing_probes, all_probes, **kwargs):
@@ -27,45 +47,134 @@ def plot_efficiency(passing_probes, all_probes, **kwargs):
     )
 
 
-def plot_pt_and_eta_efficiencies(
-    hpt_pass, hpt_all, heta_pass, heta_all, figsize=(12, 6), kwargs_pt={}, kwargs_eta={}
+def plot_ratio(
+    passing_probes1,
+    all_probes1,
+    passing_probes2,
+    all_probes2,
+    label1,
+    label2,
+    *,
+    plottype="pt",
+    figure_path=None,
+    figsize=(6, 6),
+    eff1_kwargs={"color": "k"},
+    eff2_kwargs={"color": "r"},
+    effratio_kwargs={
+        "color": "k",
+        "linestyle": "none",
+        "marker": ".",
+        "markersize": 10.0,
+        "elinewidth": 1,
+    },
+    cms_kwargs={
+        "label": "Preliminary",
+        "data": True,
+        "lumi": "X",
+        "year": 2023,
+        "com": 13.6,
+    },
+    legend_kwargs={},
 ):
-    """Plot the Pt and Eta efficiencies.
+    """Plot the ratio of two efficiencies.
 
     Parameters
     ----------
-        hpt_pass : hist.Hist
-            The Pt histogram of the passing probes.
-        hpt_all : hist.Hist
-            The Pt histogram of all probes.
-        heta_pass : hist.Hist
-            The Eta histogram of the passing probes.
-        heta_all : hist.Hist
-            The Eta histogram of all probes.
-        figsize : tuple, optional
-            The figure size. The default is (12, 6).
-        kwargs_pt : dict, optional
-            Keyword arguments to pass to hist.Hist.plot1d for the Pt histograms.
-        kwargs_eta : dict, optional
-            Keyword arguments to pass to hist.Hist.plot1d for the Eta histograms.
-
-    Returns
-    -------
-        figue : matplotlib.figure.Figure
-            The figure containing the Pt and Eta efficiencies.
+        passing_probes1 : hist.Hist
+            The histogram of the passing probes for the first efficiency.
+        all_probes1 : hist.Hist
+            The histogram of all probes for the first efficiency.
+        passing_probes2 : hist.Hist
+            The histogram of the passing probes for the second efficiency.
+        all_probes2 : hist.Hist
+            The histogram of all probes for the second efficiency.
+        label1 : str
+            The label for the first efficiency.
+        label2 : str
+            The label for the second efficiency.
+        plottype : str, optional
+            The type of plot to make. Can be "pt", "eta", or "phi".
+            Defaults is "pt".
+        figure_path : str, optional
+            The path where the figure should be saved, or None to not save it.
+            Defaults is None.
+        figsize : tuple of floats or ints, optional
+            The size of the figure. Defaults is (6, 6).
+        eff1_kwargs : dict, optional
+            Keyword arguments to pass to hist.Hist.plot1d for the first efficiency.
+        eff2_kwargs : dict, optional
+            Keyword arguments to pass to hist.Hist.plot1d for the second efficiency.
+        effratio_kwargs : dict, optional
+            Keyword arguments to pass to matplotlib.pyplot.errorbar for the ratio.
+        cms_kwargs : dict, optional
+            Keyword arguments to pass to mplhep.cms.label.
+        legend_kwargs : dict, optional
+            Keyword arguments to pass to matplotlib.pyplot.legend.
     """
-    fig, ax = plt.subplots(1, 2, figsize=figsize)
-    ax1, ax2 = ax
-    plot_efficiency(hpt_pass, hpt_all, ax=ax1, **kwargs_pt)
-    plot_efficiency(heta_pass, heta_all, ax=ax2, **kwargs_eta)
+    fig = plt.figure(figsize=figsize, layout="constrained")
+    gs = fig.add_gridspec(nrows=2, ncols=1, hspace=0, height_ratios=[3, 1])
+    ax1 = fig.add_subplot(gs[0])
+    ax2 = fig.add_subplot(gs[1])
 
-    ax1.set_xlim(5, 400)
-    ax1.set_xlabel(r"$P_T$ [GeV]")
-    ax1.set_ylabel(r"Efficiency")
-    ax1.set_xscale("log")
+    eff1, efferr1 = get_ratio_histogram(passing_probes1, all_probes1)
+    eff2, efferr2 = get_ratio_histogram(passing_probes2, all_probes2)
+    plot_efficiency(
+        passing_probes1,
+        all_probes1,
+        label=label1,
+        ax=ax1,
+        x_axes_label=None,
+        **eff1_kwargs,
+    )
+    plot_efficiency(
+        passing_probes2,
+        all_probes2,
+        label=label2,
+        ax=ax1,
+        x_axes_label=None,
+        **eff2_kwargs,
+    )
+    centers = passing_probes1.axes.centers[0]
+    num = eff1.values()
+    denom = eff2.values()
+    denom[denom == 0.0] = 1
+    ratio = num / denom
+    ratioyerr = np.sqrt((efferr1 / eff1) ** 2 + (efferr2 / eff2) ** 2) * ratio
+    ratioxerr = passing_probes1.axes.widths[0] / 2
+    ax2.errorbar(centers, ratio, ratioyerr, ratioxerr, **effratio_kwargs)
+    ax2.axhline(1, color="k", linestyle="--", linewidth=1)
 
-    ax2.set_xlim(-2.5, 2.5)
-    ax2.set_xlabel(r"$\eta$")
-    ax2.set_ylabel(r"Efficiency")
+    hep.cms.label(ax=ax1, **cms_kwargs)
 
-    return ax1, ax2
+    if plottype == "pt":
+        ax1.set_xlim(5, 400)
+        ax2.set_xlim(5, 400)
+        ax2.set_xlabel(r"$P_T$ [GeV]")
+        ax1.set_xscale("log")
+        ax2.set_xscale("log")
+        legend_loc = "lower right"
+    elif plottype == "eta":
+        ax1.set_xlim(-2.5, 2.5)
+        ax2.set_xlim(-2.5, 2.5)
+        ax2.set_xlabel(r"$\eta$")
+        legend_loc = "lower center"
+    elif plottype == "phi":
+        ax1.set_xlim(-3.32, 3.32)
+        ax2.set_xlim(-3.32, 3.32)
+        ax2.set_xlabel(r"$\phi$")
+        legend_loc = "lower center"
+
+    ax1.set_ylim(0, 1.1)
+    ax2.set_ylim(0.7, 1.3)
+    ax1.set_xlabel(None)
+    ax2.set_ylabel(None)
+    ax1.set_ylabel("Efficiency")
+    ax2.set_ylabel("Ratio")
+    ax1.set_xticklabels([])
+    ax1.legend(loc=legend_loc, **legend_kwargs)
+
+    if figure_path is not None:
+        figure_path = pathlib.Path(figure_path)
+
+    _save_and_close(fig, figure_path, True)
+    return fig

@@ -9,6 +9,7 @@ def apply_lumimasking(events, goldenjson):
 
 
 def filter_events(events, pt):
+    events = events[events.L1.SingleLooseIsoEG30er2p5]
     events = events[dak.num(events.Electron) >= 2]
     abs_eta = abs(events.Electron.eta)
     pass_eta_ebeegap = (abs_eta < 1.4442) | (abs_eta > 1.566)

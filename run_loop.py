@@ -44,6 +44,8 @@ if __name__ == "__main__":
                     hpt_all,
                     heta_pass,
                     heta_all,
+                    hphi_pass,
+                    hphi_all,
                 ) = tag_n_probe.get_tnp_histograms(
                     compute=True, scheduler="processes", progress=True
                 )
@@ -58,6 +60,8 @@ if __name__ == "__main__":
                     file["hpt_all"] = hpt_all
                     file["heta_pass"] = heta_pass
                     file["heta_all"] = heta_all
+                    file["hphi_pass"] = hphi_pass
+                    file["hphi_all"] = hphi_all
 
             except OSError as e:
                 print(f"{file} failed")

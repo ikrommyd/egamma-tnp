@@ -571,41 +571,13 @@ def get_ratio_histogram(passing_probes, all_probes):
     return ratio, yerr
 
 
-def get_pt_and_eta_ratios(hpt_pass, hpt_all, heta_pass, heta_all):
-    """Get the ratio histograms (efficiency) of pt and eta.
-    NaN values are replaced with 0.
-
-    Parameters
-    ----------
-        hpt_pass : hist.Hist
-            The Pt histogram of the passing probes.
-        hpt_all : hist.Hist
-            The Pt histogram of all probes.
-        heta_pass : hist.Hist
-            The Eta histogram of the passing probes.
-        heta_all : hist.Hist
-            The Eta histogram of all probes.
-
-    Returns
-    -------
-        hptratio : hist.Hist
-            The Pt ratio histogram.
-        hetaratio : hist.Hist
-            The Eta ratio histogram.
-    """
-    hptratio, hptratio_yerr = get_ratio_histogram(hpt_pass, hpt_all)
-    hetaratio, hetaratio_yerr = get_ratio_histogram(heta_pass, heta_all)
-
-    return hptratio, hptratio_yerr, hetaratio, hetaratio_yerr
-
-
-def fill_eager_pt_and_eta_histograms(res):
+def fill_eager_histograms(res):
     """Fill eager Pt and Eta histograms of the passing and all probes.
 
     Parameters
     ----------
         res : tuple
-            The output of TagNProbe.get_pt_and_eta_arrays() with compute=True.
+            The output of TagNProbe.get_arrays() with compute=True.
 
     Returns
     -------
@@ -617,6 +589,10 @@ def fill_eager_pt_and_eta_histograms(res):
             The Eta histogram of the passing probes.
         heta_all: hist.Hist
             The Eta histogram of all probes.
+        hphi_pass: hist.Hist
+            The Phi histogram of the passing probes.
+        hphi_all: hist.Hist
+            The Phi histogram of all probes.
     """
     import json
     import os
@@ -632,6 +608,7 @@ def fill_eager_pt_and_eta_histograms(res):
 
     ptbins = config["ptbins"]
     etabins = config["etabins"]
+    phibins = config["phibins"]
 
     (
         pt_pass1,
@@ -642,6 +619,10 @@ def fill_eager_pt_and_eta_histograms(res):
         eta_pass2,
         eta_all1,
         eta_all2,
+        phi_pass1,
+        phi_pass2,
+        phi_all1,
+        phi_all2,
     ) = res
 
     ptaxis = hist.axis.Variable(ptbins, name="pt")
@@ -652,6 +633,10 @@ def fill_eager_pt_and_eta_histograms(res):
     heta_all = Hist(etaaxis)
     heta_pass = Hist(etaaxis)
 
+    phiaxis = hist.axis.Variable(phibins, name="phi")
+    hphi_all = Hist(phiaxis)
+    hphi_pass = Hist(phiaxis)
+
     hpt_pass.fill(pt_pass1)
     hpt_pass.fill(pt_pass2)
     hpt_all.fill(pt_all1)
@@ -660,5 +645,9 @@ def fill_eager_pt_and_eta_histograms(res):
     heta_pass.fill(eta_pass2)
     heta_all.fill(eta_all1)
     heta_all.fill(eta_all2)
+    hphi_pass.fill(phi_pass1)
+    hphi_pass.fill(phi_pass2)
+    hphi_all.fill(phi_all1)
+    hphi_all.fill(phi_all2)
 
-    return hpt_pass, hpt_all, heta_pass, heta_all
+    return hpt_pass, hpt_all, heta_pass, heta_all, hphi_pass, hphi_all

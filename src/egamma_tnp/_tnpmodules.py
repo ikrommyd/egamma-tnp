@@ -75,7 +75,7 @@ def perform_tnp(events, pt, goldenjson, extra_filter, extra_filter_args):
     return p1, a1, p2, a2
 
 
-def get_pt_and_eta_arrays(events, pt, goldenjson, extra_filter, extra_filter_args):
+def get_arrays(events, pt, goldenjson, extra_filter, extra_filter_args):
     p1, a1, p2, a2 = perform_tnp(
         events, pt, goldenjson, extra_filter, extra_filter_args
     )
@@ -90,6 +90,11 @@ def get_pt_and_eta_arrays(events, pt, goldenjson, extra_filter, extra_filter_arg
     eta_all1 = dak.flatten(a1.eta)
     eta_all2 = dak.flatten(a2.eta)
 
+    phi_pass1 = dak.flatten(p1.phi)
+    phi_pass2 = dak.flatten(p2.phi)
+    phi_all1 = dak.flatten(a1.phi)
+    phi_all2 = dak.flatten(a2.phi)
+
     return (
         pt_pass1,
         pt_pass2,
@@ -99,10 +104,14 @@ def get_pt_and_eta_arrays(events, pt, goldenjson, extra_filter, extra_filter_arg
         eta_pass2,
         eta_all1,
         eta_all2,
+        phi_pass1,
+        phi_pass2,
+        phi_all1,
+        phi_all2,
     )
 
 
-def get_and_compute_pt_and_eta_arrays(
+def get_and_compute_arrays(
     events, pt, goldenjson, scheduler, progress, extra_filter, extra_filter_args
 ):
     import dask
@@ -117,7 +126,11 @@ def get_and_compute_pt_and_eta_arrays(
         eta_pass2,
         eta_all1,
         eta_all2,
-    ) = get_pt_and_eta_arrays(events, pt, goldenjson, extra_filter, extra_filter_args)
+        phi_pass1,
+        phi_pass2,
+        phi_all1,
+        phi_all2,
+    ) = get_arrays(events, pt, goldenjson, extra_filter, extra_filter_args)
 
     if progress:
         pbar = ProgressBar()
@@ -132,6 +145,10 @@ def get_and_compute_pt_and_eta_arrays(
         eta_pass2,
         eta_all1,
         eta_all2,
+        phi_pass1,
+        phi_pass2,
+        phi_all1,
+        phi_all2,
         scheduler=scheduler,
     )
 
@@ -156,6 +173,7 @@ def get_tnp_histograms(events, pt, goldenjson, extra_filter, extra_filter_args):
 
     ptbins = config["ptbins"]
     etabins = config["etabins"]
+    phibins = config["phibins"]
 
     (
         pt_pass1,
@@ -166,7 +184,11 @@ def get_tnp_histograms(events, pt, goldenjson, extra_filter, extra_filter_args):
         eta_pass2,
         eta_all1,
         eta_all2,
-    ) = get_pt_and_eta_arrays(events, pt, goldenjson, extra_filter, extra_filter_args)
+        phi_pass1,
+        phi_pass2,
+        phi_all1,
+        phi_all2,
+    ) = get_arrays(events, pt, goldenjson, extra_filter, extra_filter_args)
 
     ptaxis = hist.axis.Variable(ptbins, name="pt")
     hpt_all = Hist(ptaxis)
@@ -176,6 +198,10 @@ def get_tnp_histograms(events, pt, goldenjson, extra_filter, extra_filter_args):
     heta_all = Hist(etaaxis)
     heta_pass = Hist(etaaxis)
 
+    phiaxis = hist.axis.Variable(phibins, name="phi")
+    hphi_all = Hist(phiaxis)
+    hphi_pass = Hist(phiaxis)
+
     hpt_pass.fill(pt_pass1)
     hpt_pass.fill(pt_pass2)
     hpt_all.fill(pt_all1)
@@ -184,8 +210,12 @@ def get_tnp_histograms(events, pt, goldenjson, extra_filter, extra_filter_args):
     heta_pass.fill(eta_pass2)
     heta_all.fill(eta_all1)
     heta_all.fill(eta_all2)
+    hphi_pass.fill(phi_pass1)
+    hphi_pass.fill(phi_pass2)
+    hphi_all.fill(phi_all1)
+    hphi_all.fill(phi_all2)
 
-    return hpt_pass, hpt_all, heta_pass, heta_all
+    return hpt_pass, hpt_all, heta_pass, heta_all, hphi_pass, hphi_all
 
 
 def get_and_compute_tnp_histograms(
@@ -199,6 +229,8 @@ def get_and_compute_tnp_histograms(
         hpt_all,
         heta_pass,
         heta_all,
+        hphi_pass,
+        hphi_all,
     ) = get_tnp_histograms(events, pt, goldenjson, extra_filter, extra_filter_args)
 
     if progress:
@@ -210,6 +242,8 @@ def get_and_compute_tnp_histograms(
         hpt_all,
         heta_pass,
         heta_all,
+        hphi_pass,
+        hphi_all,
         scheduler=scheduler,
     )
 

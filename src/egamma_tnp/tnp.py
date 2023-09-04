@@ -1,9 +1,9 @@
 import os
 
 from ._tnpmodules import (
-    get_and_compute_pt_and_eta_arrays,
+    get_and_compute_arrays,
     get_and_compute_tnp_histograms,
-    get_pt_and_eta_arrays,
+    get_arrays,
     get_tnp_histograms,
 )
 from .utils import get_nanoevents_file
@@ -154,7 +154,7 @@ class TagNProbe:
             **from_root_args,
         ).events()
 
-    def get_pt_and_eta_arrays(self, compute=False, scheduler=None, progress=True):
+    def get_arrays(self, compute=False, scheduler=None, progress=True):
         """Get the Pt and Eta arrays of the passing and all probes.
         WARNING: Not recommended to be used for large datasets as the arrays can be very large.
 
@@ -188,9 +188,17 @@ class TagNProbe:
                 The Eta array of all probes when the firsts electrons are the tags.
             eta_all2: numpy.ndarray or dask_awkward.Array
                 The Eta array of all probes when the seconds electrons are the tags.
+            phi_pass1: numpy.ndarray or dask_awkward.Array
+                The Phi array of the passing probes when the firsts electrons are the tags.
+            phi_pass2: numpy.ndarray or dask_awkward.Array
+                The Phi array of the passing probes when the seconds electrons are the tags.
+            phi_all1: numpy.ndarray or dask_awkward.Array
+                The Phi array of all probes when the firsts electrons are the tags.
+            phi_all2: numpy.ndarray or dask_awkward.Array
+                The Phi array of all probes when the seconds electrons are the tags.
         """
         if compute:
-            return get_and_compute_pt_and_eta_arrays(
+            return get_and_compute_arrays(
                 events=self.events,
                 pt=self.pt,
                 goldenjson=self.goldenjson,
@@ -200,7 +208,7 @@ class TagNProbe:
                 extra_filter_args=self.extra_filter_args,
             )
         else:
-            return get_pt_and_eta_arrays(
+            return get_arrays(
                 events=self.events,
                 pt=self.pt,
                 goldenjson=self.goldenjson,
@@ -233,6 +241,10 @@ class TagNProbe:
                 The Eta histogram of the passing probes.
             heta_all: hist.Hist or hist.dask.Hist
                 The Eta histogram of all probes.
+            hphi_pass: hist.Hist or hist.dask.Hist
+                The Phi histogram of the passing probes.
+            hphi_all: hist.Hist or hist.dask.Hist
+                The Phi histogram of all probes.
         """
         if compute:
             return get_and_compute_tnp_histograms(

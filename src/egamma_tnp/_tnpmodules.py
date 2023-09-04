@@ -9,7 +9,6 @@ def apply_lumimasking(events, goldenjson):
 
 
 def filter_events(events, pt):
-    events = events[events.L1.SingleLooseIsoEG30er2p5]
     events = events[dak.num(events.Electron) >= 2]
     abs_eta = abs(events.Electron.eta)
     pass_eta_ebeegap = (abs_eta < 1.4442) | (abs_eta > 1.566)
@@ -60,8 +59,10 @@ def find_probes(tags, probes, trigobjs, pt):
     return passing_probes, all_probes
 
 
-def perform_tnp(events, pt, goldenjson):
-    if goldenjson:
+def perform_tnp(events, pt, goldenjson, extra_filter, extra_filter_args):
+    if extra_filter is not None:
+        events = extra_filter(events, **extra_filter_args)
+    if goldenjson is not None:
         events = apply_lumimasking(events, goldenjson)
     good_events, good_locations = filter_events(events, pt)
     ele_for_tnp = good_events.Electron[good_locations]
@@ -74,8 +75,10 @@ def perform_tnp(events, pt, goldenjson):
     return p1, a1, p2, a2
 
 
-def get_pt_and_eta_arrays(events, pt, goldenjson):
-    p1, a1, p2, a2 = perform_tnp(events, pt, goldenjson)
+def get_pt_and_eta_arrays(events, pt, goldenjson, extra_filter, extra_filter_args):
+    p1, a1, p2, a2 = perform_tnp(
+        events, pt, goldenjson, extra_filter, extra_filter_args
+    )
 
     pt_pass1 = dak.flatten(p1.pt)
     pt_pass2 = dak.flatten(p2.pt)
@@ -99,7 +102,9 @@ def get_pt_and_eta_arrays(events, pt, goldenjson):
     )
 
 
-def get_and_compute_pt_and_eta_arrays(events, pt, goldenjson, scheduler, progress):
+def get_and_compute_pt_and_eta_arrays(
+    events, pt, goldenjson, scheduler, progress, extra_filter, extra_filter_args
+):
     import dask
     from dask.diagnostics import ProgressBar
 
@@ -112,7 +117,7 @@ def get_and_compute_pt_and_eta_arrays(events, pt, goldenjson, scheduler, progres
         eta_pass2,
         eta_all1,
         eta_all2,
-    ) = get_pt_and_eta_arrays(events, pt, goldenjson)
+    ) = get_pt_and_eta_arrays(events, pt, goldenjson, extra_filter, extra_filter_args)
 
     if progress:
         pbar = ProgressBar()
@@ -136,7 +141,7 @@ def get_and_compute_pt_and_eta_arrays(events, pt, goldenjson, scheduler, progres
     return res
 
 
-def get_tnp_histograms(events, pt, goldenjson):
+def get_tnp_histograms(events, pt, goldenjson, extra_filter, extra_filter_args):
     import json
     import os
 
@@ -161,7 +166,7 @@ def get_tnp_histograms(events, pt, goldenjson):
         eta_pass2,
         eta_all1,
         eta_all2,
-    ) = get_pt_and_eta_arrays(events, pt, goldenjson)
+    ) = get_pt_and_eta_arrays(events, pt, goldenjson, extra_filter, extra_filter_args)
 
     ptaxis = hist.axis.Variable(ptbins, name="pt")
     hpt_all = Hist(ptaxis)
@@ -183,7 +188,9 @@ def get_tnp_histograms(events, pt, goldenjson):
     return hpt_pass, hpt_all, heta_pass, heta_all
 
 
-def get_and_compute_tnp_histograms(events, pt, goldenjson, scheduler, progress):
+def get_and_compute_tnp_histograms(
+    events, pt, goldenjson, scheduler, progress, extra_filter, extra_filter_args
+):
     import dask
     from dask.diagnostics import ProgressBar
 
@@ -192,7 +199,7 @@ def get_and_compute_tnp_histograms(events, pt, goldenjson, scheduler, progress):
         hpt_all,
         heta_pass,
         heta_all,
-    ) = get_tnp_histograms(events, pt, goldenjson)
+    ) = get_tnp_histograms(events, pt, goldenjson, extra_filter, extra_filter_args)
 
     if progress:
         pbar = ProgressBar()

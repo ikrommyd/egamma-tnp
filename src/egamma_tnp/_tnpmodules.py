@@ -1,7 +1,5 @@
 import dask_awkward as dak
-import hist
 from coffea.lumi_tools import LumiMask
-from hist.dask import Hist
 
 
 def apply_lumimasking(events, goldenjson):
@@ -61,8 +59,10 @@ def find_probes(tags, probes, trigobjs, pt):
     return passing_probes, all_probes
 
 
-def perform_tnp(events, pt, goldenjson):
-    if goldenjson:
+def perform_tnp(events, pt, goldenjson, extra_filter, extra_filter_args):
+    if extra_filter is not None:
+        events = extra_filter(events, **extra_filter_args)
+    if goldenjson is not None:
         events = apply_lumimasking(events, goldenjson)
     good_events, good_locations = filter_events(events, pt)
     ele_for_tnp = good_events.Electron[good_locations]
@@ -75,9 +75,95 @@ def perform_tnp(events, pt, goldenjson):
     return p1, a1, p2, a2
 
 
-def get_tnp_histograms(events, pt, goldenjson):
+def get_arrays(events, pt, goldenjson, extra_filter, extra_filter_args):
+    p1, a1, p2, a2 = perform_tnp(
+        events, pt, goldenjson, extra_filter, extra_filter_args
+    )
+
+    pt_pass1 = dak.flatten(p1.pt)
+    pt_pass2 = dak.flatten(p2.pt)
+    pt_all1 = dak.flatten(a1.pt)
+    pt_all2 = dak.flatten(a2.pt)
+
+    eta_pass1 = dak.flatten(p1.eta)
+    eta_pass2 = dak.flatten(p2.eta)
+    eta_all1 = dak.flatten(a1.eta)
+    eta_all2 = dak.flatten(a2.eta)
+
+    phi_pass1 = dak.flatten(p1.phi)
+    phi_pass2 = dak.flatten(p2.phi)
+    phi_all1 = dak.flatten(a1.phi)
+    phi_all2 = dak.flatten(a2.phi)
+
+    return (
+        pt_pass1,
+        pt_pass2,
+        pt_all1,
+        pt_all2,
+        eta_pass1,
+        eta_pass2,
+        eta_all1,
+        eta_all2,
+        phi_pass1,
+        phi_pass2,
+        phi_all1,
+        phi_all2,
+    )
+
+
+def get_and_compute_arrays(
+    events, pt, goldenjson, scheduler, progress, extra_filter, extra_filter_args
+):
+    import dask
+    from dask.diagnostics import ProgressBar
+
+    (
+        pt_pass1,
+        pt_pass2,
+        pt_all1,
+        pt_all2,
+        eta_pass1,
+        eta_pass2,
+        eta_all1,
+        eta_all2,
+        phi_pass1,
+        phi_pass2,
+        phi_all1,
+        phi_all2,
+    ) = get_arrays(events, pt, goldenjson, extra_filter, extra_filter_args)
+
+    if progress:
+        pbar = ProgressBar()
+        pbar.register()
+
+    res = dask.compute(
+        pt_pass1,
+        pt_pass2,
+        pt_all1,
+        pt_all2,
+        eta_pass1,
+        eta_pass2,
+        eta_all1,
+        eta_all2,
+        phi_pass1,
+        phi_pass2,
+        phi_all1,
+        phi_all2,
+        scheduler=scheduler,
+    )
+
+    if progress:
+        pbar.unregister()
+
+    return res
+
+
+def get_tnp_histograms(events, pt, goldenjson, extra_filter, extra_filter_args):
     import json
     import os
+
+    import hist
+    from hist.dask import Hist
 
     dir_path = os.path.dirname(os.path.realpath(__file__))
     config_path = os.path.join(dir_path, "config.json")
@@ -87,8 +173,22 @@ def get_tnp_histograms(events, pt, goldenjson):
 
     ptbins = config["ptbins"]
     etabins = config["etabins"]
+    phibins = config["phibins"]
 
-    p1, a1, p2, a2 = perform_tnp(events, pt, goldenjson)
+    (
+        pt_pass1,
+        pt_pass2,
+        pt_all1,
+        pt_all2,
+        eta_pass1,
+        eta_pass2,
+        eta_all1,
+        eta_all2,
+        phi_pass1,
+        phi_pass2,
+        phi_all1,
+        phi_all2,
+    ) = get_arrays(events, pt, goldenjson, extra_filter, extra_filter_args)
 
     ptaxis = hist.axis.Variable(ptbins, name="pt")
     hpt_all = Hist(ptaxis)
@@ -98,24 +198,29 @@ def get_tnp_histograms(events, pt, goldenjson):
     heta_all = Hist(etaaxis)
     heta_pass = Hist(etaaxis)
 
-    # Fill for p1, a1
-    hpt_pass.fill(dak.flatten(p1.pt))
-    hpt_all.fill(dak.flatten(a1.pt))
+    phiaxis = hist.axis.Variable(phibins, name="phi")
+    hphi_all = Hist(phiaxis)
+    hphi_pass = Hist(phiaxis)
 
-    heta_pass.fill(dak.flatten(p1.eta))
-    heta_all.fill(dak.flatten(a1.eta))
+    hpt_pass.fill(pt_pass1)
+    hpt_pass.fill(pt_pass2)
+    hpt_all.fill(pt_all1)
+    hpt_all.fill(pt_all2)
+    heta_pass.fill(eta_pass1)
+    heta_pass.fill(eta_pass2)
+    heta_all.fill(eta_all1)
+    heta_all.fill(eta_all2)
+    hphi_pass.fill(phi_pass1)
+    hphi_pass.fill(phi_pass2)
+    hphi_all.fill(phi_all1)
+    hphi_all.fill(phi_all2)
 
-    # Fill for p2, a2
-    hpt_pass.fill(dak.flatten(p2.pt))
-    hpt_all.fill(dak.flatten(a2.pt))
-
-    heta_pass.fill(dak.flatten(p2.eta))
-    heta_all.fill(dak.flatten(a2.eta))
-
-    return hpt_pass, hpt_all, heta_pass, heta_all
+    return hpt_pass, hpt_all, heta_pass, heta_all, hphi_pass, hphi_all
 
 
-def get_and_compute_tnp_histograms(events, pt, goldenjson, scheduler, progress):
+def get_and_compute_tnp_histograms(
+    events, pt, goldenjson, scheduler, progress, extra_filter, extra_filter_args
+):
     import dask
     from dask.diagnostics import ProgressBar
 
@@ -124,7 +229,9 @@ def get_and_compute_tnp_histograms(events, pt, goldenjson, scheduler, progress):
         hpt_all,
         heta_pass,
         heta_all,
-    ) = get_tnp_histograms(events, pt, goldenjson)
+        hphi_pass,
+        hphi_all,
+    ) = get_tnp_histograms(events, pt, goldenjson, extra_filter, extra_filter_args)
 
     if progress:
         pbar = ProgressBar()
@@ -135,6 +242,8 @@ def get_and_compute_tnp_histograms(events, pt, goldenjson, scheduler, progress):
         hpt_all,
         heta_pass,
         heta_all,
+        hphi_pass,
+        hphi_all,
         scheduler=scheduler,
     )
 

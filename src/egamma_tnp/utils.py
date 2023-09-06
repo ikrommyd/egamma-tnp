@@ -438,6 +438,32 @@ def get_file_dict(datasets, *, custom_redirector=None, invalid=False):
     return file_dict
 
 
+def create_fileset(file_dict):
+    """Create the fileset to pass into coffea.dataset_tools.preprocess()
+
+    Parameters
+    ----------
+        file_dict : dict
+            The dictionary of {dataset : files} pairs.
+
+    Returns
+    -------
+        fileset : dict
+            The fileset to pass into coffea.dataset_tools.preprocess().
+            It is a dict of the form:
+            fileset = {
+                "dataset": {"files": <something that uproot expects>, "metadata": {...}, ...},
+                ...
+            }
+    """
+    fileset = {}
+    for dataset, files in file_dict.items():
+        uproot_expected = {f: "Events" for f in files}
+        fileset[dataset] = {"files": uproot_expected}
+
+    return fileset
+
+
 def get_nanoevents_file(
     names,
     *,
@@ -445,6 +471,8 @@ def get_nanoevents_file(
     redirect=False,
     custom_redirector="root://cmsxrootd.fnal.gov/",
     invalid=False,
+    preprocess=False,
+    preprocess_args={},
 ):
     """Get the `file` for NanoEventsFactory.from_root() from the given dataset names.
 
@@ -462,6 +490,11 @@ def get_nanoevents_file(
         invalid : bool, optional
             Whether to include invalid files. The default is False.
             Only used if toquery is True.
+        preprocess : bool, optional
+            Whether to preprocess the files using coffea.dataset_tools.preprocess().
+            The default is False.
+        preprocess_args : dict, optional
+            Extra arguments to pass to coffea.dataset_tools.preprocess(). The default is {}.
 
     Returns
     -------
@@ -479,7 +512,18 @@ def get_nanoevents_file(
         else:
             file_dict = get_file_dict(names, custom_redirector=None, invalid=invalid)
 
-        file = {f: "Events" for k, files in file_dict.items() for f in files}
+        if preprocess:
+            from coffea.dataset_tools import preprocess
+
+            print("Starting preprocessing")
+            fileset = create_fileset(file_dict)
+            out_available, out_updated = preprocess(fileset, **preprocess_args)
+            file = {}
+            for category, details in out_available.items():
+                file.update(details["files"])
+
+        else:
+            file = {f: "Events" for k, files in file_dict.items() for f in files}
 
     else:
         if isinstance(names, str):
@@ -488,6 +532,14 @@ def get_nanoevents_file(
             names = redirect_files(names, redirector=custom_redirector, isrucio=False)
 
         file = {f: "Events" for f in names}
+
+        if preprocess:
+            from coffea.dataset_tools import preprocess
+
+            print("Starting preprocessing")
+            fileset = {"dataset": {"files": file}}
+            out_available, out_updated = preprocess(fileset, **preprocess_args)
+            file = out_available["dataset"]["files"]
 
     return file
 
@@ -519,29 +571,83 @@ def get_ratio_histogram(passing_probes, all_probes):
     return ratio, yerr
 
 
-def get_pt_and_eta_ratios(hpt_pass, hpt_all, heta_pass, heta_all):
-    """Get the ratio histograms (efficiency) of pt and eta.
-    NaN values are replaced with 0.
+def fill_eager_histograms(res):
+    """Fill eager Pt and Eta histograms of the passing and all probes.
 
     Parameters
     ----------
-        hpt_pass : hist.Hist
-            The Pt histogram of the passing probes.
-        hpt_all : hist.Hist
-            The Pt histogram of all probes.
-        heta_pass : hist.Hist
-            The Eta histogram of the passing probes.
-        heta_all : hist.Hist
-            The Eta histogram of all probes.
+        res : tuple
+            The output of TagNProbe.get_arrays() with compute=True.
 
     Returns
     -------
-        hptratio : hist.Hist
-            The Pt ratio histogram.
-        hetaratio : hist.Hist
-            The Eta ratio histogram.
+        hpt_pass: hist.Hist
+            The Pt histogram of the passing probes.
+        hpt_all: hist.Hist
+            The Pt histogram of all probes.
+        heta_pass: hist.Hist
+            The Eta histogram of the passing probes.
+        heta_all: hist.Hist
+            The Eta histogram of all probes.
+        hphi_pass: hist.Hist
+            The Phi histogram of the passing probes.
+        hphi_all: hist.Hist
+            The Phi histogram of all probes.
     """
-    hptratio, hptratio_yerr = get_ratio_histogram(hpt_pass, hpt_all)
-    hetaratio, hetaratio_yerr = get_ratio_histogram(heta_pass, heta_all)
+    import json
+    import os
 
-    return hptratio, hptratio_yerr, hetaratio, hetaratio_yerr
+    import hist
+    from hist import Hist
+
+    dir_path = os.path.dirname(os.path.realpath(__file__))
+    config_path = os.path.join(dir_path, "config.json")
+
+    with open(config_path) as f:
+        config = json.load(f)
+
+    ptbins = config["ptbins"]
+    etabins = config["etabins"]
+    phibins = config["phibins"]
+
+    (
+        pt_pass1,
+        pt_pass2,
+        pt_all1,
+        pt_all2,
+        eta_pass1,
+        eta_pass2,
+        eta_all1,
+        eta_all2,
+        phi_pass1,
+        phi_pass2,
+        phi_all1,
+        phi_all2,
+    ) = res
+
+    ptaxis = hist.axis.Variable(ptbins, name="pt")
+    hpt_all = Hist(ptaxis)
+    hpt_pass = Hist(ptaxis)
+
+    etaaxis = hist.axis.Variable(etabins, name="eta")
+    heta_all = Hist(etaaxis)
+    heta_pass = Hist(etaaxis)
+
+    phiaxis = hist.axis.Variable(phibins, name="phi")
+    hphi_all = Hist(phiaxis)
+    hphi_pass = Hist(phiaxis)
+
+    hpt_pass.fill(pt_pass1)
+    hpt_pass.fill(pt_pass2)
+    hpt_all.fill(pt_all1)
+    hpt_all.fill(pt_all2)
+    heta_pass.fill(eta_pass1)
+    heta_pass.fill(eta_pass2)
+    heta_all.fill(eta_all1)
+    heta_all.fill(eta_all2)
+    hphi_pass.fill(phi_pass1)
+    hphi_pass.fill(phi_pass2)
+    hphi_all.fill(phi_all1)
+    hphi_all.fill(phi_all2)
+
+    return hpt_pass, hpt_all, heta_pass, heta_all, hphi_pass, hphi_all

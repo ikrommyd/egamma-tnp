@@ -1,6 +1,11 @@
 import os
 
-from ._tnpmodules import get_and_compute_tnp_histograms, get_tnp_histograms
+from ._tnpmodules import (
+    get_and_compute_arrays,
+    get_and_compute_tnp_histograms,
+    get_arrays,
+    get_tnp_histograms,
+)
 from .utils import get_nanoevents_file
 
 
@@ -15,6 +20,10 @@ class TagNProbe:
         redirect=False,
         custom_redirector="root://cmsxrootd.fnal.gov/",
         invalid=False,
+        preprocess=False,
+        preprocess_args={},
+        extra_filter=None,
+        extra_filter_args={},
     ):
         """Tag and Probe for HLT Trigger efficiency from NanoAOD.
 
@@ -36,6 +45,16 @@ class TagNProbe:
             invalid : bool, optional
                 Whether to include invalid files. The default is False.
                 Only used if toquery is True.
+            preprocess : bool, optional
+                Whether to preprocess the files using coffea.dataset_tools.preprocess().
+                The default is False.
+            preprocess_args : dict, optional
+                Extra arguments to pass to coffea.dataset_tools.preprocess(). The default is {}.
+            extra_filter : Callable, optional
+                A extra function to filter the events. The default is None.
+                Must take in a coffea NanoEventsArray and return a filtered NanoEventsArray of the events you want to keep.
+            extra_filter_args : dict, optional
+                Extra arguments to pass to extra_filter. The default is {}.
         """
         self.names = names
         self.pt = trigger_pt - 1
@@ -45,12 +64,18 @@ class TagNProbe:
         self.custom_redirector = custom_redirector
         self.invalid = invalid
         self.events = None
+        self.preprocess = preprocess
+        self.preprocess_args = preprocess_args
+        self.extra_filter = extra_filter
+        self.extra_filter_args = extra_filter_args
         self.file = get_nanoevents_file(
             self.names,
             toquery=self.toquery,
             redirect=self.redirect,
             custom_redirector=self.custom_redirector,
             invalid=self.invalid,
+            preprocess=self.preprocess,
+            preprocess_args=self.preprocess_args,
         )
         if goldenjson is not None and not os.path.isfile(goldenjson):
             raise ValueError(f"Golden JSON {goldenjson} does not exist.")
@@ -112,17 +137,84 @@ class TagNProbe:
             newkey = redirect_files(key, redirector=redirector, isrucio=isrucio).pop()
             self.file[newkey] = self.file.pop(key)
 
-    def load_events(self):
-        """Load the events from the names."""
-        from coffea.nanoevents import NanoAODSchema, NanoEventsFactory
+    def load_events(self, from_root_args={}):
+        """Load the events from the names.
+
+        Parameters
+        ----------
+            from_root_args : dict, optional
+                Extra arguments to pass to coffea.nanoevents.NanoEventsFactory.from_root().
+                The default is {}.
+        """
+        from coffea.nanoevents import NanoEventsFactory
 
         self.events = NanoEventsFactory.from_root(
             self.file,
-            schemaclass=NanoAODSchema,
             permit_dask=True,
-            chunks_per_file=1,
-            metadata={"dataset": self.names},
+            **from_root_args,
         ).events()
+
+    def get_arrays(self, compute=False, scheduler=None, progress=True):
+        """Get the Pt and Eta arrays of the passing and all probes.
+        WARNING: Not recommended to be used for large datasets as the arrays can be very large.
+
+        Parameters
+        ----------
+            compute : bool, optional
+                Whether to return the computed arrays or the delayed arrays.
+                The default is False.
+            scheduler : str, optional
+                The dask scheduler to use. The default is None.
+                Only used if compute is True.
+            progress : bool, optional
+                Whether to show a progress bar if `compute` is True. The default is True.
+                Only used if compute is True and no distributed Client is used.
+
+        Returns
+        -------
+            pt_pass1: numpy.ndarray or dask_awkward.Array
+                The Pt array of the passing probes when the firsts electrons are the tags.
+            pt_pass2: numpy.ndarray or dask_awkward.Array
+                The Pt array of the passing probes when the seconds electrons are the tags.
+            pt_all1: numpy.ndarray or dask_awkward.Array
+                The Pt array of all probes when the firsts electrons are the tags.
+            pt_all2: numpy.ndarray or dask_awkward.Array
+                The Pt array of all probes when the seconds electrons are the tags.
+            eta_pass1: numpy.ndarray or dask_awkward.Array
+                The Eta array of the passing probes when the firsts electrons are the tags.
+            eta_pass2: numpy.ndarray or dask_awkward.Array
+                The Eta array of the passing probes when the seconds electrons are the tags.
+            eta_all1: numpy.ndarray or dask_awkward.Array
+                The Eta array of all probes when the firsts electrons are the tags.
+            eta_all2: numpy.ndarray or dask_awkward.Array
+                The Eta array of all probes when the seconds electrons are the tags.
+            phi_pass1: numpy.ndarray or dask_awkward.Array
+                The Phi array of the passing probes when the firsts electrons are the tags.
+            phi_pass2: numpy.ndarray or dask_awkward.Array
+                The Phi array of the passing probes when the seconds electrons are the tags.
+            phi_all1: numpy.ndarray or dask_awkward.Array
+                The Phi array of all probes when the firsts electrons are the tags.
+            phi_all2: numpy.ndarray or dask_awkward.Array
+                The Phi array of all probes when the seconds electrons are the tags.
+        """
+        if compute:
+            return get_and_compute_arrays(
+                events=self.events,
+                pt=self.pt,
+                goldenjson=self.goldenjson,
+                scheduler=scheduler,
+                progress=progress,
+                extra_filter=self.extra_filter,
+                extra_filter_args=self.extra_filter_args,
+            )
+        else:
+            return get_arrays(
+                events=self.events,
+                pt=self.pt,
+                goldenjson=self.goldenjson,
+                extra_filter=self.extra_filter,
+                extra_filter_args=self.extra_filter_args,
+            )
 
     def get_tnp_histograms(self, compute=False, scheduler=None, progress=True):
         """Get the Pt and Eta histograms of the passing and all probes.
@@ -149,6 +241,10 @@ class TagNProbe:
                 The Eta histogram of the passing probes.
             heta_all: hist.Hist or hist.dask.Hist
                 The Eta histogram of all probes.
+            hphi_pass: hist.Hist or hist.dask.Hist
+                The Phi histogram of the passing probes.
+            hphi_all: hist.Hist or hist.dask.Hist
+                The Phi histogram of all probes.
         """
         if compute:
             return get_and_compute_tnp_histograms(
@@ -157,8 +253,14 @@ class TagNProbe:
                 goldenjson=self.goldenjson,
                 scheduler=scheduler,
                 progress=progress,
+                extra_filter=self.extra_filter,
+                extra_filter_args=self.extra_filter_args,
             )
         else:
             return get_tnp_histograms(
-                events=self.events, pt=self.pt, goldenjson=self.goldenjson
+                events=self.events,
+                pt=self.pt,
+                goldenjson=self.goldenjson,
+                extra_filter=self.extra_filter,
+                extra_filter_args=self.extra_filter_args,
             )

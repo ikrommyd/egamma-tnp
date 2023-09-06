@@ -32,15 +32,22 @@ if __name__ == "__main__":
             )
 
             try:
-                tag_n_probe.load_events()
+                tag_n_probe.load_events(
+                    from_root_args={
+                        "uproot_options": {"timeout": 120},
+                        "chunks_per_file": 10,
+                    }
+                )
 
                 (
                     hpt_pass,
                     hpt_all,
                     heta_pass,
                     heta_all,
+                    hphi_pass,
+                    hphi_all,
                 ) = tag_n_probe.get_tnp_histograms(
-                    compute=True, scheduler="threads", progress=True
+                    compute=True, scheduler="processes", progress=True
                 )
 
                 print(f"Passing probes: {hpt_pass.sum(flow=True)}")
@@ -53,6 +60,8 @@ if __name__ == "__main__":
                     file["hpt_all"] = hpt_all
                     file["heta_pass"] = heta_pass
                     file["heta_all"] = heta_all
+                    file["hphi_pass"] = hphi_pass
+                    file["hphi_all"] = hphi_all
 
             except OSError as e:
                 print(f"{file} failed")

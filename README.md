@@ -94,6 +94,8 @@ and then perform tag and probe to get the $P_T$ and $\eta$ histograms of the pas
     hpt_all,
     heta_pass,
     heta_all,
+    hphi_pass,
+    hphi_all,
 ) = tag_n_probe.get_tnp_histograms(compute=True, scheduler=None)
 ```
 You can do whatever you want with those histograms but to plot the efficiencies as a function of $P_T$ and $\eta$ you would do:

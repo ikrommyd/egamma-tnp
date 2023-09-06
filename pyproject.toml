@@ -36,12 +36,9 @@ classifiers = [
 ]
 dependencies = [
   "coffea[dask] @ git+https://github.com/iasonkrom/coffea.git@preprocessing_backup",
-  "awkward>=2.4.2",
   "jupyterlab",
   "notebook",
   "nbclassic",
-  "rucio-clients>=32;python_version>'3.8'",
-  "rucio-clients<32;python_version<'3.9'",
   "mplhep>=0.3.28",
 ]
 dynamic = ["version"]

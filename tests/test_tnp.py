@@ -37,6 +37,13 @@ def test_local_compute(scheduler, preprocess):
     assert hphi_pass.sum(flow=True) == 14598.0
     assert hpti_all.sum(flow=True) == 16896.0
 
+    assert hpt_pass.values(flow=True)[0] == 0.0
+    assert hpt_all.values(flow=True)[0] == 0.0
+    assert heta_pass.values(flow=True)[0] == 0.0
+    assert heta_all.values(flow=True)[0] == 0.0
+    assert hphi_pass.values(flow=True)[0] == 0.0
+    assert hpti_all.values(flow=True)[0] == 0.0
+
 
 @pytest.mark.parametrize("preprocess", [False, True])
 def test_distributed_compute(preprocess):
@@ -71,3 +78,10 @@ def test_distributed_compute(preprocess):
         assert heta_all.sum(flow=True) == 16896.0
         assert hphi_pass.sum(flow=True) == 14598.0
         assert hpti_all.sum(flow=True) == 16896.0
+
+        assert hpt_pass.values(flow=True)[0] == 0.0
+        assert hpt_all.values(flow=True)[0] == 0.0
+        assert heta_pass.values(flow=True)[0] == 0.0
+        assert heta_all.values(flow=True)[0] == 0.0
+        assert hphi_pass.values(flow=True)[0] == 0.0
+        assert hpti_all.values(flow=True)[0] == 0.0

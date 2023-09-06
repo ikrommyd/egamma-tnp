@@ -36,6 +36,7 @@ classifiers = [
 ]
 dependencies = [
   "coffea[dask] @ git+https://github.com/iasonkrom/coffea.git@preprocessing_backup",
+  "dask-histogram @ git+https://github.com/iasonkrom/dask-histogram.git@patch",
   "jupyterlab",
   "notebook",
   "nbclassic",

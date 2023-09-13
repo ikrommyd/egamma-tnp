@@ -36,6 +36,7 @@ classifiers = [
 ]
 dependencies = [
   "coffea[dask] @ git+https://github.com/iasonkrom/coffea.git@preprocessing_backup",
+  "dask-awkward>=2023.7.1,!=2023.8.0,<2023.9.1",
   "jupyterlab",
   "notebook",
   "nbclassic",

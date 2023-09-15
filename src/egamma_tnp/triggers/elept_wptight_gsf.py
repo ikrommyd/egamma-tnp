@@ -272,7 +272,7 @@ class ElePt_WPTight_Gsf(BaseTnP):
         extra_filter=None,
         extra_filter_args={},
     ):
-        """Tag and Probe efficiency for HLT_Ele32_WPTight_Gsf trigger from NanoAOD.
+        """Tag and Probe efficiency for HLT_ElePt_WPTight_Gsf trigger from NanoAOD.
 
         Parameters
         ----------

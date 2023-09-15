@@ -26,7 +26,8 @@ def filter_events(events, pt):
 def trigger_match(electrons, trigobjs, pt):
     pass_pt = trigobjs.pt > pt
     pass_id = abs(trigobjs.id) == 11
-    pass_wptight = trigobjs.filterBits & (0x1 << 1) == 2
+    filterbit = 1
+    pass_wptight = trigobjs.filterBits & (0x1 << filterbit) == 2**filterbit
     trigger_cands = trigobjs[pass_pt & pass_id & pass_wptight]
 
     delta_r = electrons.metric_table(trigger_cands)

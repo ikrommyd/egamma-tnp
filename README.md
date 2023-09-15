@@ -69,7 +69,7 @@ cluster.adapt(minimum=1, maximum=100)
 client = Client(cluster)
 ```
 More basic examples of dask client usage can be found [here](https://distributed.dask.org/en/latest/client.html).
-After that, you can define a `ElePt_WPTight_Gsf` object:
+After that, you can define an `ElePt_WPTight_Gsf` object:
 ```python
 tag_n_probe = ElePt_WPTight_Gsf(
     [

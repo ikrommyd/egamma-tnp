@@ -2,13 +2,13 @@ import os
 
 import pytest
 
-from egamma_tnp import TagNProbe
+from egamma_tnp.triggers import ElePt_WPTight_Gsf
 
 
 @pytest.mark.parametrize("scheduler", ["threads", "processes", "single-threaded"])
 @pytest.mark.parametrize("preprocess", [False, True])
 def test_local_compute(scheduler, preprocess):
-    tag_n_probe = TagNProbe(
+    tag_n_probe = ElePt_WPTight_Gsf(
         [
             os.path.abspath("root_files/Egamma0.root"),
             os.path.abspath("root_files/Egamma1.root"),
@@ -49,7 +49,7 @@ def test_local_compute(scheduler, preprocess):
 def test_distributed_compute(preprocess):
     from distributed import Client
 
-    tag_n_probe = TagNProbe(
+    tag_n_probe = ElePt_WPTight_Gsf(
         [
             os.path.abspath("root_files/Egamma0.root"),
             os.path.abspath("root_files/Egamma1.root"),

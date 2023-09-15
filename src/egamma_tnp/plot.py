@@ -4,7 +4,7 @@ import mplhep as hep
 import numpy as np
 from matplotlib import pyplot as plt
 
-from .utils import get_ratio_histogram
+from egamma_tnp.utils import get_ratio_histogram
 
 
 def _save_and_close(fig, path, close_figure):

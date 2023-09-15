@@ -51,7 +51,7 @@ You should see a jupyter notebook with a directory listing.
 A basic example of how to run the code is given in `EgammaTnP.ipynb` but here is the basic idea of how to run the code.
 First you import the necessary modules:
 ```python
-from egamma_tnp import TagNProbe
+from egamma_tnp.triggers import ElePt_WPTight_Gsf
 from egamma_tnp.plot import plot_efficiency
 ```
 Then you define the `Client` that you want to use. For the default dask `Client` you would do:
@@ -69,9 +69,9 @@ cluster.adapt(minimum=1, maximum=100)
 client = Client(cluster)
 ```
 More basic examples of dask client usage can be found [here](https://distributed.dask.org/en/latest/client.html).
-After that, you can define a `TagNProbe` object:
+After that, you can define a `ElePt_WPTight_Gsf` object:
 ```python
-tag_n_probe = TagNProbe(
+tag_n_probe = ElePt_WPTight_Gsf(
     [
         "/EGamma0/Run2023C-PromptNanoAODv12_v3-v1/NANOAOD",
         "/EGamma1/Run2023C-PromptNanoAODv12_v3-v1/NANOAOD",

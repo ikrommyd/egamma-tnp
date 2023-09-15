@@ -2,12 +2,21 @@ import uproot
 from dask.diagnostics import ProgressBar
 from distributed import Client
 
-from egamma_tnp import TagNProbe
-from egamma_tnp.utils import fill_eager_histograms
+from egamma_tnp.triggers import ElePt_WPTight_Gsf
+
+
+def l1_filter(events, l1_seeds):
+    if isinstance(l1_seeds, str):
+        l1_seeds = [l1_seeds]
+    for seed in l1_seeds:
+        mask = events.L1[seed]
+        events = events[mask]
+    return events
+
 
 if __name__ == "__main__":
     with ProgressBar():
-        tag_n_probe = TagNProbe(
+        tag_n_probe = ElePt_WPTight_Gsf(
             [
                 "/EGamma0/Run2023D-PromptReco-v1/NANOAOD",
                 "/EGamma1/Run2023D-PromptReco-v1/NANOAOD",
@@ -18,6 +27,8 @@ if __name__ == "__main__":
             redirect=False,
             preprocess=True,
             preprocess_args={"maybe_step_size": 100_000},
+            extra_filter=l1_filter,
+            extra_filter_args={"l1_seeds": ["SingleIsoEG30er2p5"]},
         )
     print("Done preprocessing")
 
@@ -33,10 +44,7 @@ if __name__ == "__main__":
 
     client = Client()
     res = tag_n_probe.get_arrays(compute=True, scheduler=None, progress=True)
-
-    hpt_pass, hpt_all, heta_pass, heta_all, hphi_pass, hphi_all = fill_eager_histograms(
-        res
-    )
+    hpt_pass, hpt_all, heta_pass, heta_all, hphi_pass, hphi_all = res
 
     print(f"Passing probes: {hpt_pass.sum(flow=True)}")
     print(f"All probes: {hpt_all.sum(flow=True)}")

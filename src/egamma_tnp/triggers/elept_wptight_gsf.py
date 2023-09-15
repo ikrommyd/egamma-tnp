@@ -1,7 +1,7 @@
 import dask_awkward as dak
 from coffea.lumi_tools import LumiMask
 
-from egamma_tnp.triggers.basetnp import BaseTnP
+from egamma_tnp.triggers.basetrigger import BaseTrigger
 
 
 def apply_lumimasking(events, goldenjson):
@@ -256,7 +256,7 @@ def get_and_compute_tnp_histograms(
     return res
 
 
-class ElePt_WPTight_Gsf(BaseTnP):
+class ElePt_WPTight_Gsf(BaseTrigger):
     def __init__(
         self,
         names,

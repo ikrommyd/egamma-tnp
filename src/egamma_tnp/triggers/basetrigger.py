@@ -3,8 +3,8 @@ import os
 from egamma_tnp.utils.dataset import get_nanoevents_file
 
 
-class BaseTnP:
-    """BaseTnp class for HLT Trigger efficiency from NanoAOD.
+class BaseTrigger:
+    """BaseTrigger class for HLT Trigger efficiency from NanoAOD.
 
     This class holds the basic methods for all the Tag and Probe classes for different triggers.
     """

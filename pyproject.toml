@@ -36,12 +36,12 @@ classifiers = [
 ]
 dependencies = [
   "coffea[dask] @ git+https://github.com/iasonkrom/coffea.git@preprocessing_backup",
-  "dask-awkward>=2023.7.1,!=2023.8.0,<2023.9.1",
-  "matplotlib<3.8.0",
+  "awkward>=2.4.3",
+  "dask-awkward>=2023.9.3",
   "jupyterlab",
   "notebook",
   "nbclassic",
-  "mplhep>=0.3.28",
+  "mplhep>=0.3.29",
 ]
 dynamic = ["version"]
 

@@ -221,7 +221,7 @@ class BaseTrigger:
             preprocess_args=self._preprocess_args,
         )
         if goldenjson is not None and not os.path.isfile(goldenjson):
-            raise ValueError(f"Golden JSON {goldenjson} does not exist.")
+            raise FileNotFoundError(f"Golden JSON {goldenjson} does not exist.")
 
     def remove_bad_xrootd_files(self, keys):
         """Remove bad xrootd files from self.file.

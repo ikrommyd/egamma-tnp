@@ -42,6 +42,8 @@ dependencies = [
   "notebook",
   "nbclassic",
   "mplhep>=0.3.29",
+  "rucio-clients>=32;python_version>'3.8'",
+  "rucio-clients<32;python_version<'3.9'",
 ]
 dynamic = ["version"]
 

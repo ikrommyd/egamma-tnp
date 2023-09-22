@@ -38,12 +38,7 @@ dependencies = [
   "coffea[dask]@git+https://github.com/iasonkrom/coffea.git@preprocessing_backup",
   "awkward>=2.4.3",
   "dask-awkward>=2023.9.3",
-  "jupyterlab",
-  "notebook",
-  "nbclassic",
   "mplhep>=0.3.29",
-  "rucio-clients>=32;python_version>'3.8'",
-  "rucio-clients<32;python_version<'3.9'",
 ]
 dynamic = ["version"]
 

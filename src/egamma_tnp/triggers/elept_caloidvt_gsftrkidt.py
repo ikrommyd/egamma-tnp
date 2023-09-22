@@ -29,8 +29,8 @@ def trigger_match(electrons, trigobjs, pt):
     pass_pt = trigobjs.pt > pt
     pass_id = abs(trigobjs.id) == 11
     filterbit = 11
-    pass_wptight = trigobjs.filterBits & (0x1 << filterbit) == 2**filterbit
-    trigger_cands = trigobjs[pass_pt & pass_id & pass_wptight]
+    pass_caloidvt_gsftrkidt = trigobjs.filterBits & (0x1 << filterbit) == 2**filterbit
+    trigger_cands = trigobjs[pass_pt & pass_id & pass_caloidvt_gsftrkidt]
 
     delta_r = electrons.metric_table(trigger_cands)
     pass_delta_r = delta_r < 0.1
@@ -142,6 +142,6 @@ class ElePt_CaloIdVT_GsfTrkIdT(BaseTrigger):
 
     def __repr__(self):
         if self.events is None:
-            return f"HLT_Ele{self.pt + 1}_WPTight_Gsf(Events: not loaded, Number of files: {len(self.file)}, Golden JSON: {self.goldenjson})"
+            return f"HLT_Ele{self.pt + 1}_CaloIdVT_GsfTrkIdT(Events: not loaded, Number of files: {len(self.file)}, Golden JSON: {self.goldenjson})"
         else:
-            return f"HLT_Ele{self.pt + 1}_WPTight_Gsf(Events: {self.events}, Number of files: {len(self.file)}, Golden JSON: {self.goldenjson})"
+            return f"HLT_Ele{self.pt + 1}_CaloIdVT_GsfTrkIdT(Events: {self.events}, Number of files: {len(self.file)}, Golden JSON: {self.goldenjson})"

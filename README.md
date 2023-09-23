@@ -40,7 +40,14 @@ Once you are in your Singularity shell, you can install the `egamma-tnp` package
 ```bash
 pip install .
 ```
-This works the same way in any other python virtual environment. To start the jupyter notebook, do
+This works the same way in any other python virtual environment.
+
+You don't have to use jupyter to run this package. You can just run it like the `run.py` script.
+However, there are a lot of convenience features available in jupyter notebook that make this tool very expressive.
+Jupyter comes pre-installed in the singularity images. If you want to use any other type of environment and want to use jupyter notebooks,
+make sure it has jupyter (`lab`, `notebook` or `nbclassic`) installed.
+
+To start the jupyter notebook, do
 ```bash
 jupyter notebook --no-browser --port 8xxx
 ```

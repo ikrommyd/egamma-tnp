@@ -109,7 +109,7 @@ class ElePt_WPTight_Gsf(BaseTrigger):
             preprocess_args : dict, optional
                 Extra arguments to pass to coffea.dataset_tools.preprocess(). The default is {}.
             extra_filter : Callable, optional
-                A extra function to filter the events. The default is None.
+                An extra function to filter the events. The default is None.
                 Must take in a coffea NanoEventsArray and return a filtered NanoEventsArray of the events you want to keep.
             extra_filter_args : dict, optional
                 Extra arguments to pass to extra_filter. The default is {}.

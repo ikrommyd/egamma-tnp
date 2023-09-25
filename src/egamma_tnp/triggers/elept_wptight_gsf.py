@@ -4,78 +4,67 @@ from coffea.lumi_tools import LumiMask
 from egamma_tnp.triggers.basetrigger import BaseTrigger
 
 
-def apply_lumimasking(events, goldenjson):
-    lumimask = LumiMask(goldenjson)
-    mask = lumimask(events.run, events.luminosityBlock)
-    return events[mask]
+class _TnPImpl:
+    def __call__(
+        self, events, pt, goldenjson=None, extra_filter=None, extra_filter_args={}
+    ):
+        if extra_filter is not None:
+            events = extra_filter(events, **extra_filter_args)
+        if goldenjson is not None:
+            events = self.apply_lumimasking(events, goldenjson)
+        good_events, good_locations = self.filter_events(events, pt)
+        ele_for_tnp = good_events.Electron[good_locations]
+        zcands1 = dak.combinations(ele_for_tnp, 2, fields=["tag", "probe"])
+        zcands2 = dak.combinations(ele_for_tnp, 2, fields=["probe", "tag"])
+        p1, a1 = self.find_probes(zcands1.tag, zcands1.probe, good_events.TrigObj, pt)
+        p2, a2 = self.find_probes(zcands2.tag, zcands2.probe, good_events.TrigObj, pt)
+        return p1, a1, p2, a2
 
+    def apply_lumimasking(self, events, goldenjson):
+        lumimask = LumiMask(goldenjson)
+        mask = lumimask(events.run, events.luminosityBlock)
+        return events[mask]
 
-def filter_events(events, pt):
-    events = events[dak.num(events.Electron) >= 2]
-    abs_eta = abs(events.Electron.eta)
-    pass_eta_ebeegap = (abs_eta < 1.4442) | (abs_eta > 1.566)
-    pass_tight_id = events.Electron.cutBased == 4
-    pass_pt = events.Electron.pt > pt
-    pass_eta = abs_eta <= 2.5
-    pass_selection = pass_pt & pass_eta & pass_eta_ebeegap & pass_tight_id
-    n_of_tags = dak.sum(pass_selection, axis=1)
-    good_events = events[n_of_tags >= 2]
-    good_locations = pass_selection[n_of_tags >= 2]
+    def filter_events(self, events, pt):
+        events = events[dak.num(events.Electron) >= 2]
+        abs_eta = abs(events.Electron.eta)
+        pass_eta_ebeegap = (abs_eta < 1.4442) | (abs_eta > 1.566)
+        pass_tight_id = events.Electron.cutBased == 4
+        pass_pt = events.Electron.pt > pt
+        pass_eta = abs_eta <= 2.5
+        pass_selection = pass_pt & pass_eta & pass_eta_ebeegap & pass_tight_id
+        n_of_tags = dak.sum(pass_selection, axis=1)
+        good_events = events[n_of_tags >= 2]
+        good_locations = pass_selection[n_of_tags >= 2]
+        return good_events, good_locations
 
-    return good_events, good_locations
+    def trigger_match(self, electrons, trigobjs, pt):
+        pass_pt = trigobjs.pt > pt
+        pass_id = abs(trigobjs.id) == 11
+        filterbit = 1
+        pass_filterbit = trigobjs.filterBits & (0x1 << filterbit) == 2**filterbit
+        trigger_cands = trigobjs[pass_pt & pass_id & pass_filterbit]
+        delta_r = electrons.metric_table(trigger_cands)
+        pass_delta_r = delta_r < 0.1
+        n_of_trigger_matches = dak.sum(dak.sum(pass_delta_r, axis=1), axis=1)
+        trig_matched_locs = n_of_trigger_matches >= 1
+        return trig_matched_locs
 
-
-def trigger_match(electrons, trigobjs, pt):
-    pass_pt = trigobjs.pt > pt
-    pass_id = abs(trigobjs.id) == 11
-    filterbit = 1
-    pass_wptight = trigobjs.filterBits & (0x1 << filterbit) == 2**filterbit
-    trigger_cands = trigobjs[pass_pt & pass_id & pass_wptight]
-
-    delta_r = electrons.metric_table(trigger_cands)
-    pass_delta_r = delta_r < 0.1
-    n_of_trigger_matches = dak.sum(dak.sum(pass_delta_r, axis=1), axis=1)
-    trig_matched_locs = n_of_trigger_matches >= 1
-
-    return trig_matched_locs
-
-
-def find_probes(tags, probes, trigobjs, pt):
-    trig_matched_tag = trigger_match(tags, trigobjs, pt)
-    tags = tags[trig_matched_tag]
-    probes = probes[trig_matched_tag]
-    trigobjs = trigobjs[trig_matched_tag]
-
-    dr = tags.delta_r(probes)
-    mass = (tags + probes).mass
-
-    in_mass_window = abs(mass - 91.1876) < 30
-    opposite_charge = tags.charge * probes.charge == -1
-
-    isZ = in_mass_window & opposite_charge
-    dr_condition = dr > 0.0
-
-    all_probes = probes[isZ & dr_condition]
-    trig_matched_probe = trigger_match(all_probes, trigobjs, pt)
-    passing_probes = all_probes[trig_matched_probe]
-
-    return passing_probes, all_probes
-
-
-def perform_tnp(events, pt, goldenjson, extra_filter, extra_filter_args):
-    if extra_filter is not None:
-        events = extra_filter(events, **extra_filter_args)
-    if goldenjson is not None:
-        events = apply_lumimasking(events, goldenjson)
-    good_events, good_locations = filter_events(events, pt)
-    ele_for_tnp = good_events.Electron[good_locations]
-
-    zcands1 = dak.combinations(ele_for_tnp, 2, fields=["tag", "probe"])
-    zcands2 = dak.combinations(ele_for_tnp, 2, fields=["probe", "tag"])
-    p1, a1 = find_probes(zcands1.tag, zcands1.probe, good_events.TrigObj, pt)
-    p2, a2 = find_probes(zcands2.tag, zcands2.probe, good_events.TrigObj, pt)
-
-    return p1, a1, p2, a2
+    def find_probes(self, tags, probes, trigobjs, pt):
+        trig_matched_tag = self.trigger_match(tags, trigobjs, pt)
+        tags = tags[trig_matched_tag]
+        probes = probes[trig_matched_tag]
+        trigobjs = trigobjs[trig_matched_tag]
+        dr = tags.delta_r(probes)
+        mass = (tags + probes).mass
+        in_mass_window = abs(mass - 91.1876) < 30
+        opposite_charge = tags.charge * probes.charge == -1
+        isZ = in_mass_window & opposite_charge
+        dr_condition = dr > 0.0
+        all_probes = probes[isZ & dr_condition]
+        trig_matched_probe = self.trigger_match(all_probes, trigobjs, pt)
+        passing_probes = all_probes[trig_matched_probe]
+        return passing_probes, all_probes
 
 
 class ElePt_WPTight_Gsf(BaseTrigger):
@@ -128,7 +117,7 @@ class ElePt_WPTight_Gsf(BaseTrigger):
         self.pt = trigger_pt - 1
         super().__init__(
             names=names,
-            perform_tnp=perform_tnp,
+            perform_tnp=_TnPImpl(),
             goldenjson=goldenjson,
             toquery=toquery,
             redirect=redirect,

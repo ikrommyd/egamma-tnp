@@ -236,6 +236,6 @@ class ElePt_CaloIdVT_GsfTrkIdT(BaseTrigger):
 
     def __repr__(self):
         if self.events is None:
-            return f"HLT_Ele{self.pt + 1}_CaloIdVT_GsfTrkIdT(Events: not loaded, Number of files: {len(self.file)}, Golden JSON: {self.goldenjson})"
+            return f"HLT_Ele{self.pt + 10}_CaloIdVT_GsfTrkIdT(Events: not loaded, Number of files: {len(self.file)}, Golden JSON: {self.goldenjson})"
         else:
-            return f"HLT_Ele{self.pt + 1}_CaloIdVT_GsfTrkIdT(Events: {self.events}, Number of files: {len(self.file)}, Golden JSON: {self.goldenjson})"
+            return f"HLT_Ele{self.pt + 10}_CaloIdVT_GsfTrkIdT(Events: {self.events}, Number of files: {len(self.file)}, Golden JSON: {self.goldenjson})"

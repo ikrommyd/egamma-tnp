@@ -1,8 +1,7 @@
 import uproot
-from dask.diagnostics import ProgressBar
 from distributed import Client
 
-from egamma_tnp.triggers import ElePt_WPTight_Gsf
+from egamma_tnp.triggers import ElePt_CaloIdVT_GsfTrkIdT
 
 
 def l1_filter(events, l1_seeds):
@@ -15,26 +14,7 @@ def l1_filter(events, l1_seeds):
 
 
 if __name__ == "__main__":
-    with ProgressBar():
-        tag_n_probe = ElePt_WPTight_Gsf(
-            [
-                "/EGamma0/Run2023D-PromptReco-v1/NANOAOD",
-                "/EGamma1/Run2023D-PromptReco-v1/NANOAOD",
-            ],
-            32,
-            goldenjson="json/Cert_Collisions2023_366442_370790_Golden.json",
-            toquery=True,
-            redirect=False,
-            preprocess=True,
-            preprocess_args={"maybe_step_size": 100_000},
-            extra_filter=l1_filter,
-            extra_filter_args={"l1_seeds": ["SingleIsoEG30er2p5"]},
-        )
-    print("Done preprocessing")
-
-    print("Starting to load events")
-    tag_n_probe.load_events(from_root_args={"uproot_options": {"timeout": 120}})
-    print(tag_n_probe)
+    client = Client()
 
     # from lpcjobqueue import LPCCondorCluster
 
@@ -42,14 +22,33 @@ if __name__ == "__main__":
     # cluster.adapt(minimum=1, maximum=100)
     # client = Client(cluster)
 
-    client = Client()
-    res = tag_n_probe.get_arrays(compute=True, scheduler=None, progress=True)
+    tag_n_probe = ElePt_CaloIdVT_GsfTrkIdT(
+        [
+            "/EGamma0/Run2023C-PromptNanoAODv12_v3-v1/NANOAOD",
+            "/EGamma1/Run2023C-PromptNanoAODv12_v3-v1/NANOAOD",
+        ],
+        115,
+        goldenjson="json/Cert_Collisions2023_366442_370790_Golden.json",
+        toquery=True,
+        redirect=False,
+        preprocess=True,
+        preprocess_args={"maybe_step_size": 100_000},
+        extra_filter=None,
+        extra_filter_args={"l1_seeds": ["SingleIsoEG30er2p5"]},
+    )
+    print("Done preprocessing")
+
+    print("Starting to load events")
+    tag_n_probe.load_events(from_root_args={"uproot_options": {"timeout": 120}})
+    print(tag_n_probe)
+
+    res = tag_n_probe.get_tnp_histograms(compute=True, scheduler=None, progress=True)
     hpt_pass, hpt_all, heta_pass, heta_all, hphi_pass, hphi_all = res
 
     print(f"Passing probes: {hpt_pass.sum(flow=True)}")
     print(f"All probes: {hpt_all.sum(flow=True)}")
 
-    with uproot.recreate("root_files/Run2023Dv1.root") as file:
+    with uproot.recreate("root_files/Run2023Cv3.root") as file:
         file["hpt_pass"] = hpt_pass
         file["hpt_all"] = hpt_all
         file["heta_pass"] = heta_pass

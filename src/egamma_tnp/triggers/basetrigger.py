@@ -5,7 +5,7 @@ import dask_awkward as dak
 from egamma_tnp.utils.dataset import get_nanoevents_file
 
 
-def get_arrays(events, perform_tnp, *args, **kwargs):
+def _get_arrays(events, perform_tnp, *args, **kwargs):
     p1, a1, p2, a2 = perform_tnp(events, *args, **kwargs)
 
     pt_pass1 = dak.flatten(p1.pt)
@@ -39,7 +39,7 @@ def get_arrays(events, perform_tnp, *args, **kwargs):
     )
 
 
-def get_and_compute_arrays(events, perform_tnp, scheduler, progress, *args, **kwargs):
+def _get_and_compute_arrays(events, perform_tnp, scheduler, progress, *args, **kwargs):
     import dask
     from dask.diagnostics import ProgressBar
 
@@ -56,7 +56,7 @@ def get_and_compute_arrays(events, perform_tnp, scheduler, progress, *args, **kw
         phi_pass2,
         phi_all1,
         phi_all2,
-    ) = get_arrays(events, perform_tnp, *args, **kwargs)
+    ) = _get_arrays(events, perform_tnp, *args, **kwargs)
 
     if progress:
         pbar = ProgressBar()
@@ -84,22 +84,13 @@ def get_and_compute_arrays(events, perform_tnp, scheduler, progress, *args, **kw
     return res
 
 
-def get_tnp_histograms(events, perform_tnp, *args, **kwargs):
-    import json
-    import os
-
+def _get_tnp_histograms(events, bins, perform_tnp, *args, **kwargs):
     import hist
     from hist.dask import Hist
 
-    dir_path = os.path.dirname(os.path.realpath(__file__))
-    config_path = os.path.join(dir_path, "config.json")
-
-    with open(config_path) as f:
-        config = json.load(f)
-
-    ptbins = config["ptbins"]
-    etabins = config["etabins"]
-    phibins = config["phibins"]
+    ptbins = bins["ptbins"]
+    etabins = bins["etabins"]
+    phibins = bins["phibins"]
 
     (
         pt_pass1,
@@ -114,7 +105,7 @@ def get_tnp_histograms(events, perform_tnp, *args, **kwargs):
         phi_pass2,
         phi_all1,
         phi_all2,
-    ) = get_arrays(events, perform_tnp, *args, **kwargs)
+    ) = _get_arrays(events, perform_tnp, *args, **kwargs)
 
     ptaxis = hist.axis.Variable(ptbins, name="pt")
     hpt_all = Hist(ptaxis)
@@ -144,8 +135,8 @@ def get_tnp_histograms(events, perform_tnp, *args, **kwargs):
     return hpt_pass, hpt_all, heta_pass, heta_all, hphi_pass, hphi_all
 
 
-def get_and_compute_tnp_histograms(
-    events, perform_tnp, scheduler, progress, *args, **kwargs
+def _get_and_compute_tnp_histograms(
+    events, bins, perform_tnp, scheduler, progress, *args, **kwargs
 ):
     import dask
     from dask.diagnostics import ProgressBar
@@ -157,7 +148,7 @@ def get_and_compute_tnp_histograms(
         heta_all,
         hphi_pass,
         hphi_all,
-    ) = get_tnp_histograms(events, perform_tnp, *args, **kwargs)
+    ) = _get_tnp_histograms(events, bins, perform_tnp, *args, **kwargs)
 
     if progress:
         pbar = ProgressBar()
@@ -198,6 +189,7 @@ class BaseTrigger:
         preprocess_args,
         extra_filter,
         extra_filter_args,
+        bins,
     ):
         self.names = names
         self._perform_tnp = perform_tnp
@@ -211,6 +203,7 @@ class BaseTrigger:
         self._preprocess_args = preprocess_args
         self._extra_filter = extra_filter
         self._extra_filter_args = extra_filter_args
+        self._bins = bins
         self.file = get_nanoevents_file(
             self.names,
             toquery=self._toquery,
@@ -335,7 +328,7 @@ class BaseTrigger:
                 The Phi array of all probes when the seconds electrons are the tags.
         """
         if compute:
-            return get_and_compute_arrays(
+            return _get_and_compute_arrays(
                 events=self.events,
                 perform_tnp=self._perform_tnp,
                 pt=self.pt,
@@ -346,7 +339,7 @@ class BaseTrigger:
                 extra_filter_args=self._extra_filter_args,
             )
         else:
-            return get_arrays(
+            return _get_arrays(
                 events=self.events,
                 perform_tnp=self._perform_tnp,
                 pt=self.pt,
@@ -386,8 +379,9 @@ class BaseTrigger:
                 The Phi histogram of all probes.
         """
         if compute:
-            return get_and_compute_tnp_histograms(
+            return _get_and_compute_tnp_histograms(
                 events=self.events,
+                bins=self._bins,
                 perform_tnp=self._perform_tnp,
                 pt=self.pt,
                 goldenjson=self.goldenjson,
@@ -397,8 +391,9 @@ class BaseTrigger:
                 extra_filter_args=self._extra_filter_args,
             )
         else:
-            return get_tnp_histograms(
+            return _get_tnp_histograms(
                 events=self.events,
+                bins=self._bins,
                 perform_tnp=self._perform_tnp,
                 pt=self.pt,
                 goldenjson=self.goldenjson,

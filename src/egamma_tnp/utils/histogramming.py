@@ -29,13 +29,17 @@ def get_ratio_histogram(passing_probes, all_probes):
     return ratio, yerr
 
 
-def fill_eager_histograms(res):
+def fill_eager_histograms(res, bins):
     """Fill eager Pt and Eta histograms of the passing and all probes.
 
     Parameters
     ----------
         res : tuple
             The output of Trigger.get_arrays() with compute=True.
+        bins: dict
+            The binning of the histograms.
+            Should have 3 keys "ptbins", "etabins", and "phibins".
+            Each key should have a list of bin edges for the Pt, Eta, and Phi histograms respectively.
 
     Returns
     -------
@@ -52,21 +56,12 @@ def fill_eager_histograms(res):
         hphi_all: hist.Hist
             The Phi histogram of all probes.
     """
-    import json
-    import os
-
     import hist
     from hist import Hist
 
-    dir_path = os.path.dirname(os.path.realpath(__file__))
-    config_path = os.path.join(dir_path, "config.json")
-
-    with open(config_path) as f:
-        config = json.load(f)
-
-    ptbins = config["ptbins"]
-    etabins = config["etabins"]
-    phibins = config["phibins"]
+    ptbins = bins["ptbins"]
+    etabins = bins["etabins"]
+    phibins = bins["phibins"]
 
     (
         pt_pass1,

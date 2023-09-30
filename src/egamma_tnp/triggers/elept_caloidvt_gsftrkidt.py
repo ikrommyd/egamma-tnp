@@ -87,6 +87,10 @@ _bins = {
         60,
         80,
         100,
+        110,
+        120,
+        130,
+        140,
         150,
         250,
         400,
@@ -214,7 +218,7 @@ class ElePt_CaloIdVT_GsfTrkIdT(BaseTrigger):
             extra_filter_args : dict, optional
                 Extra arguments to pass to extra_filter. The default is {}.
         """
-        self.pt = trigger_pt - 1
+        self.pt = trigger_pt - 10
         super().__init__(
             names=names,
             perform_tnp=_TnPImpl(),

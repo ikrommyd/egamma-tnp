@@ -36,7 +36,6 @@ if __name__ == "__main__":
         extra_filter=None,
         extra_filter_args={"l1_seeds": ["SingleIsoEG30er2p5"]},
     )
-    print("Done preprocessing")
 
     print("Starting to load events")
     tag_n_probe.load_events(from_root_args={"uproot_options": {"timeout": 120}})

@@ -42,7 +42,7 @@ class _TnPImpl:
         pass_pt = trigobjs.pt > pt
         pass_id = abs(trigobjs.id) == 11
         filterbit = 11
-        pass_filterbit = trigobjs.filterBits & (0x1 << filterbit) == 2**filterbit
+        pass_filterbit = trigobjs.filterBits & (0x1 << filterbit) > 0
         trigger_cands = trigobjs[pass_pt & pass_id & pass_filterbit]
         delta_r = electrons.metric_table(trigger_cands)
         pass_delta_r = delta_r < 0.1

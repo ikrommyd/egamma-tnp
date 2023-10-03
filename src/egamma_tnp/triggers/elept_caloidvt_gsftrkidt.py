@@ -26,13 +26,15 @@ class _TnPImpl:
         return events[mask]
 
     def filter_events(self, events, pt):
-        events = events[dak.num(events.Electron) >= 2]
+        enough_electrons = dak.num(events.Electron) >= 2
         abs_eta = abs(events.Electron.eta)
         pass_eta_ebeegap = (abs_eta < 1.4442) | (abs_eta > 1.566)
         pass_tight_id = events.Electron.cutBased == 4
         pass_pt = events.Electron.pt > pt
         pass_eta = abs_eta <= 2.5
-        pass_selection = pass_pt & pass_eta & pass_eta_ebeegap & pass_tight_id
+        pass_selection = (
+            enough_electrons & pass_pt & pass_eta & pass_eta_ebeegap & pass_tight_id
+        )
         n_of_tags = dak.sum(pass_selection, axis=1)
         good_events = events[n_of_tags >= 2]
         good_locations = pass_selection[n_of_tags >= 2]

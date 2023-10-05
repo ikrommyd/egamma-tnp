@@ -1,3 +1,4 @@
+import json
 import os
 
 import dask_awkward as dak
@@ -189,7 +190,6 @@ class BaseTrigger:
         preprocess_args,
         extra_filter,
         extra_filter_args,
-        bins,
     ):
         self.names = names
         self._perform_tnp = perform_tnp
@@ -203,7 +203,7 @@ class BaseTrigger:
         self._preprocess_args = preprocess_args
         self._extra_filter = extra_filter
         self._extra_filter_args = extra_filter_args
-        self._bins = bins
+
         self.file = get_nanoevents_file(
             self.names,
             toquery=self._toquery,
@@ -213,8 +213,15 @@ class BaseTrigger:
             preprocess=self._preprocess,
             preprocess_args=self._preprocess_args,
         )
-        if goldenjson is not None and not os.path.isfile(goldenjson):
+
+        if goldenjson is not None and not os.path.exists(goldenjson):
             raise FileNotFoundError(f"Golden JSON {goldenjson} does not exist.")
+
+        config_path = os.path.join(
+            os.path.dirname(__file__), "..", "config/runtime_config.json"
+        )
+        with open(config_path) as f:
+            self._bins = json.load(f)
 
     def remove_bad_xrootd_files(self, keys):
         """Remove bad xrootd files from self.file.

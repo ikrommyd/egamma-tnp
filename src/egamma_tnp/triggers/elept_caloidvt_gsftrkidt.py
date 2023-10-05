@@ -69,109 +69,6 @@ class _TnPImpl:
         return passing_probes, all_probes
 
 
-_bins = {
-    "ptbins": [
-        5,
-        10,
-        15,
-        20,
-        22,
-        26,
-        28,
-        30,
-        32,
-        34,
-        36,
-        38,
-        40,
-        45,
-        50,
-        60,
-        80,
-        100,
-        150,
-        200,
-        250,
-        300,
-        350,
-        400,
-    ],
-    "etabins": [
-        -2.5,
-        -2.4,
-        -2.3,
-        -2.2,
-        -2.1,
-        -2.0,
-        -1.9,
-        -1.8,
-        -1.7,
-        -1.566,
-        -1.4442,
-        -1.3,
-        -1.2,
-        -1.1,
-        -1.0,
-        -0.9,
-        -0.8,
-        -0.7,
-        -0.6,
-        -0.5,
-        -0.4,
-        -0.3,
-        -0.2,
-        -0.1,
-        0,
-        0.1,
-        0.2,
-        0.3,
-        0.4,
-        0.5,
-        0.6,
-        0.7,
-        0.8,
-        0.9,
-        1,
-        1.1,
-        1.2,
-        1.3,
-        1.4442,
-        1.566,
-        1.7,
-        1.8,
-        1.9,
-        2.0,
-        2.1,
-        2.2,
-        2.3,
-        2.4,
-        2.5,
-    ],
-    "phibins": [
-        -3.32,
-        -2.97,
-        -2.62,
-        -2.27,
-        -1.92,
-        -1.57,
-        -1.22,
-        -0.87,
-        -0.52,
-        -0.18,
-        0.18,
-        0.52,
-        0.87,
-        1.22,
-        1.57,
-        1.92,
-        2.27,
-        2.62,
-        2.97,
-        3.32,
-    ],
-}
-
-
 class ElePt_CaloIdVT_GsfTrkIdT(BaseTrigger):
     def __init__(
         self,
@@ -219,7 +116,7 @@ class ElePt_CaloIdVT_GsfTrkIdT(BaseTrigger):
             extra_filter_args : dict, optional
                 Extra arguments to pass to extra_filter. The default is {}.
         """
-        self.pt = trigger_pt - 10
+        self.pt = trigger_pt - 5
         super().__init__(
             names=names,
             perform_tnp=_TnPImpl(),
@@ -232,11 +129,10 @@ class ElePt_CaloIdVT_GsfTrkIdT(BaseTrigger):
             preprocess_args=preprocess_args,
             extra_filter=extra_filter,
             extra_filter_args=extra_filter_args,
-            bins=_bins,
         )
 
     def __repr__(self):
         if self.events is None:
-            return f"HLT_Ele{self.pt + 10}_CaloIdVT_GsfTrkIdT(Events: not loaded, Number of files: {len(self.file)}, Golden JSON: {self.goldenjson})"
+            return f"HLT_Ele{self.pt + 5}_CaloIdVT_GsfTrkIdT(Events: not loaded, Number of files: {len(self.file)}, Golden JSON: {self.goldenjson})"
         else:
-            return f"HLT_Ele{self.pt + 10}_CaloIdVT_GsfTrkIdT(Events: {self.events}, Number of files: {len(self.file)}, Golden JSON: {self.goldenjson})"
+            return f"HLT_Ele{self.pt + 5}_CaloIdVT_GsfTrkIdT(Events: {self.events}, Number of files: {len(self.file)}, Golden JSON: {self.goldenjson})"

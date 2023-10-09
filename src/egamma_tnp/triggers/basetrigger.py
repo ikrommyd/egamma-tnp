@@ -6,8 +6,8 @@ import dask_awkward as dak
 from egamma_tnp.utils.dataset import get_nanoevents_file
 
 
-def _get_arrays(events, perform_tnp, *args, **kwargs):
-    p1, a1, p2, a2 = perform_tnp(events, *args, **kwargs)
+def _get_arrays(events, perform_tnp, **kwargs):
+    p1, a1, p2, a2 = perform_tnp(events, **kwargs)
 
     pt_pass1 = dak.flatten(p1.pt)
     pt_pass2 = dak.flatten(p2.pt)
@@ -40,7 +40,7 @@ def _get_arrays(events, perform_tnp, *args, **kwargs):
     )
 
 
-def _get_and_compute_arrays(events, perform_tnp, scheduler, progress, *args, **kwargs):
+def _get_and_compute_arrays(events, perform_tnp, scheduler, progress, **kwargs):
     import dask
     from dask.diagnostics import ProgressBar
 
@@ -57,7 +57,7 @@ def _get_and_compute_arrays(events, perform_tnp, scheduler, progress, *args, **k
         phi_pass2,
         phi_all1,
         phi_all2,
-    ) = _get_arrays(events, perform_tnp, *args, **kwargs)
+    ) = _get_arrays(events, perform_tnp, **kwargs)
 
     if progress:
         pbar = ProgressBar()
@@ -85,7 +85,7 @@ def _get_and_compute_arrays(events, perform_tnp, scheduler, progress, *args, **k
     return res
 
 
-def _get_tnp_histograms(events, bins, perform_tnp, *args, **kwargs):
+def _get_tnp_histograms(events, plateau_cut, bins, perform_tnp, **kwargs):
     import hist
     from hist.dask import Hist
 
@@ -106,7 +106,7 @@ def _get_tnp_histograms(events, bins, perform_tnp, *args, **kwargs):
         phi_pass2,
         phi_all1,
         phi_all2,
-    ) = _get_arrays(events, perform_tnp, *args, **kwargs)
+    ) = _get_arrays(events, perform_tnp, **kwargs)
 
     ptaxis = hist.axis.Variable(ptbins, name="pt")
     hpt_all = Hist(ptaxis)
@@ -124,20 +124,20 @@ def _get_tnp_histograms(events, bins, perform_tnp, *args, **kwargs):
     hpt_pass.fill(pt_pass2)
     hpt_all.fill(pt_all1)
     hpt_all.fill(pt_all2)
-    heta_pass.fill(eta_pass1)
-    heta_pass.fill(eta_pass2)
-    heta_all.fill(eta_all1)
-    heta_all.fill(eta_all2)
-    hphi_pass.fill(phi_pass1)
-    hphi_pass.fill(phi_pass2)
-    hphi_all.fill(phi_all1)
-    hphi_all.fill(phi_all2)
+    heta_pass.fill(eta_pass1[pt_pass1 > plateau_cut])
+    heta_pass.fill(eta_pass2[pt_pass2 > plateau_cut])
+    heta_all.fill(eta_all1[pt_all1 > plateau_cut])
+    heta_all.fill(eta_all2[pt_all2 > plateau_cut])
+    hphi_pass.fill(phi_pass1[pt_pass1 > plateau_cut])
+    hphi_pass.fill(phi_pass2[pt_pass2 > plateau_cut])
+    hphi_all.fill(phi_all1[pt_all1 > plateau_cut])
+    hphi_all.fill(phi_all2[pt_all2 > plateau_cut])
 
     return hpt_pass, hpt_all, heta_pass, heta_all, hphi_pass, hphi_all
 
 
 def _get_and_compute_tnp_histograms(
-    events, bins, perform_tnp, scheduler, progress, *args, **kwargs
+    events, bins, perform_tnp, plateau_cut, scheduler, progress, **kwargs
 ):
     import dask
     from dask.diagnostics import ProgressBar
@@ -149,7 +149,7 @@ def _get_and_compute_tnp_histograms(
         heta_all,
         hphi_pass,
         hphi_all,
-    ) = _get_tnp_histograms(events, bins, perform_tnp, *args, **kwargs)
+    ) = _get_tnp_histograms(events, plateau_cut, bins, perform_tnp, **kwargs)
 
     if progress:
         pbar = ProgressBar()
@@ -339,6 +339,7 @@ class BaseTrigger:
                 events=self.events,
                 perform_tnp=self._perform_tnp,
                 pt=self.pt,
+                avoid_ecal_transition=self.avoid_ecal_transition,
                 goldenjson=self.goldenjson,
                 scheduler=scheduler,
                 progress=progress,
@@ -350,16 +351,22 @@ class BaseTrigger:
                 events=self.events,
                 perform_tnp=self._perform_tnp,
                 pt=self.pt,
+                avoid_ecal_transition=self.avoid_ecal_transition,
                 goldenjson=self.goldenjson,
                 extra_filter=self._extra_filter,
                 extra_filter_args=self._extra_filter_args,
             )
 
-    def get_tnp_histograms(self, compute=False, scheduler=None, progress=True):
+    def get_tnp_histograms(
+        self, plateau_cut=0, compute=False, scheduler=None, progress=True
+    ):
         """Get the Pt and Eta histograms of the passing and all probes.
 
         Parameters
         ----------
+            plateau_cut : int or float, optional
+                The Pt threshold to use to ensure that we are on the efficiency plateau for eta and phi histograms.
+                The default 0, meaning that no extra cut is applied and the activation region is included in those histograms.
             compute : bool, optional
                 Whether to return the computed hist.Hist histograms or the delayed hist.dask.Hist histograms.
                 The default is False.
@@ -388,9 +395,11 @@ class BaseTrigger:
         if compute:
             return _get_and_compute_tnp_histograms(
                 events=self.events,
+                plateau_cut=plateau_cut,
                 bins=self._bins,
                 perform_tnp=self._perform_tnp,
                 pt=self.pt,
+                avoid_ecal_transition=self.avoid_ecal_transition,
                 goldenjson=self.goldenjson,
                 scheduler=scheduler,
                 progress=progress,
@@ -400,9 +409,11 @@ class BaseTrigger:
         else:
             return _get_tnp_histograms(
                 events=self.events,
+                plateau_cut=plateau_cut,
                 bins=self._bins,
                 perform_tnp=self._perform_tnp,
                 pt=self.pt,
+                avoid_ecal_transition=self.avoid_ecal_transition,
                 goldenjson=self.goldenjson,
                 extra_filter=self._extra_filter,
                 extra_filter_args=self._extra_filter_args,

@@ -6,13 +6,21 @@ from egamma_tnp.triggers.basetrigger import BaseTrigger
 
 class _TnPImpl:
     def __call__(
-        self, events, pt, goldenjson=None, extra_filter=None, extra_filter_args={}
+        self,
+        events,
+        pt,
+        avoid_ecal_transition,
+        goldenjson=None,
+        extra_filter=None,
+        extra_filter_args={},
     ):
         if extra_filter is not None:
             events = extra_filter(events, **extra_filter_args)
         if goldenjson is not None:
             events = self.apply_lumimasking(events, goldenjson)
-        good_events, good_locations = self.filter_events(events, pt)
+        good_events, good_locations = self.filter_events(
+            events, pt, avoid_ecal_transition
+        )
         ele_for_tnp = good_events.Electron[good_locations]
         zcands1 = dak.combinations(ele_for_tnp, 2, fields=["tag", "probe"])
         zcands2 = dak.combinations(ele_for_tnp, 2, fields=["probe", "tag"])
@@ -25,16 +33,19 @@ class _TnPImpl:
         mask = lumimask(events.run, events.luminosityBlock)
         return events[mask]
 
-    def filter_events(self, events, pt):
+    def filter_events(self, events, pt, avoid_ecal_transition):
         enough_electrons = dak.num(events.Electron) >= 2
         abs_eta = abs(events.Electron.eta)
         pass_eta_ebeegap = (abs_eta < 1.4442) | (abs_eta > 1.566)
         pass_tight_id = events.Electron.cutBased == 4
         pass_pt = events.Electron.pt > pt
         pass_eta = abs_eta <= 2.5
-        pass_selection = (
-            enough_electrons & pass_pt & pass_eta & pass_eta_ebeegap & pass_tight_id
-        )
+        if avoid_ecal_transition:
+            pass_selection = (
+                enough_electrons & pass_pt & pass_eta_ebeegap & pass_eta & pass_tight_id
+            )
+        else:
+            pass_selection = enough_electrons & pass_pt & pass_eta & pass_tight_id
         n_of_tags = dak.sum(pass_selection, axis=1)
         good_events = events[n_of_tags >= 2]
         good_locations = pass_selection[n_of_tags >= 2]
@@ -75,6 +86,7 @@ class ElePt_WPTight_Gsf(BaseTrigger):
         names,
         trigger_pt,
         *,
+        avoid_ecal_transition=False,
         goldenjson=None,
         toquery=False,
         redirect=False,
@@ -93,6 +105,8 @@ class ElePt_WPTight_Gsf(BaseTrigger):
                 The dataset names to query that can contain wildcards or a list of file paths.
             trigger_pt : int or float
                 The Pt threshold of the trigger.
+            avoid_ecal_transition : bool, optional
+                Whether to avoid the ECAL transition region by placing an eta cut. The default is False.
             goldenjson : str, optional
                 The golden json to use for luminosity masking. The default is None.
             toquery : bool, optional
@@ -117,6 +131,7 @@ class ElePt_WPTight_Gsf(BaseTrigger):
                 Extra arguments to pass to extra_filter. The default is {}.
         """
         self.pt = trigger_pt - 1
+        self.avoid_ecal_transition = avoid_ecal_transition
         super().__init__(
             names=names,
             perform_tnp=_TnPImpl(),

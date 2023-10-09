@@ -116,7 +116,7 @@ class ElePt_CaloIdVT_GsfTrkIdT(BaseTrigger):
             extra_filter_args : dict, optional
                 Extra arguments to pass to extra_filter. The default is {}.
         """
-        self.pt = trigger_pt - 5
+        self.pt = trigger_pt - 2
         super().__init__(
             names=names,
             perform_tnp=_TnPImpl(),
@@ -133,6 +133,6 @@ class ElePt_CaloIdVT_GsfTrkIdT(BaseTrigger):
 
     def __repr__(self):
         if self.events is None:
-            return f"HLT_Ele{self.pt + 5}_CaloIdVT_GsfTrkIdT(Events: not loaded, Number of files: {len(self.file)}, Golden JSON: {self.goldenjson})"
+            return f"HLT_Ele{self.pt + 2}_CaloIdVT_GsfTrkIdT(Events: not loaded, Number of files: {len(self.file)}, Golden JSON: {self.goldenjson})"
         else:
-            return f"HLT_Ele{self.pt + 5}_CaloIdVT_GsfTrkIdT(Events: {self.events}, Number of files: {len(self.file)}, Golden JSON: {self.goldenjson})"
+            return f"HLT_Ele{self.pt + 2}_CaloIdVT_GsfTrkIdT(Events: {self.events}, Number of files: {len(self.file)}, Golden JSON: {self.goldenjson})"

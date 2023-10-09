@@ -54,7 +54,7 @@ class _TnPImpl:
     def trigger_match(self, electrons, trigobjs, pt):
         pass_pt = trigobjs.pt > pt
         pass_id = abs(trigobjs.id) == 11
-        filterbit = 1
+        filterbit = 11
         pass_filterbit = trigobjs.filterBits & (0x1 << filterbit) > 0
         trigger_cands = trigobjs[pass_pt & pass_id & pass_filterbit]
         delta_r = electrons.metric_table(trigger_cands)
@@ -80,7 +80,7 @@ class _TnPImpl:
         return passing_probes, all_probes
 
 
-class ElePt_WPTight_Gsf(BaseTrigger):
+class ElePt_CaloIdVT_GsfTrkIdT(BaseTrigger):
     def __init__(
         self,
         names,
@@ -97,7 +97,7 @@ class ElePt_WPTight_Gsf(BaseTrigger):
         extra_filter=None,
         extra_filter_args={},
     ):
-        """Tag and Probe efficiency for HLT_ElePt_WPTight_Gsf trigger from NanoAOD.
+        """Tag and Probe efficiency for HLT_ElePt_CaloIdVT_GsfTrkIdT trigger from NanoAOD.
 
         Parameters
         ----------
@@ -130,7 +130,7 @@ class ElePt_WPTight_Gsf(BaseTrigger):
             extra_filter_args : dict, optional
                 Extra arguments to pass to extra_filter. The default is {}.
         """
-        self.pt = trigger_pt - 1
+        self.pt = trigger_pt - 2
         self.avoid_ecal_transition = avoid_ecal_transition
         super().__init__(
             names=names,
@@ -148,6 +148,6 @@ class ElePt_WPTight_Gsf(BaseTrigger):
 
     def __repr__(self):
         if self.events is None:
-            return f"HLT_Ele{self.pt + 1}_WPTight_Gsf(Events: not loaded, Number of files: {len(self.file)}, Golden JSON: {self.goldenjson})"
+            return f"HLT_Ele{self.pt + 2}_CaloIdVT_GsfTrkIdT(Events: not loaded, Number of files: {len(self.file)}, Golden JSON: {self.goldenjson})"
         else:
-            return f"HLT_Ele{self.pt + 1}_WPTight_Gsf(Events: {self.events}, Number of files: {len(self.file)}, Golden JSON: {self.goldenjson})"
+            return f"HLT_Ele{self.pt + 2}_CaloIdVT_GsfTrkIdT(Events: {self.events}, Number of files: {len(self.file)}, Golden JSON: {self.goldenjson})"

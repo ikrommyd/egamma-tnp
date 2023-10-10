@@ -374,6 +374,11 @@ class BaseTrigger:
             plateau_cut : int or float, optional
                 The Pt threshold to use to ensure that we are on the efficiency plateau for eta and phi histograms.
                 The default None, meaning that no extra cut is applied and the activation region is included in those histograms.
+            eta_regions : dict, optional
+                A dictionary of the form `{"name": [etamin, etamax], ...}`
+                where name is the name of the region and etamin and etamax are the absolute eta bounds.
+                The histograms will be split into those eta regions.
+                The default is None meaning the entire |eta| < 2.5 region is used.
             compute : bool, optional
                 Whether to return the computed hist.Hist histograms or the delayed hist.dask.Hist histograms.
                 The default is False.
@@ -386,18 +391,15 @@ class BaseTrigger:
 
         Returns
         -------
-            hpt_pass: hist.Hist or hist.dask.Hist
-                The Pt histogram of the passing probes.
-            hpt_all: hist.Hist or hist.dask.Hist
-                The Pt histogram of all probes.
-            heta_pass: hist.Hist or hist.dask.Hist
-                The Eta histogram of the passing probes.
-            heta_all: hist.Hist or hist.dask.Hist
-                The Eta histogram of all probes.
-            hphi_pass: hist.Hist or hist.dask.Hist
-                The Phi histogram of the passing probes.
-            hphi_all: hist.Hist or hist.dask.Hist
-                The Phi histogram of all probes.
+            histograms : dict
+                A dictionary of the form `{"name": [hpt_pass, hpt_all, heta_pass, heta_all, hphi_pass, hphi_all], ...}`
+                Where each `"name"` is the name of each eta region defined by the user.
+                `hpt_pass` is a hist.Hist or hist.dask.Hist histogram of the Pt histogram of the passing probes.
+                `hpt_all` is a hist.Hist or hist.dask.Hist histogram of the Pt histogram of all probes.
+                `heta_pass` is a hist.Hist or hist.dask.Hist histogram of the Eta histogram of the passing probes.
+                `heta_all` is a hist.Hist or hist.dask.Hist histogram of the Eta histogram of all probes.
+                `hphi_pass` is a hist.Hist or hist.dask.Hist histogram of the Phi histogram of the passing probes.
+                `hphi_all` is a hist.Hist or hist.dask.Hist histogram of the Phi histogram of all probes.
         """
         if plateau_cut is None:
             plateau_cut = 0

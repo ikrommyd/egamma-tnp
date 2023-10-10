@@ -29,13 +29,21 @@ def get_ratio_histogram(passing_probes, all_probes):
     return ratio, yerr
 
 
-def fill_eager_histograms(res, bins):
+def fill_eager_histograms(res, plateau_cut, eta_regions, bins):
     """Fill eager Pt and Eta histograms of the passing and all probes.
 
     Parameters
     ----------
         res : tuple
             The output of Trigger.get_arrays() with compute=True.
+        plateau_cut : int or float, optional
+            The Pt threshold to use to ensure that we are on the efficiency plateau for eta and phi histograms.
+            The default None, meaning that no extra cut is applied and the activation region is included in those histograms.
+        eta_regions : dict, optional
+            A dictionary of the form `{"name": [etamin, etamax], ...}`
+            where name is the name of the region and etamin and etamax are the absolute eta bounds.
+            The histograms will be split into those eta regions.
+            The default is None meaning the entire |eta| < 2.5 region is used.
         bins: dict
             The binning of the histograms.
             Should have 3 keys "ptbins", "etabins", and "phibins".
@@ -43,18 +51,15 @@ def fill_eager_histograms(res, bins):
 
     Returns
     -------
-        hpt_pass: hist.Hist
-            The Pt histogram of the passing probes.
-        hpt_all: hist.Hist
-            The Pt histogram of all probes.
-        heta_pass: hist.Hist
-            The Eta histogram of the passing probes.
-        heta_all: hist.Hist
-            The Eta histogram of all probes.
-        hphi_pass: hist.Hist
-            The Phi histogram of the passing probes.
-        hphi_all: hist.Hist
-            The Phi histogram of all probes.
+        histograms : dict
+            A dictionary of the form `{"name": [hpt_pass, hpt_all, heta_pass, heta_all, hphi_pass, hphi_all], ...}`
+            Where each `"name"` is the name of each eta region defined by the user.
+            `hpt_pass` is a hist.Hist or hist.dask.Hist histogram of the Pt histogram of the passing probes.
+            `hpt_all` is a hist.Hist or hist.dask.Hist histogram of the Pt histogram of all probes.
+            `heta_pass` is a hist.Hist or hist.dask.Hist histogram of the Eta histogram of the passing probes.
+            `heta_all` is a hist.Hist or hist.dask.Hist histogram of the Eta histogram of all probes.
+            `hphi_pass` is a hist.Hist or hist.dask.Hist histogram of the Phi histogram of the passing probes.
+            `hphi_all` is a hist.Hist or hist.dask.Hist histogram of the Phi histogram of all probes.
     """
     import hist
     from hist import Hist
@@ -62,6 +67,9 @@ def fill_eager_histograms(res, bins):
     ptbins = bins["ptbins"]
     etabins = bins["etabins"]
     phibins = bins["phibins"]
+    ptaxis = hist.axis.Variable(ptbins, name="pt")
+    etaaxis = hist.axis.Variable(etabins, name="eta")
+    phiaxis = hist.axis.Variable(phibins, name="phi")
 
     (
         pt_pass1,
@@ -78,29 +86,38 @@ def fill_eager_histograms(res, bins):
         phi_all2,
     ) = res
 
-    ptaxis = hist.axis.Variable(ptbins, name="pt")
-    hpt_all = Hist(ptaxis)
-    hpt_pass = Hist(ptaxis)
+    histograms = {}
+    for name, region in eta_regions.items():
+        pt_mask_pass1 = pt_pass1 > plateau_cut
+        pt_mask_pass2 = pt_pass2 > plateau_cut
+        pt_mask_all1 = pt_all1 > plateau_cut
+        pt_mask_all2 = pt_all2 > plateau_cut
 
-    etaaxis = hist.axis.Variable(etabins, name="eta")
-    heta_all = Hist(etaaxis)
-    heta_pass = Hist(etaaxis)
+        eta_mask_pass1 = (abs(eta_pass1) > region[0]) & (abs(eta_pass1) < region[1])
+        eta_mask_pass2 = (abs(eta_pass2) > region[0]) & (abs(eta_pass2) < region[1])
+        eta_mask_all1 = (abs(eta_all1) > region[0]) & (abs(eta_all1) < region[1])
+        eta_mask_all2 = (abs(eta_all2) > region[0]) & (abs(eta_all2) < region[1])
 
-    phiaxis = hist.axis.Variable(phibins, name="phi")
-    hphi_all = Hist(phiaxis)
-    hphi_pass = Hist(phiaxis)
+        hpt_pass = Hist(ptaxis)
+        hpt_all = Hist(ptaxis)
+        heta_pass = Hist(etaaxis)
+        heta_all = Hist(etaaxis)
+        hphi_pass = Hist(phiaxis)
+        hphi_all = Hist(phiaxis)
 
-    hpt_pass.fill(pt_pass1)
-    hpt_pass.fill(pt_pass2)
-    hpt_all.fill(pt_all1)
-    hpt_all.fill(pt_all2)
-    heta_pass.fill(eta_pass1)
-    heta_pass.fill(eta_pass2)
-    heta_all.fill(eta_all1)
-    heta_all.fill(eta_all2)
-    hphi_pass.fill(phi_pass1)
-    hphi_pass.fill(phi_pass2)
-    hphi_all.fill(phi_all1)
-    hphi_all.fill(phi_all2)
+        hpt_pass.fill(pt_pass1[pt_mask_pass1 & eta_mask_pass1])
+        hpt_pass.fill(pt_pass2[pt_mask_pass2 & eta_mask_pass2])
+        hpt_all.fill(pt_all1[pt_mask_all1 & eta_mask_all1])
+        hpt_all.fill(pt_all2[pt_mask_all2 & eta_mask_all2])
+        heta_pass.fill(eta_pass1[pt_mask_pass1 & eta_mask_pass1])
+        heta_pass.fill(eta_pass2[pt_mask_pass2 & eta_mask_pass2])
+        heta_all.fill(eta_all1[pt_mask_all1 & eta_mask_all1])
+        heta_all.fill(eta_all2[pt_mask_all2 & eta_mask_all2])
+        hphi_pass.fill(phi_pass1[pt_mask_pass1 & eta_mask_pass1])
+        hphi_pass.fill(phi_pass2[pt_mask_pass2 & eta_mask_pass2])
+        hphi_all.fill(phi_all1[pt_mask_all1 & eta_mask_all1])
+        hphi_all.fill(phi_all2[pt_mask_all2 & eta_mask_all2])
 
-    return hpt_pass, hpt_all, heta_pass, heta_all, hphi_pass, hphi_all
+        histograms[name] = [hpt_pass, hpt_all, heta_pass, heta_all, hphi_pass, hphi_all]
+
+    return histograms

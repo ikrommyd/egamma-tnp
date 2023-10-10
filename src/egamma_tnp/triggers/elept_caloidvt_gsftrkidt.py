@@ -10,9 +10,9 @@ class _TnPImpl:
         events,
         pt,
         avoid_ecal_transition,
-        goldenjson=None,
-        extra_filter=None,
-        extra_filter_args={},
+        goldenjson,
+        extra_filter,
+        extra_filter_args,
     ):
         if extra_filter is not None:
             events = extra_filter(events, **extra_filter_args)
@@ -93,9 +93,9 @@ class ElePt_CaloIdVT_GsfTrkIdT(BaseTrigger):
         custom_redirector="root://cmsxrootd.fnal.gov/",
         invalid=False,
         preprocess=False,
-        preprocess_args={},
+        preprocess_args=None,
         extra_filter=None,
-        extra_filter_args={},
+        extra_filter_args=None,
     ):
         """Tag and Probe efficiency for HLT_ElePt_CaloIdVT_GsfTrkIdT trigger from NanoAOD.
 
@@ -130,6 +130,11 @@ class ElePt_CaloIdVT_GsfTrkIdT(BaseTrigger):
             extra_filter_args : dict, optional
                 Extra arguments to pass to extra_filter. The default is {}.
         """
+        if preprocess_args is None:
+            preprocess_args = {}
+        if extra_filter_args is None:
+            extra_filter_args = {}
+
         self.pt = trigger_pt - 2
         self.avoid_ecal_transition = avoid_ecal_transition
         super().__init__(

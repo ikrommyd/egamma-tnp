@@ -85,13 +85,16 @@ def _get_and_compute_arrays(events, perform_tnp, scheduler, progress, **kwargs):
     return res
 
 
-def _get_tnp_histograms(events, plateau_cut, bins, perform_tnp, **kwargs):
+def _get_tnp_histograms(events, plateau_cut, eta_regions, bins, perform_tnp, **kwargs):
     import hist
     from hist.dask import Hist
 
     ptbins = bins["ptbins"]
     etabins = bins["etabins"]
     phibins = bins["phibins"]
+    ptaxis = hist.axis.Variable(ptbins, name="pt")
+    etaaxis = hist.axis.Variable(etabins, name="eta")
+    phiaxis = hist.axis.Variable(phibins, name="phi")
 
     (
         pt_pass1,
@@ -108,62 +111,58 @@ def _get_tnp_histograms(events, plateau_cut, bins, perform_tnp, **kwargs):
         phi_all2,
     ) = _get_arrays(events, perform_tnp, **kwargs)
 
-    ptaxis = hist.axis.Variable(ptbins, name="pt")
-    hpt_all = Hist(ptaxis)
-    hpt_pass = Hist(ptaxis)
+    histograms = {}
+    for name, region in eta_regions.items():
+        pt_mask_pass1 = pt_pass1 > plateau_cut
+        pt_mask_pass2 = pt_pass2 > plateau_cut
+        pt_mask_all1 = pt_all1 > plateau_cut
+        pt_mask_all2 = pt_all2 > plateau_cut
 
-    etaaxis = hist.axis.Variable(etabins, name="eta")
-    heta_all = Hist(etaaxis)
-    heta_pass = Hist(etaaxis)
+        eta_mask_pass1 = (abs(eta_pass1) > region[0]) & (abs(eta_pass1) < region[1])
+        eta_mask_pass2 = (abs(eta_pass2) > region[0]) & (abs(eta_pass2) < region[1])
+        eta_mask_all1 = (abs(eta_all1) > region[0]) & (abs(eta_all1) < region[1])
+        eta_mask_all2 = (abs(eta_all2) > region[0]) & (abs(eta_all2) < region[1])
 
-    phiaxis = hist.axis.Variable(phibins, name="phi")
-    hphi_all = Hist(phiaxis)
-    hphi_pass = Hist(phiaxis)
+        hpt_pass = Hist(ptaxis)
+        hpt_all = Hist(ptaxis)
+        heta_pass = Hist(etaaxis)
+        heta_all = Hist(etaaxis)
+        hphi_pass = Hist(phiaxis)
+        hphi_all = Hist(phiaxis)
 
-    hpt_pass.fill(pt_pass1)
-    hpt_pass.fill(pt_pass2)
-    hpt_all.fill(pt_all1)
-    hpt_all.fill(pt_all2)
-    heta_pass.fill(eta_pass1[pt_pass1 > plateau_cut])
-    heta_pass.fill(eta_pass2[pt_pass2 > plateau_cut])
-    heta_all.fill(eta_all1[pt_all1 > plateau_cut])
-    heta_all.fill(eta_all2[pt_all2 > plateau_cut])
-    hphi_pass.fill(phi_pass1[pt_pass1 > plateau_cut])
-    hphi_pass.fill(phi_pass2[pt_pass2 > plateau_cut])
-    hphi_all.fill(phi_all1[pt_all1 > plateau_cut])
-    hphi_all.fill(phi_all2[pt_all2 > plateau_cut])
+        hpt_pass.fill(pt_pass1[pt_mask_pass1 & eta_mask_pass1])
+        hpt_pass.fill(pt_pass2[pt_mask_pass2 & eta_mask_pass2])
+        hpt_all.fill(pt_all1[pt_mask_all1 & eta_mask_all1])
+        hpt_all.fill(pt_all2[pt_mask_all2 & eta_mask_all2])
+        heta_pass.fill(eta_pass1[pt_mask_pass1 & eta_mask_pass1])
+        heta_pass.fill(eta_pass2[pt_mask_pass2 & eta_mask_pass2])
+        heta_all.fill(eta_all1[pt_mask_all1 & eta_mask_all1])
+        heta_all.fill(eta_all2[pt_mask_all2 & eta_mask_all2])
+        hphi_pass.fill(phi_pass1[pt_mask_pass1 & eta_mask_pass1])
+        hphi_pass.fill(phi_pass2[pt_mask_pass2 & eta_mask_pass2])
+        hphi_all.fill(phi_all1[pt_mask_all1 & eta_mask_all1])
+        hphi_all.fill(phi_all2[pt_mask_all2 & eta_mask_all2])
 
-    return hpt_pass, hpt_all, heta_pass, heta_all, hphi_pass, hphi_all
+        histograms[name] = [hpt_pass, hpt_all, heta_pass, heta_all, hphi_pass, hphi_all]
+
+    return histograms
 
 
 def _get_and_compute_tnp_histograms(
-    events, bins, perform_tnp, plateau_cut, scheduler, progress, **kwargs
+    events, plateau_cut, eta_regions, bins, perform_tnp, scheduler, progress, **kwargs
 ):
     import dask
     from dask.diagnostics import ProgressBar
 
-    (
-        hpt_pass,
-        hpt_all,
-        heta_pass,
-        heta_all,
-        hphi_pass,
-        hphi_all,
-    ) = _get_tnp_histograms(events, plateau_cut, bins, perform_tnp, **kwargs)
+    histograms = _get_tnp_histograms(
+        events, plateau_cut, eta_regions, bins, perform_tnp, **kwargs
+    )
 
     if progress:
         pbar = ProgressBar()
         pbar.register()
 
-    res = dask.compute(
-        hpt_pass,
-        hpt_all,
-        heta_pass,
-        heta_all,
-        hphi_pass,
-        hphi_all,
-        scheduler=scheduler,
-    )
+    res = dask.compute(histograms, scheduler=scheduler)[0]
 
     if progress:
         pbar.unregister()
@@ -361,7 +360,12 @@ class BaseTrigger:
             )
 
     def get_tnp_histograms(
-        self, plateau_cut=0, compute=False, scheduler=None, progress=True
+        self,
+        plateau_cut=None,
+        eta_regions=None,
+        compute=False,
+        scheduler=None,
+        progress=True,
     ):
         """Get the Pt and Eta histograms of the passing and all probes.
 
@@ -369,7 +373,7 @@ class BaseTrigger:
         ----------
             plateau_cut : int or float, optional
                 The Pt threshold to use to ensure that we are on the efficiency plateau for eta and phi histograms.
-                The default 0, meaning that no extra cut is applied and the activation region is included in those histograms.
+                The default None, meaning that no extra cut is applied and the activation region is included in those histograms.
             compute : bool, optional
                 Whether to return the computed hist.Hist histograms or the delayed hist.dask.Hist histograms.
                 The default is False.
@@ -395,10 +399,16 @@ class BaseTrigger:
             hphi_all: hist.Hist or hist.dask.Hist
                 The Phi histogram of all probes.
         """
+        if plateau_cut is None:
+            plateau_cut = 0
+        if eta_regions is None:
+            eta_regions = {"all": [0, 2.5]}
+
         if compute:
             return _get_and_compute_tnp_histograms(
                 events=self.events,
                 plateau_cut=plateau_cut,
+                eta_regions=eta_regions,
                 bins=self._bins,
                 perform_tnp=self._perform_tnp,
                 pt=self.pt,
@@ -413,6 +423,7 @@ class BaseTrigger:
             return _get_tnp_histograms(
                 events=self.events,
                 plateau_cut=plateau_cut,
+                eta_regions=eta_regions,
                 bins=self._bins,
                 perform_tnp=self._perform_tnp,
                 pt=self.pt,

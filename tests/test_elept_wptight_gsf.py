@@ -25,22 +25,26 @@ def test_local_compute(scheduler, preprocess):
         heta_pass,
         heta_all,
         hphi_pass,
-        hpti_all,
-    ) = tag_n_probe.get_tnp_histograms(compute=True, scheduler=scheduler, progress=True)
+        hphi_all,
+    ) = tag_n_probe.get_tnp_histograms(
+        compute=True, scheduler=scheduler, progress=True
+    )[
+        "all"
+    ]
 
     assert hpt_pass.sum(flow=True) == 144.0
     assert hpt_all.sum(flow=True) == 171.0
     assert heta_pass.sum(flow=True) == 144.0
     assert heta_all.sum(flow=True) == 171.0
     assert hphi_pass.sum(flow=True) == 144.0
-    assert hpti_all.sum(flow=True) == 171.0
+    assert hphi_all.sum(flow=True) == 171.0
 
     assert hpt_pass.values(flow=True)[0] == 0.0
     assert hpt_all.values(flow=True)[0] == 0.0
     assert heta_pass.values(flow=True)[0] == 0.0
     assert heta_all.values(flow=True)[0] == 0.0
     assert hphi_pass.values(flow=True)[0] == 0.0
-    assert hpti_all.values(flow=True)[0] == 0.0
+    assert hphi_all.values(flow=True)[0] == 0.0
 
 
 @pytest.mark.parametrize("preprocess", [False, True])
@@ -65,19 +69,21 @@ def test_distributed_compute(preprocess):
             heta_pass,
             heta_all,
             hphi_pass,
-            hpti_all,
-        ) = tag_n_probe.get_tnp_histograms(compute=True, scheduler=None, progress=True)
+            hphi_all,
+        ) = tag_n_probe.get_tnp_histograms(compute=True, scheduler=None, progress=True)[
+            "all"
+        ]
 
         assert hpt_pass.sum(flow=True) == 144.0
         assert hpt_all.sum(flow=True) == 171.0
         assert heta_pass.sum(flow=True) == 144.0
         assert heta_all.sum(flow=True) == 171.0
         assert hphi_pass.sum(flow=True) == 144.0
-        assert hpti_all.sum(flow=True) == 171.0
+        assert hphi_all.sum(flow=True) == 171.0
 
         assert hpt_pass.values(flow=True)[0] == 0.0
         assert hpt_all.values(flow=True)[0] == 0.0
         assert heta_pass.values(flow=True)[0] == 0.0
         assert heta_all.values(flow=True)[0] == 0.0
         assert hphi_pass.values(flow=True)[0] == 0.0
-        assert hpti_all.values(flow=True)[0] == 0.0
+        assert hphi_all.values(flow=True)[0] == 0.0

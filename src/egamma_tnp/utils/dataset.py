@@ -108,7 +108,7 @@ def get_nanoevents_file(
     custom_redirector="root://cmsxrootd.fnal.gov/",
     invalid=False,
     preprocess=False,
-    preprocess_args={},
+    preprocess_args=None,
 ):
     """Get the `file` for NanoEventsFactory.from_root() from the given dataset names.
 
@@ -137,6 +137,8 @@ def get_nanoevents_file(
         file : a string or dict input to ``uproot.dask()``
             The filename or dict of filenames including the treepath as it would be passed directly to ``uproot.dask()``.
     """
+    if preprocess_args is None:
+        preprocess_args = {}
     if redirect and custom_redirector is None:
         raise ValueError("A custom redirector must not be None if redirect is True")
 

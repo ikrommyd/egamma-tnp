@@ -274,7 +274,7 @@ class BaseTrigger:
             newkey = redirect_files(key, redirector=redirector, isrucio=isrucio).pop()
             self.file[newkey] = self.file.pop(key)
 
-    def load_events(self, from_root_args={}):
+    def load_events(self, from_root_args=None):
         """Load the events from the names.
 
         Parameters
@@ -284,6 +284,9 @@ class BaseTrigger:
                 The default is {}.
         """
         from coffea.nanoevents import NanoEventsFactory
+
+        if from_root_args is None:
+            from_root_args = {}
 
         self.events = NanoEventsFactory.from_root(
             self.file,

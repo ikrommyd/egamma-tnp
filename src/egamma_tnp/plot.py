@@ -58,23 +58,11 @@ def plot_ratio(
     plottype="pt",
     figure_path=None,
     figsize=(6, 6),
-    eff1_kwargs={"color": "k"},
-    eff2_kwargs={"color": "r"},
-    effratio_kwargs={
-        "color": "k",
-        "linestyle": "none",
-        "marker": ".",
-        "markersize": 10.0,
-        "elinewidth": 1,
-    },
-    cms_kwargs={
-        "label": "Preliminary",
-        "data": True,
-        "lumi": "X",
-        "year": 2023,
-        "com": 13.6,
-    },
-    legend_kwargs={},
+    eff1_kwargs=None,
+    eff2_kwargs=None,
+    effratio_kwargs=None,
+    cms_kwargs=None,
+    legend_kwargs=None,
 ):
     """Plot the ratio of two efficiencies.
 
@@ -111,6 +99,33 @@ def plot_ratio(
         legend_kwargs : dict, optional
             Keyword arguments to pass to matplotlib.pyplot.legend.
     """
+    if eff1_kwargs is None:
+        eff1_kwargs = {"color": "k"}
+
+    if eff2_kwargs is None:
+        eff2_kwargs = {"color": "r"}
+
+    if effratio_kwargs is None:
+        effratio_kwargs = {
+            "color": "k",
+            "linestyle": "none",
+            "marker": ".",
+            "markersize": 10.0,
+            "elinewidth": 1,
+        }
+
+    if cms_kwargs is None:
+        cms_kwargs = {
+            "label": "Preliminary",
+            "data": True,
+            "lumi": "X",
+            "year": 2023,
+            "com": 13.6,
+        }
+
+    if legend_kwargs is None:
+        legend_kwargs = {}
+
     fig = plt.figure(figsize=figsize, layout="constrained")
     gs = fig.add_gridspec(nrows=2, ncols=1, hspace=0, height_ratios=[3, 1])
     ax1 = fig.add_subplot(gs[0])
@@ -163,6 +178,8 @@ def plot_ratio(
         ax2.set_xlim(-3.32, 3.32)
         ax2.set_xlabel(r"$\phi$")
         legend_loc = "lower center"
+    else:
+        raise ValueError(f"Invalid plottype {plottype}")
 
     ax1.set_ylim(0, 1.1)
     ax2.set_ylim(0.7, 1.3)

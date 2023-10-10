@@ -99,32 +99,48 @@ def plot_ratio(
         legend_kwargs : dict, optional
             Keyword arguments to pass to matplotlib.pyplot.legend.
     """
+    eff1_default_kwargs = {"color": "k"}
+    eff2_default_kwargs = {"color": "r"}
+    effratio_default_kwargs = {
+        "color": "k",
+        "linestyle": "none",
+        "marker": ".",
+        "markersize": 10.0,
+        "elinewidth": 1,
+    }
+    cms_default_kwargs = {
+        "label": "Preliminary",
+        "data": True,
+        "lumi": "X",
+        "year": 2023,
+        "com": 13.6,
+    }
+    legend_default_kwargs = {}
+
     if eff1_kwargs is None:
-        eff1_kwargs = {"color": "k"}
+        eff1_kwargs = eff1_default_kwargs
+    else:
+        eff1_kwargs = eff1_default_kwargs | eff1_kwargs
 
     if eff2_kwargs is None:
-        eff2_kwargs = {"color": "r"}
+        eff2_kwargs = eff2_default_kwargs
+    else:
+        eff2_kwargs = eff2_default_kwargs | eff2_kwargs
 
     if effratio_kwargs is None:
-        effratio_kwargs = {
-            "color": "k",
-            "linestyle": "none",
-            "marker": ".",
-            "markersize": 10.0,
-            "elinewidth": 1,
-        }
+        effratio_kwargs = effratio_default_kwargs
+    else:
+        effratio_kwargs = effratio_default_kwargs | effratio_kwargs
 
     if cms_kwargs is None:
-        cms_kwargs = {
-            "label": "Preliminary",
-            "data": True,
-            "lumi": "X",
-            "year": 2023,
-            "com": 13.6,
-        }
+        cms_kwargs = cms_default_kwargs
+    else:
+        cms_kwargs = cms_default_kwargs | cms_kwargs
 
     if legend_kwargs is None:
-        legend_kwargs = {}
+        legend_kwargs = legend_default_kwargs
+    else:
+        legend_kwargs = legend_default_kwargs | legend_kwargs
 
     fig = plt.figure(figsize=figsize, layout="constrained")
     gs = fig.add_gridspec(nrows=2, ncols=1, hspace=0, height_ratios=[3, 1])

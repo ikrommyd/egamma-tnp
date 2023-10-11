@@ -55,7 +55,10 @@ There should be a link like `http://localhost:8xxx/?token=...` displayed in the 
 You should see a jupyter notebook with a directory listing.
 
 ## Running the code
-A basic example of how to run the code is given in `EgammaTnP.ipynb` but here is the basic idea of how to run the code.
+A basic example of how to run the code is given in the `tutorial.ipynb` notebook but here is the basic idea of how to run the code.
+This notebook or the instructions below may be outdated so please refer to the docstrings of the classes and functions for more information
+and contact the author for any questions.
+
 First you import the necessary modules:
 ```python
 from egamma_tnp.triggers import ElePt_WPTight_Gsf
@@ -84,7 +87,7 @@ tag_n_probe = ElePt_WPTight_Gsf(
         "/EGamma1/Run2023C-PromptNanoAODv12_v3-v1/NANOAOD",
     ],
     32,
-    goldenjson="json/Cert_Collisions2023_366442_368823_Golden.json",
+    goldenjson="json/Cert_Collisions2023_366442_370790_Golden.json",
     toquery=True,
     redirect=False,
 )
@@ -96,18 +99,13 @@ tag_n_probe.load_events()
 ```
 and then perform tag and probe to get the $P_T$ and $\eta$ histograms of the passing and all probes:
 ```python
-(
-    hpt_pass,
-    hpt_all,
-    heta_pass,
-    heta_all,
-    hphi_pass,
-    hphi_all,
-) = tag_n_probe.get_tnp_histograms(compute=True, scheduler=None)
+res = tag_n_probe.get_tnp_histograms(compute=True, scheduler=None)
+hpt_pass, hpt_all, heta_pass, heta_all, hphi_pass, hphi_all = res
 ```
 You can do whatever you want with those histograms but to plot the efficiencies as a function of $P_T$ and $\eta$ you would do:
 ```python
 plot_efficiency(hpt_pass, hpt_all)
 plot_efficiency(heta_pass, heta_all)
+plot_efficiency(hphi_pass, hphi_all)
 ```
 The customization of those plots is up to the user. Using [mplhep](https://github.com/scikit-hep/mplhep) is recommended.

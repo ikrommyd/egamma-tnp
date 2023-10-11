@@ -97,12 +97,12 @@ Then you can load the events using
 ```python
 tag_n_probe.load_events()
 ```
-and then perform tag and probe to get the $P_T$ and $\eta$ histograms of the passing and all probes:
+and then perform tag and probe to get the $P_T$, $\eta$ and $\phi$ histograms of the passing and all probes:
 ```python
 res = tag_n_probe.get_tnp_histograms(compute=True, scheduler=None)
 hpt_pass, hpt_all, heta_pass, heta_all, hphi_pass, hphi_all = res
 ```
-You can do whatever you want with those histograms but to plot the efficiencies as a function of $P_T$ and $\eta$ you would do:
+You can do whatever you want with those histograms but to plot the efficiencies as a function of $P_T$, $\eta$ and $\phi$ you would do:
 ```python
 plot_efficiency(hpt_pass, hpt_all)
 plot_efficiency(heta_pass, heta_all)

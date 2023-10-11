@@ -89,7 +89,7 @@ if __name__ == "__main__":
             goldenjson=goldenjson,
             toquery=True,
             redirect=False,
-            preprocess=False,
+            preprocess=True,
             preprocess_args={"maybe_step_size": 100_000},
         )
 
@@ -103,7 +103,7 @@ if __name__ == "__main__":
                 "endcap_loweta": [1.566, 2.0],
                 "endcap_higheta": [2.0, 2.5],
             },
-            compute=False,
+            compute=True,
         )
 
         hist_names = [

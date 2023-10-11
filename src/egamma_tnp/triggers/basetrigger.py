@@ -120,12 +120,14 @@ def _get_tnp_histograms(events, plateau_cut, eta_regions, bins, perform_tnp, **k
         eta_mask_all1 = (abs(eta_all1) > region[0]) & (abs(eta_all1) < region[1])
         eta_mask_all2 = (abs(eta_all2) > region[0]) & (abs(eta_all2) < region[1])
 
-        hpt_pass = Hist(hist.axis.Variable(ptbins, name=f"hpt_pass_{name}"))
-        hpt_all = Hist(hist.axis.Variable(ptbins, name=f"hpt_all_{name}"))
-        heta_pass = Hist(hist.axis.Variable(etabins, name=f"heta_pass_{name}"))
-        heta_all = Hist(hist.axis.Variable(etabins, name=f"heta_all_{name}"))
-        hphi_pass = Hist(hist.axis.Variable(phibins, name=f"hphi_pass_{name}"))
-        hphi_all = Hist(hist.axis.Variable(phibins, name=f"hphi_all_{name}"))
+        hpt_pass = Hist(
+            hist.axis.Variable(ptbins, name=f"hpt_{name}", label="Pt [GeV]")
+        )
+        hpt_all = Hist(hist.axis.Variable(ptbins, name=f"hpt_{name}", label="Pt [GeV]"))
+        heta_pass = Hist(hist.axis.Variable(etabins, name=f"heta_{name}", label="eta"))
+        heta_all = Hist(hist.axis.Variable(etabins, name=f"heta_{name}", label="eta"))
+        hphi_pass = Hist(hist.axis.Variable(phibins, name=f"hphi_{name}", label="phi"))
+        hphi_all = Hist(hist.axis.Variable(phibins, name=f"hphi_{name}", label="phi"))
 
         hpt_pass.fill(pt_pass1[pt_mask_pass1 & eta_mask_pass1])
         hpt_pass.fill(pt_pass2[pt_mask_pass2 & eta_mask_pass2])

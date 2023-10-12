@@ -68,15 +68,15 @@ samples2023 = {
 pt = 32
 
 if __name__ == "__main__":
-    client = Client()
+    # client = Client()
 
-    # from lpcjobqueue import LPCCondorCluster
+    from lpcjobqueue import LPCCondorCluster
 
-    # cluster = LPCCondorCluster(ship_env=True)
-    # cluster.adapt(minimum=1, maximum=100)
-    # client = Client(cluster)
+    cluster = LPCCondorCluster(ship_env=True)
+    cluster.adapt(minimum=1, maximum=500)
+    client = Client(cluster)
 
-    for name, samples in samples2022.items():
+    for name, samples in samples2023.items():
         goldenjson = (
             "json/Cert_Collisions2023_366442_370790_Golden.json"
             if "2023" in name
@@ -98,7 +98,7 @@ if __name__ == "__main__":
         print(tag_n_probe)
 
         res = tag_n_probe.get_tnp_histograms(
-            eta_regions={
+            eta_regions_pt={
                 "barrel": [0.0, 1.4442],
                 "endcap_loweta": [1.566, 2.0],
                 "endcap_higheta": [2.0, 2.5],
@@ -106,20 +106,13 @@ if __name__ == "__main__":
             compute=True,
         )
 
-        hist_names = [
-            "hpt_pass",
-            "hpt_all",
-            "heta_pass",
-            "heta_all",
-            "hphi_pass",
-            "hphi_all",
-        ]
         with uproot.recreate(f"root_files/Run{name}_Ele{pt}.root") as f:
-            for region_name, hists in res.items():
-                for i, h in enumerate(hists):
-                    print(
-                        f"Run{name}_Ele{pt}_{region_name}_{hist_names[i]} sum : {h.sum(flow=True)}"
-                    )
-                    f[f"{region_name}/{hist_names[i]}"] = h
+            for var, region_dict in res.items():
+                for region_name, hists in region_dict.items():
+                    for i, (histname, h) in enumerate(hists.items()):
+                        print(
+                            f"Run{name}_Ele{pt}_{var}/{region_name}/{histname} sum : {h.sum(flow=True)}"
+                        )
+                        f[f"{var}/{region_name}/{histname}"] = h
 
         print(f"\nFinished running Run{name}_Ele{pt}\n")

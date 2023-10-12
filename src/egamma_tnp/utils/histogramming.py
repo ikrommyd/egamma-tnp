@@ -129,7 +129,7 @@ def fill_eager_histograms(
         hpt_all.fill(pt_all1[eta_mask_pt_all1])
         hpt_all.fill(pt_all2[eta_mask_pt_all2])
 
-        histograms["pt"][name_pt] = [hpt_pass, hpt_all]
+        histograms["pt"][name_pt] = {"passing": hpt_pass, "all": hpt_all}
 
     for name_eta, region_eta in eta_regions_eta.items():
         eta_mask_eta_pass1 = (abs(eta_pass1) > region_eta[0]) & (
@@ -155,7 +155,7 @@ def fill_eager_histograms(
         heta_all.fill(eta_all1[plateau_mask_all1 & eta_mask_eta_all1])
         heta_all.fill(eta_all2[plateau_mask_all2 & eta_mask_eta_all2])
 
-        histograms["eta"][name_eta] = [heta_pass, heta_all]
+        histograms["eta"][name_eta] = {"passing": heta_pass, "all": heta_all}
 
     for name_phi, region_phi in eta_regions_phi.items():
         eta_mask_phi_pass1 = (abs(eta_pass1) > region_phi[0]) & (
@@ -181,6 +181,6 @@ def fill_eager_histograms(
         hphi_all.fill(phi_all1[plateau_mask_all1 & eta_mask_phi_all1])
         hphi_all.fill(phi_all2[plateau_mask_all2 & eta_mask_phi_all2])
 
-        histograms["phi"][name_phi] = [hphi_pass, hphi_all]
+        histograms["phi"][name_phi] = {"passing": hphi_pass, "all": hphi_all}
 
     return histograms

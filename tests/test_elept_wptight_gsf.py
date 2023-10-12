@@ -26,10 +26,10 @@ def test_local_compute(scheduler, preprocess):
         progress=True,
     )
 
-    (hpt_pass_barrel, hpt_all_barrel) = histograms["pt"]["barrel"]
-    (hpt_pass_endcap, hpt_all_endcap) = histograms["pt"]["endcap"]
-    (heta_pass, heta_all) = histograms["eta"]["all"]
-    (hphi_pass, hphi_all) = histograms["phi"]["all"]
+    hpt_pass_barrel, hpt_all_barrel = histograms["pt"]["barrel"].values()
+    hpt_pass_endcap, hpt_all_endcap = histograms["pt"]["endcap"].values()
+    heta_pass, heta_all = histograms["eta"]["entire"].values()
+    hphi_pass, hphi_all = histograms["phi"]["entire"].values()
 
     assert hpt_pass_barrel.sum(flow=True) + hpt_pass_endcap.sum(flow=True) == 144.0
     assert hpt_all_barrel.sum(flow=True) + hpt_all_endcap.sum(flow=True) == 171.0
@@ -73,10 +73,10 @@ def test_distributed_compute(preprocess):
             progress=True,
         )
 
-        (hpt_pass_barrel, hpt_all_barrel) = histograms["pt"]["barrel"]
-        (hpt_pass_endcap, hpt_all_endcap) = histograms["pt"]["endcap"]
-        (heta_pass, heta_all) = histograms["eta"]["all"]
-        (hphi_pass, hphi_all) = histograms["phi"]["all"]
+        hpt_pass_barrel, hpt_all_barrel = histograms["pt"]["barrel"].values()
+        hpt_pass_endcap, hpt_all_endcap = histograms["pt"]["endcap"].values()
+        heta_pass, heta_all = histograms["eta"]["entire"].values()
+        hphi_pass, hphi_all = histograms["phi"]["entire"].values()
 
         assert hpt_pass_barrel.sum(flow=True) + hpt_pass_endcap.sum(flow=True) == 144.0
         assert hpt_all_barrel.sum(flow=True) + hpt_all_endcap.sum(flow=True) == 171.0

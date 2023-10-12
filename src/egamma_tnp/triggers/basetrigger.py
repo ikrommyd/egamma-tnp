@@ -146,10 +146,10 @@ def _get_tnp_histograms(
         hpt_all = Hist(
             hist.axis.Variable(ptbins, name=f"hpt_{name_pt}", label="Pt [GeV]")
         )
-        hpt_pass.fill(pt_pass1[plateau_mask_pass1 & eta_mask_pt_pass1])
-        hpt_pass.fill(pt_pass2[plateau_mask_pass2 & eta_mask_pt_pass2])
-        hpt_all.fill(pt_all1[plateau_mask_all1 & eta_mask_pt_all1])
-        hpt_all.fill(pt_all2[plateau_mask_all2 & eta_mask_pt_all2])
+        hpt_pass.fill(pt_pass1[eta_mask_pt_pass1])
+        hpt_pass.fill(pt_pass2[eta_mask_pt_pass2])
+        hpt_all.fill(pt_all1[eta_mask_pt_all1])
+        hpt_all.fill(pt_all2[eta_mask_pt_all2])
 
         histograms["pt"][name_pt] = [hpt_pass, hpt_all]
 

@@ -411,7 +411,7 @@ class BaseTrigger:
         if plateau_cut is None:
             plateau_cut = 0
         if eta_regions is None:
-            eta_regions = {"all": [0, 2.5]}
+            eta_regions = {"all": [0.0, 2.5]}
 
         if compute:
             return _get_and_compute_tnp_histograms(

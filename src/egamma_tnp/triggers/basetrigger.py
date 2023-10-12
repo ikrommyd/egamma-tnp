@@ -85,7 +85,16 @@ def _get_and_compute_arrays(events, perform_tnp, scheduler, progress, **kwargs):
     return res
 
 
-def _get_tnp_histograms(events, plateau_cut, eta_regions, bins, perform_tnp, **kwargs):
+def _get_tnp_histograms(
+    events,
+    plateau_cut,
+    eta_regions_pt,
+    eta_regions_eta,
+    eta_regions_phi,
+    bins,
+    perform_tnp,
+    **kwargs,
+):
     import hist
     from hist.dask import Hist
 
@@ -109,52 +118,120 @@ def _get_tnp_histograms(events, plateau_cut, eta_regions, bins, perform_tnp, **k
     ) = _get_arrays(events, perform_tnp, **kwargs)
 
     histograms = {}
-    for name, region in eta_regions.items():
-        pt_mask_pass1 = pt_pass1 > plateau_cut
-        pt_mask_pass2 = pt_pass2 > plateau_cut
-        pt_mask_all1 = pt_all1 > plateau_cut
-        pt_mask_all2 = pt_all2 > plateau_cut
+    histograms["pt"] = {}
+    histograms["eta"] = {}
+    histograms["phi"] = {}
 
-        eta_mask_pass1 = (abs(eta_pass1) > region[0]) & (abs(eta_pass1) < region[1])
-        eta_mask_pass2 = (abs(eta_pass2) > region[0]) & (abs(eta_pass2) < region[1])
-        eta_mask_all1 = (abs(eta_all1) > region[0]) & (abs(eta_all1) < region[1])
-        eta_mask_all2 = (abs(eta_all2) > region[0]) & (abs(eta_all2) < region[1])
+    plateau_mask_pass1 = pt_pass1 > plateau_cut
+    plateau_mask_pass2 = pt_pass2 > plateau_cut
+    plateau_mask_all1 = pt_all1 > plateau_cut
+    plateau_mask_all2 = pt_all2 > plateau_cut
 
-        hpt_pass = Hist(
-            hist.axis.Variable(ptbins, name=f"hpt_{name}", label="Pt [GeV]")
+    for name_pt, region_pt in eta_regions_pt.items():
+        eta_mask_pt_pass1 = (abs(eta_pass1) > region_pt[0]) & (
+            abs(eta_pass1) < region_pt[1]
         )
-        hpt_all = Hist(hist.axis.Variable(ptbins, name=f"hpt_{name}", label="Pt [GeV]"))
-        heta_pass = Hist(hist.axis.Variable(etabins, name=f"heta_{name}", label="eta"))
-        heta_all = Hist(hist.axis.Variable(etabins, name=f"heta_{name}", label="eta"))
-        hphi_pass = Hist(hist.axis.Variable(phibins, name=f"hphi_{name}", label="phi"))
-        hphi_all = Hist(hist.axis.Variable(phibins, name=f"hphi_{name}", label="phi"))
+        eta_mask_pt_pass2 = (abs(eta_pass2) > region_pt[0]) & (
+            abs(eta_pass2) < region_pt[1]
+        )
+        eta_mask_pt_all1 = (abs(eta_all1) > region_pt[0]) & (
+            abs(eta_all1) < region_pt[1]
+        )
+        eta_mask_pt_all2 = (abs(eta_all2) > region_pt[0]) & (
+            abs(eta_all2) < region_pt[1]
+        )
+        hpt_pass = Hist(
+            hist.axis.Variable(ptbins, name=f"hpt_{name_pt}", label="Pt [GeV]")
+        )
+        hpt_all = Hist(
+            hist.axis.Variable(ptbins, name=f"hpt_{name_pt}", label="Pt [GeV]")
+        )
+        hpt_pass.fill(pt_pass1[eta_mask_pt_pass1])
+        hpt_pass.fill(pt_pass2[eta_mask_pt_pass2])
+        hpt_all.fill(pt_all1[eta_mask_pt_all1])
+        hpt_all.fill(pt_all2[eta_mask_pt_all2])
 
-        hpt_pass.fill(pt_pass1[pt_mask_pass1 & eta_mask_pass1])
-        hpt_pass.fill(pt_pass2[pt_mask_pass2 & eta_mask_pass2])
-        hpt_all.fill(pt_all1[pt_mask_all1 & eta_mask_all1])
-        hpt_all.fill(pt_all2[pt_mask_all2 & eta_mask_all2])
-        heta_pass.fill(eta_pass1[pt_mask_pass1 & eta_mask_pass1])
-        heta_pass.fill(eta_pass2[pt_mask_pass2 & eta_mask_pass2])
-        heta_all.fill(eta_all1[pt_mask_all1 & eta_mask_all1])
-        heta_all.fill(eta_all2[pt_mask_all2 & eta_mask_all2])
-        hphi_pass.fill(phi_pass1[pt_mask_pass1 & eta_mask_pass1])
-        hphi_pass.fill(phi_pass2[pt_mask_pass2 & eta_mask_pass2])
-        hphi_all.fill(phi_all1[pt_mask_all1 & eta_mask_all1])
-        hphi_all.fill(phi_all2[pt_mask_all2 & eta_mask_all2])
+        histograms["pt"][name_pt] = [hpt_pass, hpt_all]
 
-        histograms[name] = [hpt_pass, hpt_all, heta_pass, heta_all, hphi_pass, hphi_all]
+    for name_eta, region_eta in eta_regions_eta.items():
+        eta_mask_eta_pass1 = (abs(eta_pass1) > region_eta[0]) & (
+            abs(eta_pass1) < region_eta[1]
+        )
+        eta_mask_eta_pass2 = (abs(eta_pass2) > region_eta[0]) & (
+            abs(eta_pass2) < region_eta[1]
+        )
+        eta_mask_eta_all1 = (abs(eta_all1) > region_eta[0]) & (
+            abs(eta_all1) < region_eta[1]
+        )
+        eta_mask_eta_all2 = (abs(eta_all2) > region_eta[0]) & (
+            abs(eta_all2) < region_eta[1]
+        )
+        heta_pass = Hist(
+            hist.axis.Variable(etabins, name=f"heta_{name_eta}", label="eta")
+        )
+        heta_all = Hist(
+            hist.axis.Variable(etabins, name=f"heta_{name_eta}", label="eta")
+        )
+        heta_pass.fill(eta_pass1[plateau_mask_pass1 & eta_mask_eta_pass1])
+        heta_pass.fill(eta_pass2[plateau_mask_pass2 & eta_mask_eta_pass2])
+        heta_all.fill(eta_all1[plateau_mask_all1 & eta_mask_eta_all1])
+        heta_all.fill(eta_all2[plateau_mask_all2 & eta_mask_eta_all2])
+
+        histograms["eta"][name_eta] = [heta_pass, heta_all]
+
+    for name_phi, region_phi in eta_regions_phi.items():
+        eta_mask_phi_pass1 = (abs(eta_pass1) > region_phi[0]) & (
+            abs(eta_pass1) < region_phi[1]
+        )
+        eta_mask_phi_pass2 = (abs(eta_pass2) > region_phi[0]) & (
+            abs(eta_pass2) < region_phi[1]
+        )
+        eta_mask_phi_all1 = (abs(eta_all1) > region_phi[0]) & (
+            abs(eta_all1) < region_phi[1]
+        )
+        eta_mask_phi_all2 = (abs(eta_all2) > region_phi[0]) & (
+            abs(eta_all2) < region_phi[1]
+        )
+        hphi_pass = Hist(
+            hist.axis.Variable(phibins, name=f"hphi_{name_phi}", label="phi")
+        )
+        hphi_all = Hist(
+            hist.axis.Variable(phibins, name=f"hphi_{name_phi}", label="phi")
+        )
+        hphi_pass.fill(phi_pass1[plateau_mask_pass1 & eta_mask_phi_pass1])
+        hphi_pass.fill(phi_pass2[plateau_mask_pass2 & eta_mask_phi_pass2])
+        hphi_all.fill(phi_all1[plateau_mask_all1 & eta_mask_phi_all1])
+        hphi_all.fill(phi_all2[plateau_mask_all2 & eta_mask_phi_all2])
+
+        histograms["phi"][name_phi] = [hphi_pass, hphi_all]
 
     return histograms
 
 
 def _get_and_compute_tnp_histograms(
-    events, plateau_cut, eta_regions, bins, perform_tnp, scheduler, progress, **kwargs
+    events,
+    plateau_cut,
+    eta_regions_pt,
+    eta_regions_eta,
+    eta_regions_phi,
+    bins,
+    perform_tnp,
+    scheduler,
+    progress,
+    **kwargs,
 ):
     import dask
     from dask.diagnostics import ProgressBar
 
     histograms = _get_tnp_histograms(
-        events, plateau_cut, eta_regions, bins, perform_tnp, **kwargs
+        events,
+        plateau_cut,
+        eta_regions_pt,
+        eta_regions_eta,
+        eta_regions_phi,
+        bins,
+        perform_tnp,
+        **kwargs,
     )
 
     if progress:
@@ -369,7 +446,9 @@ class BaseTrigger:
     def get_tnp_histograms(
         self,
         plateau_cut=None,
-        eta_regions=None,
+        eta_regions_pt=None,
+        eta_regions_eta=None,
+        eta_regions_phi=None,
         compute=False,
         scheduler=None,
         progress=True,
@@ -381,11 +460,21 @@ class BaseTrigger:
             plateau_cut : int or float, optional
                 The Pt threshold to use to ensure that we are on the efficiency plateau for eta and phi histograms.
                 The default None, meaning that no extra cut is applied and the activation region is included in those histograms.
-            eta_regions : dict, optional
+            eta_regions_pt : dict, optional
                 A dictionary of the form `{"name": [etamin, etamax], ...}`
                 where name is the name of the region and etamin and etamax are the absolute eta bounds.
-                The histograms will be split into those eta regions.
-                The default is None meaning the entire |eta| < 2.5 region is used.
+                The Pt histograms will be split into those eta regions.
+                The default is to avoid the ECAL transition region meaning |eta| < 1.4442 or 1.566 < |eta| < 2.5.
+            eta_regions_eta : dict, optional
+                A dictionary of the form `{"name": [etamin, etamax], ...}`
+                where name is the name of the region and etamin and etamax are the absolute eta bounds.
+                The Eta histograms will be split into those eta regions.
+                The default is to use the entire |eta| < 2.5 region.
+            eta_regions_phi : dict, optional
+                A dictionary of the form `{"name": [etamin, etamax], ...}`
+                where name is the name of the region and etamin and etamax are the absolute eta bounds.
+                The Phi histograms will be split into those eta regions.
+                The default is to use the entire |eta| < 2.5 region.
             compute : bool, optional
                 Whether to return the computed hist.Hist histograms or the delayed hist.dask.Hist histograms.
                 The default is False.
@@ -410,14 +499,23 @@ class BaseTrigger:
         """
         if plateau_cut is None:
             plateau_cut = 0
-        if eta_regions is None:
-            eta_regions = {"all": [0.0, 2.5]}
+        if eta_regions_pt is None:
+            eta_regions_pt = {
+                "barrel": [0.0, 1.4442],
+                "endcap": [1.566, 2.5],
+            }
+        if eta_regions_eta is None:
+            eta_regions_eta = {"all": [0, 2.5]}
+        if eta_regions_phi is None:
+            eta_regions_phi = {"all": [0, 2.5]}
 
         if compute:
             return _get_and_compute_tnp_histograms(
                 events=self.events,
                 plateau_cut=plateau_cut,
-                eta_regions=eta_regions,
+                eta_regions_pt=eta_regions_pt,
+                eta_regions_eta=eta_regions_eta,
+                eta_regions_phi=eta_regions_phi,
                 bins=self._bins,
                 perform_tnp=self._perform_tnp,
                 pt=self.pt,
@@ -433,7 +531,9 @@ class BaseTrigger:
             return _get_tnp_histograms(
                 events=self.events,
                 plateau_cut=plateau_cut,
-                eta_regions=eta_regions,
+                eta_regions_pt=eta_regions_pt,
+                eta_regions_eta=eta_regions_eta,
+                eta_regions_phi=eta_regions_phi,
                 bins=self._bins,
                 perform_tnp=self._perform_tnp,
                 pt=self.pt,

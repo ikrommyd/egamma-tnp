@@ -11,7 +11,6 @@ def test_local_compute(scheduler, preprocess):
     tag_n_probe = ElePt_CaloIdVT_GsfTrkIdT(
         os.path.abspath("tests/samples/DYto2E.root"),
         115,
-        avoid_ecal_transition=True,
         goldenjson=None,
         toquery=False,
         redirect=False,
@@ -81,7 +80,6 @@ def test_distributed_compute(preprocess):
     tag_n_probe = ElePt_CaloIdVT_GsfTrkIdT(
         os.path.abspath("tests/samples/DYto2E.root"),
         115,
-        avoid_ecal_transition=True,
         goldenjson=None,
         toquery=False,
         redirect=False,

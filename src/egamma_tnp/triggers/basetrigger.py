@@ -179,6 +179,9 @@ class BaseTrigger:
         self,
         names,
         perform_tnp,
+        pt,
+        avoid_ecal_transition_tags,
+        avoid_ecal_transition_probes,
         goldenjson,
         toquery,
         redirect,
@@ -191,6 +194,9 @@ class BaseTrigger:
     ):
         self.names = names
         self._perform_tnp = perform_tnp
+        self.pt = pt
+        self.avoid_ecal_transition_tags = avoid_ecal_transition_tags
+        self.avoid_ecal_transition_probes = avoid_ecal_transition_probes
         self.goldenjson = goldenjson
         self.events = None
         self._toquery = toquery
@@ -340,7 +346,8 @@ class BaseTrigger:
                 events=self.events,
                 perform_tnp=self._perform_tnp,
                 pt=self.pt,
-                avoid_ecal_transition=self.avoid_ecal_transition,
+                avoid_ecal_transition_tags=self.avoid_ecal_transition_tags,
+                avoid_ecal_transition_probes=self.avoid_ecal_transition_probes,
                 goldenjson=self.goldenjson,
                 scheduler=scheduler,
                 progress=progress,
@@ -352,7 +359,8 @@ class BaseTrigger:
                 events=self.events,
                 perform_tnp=self._perform_tnp,
                 pt=self.pt,
-                avoid_ecal_transition=self.avoid_ecal_transition,
+                avoid_ecal_transition_tags=self.avoid_ecal_transition_tags,
+                avoid_ecal_transition_probes=self.avoid_ecal_transition_probes,
                 goldenjson=self.goldenjson,
                 extra_filter=self._extra_filter,
                 extra_filter_args=self._extra_filter_args,
@@ -413,7 +421,8 @@ class BaseTrigger:
                 bins=self._bins,
                 perform_tnp=self._perform_tnp,
                 pt=self.pt,
-                avoid_ecal_transition=self.avoid_ecal_transition,
+                avoid_ecal_transition_tags=self.avoid_ecal_transition_tags,
+                avoid_ecal_transition_probes=self.avoid_ecal_transition_probes,
                 goldenjson=self.goldenjson,
                 scheduler=scheduler,
                 progress=progress,
@@ -428,7 +437,8 @@ class BaseTrigger:
                 bins=self._bins,
                 perform_tnp=self._perform_tnp,
                 pt=self.pt,
-                avoid_ecal_transition=self.avoid_ecal_transition,
+                avoid_ecal_transition_tags=self.avoid_ecal_transition_tags,
+                avoid_ecal_transition_probes=self.avoid_ecal_transition_probes,
                 goldenjson=self.goldenjson,
                 extra_filter=self._extra_filter,
                 extra_filter_args=self._extra_filter_args,

@@ -9,7 +9,8 @@ class _TnPImpl:
         self,
         events,
         pt,
-        avoid_ecal_transition,
+        avoid_ecal_transition_tags,
+        avoid_ecal_transition_probes,
         goldenjson,
         extra_filter,
         extra_filter_args,
@@ -18,14 +19,37 @@ class _TnPImpl:
             events = extra_filter(events, **extra_filter_args)
         if goldenjson is not None:
             events = self.apply_lumimasking(events, goldenjson)
-        good_events, good_locations = self.filter_events(
-            events, pt, avoid_ecal_transition
-        )
+        good_events, good_locations = self.filter_events(events, pt)
         ele_for_tnp = good_events.Electron[good_locations]
         zcands1 = dak.combinations(ele_for_tnp, 2, fields=["tag", "probe"])
         zcands2 = dak.combinations(ele_for_tnp, 2, fields=["probe", "tag"])
+
+        if avoid_ecal_transition_tags:
+            tags1 = zcands1.tag
+            pass_eta_ebeegap_tags1 = (abs(tags1.eta) < 1.4442) | (
+                abs(tags1.eta) > 1.566
+            )
+            zcands1 = zcands1[pass_eta_ebeegap_tags1]
+            tags2 = zcands2.tag
+            pass_eta_ebeegap_tags2 = (abs(tags2.eta) < 1.4442) | (
+                abs(tags2.eta) > 1.566
+            )
+            zcands2 = zcands2[pass_eta_ebeegap_tags2]
+        if avoid_ecal_transition_probes:
+            probes1 = zcands1.probe
+            pass_eta_ebeegap_probes1 = (abs(probes1.eta) < 1.4442) | (
+                abs(probes1.eta) > 1.566
+            )
+            zcands1 = zcands1[pass_eta_ebeegap_probes1]
+            probes2 = zcands2.probe
+            pass_eta_ebeegap_probes2 = (abs(probes2.eta) < 1.4442) | (
+                abs(probes2.eta) > 1.566
+            )
+            zcands2 = zcands2[pass_eta_ebeegap_probes2]
+
         p1, a1 = self.find_probes(zcands1.tag, zcands1.probe, good_events.TrigObj, pt)
         p2, a2 = self.find_probes(zcands2.tag, zcands2.probe, good_events.TrigObj, pt)
+
         return p1, a1, p2, a2
 
     def apply_lumimasking(self, events, goldenjson):
@@ -33,19 +57,13 @@ class _TnPImpl:
         mask = lumimask(events.run, events.luminosityBlock)
         return events[mask]
 
-    def filter_events(self, events, pt, avoid_ecal_transition):
+    def filter_events(self, events, pt):
         enough_electrons = dak.num(events.Electron) >= 2
         abs_eta = abs(events.Electron.eta)
-        pass_eta_ebeegap = (abs_eta < 1.4442) | (abs_eta > 1.566)
         pass_tight_id = events.Electron.cutBased == 4
         pass_pt = events.Electron.pt > pt
         pass_eta = abs_eta <= 2.5
-        if avoid_ecal_transition:
-            pass_selection = (
-                enough_electrons & pass_pt & pass_eta_ebeegap & pass_eta & pass_tight_id
-            )
-        else:
-            pass_selection = enough_electrons & pass_pt & pass_eta & pass_tight_id
+        pass_selection = enough_electrons & pass_pt & pass_eta & pass_tight_id
         n_of_tags = dak.sum(pass_selection, axis=1)
         good_events = events[n_of_tags >= 2]
         good_locations = pass_selection[n_of_tags >= 2]
@@ -86,7 +104,8 @@ class ElePt_CaloIdVT_GsfTrkIdT(BaseTrigger):
         names,
         trigger_pt,
         *,
-        avoid_ecal_transition=False,
+        avoid_ecal_transition_tags=True,
+        avoid_ecal_transition_probes=False,
         goldenjson=None,
         toquery=False,
         redirect=False,
@@ -105,8 +124,10 @@ class ElePt_CaloIdVT_GsfTrkIdT(BaseTrigger):
                 The dataset names to query that can contain wildcards or a list of file paths.
             trigger_pt : int or float
                 The Pt threshold of the trigger.
-            avoid_ecal_transition : bool, optional
-                Whether to avoid the ECAL transition region by placing an eta cut. The default is False.
+            avoid_ecal_transition_tags : bool, optional
+                Whether to avoid the ECAL transition region for the tags with an eta cut. The default is True.
+            avoid_ecal_transition_probes : bool, optional
+                Whether to avoid the ECAL transition region for the probes with an eta cut. The default is False.
             goldenjson : str, optional
                 The golden json to use for luminosity masking. The default is None.
             toquery : bool, optional
@@ -135,11 +156,12 @@ class ElePt_CaloIdVT_GsfTrkIdT(BaseTrigger):
         if extra_filter_args is None:
             extra_filter_args = {}
 
-        self.pt = trigger_pt - 2
-        self.avoid_ecal_transition = avoid_ecal_transition
         super().__init__(
             names=names,
             perform_tnp=_TnPImpl(),
+            pt=trigger_pt - 2,
+            avoid_ecal_transition_tags=avoid_ecal_transition_tags,
+            avoid_ecal_transition_probes=avoid_ecal_transition_probes,
             goldenjson=goldenjson,
             toquery=toquery,
             redirect=redirect,

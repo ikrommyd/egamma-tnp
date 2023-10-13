@@ -151,10 +151,10 @@ if __name__ == "__main__":
                     else:
                         goldenjson = None
 
-                    redirect = True if "MC126x_mll_50to120" in name else False
+                    redirect = True if "MC126x_MLL_50to120" in name else False
                     custom_redirector = (
                         "root://cmsio2.rc.ufl.edu/"
-                        if "MC126x_mll_50to120" in name
+                        if "MC126x_MLL_50to120" in name
                         else "root://cmsxrootd.fnal.gov/"
                     )
 

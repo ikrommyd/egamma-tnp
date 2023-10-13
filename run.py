@@ -60,7 +60,8 @@ mc126x_mll_50to120 = {
 }
 
 triggers = [ElePt_WPTight_Gsf, ElePt_CaloIdVT_GsfTrkIdT]
-thresholds = [30, 32, 115, 135]
+wptight_thresholds = [30, 32]
+caloidvt_gsftrkidt_thresholds = [115, 135]
 dataset_dicts = [samples2022, samples2023, mc124x, mc126x, mc126x_mll_50to120]
 
 if __name__ == "__main__":
@@ -74,6 +75,7 @@ if __name__ == "__main__":
 
     for trigger in triggers:
         if trigger == ElePt_WPTight_Gsf:
+            thresholds = wptight_thresholds
             egamma_tnp.config.set(
                 "ptbins",
                 [
@@ -101,6 +103,7 @@ if __name__ == "__main__":
                 ],
             )
         if trigger == ElePt_CaloIdVT_GsfTrkIdT:
+            thresholds = caloidvt_gsftrkidt_thresholds
             egamma_tnp.config.set(
                 "ptbins",
                 [

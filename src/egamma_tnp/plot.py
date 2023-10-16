@@ -55,7 +55,7 @@ def plot_ratio(
     label1,
     label2,
     *,
-    plottype="pt",
+    plottype="pt_low_threshold",
     figure_path=None,
     figsize=(6, 6),
     eff1_kwargs=None,
@@ -81,8 +81,8 @@ def plot_ratio(
         label2 : str
             The label for the second efficiency.
         plottype : str, optional
-            The type of plot to make. Can be "pt", "eta", or "phi".
-            Defaults is "pt".
+            The type of plot to make. Can be "pt_low_threshold", "pt_high_threshold", "eta", or "phi".
+            Defaults is "pt_low_threshold".
         figure_path : str, optional
             The path where the figure should be saved, or None to not save it.
             Defaults is None.
@@ -177,22 +177,29 @@ def plot_ratio(
 
     hep.cms.label(ax=ax1, **cms_kwargs)
 
-    if plottype == "pt":
-        ax1.set_xlim(5, 400)
-        ax2.set_xlim(5, 400)
-        ax2.set_xlabel(r"$P_T$ [GeV]")
+    if plottype == "pt_low_threshold":
+        ax1.set_xlim(10, 400)
+        ax2.set_xlim(10, 400)
+        ax2.set_xlabel(r"Offline electron $P_T$ [GeV]")
         ax1.set_xscale("log")
         ax2.set_xscale("log")
+        ax1.set_xticks([10, 100], [10, 100])
+        ax2.set_xticks([10, 100], [10, 100])
+        legend_loc = "lower right"
+    elif plottype == "pt_high_threshold":
+        ax1.set_xlim(10, 400)
+        ax2.set_xlim(10, 400)
+        ax2.set_xlabel(r"Offline electron $P_T$ [GeV]")
         legend_loc = "lower right"
     elif plottype == "eta":
         ax1.set_xlim(-2.5, 2.5)
         ax2.set_xlim(-2.5, 2.5)
-        ax2.set_xlabel(r"$\eta$")
+        ax2.set_xlabel(r"Offline electron $\eta$")
         legend_loc = "lower center"
     elif plottype == "phi":
         ax1.set_xlim(-3.32, 3.32)
         ax2.set_xlim(-3.32, 3.32)
-        ax2.set_xlabel(r"$\phi$")
+        ax2.set_xlabel(r"Offline electron $\phi$")
         legend_loc = "lower center"
     else:
         raise ValueError(f"Invalid plottype {plottype}")
@@ -208,6 +215,5 @@ def plot_ratio(
 
     if figure_path is not None:
         figure_path = pathlib.Path(figure_path)
-
-    _save_and_close(fig, figure_path, True)
-    return fig
+        _save_and_close(fig, figure_path, True)
+        return fig

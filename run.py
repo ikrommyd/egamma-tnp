@@ -38,12 +38,19 @@ samples2023 = {
     ],
 }
 
-mc124x = {
+mc124x_postEE = {
     "MC124x": [
         "/DYToLL_M-50_TuneCP5_13p6TeV-pythia8/Run3Summer22EENanoAODv10-Poisson60KeepRAW_124X_mcRun3_2022_realistic_postEE_v1-v2/NANOAODSIM",
         "/DYToLL_M-50_TuneCP5_13p6TeV-pythia8/Run3Summer22EENanoAODv10-Poisson70KeepRAW_124X_mcRun3_2022_realistic_postEE_v1-v1/NANOAODSIM",
         "/DYToLL_M-4To50_TuneCP5_13p6TeV-pythia8/Run3Summer22EENanoAODv10-Poisson60KeepRAW_124X_mcRun3_2022_realistic_postEE_v1-v2/NANOAODSIM",
         "/DYToLL_M-4To50_TuneCP5_13p6TeV-pythia8/Run3Summer22EENanoAODv10-Poisson70KeepRAW_124X_mcRun3_2022_realistic_postEE_v1-v1/NANOAODSIM",
+    ]
+}
+
+mc124x_preEE = {
+    "MC124x_preEE": [
+        "/DYTo2L_MLL-4to50_TuneCP5_13p6TeV_pythia8/Run3Summer22NanoAODv10-124X_mcRun3_2022_realistic_v12-v1/NANOAODSIM",
+        "/DYTo2L_MLL-50_TuneCP5_13p6TeV_pythia8/Run3Summer22NanoAODv10-124X_mcRun3_2022_realistic_v12-v1/NANOAODSIM",
     ]
 }
 
@@ -62,7 +69,14 @@ mc126x_mll_50to120 = {
 triggers = [ElePt_WPTight_Gsf, ElePt_CaloIdVT_GsfTrkIdT]
 wptight_thresholds = [30, 32]
 caloidvt_gsftrkidt_thresholds = [115, 135]
-dataset_dicts = [samples2022, samples2023, mc124x, mc126x, mc126x_mll_50to120]
+dataset_dicts = [
+    samples2022,
+    samples2023,
+    mc124x_postEE,
+    mc124x_preEE,
+    mc126x,
+    mc126x_mll_50to120,
+]
 
 if __name__ == "__main__":
     # client = Client()

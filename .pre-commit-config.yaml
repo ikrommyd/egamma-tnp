@@ -48,4 +48,5 @@ repos:
 - repo: https://github.com/abravalheri/validate-pyproject
   rev: v0.24
   hooks:
-    - id: validate-pyproject
+    - id: nbstripout
+      exclude: ^notebooks/|^EGM_HLT_STEAM_20October2023.ipynb

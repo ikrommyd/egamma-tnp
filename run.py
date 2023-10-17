@@ -54,14 +54,14 @@ mc124x_preEE = {
     ]
 }
 
-mc126x = {
-    "MC126x": [
+mc126x_preEE = {
+    "MC126x_preEE": [
         "/DYJetsToLL_M-50_TuneCP5_13p6TeV-madgraphMLM-pythia8/Run3Summer22EENanoAODv11-forPOG_126X_mcRun3_2022_realistic_postEE_v1-v1/NANOAODSIM"
     ]
 }
 
-mc126x_mll_50to120 = {
-    "MC126x_MLL_50to120": [
+mc126x_mll_50to120_preEE = {
+    "MC126x_MLL_50to120_preEE": [
         "/DYto2E_MLL-50to120_TuneCP5_13p6TeV_powheg-pythia8/Run3Summer22EENanoAODv11-126X_mcRun3_2022_realistic_postEE_v1-v2/NANOAODSIM"
     ]
 }
@@ -74,8 +74,8 @@ dataset_dicts = [
     samples2023,
     mc124x_postEE,
     mc124x_preEE,
-    mc126x,
-    mc126x_mll_50to120,
+    mc126x_preEE,
+    mc126x_mll_50to120_preEE,
 ]
 
 if __name__ == "__main__":

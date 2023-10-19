@@ -183,8 +183,12 @@ def plot_ratio(
         ax2.set_xlabel(r"Offline electron $P_T$ [GeV]")
         ax1.set_xscale("log")
         ax2.set_xscale("log")
-        ax1.set_xticks([10, 100], [10, 100])
         ax2.set_xticks([10, 100], [10, 100])
+        ax2.set_xticks(
+            [20, 30, 40, 50, 60, 70, 80, 90, 200, 300, 400],
+            [20, 30, 40, 50, None, None, None, None, 200, 300, 400],
+            minor=True,
+        )
         legend_loc = "lower right"
     elif plottype == "pt_high_threshold":
         ax1.set_xlim(10, 400)
@@ -204,7 +208,7 @@ def plot_ratio(
     else:
         raise ValueError(f"Invalid plottype {plottype}")
 
-    ax1.set_ylim(0, 1.1)
+    ax1.set_ylim(0, 1.2)
     ax2.set_ylim(0.7, 1.3)
     ax1.set_xlabel(None)
     ax2.set_ylabel(None)

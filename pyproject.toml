@@ -36,9 +36,9 @@ classifiers = [
 ]
 dependencies = [
   "coffea[dask]@git+https://github.com/iasonkrom/coffea.git@preprocessing_backup",
-  "awkward>=2.4.5",
-  "dask-awkward>=2023.9.3",
-  "uproot>=5.1.1",
+  "awkward>=2.4.6",
+  "dask-awkward>=2023.10.0",
+  "uproot>=5.1.2",
   "mplhep>=0.3.29",
 ]
 dynamic = ["version"]

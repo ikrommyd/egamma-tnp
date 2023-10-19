@@ -1,8 +1,11 @@
 import os
 
 import pytest
+from coffea.nanoevents import NanoAODSchema
 
 from egamma_tnp.triggers import ElePt_CaloIdVT_GsfTrkIdT
+
+NanoAODSchema.error_missing_event_ids = False
 
 
 @pytest.mark.parametrize("scheduler", ["threads", "processes", "single-threaded"])
@@ -18,7 +21,7 @@ def test_local_compute(scheduler, preprocess):
         redirect=False,
         preprocess=preprocess,
     )
-    tag_n_probe.load_events()
+    tag_n_probe.load_events(from_root_args={"schemaclass": NanoAODSchema})
 
     histograms = tag_n_probe.get_tnp_histograms(
         compute=True,
@@ -64,7 +67,7 @@ def test_distributed_compute(preprocess):
         redirect=False,
         preprocess=preprocess,
     )
-    tag_n_probe.load_events()
+    tag_n_probe.load_events(from_root_args={"schemaclass": NanoAODSchema})
 
     with Client():
         histograms = tag_n_probe.get_tnp_histograms(

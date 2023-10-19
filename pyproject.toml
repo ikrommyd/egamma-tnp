@@ -35,7 +35,7 @@ classifiers = [
   "Topic :: Utilities",
 ]
 dependencies = [
-  "coffea[dask]@git+https://github.com/iasonkrom/coffea.git@preprocessing_backup",
+  "coffea[dask,rucio]@git+https://github.com/iasonkrom/coffea.git@preprocessing_backup",
   "awkward>=2.4.6",
   "dask-awkward>=2023.10.0",
   "uproot>=5.1.2",

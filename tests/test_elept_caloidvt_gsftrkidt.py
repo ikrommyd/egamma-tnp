@@ -39,6 +39,7 @@ def test_local_compute(scheduler, preprocess):
     assert heta_pass.sum(flow=True) == 0.0
     assert heta_all.sum(flow=True) == 0.0
     assert hphi_pass.sum(flow=True) == 0.0
+    assert hphi_all.sum(flow=True) == 0.0
 
     assert (
         hpt_pass_barrel.values(flow=True)[0] + hpt_pass_endcap.values(flow=True)[0]
@@ -86,6 +87,7 @@ def test_distributed_compute(preprocess):
         assert heta_pass.sum(flow=True) == 0.0
         assert heta_all.sum(flow=True) == 0.0
         assert hphi_pass.sum(flow=True) == 0.0
+        assert hphi_all.sum(flow=True) == 0.0
 
         assert (
             hpt_pass_barrel.values(flow=True)[0] + hpt_pass_endcap.values(flow=True)[0]

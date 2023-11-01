@@ -58,7 +58,7 @@ class _TnPImpl:
         return events[mask]
 
     def filter_events(self, events, pt):
-        enough_electrons = dak.num(events.Electron) >= 2
+        enough_electrons = dak.num(events.Electron) == 2
         abs_eta = abs(events.Electron.eta)
         pass_tight_id = events.Electron.cutBased == 4
         pass_pt = events.Electron.pt > pt

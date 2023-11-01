@@ -6,7 +6,7 @@ import dask_awkward as dak
 from egamma_tnp.utils.dataset import get_nanoevents_file
 
 
-def _get_arrays(events, perform_tnp, **kwargs):
+def _get_arrays_on_leg(events, perform_tnp, **kwargs):
     p1, a1, p2, a2 = perform_tnp(events, **kwargs)
 
     pt_pass1 = dak.flatten(p1.pt)
@@ -40,7 +40,7 @@ def _get_arrays(events, perform_tnp, **kwargs):
     )
 
 
-def _get_and_compute_arrays(events, perform_tnp, scheduler, progress, **kwargs):
+def _get_and_compute_arrays_on_leg(events, perform_tnp, scheduler, progress, **kwargs):
     import dask
     from dask.diagnostics import ProgressBar
 
@@ -57,7 +57,7 @@ def _get_and_compute_arrays(events, perform_tnp, scheduler, progress, **kwargs):
         phi_pass2,
         phi_all1,
         phi_all2,
-    ) = _get_arrays(events, perform_tnp, **kwargs)
+    ) = _get_arrays_on_leg(events, perform_tnp, **kwargs)
 
     if progress:
         pbar = ProgressBar()
@@ -85,7 +85,7 @@ def _get_and_compute_arrays(events, perform_tnp, scheduler, progress, **kwargs):
     return res
 
 
-def _get_tnp_histograms(
+def _get_tnp_histograms_on_leg(
     events,
     plateau_cut,
     eta_regions_pt,
@@ -115,7 +115,7 @@ def _get_tnp_histograms(
         phi_pass2,
         phi_all1,
         phi_all2,
-    ) = _get_arrays(events, perform_tnp, **kwargs)
+    ) = _get_arrays_on_leg(events, perform_tnp, **kwargs)
 
     histograms = {}
     histograms["pt"] = {}
@@ -208,7 +208,7 @@ def _get_tnp_histograms(
     return histograms
 
 
-def _get_and_compute_tnp_histograms(
+def _get_and_compute_tnp_histograms_on_leg(
     events,
     plateau_cut,
     eta_regions_pt,
@@ -223,7 +223,7 @@ def _get_and_compute_tnp_histograms(
     import dask
     from dask.diagnostics import ProgressBar
 
-    histograms = _get_tnp_histograms(
+    histograms = _get_tnp_histograms_on_leg(
         events,
         plateau_cut,
         eta_regions_pt,
@@ -246,17 +246,18 @@ def _get_and_compute_tnp_histograms(
     return res
 
 
-class BaseTrigger:
-    """BaseTrigger class for HLT Trigger efficiency from NanoAOD.
+class BaseDoubleElectronTrigger:
+    """BaseDoubleElectronTrigger class for HLT Trigger efficiency from NanoAOD.
 
-    This class holds the basic methods for all the Tag and Probe classes for different triggers.
+    This class holds the basic methods for all the Tag and Probe classes for different double electron triggers.
     """
 
     def __init__(
         self,
         names,
         perform_tnp,
-        pt,
+        pt1,
+        pt2,
         avoid_ecal_transition_tags,
         avoid_ecal_transition_probes,
         goldenjson,
@@ -271,7 +272,8 @@ class BaseTrigger:
     ):
         self.names = names
         self._perform_tnp = perform_tnp
-        self.pt = pt
+        self.pt1 = pt1
+        self.pt2 = pt2
         self.avoid_ecal_transition_tags = avoid_ecal_transition_tags
         self.avoid_ecal_transition_probes = avoid_ecal_transition_probes
         self.goldenjson = goldenjson
@@ -375,12 +377,15 @@ class BaseTrigger:
             **from_root_args,
         ).events()
 
-    def get_arrays(self, compute=False, scheduler=None, progress=True):
+    def get_arrays(self, leg="both", compute=False, scheduler=None, progress=True):
         """Get the Pt and Eta arrays of the passing and all probes.
         WARNING: Not recommended to be used for large datasets as the arrays can be very large.
 
         Parameters
         ----------
+            leg : str, optional
+                Which leg to get the arrays for. Can be "first", "second", or "both".
+                The default is "both".
             compute : bool, optional
                 Whether to return the computed arrays or the delayed arrays.
                 The default is False.
@@ -393,58 +398,124 @@ class BaseTrigger:
 
         Returns
         -------
-            pt_pass1: numpy.ndarray or dask_awkward.Array
-                The Pt array of the passing probes when the firsts electrons are the tags.
-            pt_pass2: numpy.ndarray or dask_awkward.Array
-                The Pt array of the passing probes when the seconds electrons are the tags.
-            pt_all1: numpy.ndarray or dask_awkward.Array
-                The Pt array of all probes when the firsts electrons are the tags.
-            pt_all2: numpy.ndarray or dask_awkward.Array
-                The Pt array of all probes when the seconds electrons are the tags.
-            eta_pass1: numpy.ndarray or dask_awkward.Array
-                The Eta array of the passing probes when the firsts electrons are the tags.
-            eta_pass2: numpy.ndarray or dask_awkward.Array
-                The Eta array of the passing probes when the seconds electrons are the tags.
-            eta_all1: numpy.ndarray or dask_awkward.Array
-                The Eta array of all probes when the firsts electrons are the tags.
-            eta_all2: numpy.ndarray or dask_awkward.Array
-                The Eta array of all probes when the seconds electrons are the tags.
-            phi_pass1: numpy.ndarray or dask_awkward.Array
-                The Phi array of the passing probes when the firsts electrons are the tags.
-            phi_pass2: numpy.ndarray or dask_awkward.Array
-                The Phi array of the passing probes when the seconds electrons are the tags.
-            phi_all1: numpy.ndarray or dask_awkward.Array
-                The Phi array of all probes when the firsts electrons are the tags.
-            phi_all2: numpy.ndarray or dask_awkward.Array
-                The Phi array of all probes when the seconds electrons are the tags.
+            array_dict: dict
+            A dictionary with keys "leg1" and/or "leg2" depending on the leg parameter.
+            The values of the dictionary will be tuples that contain the following values:
+                pt_pass1: awkward.Array or dask_awkward.Array
+                    The Pt array of the passing probes when the firsts electrons are the tags.
+                pt_pass2: awkward.Array or dask_awkward.Array
+                    The Pt array of the passing probes when the seconds electrons are the tags.
+                pt_all1: awkward.Array or dask_awkward.Array
+                    The Pt array of all probes when the firsts electrons are the tags.
+                pt_all2: awkward.Array or dask_awkward.Array
+                    The Pt array of all probes when the seconds electrons are the tags.
+                eta_pass1: awkward.Array or dask_awkward.Array
+                    The Eta array of the passing probes when the firsts electrons are the tags.
+                eta_pass2: awkward.Array or dask_awkward.Array
+                    The Eta array of the passing probes when the seconds electrons are the tags.
+                eta_all1: awkward.Array or dask_awkward.Array
+                    The Eta array of all probes when the firsts electrons are the tags.
+                eta_all2: awkward.Array or dask_awkward.Array
+                    The Eta array of all probes when the seconds electrons are the tags.
+                phi_pass1: awkward.Array or dask_awkward.Array
+                    The Phi array of the passing probes when the firsts electrons are the tags.
+                phi_pass2: awkward.Array or dask_awkward.Array
+                    The Phi array of the passing probes when the seconds electrons are the tags.
+                phi_all1: awkward.Array or dask_awkward.Array
+                    The Phi array of all probes when the firsts electrons are the tags.
+                phi_all2: awkward.Array or dask_awkward.Array
+                    The Phi array of all probes when the seconds electrons are the tags.
         """
-        if compute:
-            return _get_and_compute_arrays(
-                events=self.events,
-                perform_tnp=self._perform_tnp,
-                pt=self.pt,
-                avoid_ecal_transition_tags=self.avoid_ecal_transition_tags,
-                avoid_ecal_transition_probes=self.avoid_ecal_transition_probes,
-                goldenjson=self.goldenjson,
-                scheduler=scheduler,
-                progress=progress,
-                extra_filter=self._extra_filter,
-                extra_filter_args=self._extra_filter_args,
-            )
+        kwargs_leg1 = {
+            "perform_tnp": self._perform_tnp,
+            "pt": self.pt1,
+            "avoid_ecal_transition_tags": self.avoid_ecal_transition_tags,
+            "avoid_ecal_transition_probes": self.avoid_ecal_transition_probes,
+            "goldenjson": self.goldenjson,
+            "extra_filter": self._extra_filter,
+            "extra_filter_args": self._extra_filter_args,
+        }
+        kwargs_leg2 = {
+            "perform_tnp": self._perform_tnp,
+            "pt": self.pt2,
+            "avoid_ecal_transition_tags": self.avoid_ecal_transition_tags,
+            "avoid_ecal_transition_probes": self.avoid_ecal_transition_probes,
+            "goldenjson": self.goldenjson,
+            "extra_filter": self._extra_filter,
+            "extra_filter_args": self._extra_filter_args,
+        }
+
+        if leg == "first":
+            if compute:
+                arrays = _get_and_compute_arrays_on_leg(
+                    events=self.events,
+                    perform_tnp=self._perform_tnp,
+                    scheduler=scheduler,
+                    progress=progress,
+                    **kwargs_leg1,
+                )
+            else:
+                arrays = _get_arrays_on_leg(
+                    events=self.events,
+                    perform_tnp=self._perform_tnp,
+                    **kwargs_leg1,
+                )
+            return {"leg1": arrays}
+
+        elif leg == "second":
+            if compute:
+                arrays = _get_and_compute_arrays_on_leg(
+                    events=self.events,
+                    perform_tnp=self._perform_tnp,
+                    scheduler=scheduler,
+                    progress=progress,
+                    **kwargs_leg2,
+                )
+            else:
+                arrays = _get_arrays_on_leg(
+                    events=self.events,
+                    perform_tnp=self._perform_tnp,
+                    **kwargs_leg2,
+                )
+            return {"leg2": arrays}
+
+        elif leg == "both":
+            if compute:
+                arrays_leg1 = _get_and_compute_arrays_on_leg(
+                    events=self.events,
+                    perform_tnp=self._perform_tnp,
+                    scheduler=scheduler,
+                    progress=progress,
+                    **kwargs_leg1,
+                )
+                arrays_leg2 = _get_and_compute_arrays_on_leg(
+                    events=self.events,
+                    perform_tnp=self._perform_tnp,
+                    scheduler=scheduler,
+                    progress=progress,
+                    **kwargs_leg2,
+                )
+            else:
+                arrays_leg1 = _get_arrays_on_leg(
+                    events=self.events,
+                    perform_tnp=self._perform_tnp,
+                    **kwargs_leg1,
+                )
+                arrays_leg2 = _get_arrays_on_leg(
+                    events=self.events,
+                    perform_tnp=self._perform_tnp,
+                    **kwargs_leg2,
+                )
+            return {"leg1": arrays_leg1, "leg2": arrays_leg2}
+
         else:
-            return _get_arrays(
-                events=self.events,
-                perform_tnp=self._perform_tnp,
-                pt=self.pt,
-                avoid_ecal_transition_tags=self.avoid_ecal_transition_tags,
-                avoid_ecal_transition_probes=self.avoid_ecal_transition_probes,
-                goldenjson=self.goldenjson,
-                extra_filter=self._extra_filter,
-                extra_filter_args=self._extra_filter_args,
+            raise ValueError(
+                f"leg must be either 'first', 'second', or 'both'. Got {leg}."
             )
 
     def get_tnp_histograms(
         self,
+        leg="both",
         plateau_cut=None,
         eta_regions_pt=None,
         eta_regions_eta=None,
@@ -457,6 +528,9 @@ class BaseTrigger:
 
         Parameters
         ----------
+            leg : str, optional
+                Which leg to get the histograms for. Can be "first", "second", or "both".
+                The default is "both".
             plateau_cut : int or float, optional
                 The Pt threshold to use to ensure that we are on the efficiency plateau for eta and phi histograms.
                 The default None, meaning that no extra cut is applied and the activation region is included in those histograms.
@@ -487,15 +561,17 @@ class BaseTrigger:
 
         Returns
         -------
-            histograms : dict
-                A dictionary of the form `{"name": [hpt_pass, hpt_all, heta_pass, heta_all, hphi_pass, hphi_all], ...}`
-                Where each `"name"` is the name of each eta region defined by the user.
-                `hpt_pass` is a hist.Hist or hist.dask.Hist histogram of the Pt histogram of the passing probes.
-                `hpt_all` is a hist.Hist or hist.dask.Hist histogram of the Pt histogram of all probes.
-                `heta_pass` is a hist.Hist or hist.dask.Hist histogram of the Eta histogram of the passing probes.
-                `heta_all` is a hist.Hist or hist.dask.Hist histogram of the Eta histogram of all probes.
-                `hphi_pass` is a hist.Hist or hist.dask.Hist histogram of the Phi histogram of the passing probes.
-                `hphi_all` is a hist.Hist or hist.dask.Hist histogram of the Phi histogram of all probes.
+            histogram_dict: dict
+                A dictionary with keys "leg1" and/or "leg2" depending on the leg parameter.
+                The values of the dictionary will be dictionaries of the form:
+                    `{"name": [hpt_pass, hpt_all, heta_pass, heta_all, hphi_pass, hphi_all], ...}`
+                    Where each `"name"` is the name of each eta region defined by the user.
+                    `hpt_pass` is a hist.Hist or hist.dask.Hist histogram of the Pt histogram of the passing probes.
+                    `hpt_all` is a hist.Hist or hist.dask.Hist histogram of the Pt histogram of all probes.
+                    `heta_pass` is a hist.Hist or hist.dask.Hist histogram of the Eta histogram of the passing probes.
+                    `heta_all` is a hist.Hist or hist.dask.Hist histogram of the Eta histogram of all probes.
+                    `hphi_pass` is a hist.Hist or hist.dask.Hist histogram of the Phi histogram of the passing probes.
+                    `hphi_all` is a hist.Hist or hist.dask.Hist histogram of the Phi histogram of all probes.
         """
         if plateau_cut is None:
             plateau_cut = 0
@@ -509,37 +585,91 @@ class BaseTrigger:
         if eta_regions_phi is None:
             eta_regions_phi = {"entire": [0, 2.5]}
 
-        if compute:
-            return _get_and_compute_tnp_histograms(
-                events=self.events,
-                plateau_cut=plateau_cut,
-                eta_regions_pt=eta_regions_pt,
-                eta_regions_eta=eta_regions_eta,
-                eta_regions_phi=eta_regions_phi,
-                bins=self._bins,
-                perform_tnp=self._perform_tnp,
-                pt=self.pt,
-                avoid_ecal_transition_tags=self.avoid_ecal_transition_tags,
-                avoid_ecal_transition_probes=self.avoid_ecal_transition_probes,
-                goldenjson=self.goldenjson,
-                scheduler=scheduler,
-                progress=progress,
-                extra_filter=self._extra_filter,
-                extra_filter_args=self._extra_filter_args,
-            )
+        kwargs_leg1 = {
+            "plateau_cut": plateau_cut,
+            "eta_regions_pt": eta_regions_pt,
+            "eta_regions_eta": eta_regions_eta,
+            "eta_regions_phi": eta_regions_phi,
+            "bins": self._bins,
+            "perform_tnp": self._perform_tnp,
+            "pt": self.pt1,
+            "avoid_ecal_transition_tags": self.avoid_ecal_transition_tags,
+            "avoid_ecal_transition_probes": self.avoid_ecal_transition_probes,
+            "goldenjson": self.goldenjson,
+            "extra_filter": self._extra_filter,
+            "extra_filter_args": self._extra_filter_args,
+        }
+        kwargs_leg2 = {
+            "plateau_cut": plateau_cut,
+            "eta_regions_pt": eta_regions_pt,
+            "eta_regions_eta": eta_regions_eta,
+            "eta_regions_phi": eta_regions_phi,
+            "bins": self._bins,
+            "perform_tnp": self._perform_tnp,
+            "pt": self.pt2,
+            "avoid_ecal_transition_tags": self.avoid_ecal_transition_tags,
+            "avoid_ecal_transition_probes": self.avoid_ecal_transition_probes,
+            "goldenjson": self.goldenjson,
+            "extra_filter": self._extra_filter,
+            "extra_filter_args": self._extra_filter_args,
+        }
+
+        if leg == "first":
+            if compute:
+                histograms = _get_and_compute_tnp_histograms_on_leg(
+                    events=self.events,
+                    scheduler=scheduler,
+                    progress=progress,
+                    **kwargs_leg1,
+                )
+            else:
+                histograms = _get_tnp_histograms_on_leg(
+                    events=self.events,
+                    **kwargs_leg1,
+                )
+            return {"leg1": histograms}
+
+        elif leg == "second":
+            if compute:
+                histograms = _get_and_compute_tnp_histograms_on_leg(
+                    events=self.events,
+                    scheduler=scheduler,
+                    progress=progress,
+                    **kwargs_leg2,
+                )
+            else:
+                histograms = _get_tnp_histograms_on_leg(
+                    events=self.events,
+                    **kwargs_leg2,
+                )
+            return {"leg2": histograms}
+
+        elif leg == "both":
+            if compute:
+                histograms_leg1 = _get_and_compute_tnp_histograms_on_leg(
+                    events=self.events,
+                    scheduler=scheduler,
+                    progress=progress,
+                    **kwargs_leg1,
+                )
+                histograms_leg2 = _get_and_compute_tnp_histograms_on_leg(
+                    events=self.events,
+                    scheduler=scheduler,
+                    progress=progress,
+                    **kwargs_leg2,
+                )
+            else:
+                histograms_leg1 = _get_tnp_histograms_on_leg(
+                    events=self.events,
+                    **kwargs_leg1,
+                )
+                histograms_leg2 = _get_tnp_histograms_on_leg(
+                    events=self.events,
+                    **kwargs_leg2,
+                )
+            return {"leg1": histograms_leg1, "leg2": histograms_leg2}
+
         else:
-            return _get_tnp_histograms(
-                events=self.events,
-                plateau_cut=plateau_cut,
-                eta_regions_pt=eta_regions_pt,
-                eta_regions_eta=eta_regions_eta,
-                eta_regions_phi=eta_regions_phi,
-                bins=self._bins,
-                perform_tnp=self._perform_tnp,
-                pt=self.pt,
-                avoid_ecal_transition_tags=self.avoid_ecal_transition_tags,
-                avoid_ecal_transition_probes=self.avoid_ecal_transition_probes,
-                goldenjson=self.goldenjson,
-                extra_filter=self._extra_filter,
-                extra_filter_args=self._extra_filter_args,
+            raise ValueError(
+                f"leg must be either 'first', 'second', or 'both'. Got {leg}."
             )

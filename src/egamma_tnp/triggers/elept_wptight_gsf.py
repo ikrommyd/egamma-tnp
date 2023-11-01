@@ -1,7 +1,7 @@
 import dask_awkward as dak
 from coffea.lumi_tools import LumiMask
 
-from egamma_tnp.triggers.basetrigger import BaseTrigger
+from egamma_tnp.triggers.basesingleelectrontrigger import BaseSingleElectronTrigger
 
 
 class _TnPImpl:
@@ -58,15 +58,15 @@ class _TnPImpl:
         return events[mask]
 
     def filter_events(self, events, pt):
-        enough_electrons = dak.num(events.Electron) == 2
+        two_electrons = dak.num(events.Electron) == 2
         abs_eta = abs(events.Electron.eta)
         pass_tight_id = events.Electron.cutBased == 4
         pass_pt = events.Electron.pt > pt
         pass_eta = abs_eta <= 2.5
-        pass_selection = enough_electrons & pass_pt & pass_eta & pass_tight_id
+        pass_selection = two_electrons & pass_pt & pass_eta & pass_tight_id
         n_of_tags = dak.sum(pass_selection, axis=1)
-        good_events = events[n_of_tags >= 2]
-        good_locations = pass_selection[n_of_tags >= 2]
+        good_events = events[n_of_tags == 2]
+        good_locations = pass_selection[n_of_tags == 2]
         return good_events, good_locations
 
     def trigger_match(self, electrons, trigobjs, pt):
@@ -98,7 +98,7 @@ class _TnPImpl:
         return passing_probes, all_probes
 
 
-class ElePt_WPTight_Gsf(BaseTrigger):
+class ElePt_WPTight_Gsf(BaseSingleElectronTrigger):
     def __init__(
         self,
         names,

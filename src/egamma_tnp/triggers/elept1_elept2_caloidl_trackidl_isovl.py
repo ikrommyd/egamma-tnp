@@ -4,43 +4,8 @@ from coffea.lumi_tools import LumiMask
 from egamma_tnp.triggers.basedoubleelectrontrigger import BaseDoubleElectronTrigger
 
 
-class _TnPImpl:
+class _TnPImplOnLeg:
     def __call__(
-        self,
-        events,
-        pt1,
-        pt2,
-        avoid_ecal_transition_tags,
-        avoid_ecal_transition_probes,
-        goldenjson,
-        extra_filter,
-        extra_filter_args,
-    ):
-        p1_leg1, a1_leg1, p2_leg1, a2_leg1 = self.perform_tnp_on_leg(
-            events,
-            pt1,
-            avoid_ecal_transition_tags,
-            avoid_ecal_transition_probes,
-            goldenjson,
-            extra_filter,
-            extra_filter_args,
-        )
-        p1_leg2, a1_leg2, p2_leg2, a2_leg2 = self.perform_tnp_on_leg(
-            events,
-            pt2,
-            avoid_ecal_transition_tags,
-            avoid_ecal_transition_probes,
-            goldenjson,
-            extra_filter,
-            extra_filter_args,
-        )
-
-        return {
-            "leg1": (p1_leg1, a1_leg1, p2_leg1, a2_leg1),
-            "leg2": (p1_leg2, a1_leg2, p2_leg2, a2_leg2),
-        }
-
-    def perform_tnp_on_leg(
         self,
         events,
         pt,
@@ -196,7 +161,7 @@ class ElePt1_ElePt2_CaloIdL_TrackIdL_IsoVL(BaseDoubleElectronTrigger):
 
         super().__init__(
             names=names,
-            perform_tnp=_TnPImpl(),
+            perform_tnp=_TnPImplOnLeg(),
             pt1=trigger_pt1,
             pt2=trigger_pt2,
             avoid_ecal_transition_tags=avoid_ecal_transition_tags,

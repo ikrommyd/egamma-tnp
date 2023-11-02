@@ -532,7 +532,6 @@ class BaseDoubleElectronTrigger:
                     The Phi array of all probes when the seconds electrons are the tags.
         """
         kwargs_leg1 = {
-            "perform_tnp": self._perform_tnp,
             "pt": self.pt1,
             "avoid_ecal_transition_tags": self.avoid_ecal_transition_tags,
             "avoid_ecal_transition_probes": self.avoid_ecal_transition_probes,
@@ -541,7 +540,6 @@ class BaseDoubleElectronTrigger:
             "extra_filter_args": self._extra_filter_args,
         }
         kwargs_leg2 = {
-            "perform_tnp": self._perform_tnp,
             "pt": self.pt2,
             "avoid_ecal_transition_tags": self.avoid_ecal_transition_tags,
             "avoid_ecal_transition_probes": self.avoid_ecal_transition_probes,
@@ -681,12 +679,6 @@ class BaseDoubleElectronTrigger:
             eta_regions_phi = {"entire": [0, 2.5]}
 
         kwargs_leg1 = {
-            "plateau_cut": plateau_cut,
-            "eta_regions_pt": eta_regions_pt,
-            "eta_regions_eta": eta_regions_eta,
-            "eta_regions_phi": eta_regions_phi,
-            "bins": self._bins,
-            "perform_tnp": self._perform_tnp,
             "pt": self.pt1,
             "avoid_ecal_transition_tags": self.avoid_ecal_transition_tags,
             "avoid_ecal_transition_probes": self.avoid_ecal_transition_probes,
@@ -695,12 +687,6 @@ class BaseDoubleElectronTrigger:
             "extra_filter_args": self._extra_filter_args,
         }
         kwargs_leg2 = {
-            "plateau_cut": plateau_cut,
-            "eta_regions_pt": eta_regions_pt,
-            "eta_regions_eta": eta_regions_eta,
-            "eta_regions_phi": eta_regions_phi,
-            "bins": self._bins,
-            "perform_tnp": self._perform_tnp,
             "pt": self.pt2,
             "avoid_ecal_transition_tags": self.avoid_ecal_transition_tags,
             "avoid_ecal_transition_probes": self.avoid_ecal_transition_probes,
@@ -713,6 +699,12 @@ class BaseDoubleElectronTrigger:
             if compute:
                 histograms = _get_and_compute_tnp_histograms_on_leg(
                     events=self.events,
+                    plateau_cut=plateau_cut,
+                    eta_regions_pt=eta_regions_pt,
+                    eta_regions_eta=eta_regions_eta,
+                    eta_regions_phi=eta_regions_phi,
+                    bins=self._bins,
+                    perform_tnp=self._perform_tnp,
                     scheduler=scheduler,
                     progress=progress,
                     **kwargs_leg1,
@@ -720,6 +712,12 @@ class BaseDoubleElectronTrigger:
             else:
                 histograms = _get_tnp_histograms_on_leg(
                     events=self.events,
+                    plateau_cut=plateau_cut,
+                    eta_regions_pt=eta_regions_pt,
+                    eta_regions_eta=eta_regions_eta,
+                    eta_regions_phi=eta_regions_phi,
+                    bins=self._bins,
+                    perform_tnp=self._perform_tnp,
                     **kwargs_leg1,
                 )
             return {"leg1": histograms}
@@ -728,6 +726,12 @@ class BaseDoubleElectronTrigger:
             if compute:
                 histograms = _get_and_compute_tnp_histograms_on_leg(
                     events=self.events,
+                    plateau_cut=plateau_cut,
+                    eta_regions_pt=eta_regions_pt,
+                    eta_regions_eta=eta_regions_eta,
+                    eta_regions_phi=eta_regions_phi,
+                    bins=self._bins,
+                    perform_tnp=self._perform_tnp,
                     scheduler=scheduler,
                     progress=progress,
                     **kwargs_leg2,
@@ -735,6 +739,12 @@ class BaseDoubleElectronTrigger:
             else:
                 histograms = _get_tnp_histograms_on_leg(
                     events=self.events,
+                    plateau_cut=plateau_cut,
+                    eta_regions_pt=eta_regions_pt,
+                    eta_regions_eta=eta_regions_eta,
+                    eta_regions_phi=eta_regions_phi,
+                    bins=self._bins,
+                    perform_tnp=self._perform_tnp,
                     **kwargs_leg2,
                 )
             return {"leg2": histograms}
@@ -743,6 +753,12 @@ class BaseDoubleElectronTrigger:
             if compute:
                 histograms = _get_and_compute_both_leg_tnp_histograms(
                     events=self.events,
+                    plateau_cut=plateau_cut,
+                    eta_regions_pt=eta_regions_pt,
+                    eta_regions_eta=eta_regions_eta,
+                    eta_regions_phi=eta_regions_phi,
+                    bins=self._bins,
+                    perform_tnp=self._perform_tnp,
                     scheduler=scheduler,
                     progress=progress,
                     kwargs_leg1=kwargs_leg1,
@@ -751,6 +767,12 @@ class BaseDoubleElectronTrigger:
             else:
                 histograms = _get_both_leg_tnp_histograms(
                     events=self.events,
+                    plateau_cut=plateau_cut,
+                    eta_regions_pt=eta_regions_pt,
+                    eta_regions_eta=eta_regions_eta,
+                    eta_regions_phi=eta_regions_phi,
+                    bins=self._bins,
+                    perform_tnp=self._perform_tnp,
                     kwargs_leg1=kwargs_leg1,
                     kwargs_leg2=kwargs_leg2,
                 )

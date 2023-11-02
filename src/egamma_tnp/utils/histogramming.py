@@ -37,7 +37,8 @@ def fill_eager_histograms(
     Parameters
     ----------
         res : tuple
-            The output of Trigger.get_arrays() with compute=True.
+            The output of Trigger.get_arrays() with compute=True for single electron triggers.
+            The output of Trigger.get_arrays()["leg1"] or Trigger.get_arrays()["leg2"] with compute=True for double electron triggers
         plateau_cut : int or float, optional
             The Pt threshold to use to ensure that we are on the efficiency plateau for eta and phi histograms.
             The default None, meaning that no extra cut is applied and the activation region is included in those histograms.

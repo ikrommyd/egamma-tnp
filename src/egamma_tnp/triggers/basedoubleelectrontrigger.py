@@ -85,6 +85,34 @@ def _get_and_compute_arrays_on_leg(events, perform_tnp, scheduler, progress, **k
     return res
 
 
+def _get_both_leg_arrays(events, perform_tnp, kwargs_leg1, kwargs_leg2):
+    return {
+        "leg1": _get_arrays_on_leg(events, perform_tnp, **kwargs_leg1),
+        "leg2": _get_arrays_on_leg(events, perform_tnp, **kwargs_leg2),
+    }
+
+
+def _get_and_compute_both_leg_arrays(
+    events, perform_tnp, scheduler, progress, kwargs_leg1, kwargs_leg2
+):
+    import dask
+    from dask.diagnostics import ProgressBar
+
+    if progress:
+        pbar = ProgressBar()
+        pbar.register()
+
+    res = dask.compute(
+        _get_both_leg_arrays(events, perform_tnp, kwargs_leg1, kwargs_leg2),
+        scheduler=scheduler,
+    )[0]
+
+    if progress:
+        pbar.unregister()
+
+    return res
+
+
 def _get_tnp_histograms_on_leg(
     events,
     plateau_cut,
@@ -223,22 +251,99 @@ def _get_and_compute_tnp_histograms_on_leg(
     import dask
     from dask.diagnostics import ProgressBar
 
-    histograms = _get_tnp_histograms_on_leg(
-        events,
-        plateau_cut,
-        eta_regions_pt,
-        eta_regions_eta,
-        eta_regions_phi,
-        bins,
-        perform_tnp,
-        **kwargs,
-    )
+    if progress:
+        pbar = ProgressBar()
+        pbar.register()
+
+    res = dask.compute(
+        _get_tnp_histograms_on_leg(
+            events,
+            plateau_cut,
+            eta_regions_pt,
+            eta_regions_eta,
+            eta_regions_phi,
+            bins,
+            perform_tnp,
+            **kwargs,
+        ),
+        scheduler=scheduler,
+    )[0]
+
+    if progress:
+        pbar.unregister()
+
+    return res
+
+
+def _get_both_leg_tnp_histograms(
+    events,
+    plateau_cut,
+    eta_regions_pt,
+    eta_regions_eta,
+    eta_regions_phi,
+    bins,
+    perform_tnp,
+    kwargs_leg1,
+    kwargs_leg2,
+):
+    return {
+        "leg1": _get_tnp_histograms_on_leg(
+            events,
+            plateau_cut,
+            eta_regions_pt,
+            eta_regions_eta,
+            eta_regions_phi,
+            bins,
+            perform_tnp,
+            **kwargs_leg1,
+        ),
+        "leg2": _get_tnp_histograms_on_leg(
+            events,
+            plateau_cut,
+            eta_regions_pt,
+            eta_regions_eta,
+            eta_regions_phi,
+            bins,
+            perform_tnp,
+            **kwargs_leg2,
+        ),
+    }
+
+
+def _get_and_compute_both_leg_tnp_histograms(
+    events,
+    plateau_cut,
+    eta_regions_pt,
+    eta_regions_eta,
+    eta_regions_phi,
+    bins,
+    perform_tnp,
+    scheduler,
+    progress,
+    kwargs_leg1,
+    kwargs_leg2,
+):
+    import dask
+    from dask.diagnostics import ProgressBar
 
     if progress:
         pbar = ProgressBar()
         pbar.register()
 
-    res = dask.compute(histograms, scheduler=scheduler)[0]
+    res = dask.compute(
+        _get_both_leg_tnp_histograms(
+            events,
+            plateau_cut,
+            eta_regions_pt,
+            eta_regions_eta,
+            eta_regions_phi,
+            bins,
+            perform_tnp,
+            kwargs_leg1,
+            kwargs_leg2,
+        ),
+        scheduler=scheduler,
+    )[0]
 
     if progress:
         pbar.unregister()
@@ -481,32 +586,22 @@ class BaseDoubleElectronTrigger:
 
         elif leg == "both":
             if compute:
-                arrays_leg1 = _get_and_compute_arrays_on_leg(
+                arrays = _get_and_compute_both_leg_arrays(
                     events=self.events,
                     perform_tnp=self._perform_tnp,
                     scheduler=scheduler,
                     progress=progress,
-                    **kwargs_leg1,
-                )
-                arrays_leg2 = _get_and_compute_arrays_on_leg(
-                    events=self.events,
-                    perform_tnp=self._perform_tnp,
-                    scheduler=scheduler,
-                    progress=progress,
-                    **kwargs_leg2,
+                    kwargs_leg1=kwargs_leg1,
+                    kwargs_leg2=kwargs_leg2,
                 )
             else:
-                arrays_leg1 = _get_arrays_on_leg(
+                arrays = _get_both_leg_arrays(
                     events=self.events,
                     perform_tnp=self._perform_tnp,
-                    **kwargs_leg1,
+                    kwargs_leg1=kwargs_leg1,
+                    kwargs_leg2=kwargs_leg2,
                 )
-                arrays_leg2 = _get_arrays_on_leg(
-                    events=self.events,
-                    perform_tnp=self._perform_tnp,
-                    **kwargs_leg2,
-                )
-            return {"leg1": arrays_leg1, "leg2": arrays_leg2}
+            return arrays
 
         else:
             raise ValueError(
@@ -646,28 +741,20 @@ class BaseDoubleElectronTrigger:
 
         elif leg == "both":
             if compute:
-                histograms_leg1 = _get_and_compute_tnp_histograms_on_leg(
+                histograms = _get_and_compute_both_leg_tnp_histograms(
                     events=self.events,
                     scheduler=scheduler,
                     progress=progress,
-                    **kwargs_leg1,
-                )
-                histograms_leg2 = _get_and_compute_tnp_histograms_on_leg(
-                    events=self.events,
-                    scheduler=scheduler,
-                    progress=progress,
-                    **kwargs_leg2,
+                    kwargs_leg1=kwargs_leg1,
+                    kwargs_leg2=kwargs_leg2,
                 )
             else:
-                histograms_leg1 = _get_tnp_histograms_on_leg(
+                histograms = _get_both_leg_tnp_histograms(
                     events=self.events,
-                    **kwargs_leg1,
+                    kwargs_leg1=kwargs_leg1,
+                    kwargs_leg2=kwargs_leg2,
                 )
-                histograms_leg2 = _get_tnp_histograms_on_leg(
-                    events=self.events,
-                    **kwargs_leg2,
-                )
-            return {"leg1": histograms_leg1, "leg2": histograms_leg2}
+            return histograms
 
         else:
             raise ValueError(

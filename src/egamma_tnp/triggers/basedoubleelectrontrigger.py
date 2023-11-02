@@ -98,14 +98,13 @@ def _get_and_compute_both_leg_arrays(
     import dask
     from dask.diagnostics import ProgressBar
 
+    arrays = _get_both_leg_arrays(events, perform_tnp, kwargs_leg1, kwargs_leg2)
+
     if progress:
         pbar = ProgressBar()
         pbar.register()
 
-    res = dask.compute(
-        _get_both_leg_arrays(events, perform_tnp, kwargs_leg1, kwargs_leg2),
-        scheduler=scheduler,
-    )[0]
+    res = dask.compute(arrays, scheduler=scheduler)[0]
 
     if progress:
         pbar.unregister()
@@ -251,23 +250,22 @@ def _get_and_compute_tnp_histograms_on_leg(
     import dask
     from dask.diagnostics import ProgressBar
 
+    histograms = _get_tnp_histograms_on_leg(
+        events,
+        plateau_cut,
+        eta_regions_pt,
+        eta_regions_eta,
+        eta_regions_phi,
+        bins,
+        perform_tnp,
+        **kwargs,
+    )
+
     if progress:
         pbar = ProgressBar()
         pbar.register()
 
-    res = dask.compute(
-        _get_tnp_histograms_on_leg(
-            events,
-            plateau_cut,
-            eta_regions_pt,
-            eta_regions_eta,
-            eta_regions_phi,
-            bins,
-            perform_tnp,
-            **kwargs,
-        ),
-        scheduler=scheduler,
-    )[0]
+    res = dask.compute(histograms, scheduler=scheduler)[0]
 
     if progress:
         pbar.unregister()
@@ -326,24 +324,23 @@ def _get_and_compute_both_leg_tnp_histograms(
     import dask
     from dask.diagnostics import ProgressBar
 
+    histograms = _get_both_leg_tnp_histograms(
+        events,
+        plateau_cut,
+        eta_regions_pt,
+        eta_regions_eta,
+        eta_regions_phi,
+        bins,
+        perform_tnp,
+        kwargs_leg1,
+        kwargs_leg2,
+    )
+
     if progress:
         pbar = ProgressBar()
         pbar.register()
 
-    res = dask.compute(
-        _get_both_leg_tnp_histograms(
-            events,
-            plateau_cut,
-            eta_regions_pt,
-            eta_regions_eta,
-            eta_regions_phi,
-            bins,
-            perform_tnp,
-            kwargs_leg1,
-            kwargs_leg2,
-        ),
-        scheduler=scheduler,
-    )[0]
+    res = dask.compute(histograms, scheduler=scheduler)[0]
 
     if progress:
         pbar.unregister()
@@ -674,9 +671,9 @@ class BaseDoubleElectronTrigger:
                 "endcap": [1.566, 2.5],
             }
         if eta_regions_eta is None:
-            eta_regions_eta = {"entire": [0, 2.5]}
+            eta_regions_eta = {"entire": [0.0, 2.5]}
         if eta_regions_phi is None:
-            eta_regions_phi = {"entire": [0, 2.5]}
+            eta_regions_phi = {"entire": [0.0, 2.5]}
 
         kwargs_leg1 = {
             "pt": self.pt1,

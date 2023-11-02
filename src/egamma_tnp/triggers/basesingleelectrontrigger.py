@@ -505,9 +505,9 @@ class BaseSingleElectronTrigger:
                 "endcap": [1.566, 2.5],
             }
         if eta_regions_eta is None:
-            eta_regions_eta = {"entire": [0, 2.5]}
+            eta_regions_eta = {"entire": [0.0, 2.5]}
         if eta_regions_phi is None:
-            eta_regions_phi = {"entire": [0, 2.5]}
+            eta_regions_phi = {"entire": [0.0, 2.5]}
 
         if compute:
             return _get_and_compute_tnp_histograms(

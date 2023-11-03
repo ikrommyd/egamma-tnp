@@ -1,5 +1,6 @@
 import os
 
+import numpy as np
 import pytest
 from coffea.nanoevents import NanoAODSchema
 
@@ -13,7 +14,8 @@ NanoAODSchema.error_missing_event_ids = False
 def test_local_compute(scheduler, preprocess):
     tag_n_probe = ElePt1_ElePt2_CaloIdL_TrackIdL_IsoVL(
         os.path.abspath("tests/samples/DYto2E.root"),
-        32,
+        23,
+        12,
         avoid_ecal_transition_tags=True,
         avoid_ecal_transition_probes=True,
         goldenjson=None,
@@ -23,35 +25,134 @@ def test_local_compute(scheduler, preprocess):
     )
     tag_n_probe.load_events(from_root_args={"schemaclass": NanoAODSchema})
 
-    histograms = tag_n_probe.get_tnp_histograms(
+    arrays_leg1 = tag_n_probe.get_arrays(
+        leg="first",
+        compute=True,
+        scheduler=scheduler,
+        progress=True,
+    )
+    arrays_leg2 = tag_n_probe.get_arrays(
+        leg="second",
+        compute=True,
+        scheduler=scheduler,
+        progress=True,
+    )
+    arrays_both = tag_n_probe.get_arrays(
+        leg="both",
+        compute=True,
+        scheduler=scheduler,
+        progress=True,
+    )
+    histograms_leg1 = tag_n_probe.get_tnp_histograms(
+        leg="first",
+        compute=True,
+        scheduler=scheduler,
+        progress=True,
+    )
+    histograms_leg2 = tag_n_probe.get_tnp_histograms(
+        leg="second",
+        compute=True,
+        scheduler=scheduler,
+        progress=True,
+    )
+    histograms_both = tag_n_probe.get_tnp_histograms(
+        leg="both",
         compute=True,
         scheduler=scheduler,
         progress=True,
     )
 
-    hpt_pass_barrel, hpt_all_barrel = histograms["pt"]["barrel"].values()
-    hpt_pass_endcap, hpt_all_endcap = histograms["pt"]["endcap"].values()
-    heta_pass, heta_all = histograms["eta"]["entire"].values()
-    hphi_pass, hphi_all = histograms["phi"]["entire"].values()
+    for arr1, arr2 in zip(arrays_leg1["leg1"], arrays_both["leg1"]):
+        assert np.all(arr1 == arr2)
+    for arr1, arr2 in zip(arrays_leg2["leg2"], arrays_both["leg2"]):
+        assert np.all(arr1 == arr2)
 
-    assert hpt_pass_barrel.sum(flow=True) + hpt_pass_endcap.sum(flow=True) == 134.0
-    assert hpt_all_barrel.sum(flow=True) + hpt_all_endcap.sum(flow=True) == 160.0
-    assert heta_pass.sum(flow=True) == 134.0
-    assert heta_all.sum(flow=True) == 160.0
-    assert hphi_pass.sum(flow=True) == 134.0
-    assert hphi_all.sum(flow=True) == 160.0
+    hpt_pass_barrel_leg1, hpt_all_barrel_leg1 = histograms_leg1["leg1"]["pt"][
+        "barrel"
+    ].values()
+    hpt_pass_endcap_leg1, hpt_all_endcap_leg1 = histograms_leg1["leg1"]["pt"][
+        "endcap"
+    ].values()
+    heta_pass_leg1, heta_all_leg1 = histograms_leg1["leg1"]["eta"]["entire"].values()
+    hphi_pass_leg1, hphi_all_leg1 = histograms_leg1["leg1"]["phi"]["entire"].values()
+    hpt_pass_barrel_leg2, hpt_all_barrel_leg2 = histograms_leg2["leg2"]["pt"][
+        "barrel"
+    ].values()
+    hpt_pass_endcap_leg2, hpt_all_endcap_leg2 = histograms_leg2["leg2"]["pt"][
+        "endcap"
+    ].values()
+    heta_pass_leg2, heta_all_leg2 = histograms_leg2["leg2"]["eta"]["entire"].values()
+    hphi_pass_leg2, hphi_all_leg2 = histograms_leg2["leg2"]["phi"]["entire"].values()
+    hpt_pass_barrel_both_leg1, hpt_all_barrel_both_leg1 = histograms_both["leg1"]["pt"][
+        "barrel"
+    ].values()
+    hpt_pass_endcap_both_leg1, hpt_all_endcap_both_leg1 = histograms_both["leg1"]["pt"][
+        "endcap"
+    ].values()
+    heta_pass_both_leg1, heta_all_both_leg1 = histograms_both["leg1"]["eta"][
+        "entire"
+    ].values()
+    hphi_pass_both_leg1, hphi_all_both_leg1 = histograms_both["leg1"]["phi"][
+        "entire"
+    ].values()
+    hpt_pass_barrel_both_leg2, hpt_all_barrel_both_leg2 = histograms_both["leg2"]["pt"][
+        "barrel"
+    ].values()
+    hpt_pass_endcap_both_leg2, hpt_all_endcap_both_leg2 = histograms_both["leg2"]["pt"][
+        "endcap"
+    ].values()
+    heta_pass_both_leg2, heta_all_both_leg2 = histograms_both["leg2"]["eta"][
+        "entire"
+    ].values()
+    hphi_pass_both_leg2, hphi_all_both_leg2 = histograms_both["leg2"]["phi"][
+        "entire"
+    ].values()
 
-    assert (
-        hpt_pass_barrel.values(flow=True)[0] + hpt_pass_endcap.values(flow=True)[0]
-        == 0.0
+    assert np.all(
+        hpt_pass_barrel_leg1.values(flow=True)
+        == hpt_pass_barrel_both_leg1.values(flow=True)
     )
-    assert (
-        hpt_all_barrel.values(flow=True)[0] + hpt_all_endcap.values(flow=True)[0] == 0.0
+    assert np.all(
+        hpt_pass_endcap_leg1.values(flow=True)
+        == hpt_pass_endcap_both_leg1.values(flow=True)
     )
-    assert heta_pass.values(flow=True)[0] == 0.0
-    assert heta_all.values(flow=True)[0] == 0.0
-    assert hphi_pass.values(flow=True)[0] == 0.0
-    assert hphi_all.values(flow=True)[0] == 0.0
+    assert np.all(
+        heta_pass_leg1.values(flow=True) == heta_pass_both_leg1.values(flow=True)
+    )
+    assert np.all(
+        hphi_pass_leg1.values(flow=True) == hphi_pass_both_leg1.values(flow=True)
+    )
+    assert np.all(
+        hpt_pass_barrel_leg2.values(flow=True)
+        == hpt_pass_barrel_both_leg2.values(flow=True)
+    )
+    assert np.all(
+        hpt_pass_endcap_leg2.values(flow=True)
+        == hpt_pass_endcap_both_leg2.values(flow=True)
+    )
+    assert np.all(
+        heta_pass_leg2.values(flow=True) == heta_pass_both_leg2.values(flow=True)
+    )
+    assert np.all(
+        hphi_pass_leg2.values(flow=True) == hphi_pass_both_leg2.values(flow=True)
+    )
+
+    assert hpt_pass_barrel_leg1.sum(flow=True) == hpt_pass_barrel_both_leg1.sum(
+        flow=True
+    )
+    assert hpt_pass_endcap_leg1.sum(flow=True) == hpt_pass_endcap_both_leg1.sum(
+        flow=True
+    )
+    assert heta_pass_leg1.sum(flow=True) == heta_pass_both_leg1.sum(flow=True)
+    assert hphi_pass_leg1.sum(flow=True) == hphi_pass_both_leg1.sum(flow=True)
+    assert hpt_pass_barrel_leg2.sum(flow=True) == hpt_pass_barrel_both_leg2.sum(
+        flow=True
+    )
+    assert hpt_pass_endcap_leg2.sum(flow=True) == hpt_pass_endcap_both_leg2.sum(
+        flow=True
+    )
+    assert heta_pass_leg2.sum(flow=True) == heta_pass_both_leg2.sum(flow=True)
+    assert hphi_pass_leg2.sum(flow=True) == hphi_pass_both_leg2.sum(flow=True)
 
 
 @pytest.mark.parametrize("preprocess", [False, True])
@@ -60,7 +161,8 @@ def test_distributed_compute(preprocess):
 
     tag_n_probe = ElePt1_ElePt2_CaloIdL_TrackIdL_IsoVL(
         os.path.abspath("tests/samples/DYto2E.root"),
-        32,
+        23,
+        12,
         avoid_ecal_transition_tags=True,
         avoid_ecal_transition_probes=True,
         goldenjson=None,
@@ -71,33 +173,133 @@ def test_distributed_compute(preprocess):
     tag_n_probe.load_events(from_root_args={"schemaclass": NanoAODSchema})
 
     with Client():
-        histograms = tag_n_probe.get_tnp_histograms(
+        arrays_leg1 = tag_n_probe.get_arrays(
+            leg="first",
             compute=True,
-            scheduler=None,
+            progress=True,
+        )
+        arrays_leg2 = tag_n_probe.get_arrays(
+            leg="second",
+            compute=True,
+            progress=True,
+        )
+        arrays_both = tag_n_probe.get_arrays(
+            leg="both",
+            compute=True,
+            progress=True,
+        )
+        histograms_leg1 = tag_n_probe.get_tnp_histograms(
+            leg="first",
+            compute=True,
+            progress=True,
+        )
+        histograms_leg2 = tag_n_probe.get_tnp_histograms(
+            leg="second",
+            compute=True,
+            progress=True,
+        )
+        histograms_both = tag_n_probe.get_tnp_histograms(
+            leg="both",
+            compute=True,
             progress=True,
         )
 
-        hpt_pass_barrel, hpt_all_barrel = histograms["pt"]["barrel"].values()
-        hpt_pass_endcap, hpt_all_endcap = histograms["pt"]["endcap"].values()
-        heta_pass, heta_all = histograms["eta"]["entire"].values()
-        hphi_pass, hphi_all = histograms["phi"]["entire"].values()
+        for arr1, arr2 in zip(arrays_leg1["leg1"], arrays_both["leg1"]):
+            assert np.all(arr1 == arr2)
+        for arr1, arr2 in zip(arrays_leg2["leg2"], arrays_both["leg2"]):
+            assert np.all(arr1 == arr2)
 
-        assert hpt_pass_barrel.sum(flow=True) + hpt_pass_endcap.sum(flow=True) == 134.0
-        assert hpt_all_barrel.sum(flow=True) + hpt_all_endcap.sum(flow=True) == 160.0
-        assert heta_pass.sum(flow=True) == 134.0
-        assert heta_all.sum(flow=True) == 160.0
-        assert hphi_pass.sum(flow=True) == 134.0
-        assert hphi_all.sum(flow=True) == 160.0
+        hpt_pass_barrel_leg1, hpt_all_barrel_leg1 = histograms_leg1["leg1"]["pt"][
+            "barrel"
+        ].values()
+        hpt_pass_endcap_leg1, hpt_all_endcap_leg1 = histograms_leg1["leg1"]["pt"][
+            "endcap"
+        ].values()
+        heta_pass_leg1, heta_all_leg1 = histograms_leg1["leg1"]["eta"][
+            "entire"
+        ].values()
+        hphi_pass_leg1, hphi_all_leg1 = histograms_leg1["leg1"]["phi"][
+            "entire"
+        ].values()
+        hpt_pass_barrel_leg2, hpt_all_barrel_leg2 = histograms_leg2["leg2"]["pt"][
+            "barrel"
+        ].values()
+        hpt_pass_endcap_leg2, hpt_all_endcap_leg2 = histograms_leg2["leg2"]["pt"][
+            "endcap"
+        ].values()
+        heta_pass_leg2, heta_all_leg2 = histograms_leg2["leg2"]["eta"][
+            "entire"
+        ].values()
+        hphi_pass_leg2, hphi_all_leg2 = histograms_leg2["leg2"]["phi"][
+            "entire"
+        ].values()
+        hpt_pass_barrel_both_leg1, hpt_all_barrel_both_leg1 = histograms_both["leg1"][
+            "pt"
+        ]["barrel"].values()
+        hpt_pass_endcap_both_leg1, hpt_all_endcap_both_leg1 = histograms_both["leg1"][
+            "pt"
+        ]["endcap"].values()
+        heta_pass_both_leg1, heta_all_both_leg1 = histograms_both["leg1"]["eta"][
+            "entire"
+        ].values()
+        hphi_pass_both_leg1, hphi_all_both_leg1 = histograms_both["leg1"]["phi"][
+            "entire"
+        ].values()
+        hpt_pass_barrel_both_leg2, hpt_all_barrel_both_leg2 = histograms_both["leg2"][
+            "pt"
+        ]["barrel"].values()
+        hpt_pass_endcap_both_leg2, hpt_all_endcap_both_leg2 = histograms_both["leg2"][
+            "pt"
+        ]["endcap"].values()
+        heta_pass_both_leg2, heta_all_both_leg2 = histograms_both["leg2"]["eta"][
+            "entire"
+        ].values()
+        hphi_pass_both_leg2, hphi_all_both_leg2 = histograms_both["leg2"]["phi"][
+            "entire"
+        ].values()
 
-        assert (
-            hpt_pass_barrel.values(flow=True)[0] + hpt_pass_endcap.values(flow=True)[0]
-            == 0.0
+        assert np.all(
+            hpt_pass_barrel_leg1.values(flow=True)
+            == hpt_pass_barrel_both_leg1.values(flow=True)
         )
-        assert (
-            hpt_all_barrel.values(flow=True)[0] + hpt_all_endcap.values(flow=True)[0]
-            == 0.0
+        assert np.all(
+            hpt_pass_endcap_leg1.values(flow=True)
+            == hpt_pass_endcap_both_leg1.values(flow=True)
         )
-        assert heta_pass.values(flow=True)[0] == 0.0
-        assert heta_all.values(flow=True)[0] == 0.0
-        assert hphi_pass.values(flow=True)[0] == 0.0
-        assert hphi_all.values(flow=True)[0] == 0.0
+        assert np.all(
+            heta_pass_leg1.values(flow=True) == heta_pass_both_leg1.values(flow=True)
+        )
+        assert np.all(
+            hphi_pass_leg1.values(flow=True) == hphi_pass_both_leg1.values(flow=True)
+        )
+        assert np.all(
+            hpt_pass_barrel_leg2.values(flow=True)
+            == hpt_pass_barrel_both_leg2.values(flow=True)
+        )
+        assert np.all(
+            hpt_pass_endcap_leg2.values(flow=True)
+            == hpt_pass_endcap_both_leg2.values(flow=True)
+        )
+        assert np.all(
+            heta_pass_leg2.values(flow=True) == heta_pass_both_leg2.values(flow=True)
+        )
+        assert np.all(
+            hphi_pass_leg2.values(flow=True) == hphi_pass_both_leg2.values(flow=True)
+        )
+
+        assert hpt_pass_barrel_leg1.sum(flow=True) == hpt_pass_barrel_both_leg1.sum(
+            flow=True
+        )
+        assert hpt_pass_endcap_leg1.sum(flow=True) == hpt_pass_endcap_both_leg1.sum(
+            flow=True
+        )
+        assert heta_pass_leg1.sum(flow=True) == heta_pass_both_leg1.sum(flow=True)
+        assert hphi_pass_leg1.sum(flow=True) == hphi_pass_both_leg1.sum(flow=True)
+        assert hpt_pass_barrel_leg2.sum(flow=True) == hpt_pass_barrel_both_leg2.sum(
+            flow=True
+        )
+        assert hpt_pass_endcap_leg2.sum(flow=True) == hpt_pass_endcap_both_leg2.sum(
+            flow=True
+        )
+        assert heta_pass_leg2.sum(flow=True) == heta_pass_both_leg2.sum(flow=True)
+        assert hphi_pass_leg2.sum(flow=True) == hphi_pass_both_leg2.sum(flow=True)

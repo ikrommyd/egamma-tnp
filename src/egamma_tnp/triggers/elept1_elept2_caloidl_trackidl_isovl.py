@@ -162,8 +162,8 @@ class ElePt1_ElePt2_CaloIdL_TrackIdL_IsoVL(BaseDoubleElectronTrigger):
         super().__init__(
             names=names,
             perform_tnp=_TnPImplOnLeg(),
-            pt1=trigger_pt1,
-            pt2=trigger_pt2,
+            pt1=trigger_pt1 - 1,
+            pt2=trigger_pt2 - 1,
             avoid_ecal_transition_tags=avoid_ecal_transition_tags,
             avoid_ecal_transition_probes=avoid_ecal_transition_probes,
             goldenjson=goldenjson,

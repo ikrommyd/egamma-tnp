@@ -72,12 +72,12 @@ def fill_eager_histograms(
         histograms : dict
             A dictionary of the form `{"name": [hpt_pass, hpt_all, heta_pass, heta_all, hphi_pass, hphi_all], ...}`
             Where each `"name"` is the name of each eta region defined by the user.
-            `hpt_pass` is a hist.Hist or hist.dask.Hist histogram of the Pt histogram of the passing probes.
-            `hpt_all` is a hist.Hist or hist.dask.Hist histogram of the Pt histogram of all probes.
-            `heta_pass` is a hist.Hist or hist.dask.Hist histogram of the Eta histogram of the passing probes.
-            `heta_all` is a hist.Hist or hist.dask.Hist histogram of the Eta histogram of all probes.
-            `hphi_pass` is a hist.Hist or hist.dask.Hist histogram of the Phi histogram of the passing probes.
-            `hphi_all` is a hist.Hist or hist.dask.Hist histogram of the Phi histogram of all probes.
+            `hpt_pass` is a hist.Hist histogram of the Pt histogram of the passing probes.
+            `hpt_all` is a hist.Hist histogram of the Pt histogram of all probes.
+            `heta_pass` is a hist.Hist histogram of the Eta histogram of the passing probes.
+            `heta_all` is a hist.Hist histogram of the Eta histogram of all probes.
+            `hphi_pass` is a hist.Hist histogram of the Phi histogram of the passing probes.
+            `hphi_all` is a hist.Hist histogram of the Phi histogram of all probes.
     """
     import hist
     from hist import Hist

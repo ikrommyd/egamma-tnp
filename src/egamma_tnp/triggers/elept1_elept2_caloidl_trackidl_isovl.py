@@ -69,7 +69,19 @@ class _TnPImplOnLeg:
         good_locations = pass_selection[n_of_tags == 2]
         return good_events, good_locations
 
-    def trigger_match(self, electrons, trigobjs, pt):
+    def trigger_match_tag(self, electrons, trigobjs, pt):
+        pass_pt = trigobjs.pt > pt
+        pass_id = abs(trigobjs.id) == 11
+        filterbit = 1
+        pass_filterbit = trigobjs.filterBits & (0x1 << filterbit) > 0
+        trigger_cands = trigobjs[pass_pt & pass_id & pass_filterbit]
+        delta_r = electrons.metric_table(trigger_cands)
+        pass_delta_r = delta_r < 0.1
+        n_of_trigger_matches = dak.sum(dak.sum(pass_delta_r, axis=1), axis=1)
+        trig_matched_locs = n_of_trigger_matches >= 1
+        return trig_matched_locs
+
+    def trigger_match_probe(self, electrons, trigobjs, pt):
         pass_pt = trigobjs.pt > pt
         pass_id = abs(trigobjs.id) == 11
         filterbit = 4
@@ -82,7 +94,8 @@ class _TnPImplOnLeg:
         return trig_matched_locs
 
     def find_probes(self, tags, probes, trigobjs, pt):
-        trig_matched_tag = self.trigger_match(tags, trigobjs, pt)
+        tags = tags[tags.pt > 29]
+        trig_matched_tag = self.trigger_match_tag(tags, trigobjs, 29)
         tags = tags[trig_matched_tag]
         probes = probes[trig_matched_tag]
         trigobjs = trigobjs[trig_matched_tag]
@@ -93,7 +106,7 @@ class _TnPImplOnLeg:
         isZ = in_mass_window & opposite_charge
         dr_condition = dr > 0.0
         all_probes = probes[isZ & dr_condition]
-        trig_matched_probe = self.trigger_match(all_probes, trigobjs, pt)
+        trig_matched_probe = self.trigger_match_probe(all_probes, trigobjs, pt)
         passing_probes = all_probes[trig_matched_probe]
         return passing_probes, all_probes
 

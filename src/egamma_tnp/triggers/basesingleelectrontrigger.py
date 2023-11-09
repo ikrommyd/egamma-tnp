@@ -371,7 +371,6 @@ class BaseSingleElectronTrigger:
 
         self.events = NanoEventsFactory.from_root(
             self.file,
-            permit_dask=True,
             **from_root_args,
         ).events()
 

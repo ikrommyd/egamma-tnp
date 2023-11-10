@@ -47,8 +47,8 @@ class _TnPImplOnLeg:
             )
             zcands2 = zcands2[pass_eta_ebeegap_probes2]
 
-        p1, a1 = self.find_probes(zcands1.tag, zcands1.probe, good_events.TrigObj, pt)
-        p2, a2 = self.find_probes(zcands2.tag, zcands2.probe, good_events.TrigObj, pt)
+        p1, a1 = self.find_probes(zcands1, good_events.TrigObj, pt)
+        p2, a2 = self.find_probes(zcands2, good_events.TrigObj, pt)
 
         return p1, a1, p2, a2
 
@@ -77,7 +77,7 @@ class _TnPImplOnLeg:
         trigger_cands = trigobjs[pass_pt & pass_id & pass_filterbit]
         delta_r = electrons.metric_table(trigger_cands)
         pass_delta_r = delta_r < 0.1
-        n_of_trigger_matches = dak.sum(dak.sum(pass_delta_r, axis=1), axis=1)
+        n_of_trigger_matches = dak.sum(pass_delta_r, axis=2)
         trig_matched_locs = n_of_trigger_matches >= 1
         return trig_matched_locs
 
@@ -89,16 +89,19 @@ class _TnPImplOnLeg:
         trigger_cands = trigobjs[pass_pt & pass_id & pass_filterbit]
         delta_r = electrons.metric_table(trigger_cands)
         pass_delta_r = delta_r < 0.1
-        n_of_trigger_matches = dak.sum(dak.sum(pass_delta_r, axis=1), axis=1)
+        n_of_trigger_matches = dak.sum(pass_delta_r, axis=2)
         trig_matched_locs = n_of_trigger_matches >= 1
         return trig_matched_locs
 
-    def find_probes(self, tags, probes, trigobjs, pt):
-        tags = tags[tags.pt > 29]
-        trig_matched_tag = self.trigger_match_tag(tags, trigobjs, 29)
-        tags = tags[trig_matched_tag]
-        probes = probes[trig_matched_tag]
-        trigobjs = trigobjs[trig_matched_tag]
+    def find_probes(self, zcands, trigobjs, pt):
+        pt_cond = zcands.tag.pt > 29
+        trig_matched_tag = self.trigger_match_tag(zcands.tag, trigobjs, pt)
+        zcands = zcands[trig_matched_tag & pt_cond]
+        events_with_tags = dak.num(zcands.tag, axis=1) >= 1
+        zcands = zcands[events_with_tags]
+        trigobjs = trigobjs[events_with_tags]
+        tags = zcands.tag
+        probes = zcands.probe
         dr = tags.delta_r(probes)
         mass = (tags + probes).mass
         in_mass_window = abs(mass - 91.1876) < 30

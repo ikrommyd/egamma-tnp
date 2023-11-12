@@ -55,8 +55,8 @@ There should be a link like `http://localhost:8xxx/?token=...` displayed in the 
 You should see a jupyter notebook with a directory listing.
 
 ## Running the code
-A basic example of how to run the code is given in the `tutorial.ipynb` notebook but here is the basic idea of how to run the code.
-This notebook or the instructions below may be outdated so please refer to the docstrings of the classes and functions for more information
+This is the basic idea of how to run the code.
+The instructions below may be outdated so please refer to the docstrings of the classes and functions for more information
 and contact the author for any questions.
 
 First you import the necessary modules:

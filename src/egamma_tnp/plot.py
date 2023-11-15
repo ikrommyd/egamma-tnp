@@ -63,6 +63,8 @@ def plot_ratio(
     effratio_kwargs=None,
     cms_kwargs=None,
     legend_kwargs=None,
+    efficiency_label=None,
+    ratio_label=None,
 ):
     """Plot the ratio of two efficiencies.
 
@@ -142,6 +144,11 @@ def plot_ratio(
     else:
         legend_kwargs = legend_default_kwargs | legend_kwargs
 
+    if efficiency_label is None:
+        efficiency_label = "Efficiency"
+    if ratio_label is None:
+        ratio_label = "Ratio"
+
     fig = plt.figure(figsize=figsize, layout="constrained")
     gs = fig.add_gridspec(nrows=2, ncols=1, hspace=0, height_ratios=[3, 1])
     ax1 = fig.add_subplot(gs[0])
@@ -166,11 +173,11 @@ def plot_ratio(
         **eff2_kwargs,
     )
     centers = passing_probes1.axes.centers[0]
-    num = eff1.values()
-    denom = eff2.values()
+    num = eff2.values()
+    denom = eff1.values()
     denom[denom == 0.0] = 1
     ratio = num / denom
-    ratioyerr = np.sqrt((efferr1 / eff1) ** 2 + (efferr2 / eff2) ** 2) * ratio
+    ratioyerr = np.sqrt((efferr1 / denom) ** 2 + (efferr2 / num) ** 2) * ratio
     ratioxerr = passing_probes1.axes.widths[0] / 2
     ax2.errorbar(centers, ratio, ratioyerr, ratioxerr, **effratio_kwargs)
     ax2.axhline(1, color="k", linestyle="--", linewidth=1)
@@ -212,8 +219,8 @@ def plot_ratio(
     ax2.set_ylim(0.7, 1.3)
     ax1.set_xlabel(None)
     ax2.set_ylabel(None)
-    ax1.set_ylabel("Efficiency")
-    ax2.set_ylabel("Ratio")
+    ax1.set_ylabel(efficiency_label)
+    ax2.set_ylabel(ratio_label)
     ax1.set_xticklabels([])
     ax1.legend(loc=legend_loc, **legend_kwargs)
 

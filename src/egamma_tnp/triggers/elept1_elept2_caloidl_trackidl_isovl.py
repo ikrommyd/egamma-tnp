@@ -19,7 +19,7 @@ class _TnPImplOnLeg:
             events = extra_filter(events, **extra_filter_args)
         if goldenjson is not None:
             events = self.apply_lumimasking(events, goldenjson)
-        good_events, good_locations = self.filter_events(events, pt)
+        good_events, good_locations = self.filter_events(events)
         ele_for_tnp = good_events.Electron[good_locations]
         zcands1 = dak.combinations(ele_for_tnp, 2, fields=["tag", "probe"])
         zcands2 = dak.combinations(ele_for_tnp, 2, fields=["probe", "tag"])
@@ -57,13 +57,12 @@ class _TnPImplOnLeg:
         mask = lumimask(events.run, events.luminosityBlock)
         return events[mask]
 
-    def filter_events(self, events, pt):
+    def filter_events(self, events):
         two_electrons = dak.num(events.Electron) == 2
         abs_eta = abs(events.Electron.eta)
         pass_tight_id = events.Electron.cutBased == 4
-        pass_pt = events.Electron.pt > pt
         pass_eta = abs_eta <= 2.5
-        pass_selection = two_electrons & pass_pt & pass_eta & pass_tight_id
+        pass_selection = two_electrons & pass_eta & pass_tight_id
         n_of_tags = dak.sum(pass_selection, axis=1)
         good_events = events[n_of_tags == 2]
         good_locations = pass_selection[n_of_tags == 2]
@@ -94,9 +93,10 @@ class _TnPImplOnLeg:
         return trig_matched_locs
 
     def find_probes(self, zcands, trigobjs, pt):
-        pt_cond = zcands.tag.pt > 29
-        trig_matched_tag = self.trigger_match_tag(zcands.tag, trigobjs, pt)
-        zcands = zcands[trig_matched_tag & pt_cond]
+        pt_cond_tags = zcands.tag.pt > 29
+        pt_cond_probes = zcands.probe.pt > pt
+        trig_matched_tag = self.trigger_match_tag(zcands.tag, trigobjs, 29)
+        zcands = zcands[trig_matched_tag & pt_cond_tags & pt_cond_probes]
         events_with_tags = dak.num(zcands.tag, axis=1) >= 1
         zcands = zcands[events_with_tags]
         trigobjs = trigobjs[events_with_tags]

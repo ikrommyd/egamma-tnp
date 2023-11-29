@@ -93,9 +93,9 @@ class _TnPImpl:
         return trig_matched_locs
 
     def find_probes(self, zcands, trigobjs, pt):
-        pt_cond_tags = zcands.tag.pt > 29
+        pt_cond_tags = zcands.tag.pt > 30
         pt_cond_probes = zcands.probe.pt > pt
-        trig_matched_tag = self.trigger_match_tag(zcands.tag, trigobjs, 29)
+        trig_matched_tag = self.trigger_match_tag(zcands.tag, trigobjs, 30)
         zcands = zcands[trig_matched_tag & pt_cond_tags & pt_cond_probes]
         events_with_tags = dak.num(zcands.tag, axis=1) >= 1
         zcands = zcands[events_with_tags]

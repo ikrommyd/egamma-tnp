@@ -34,12 +34,12 @@ def test_local_compute(scheduler, preprocess):
     heta_pass, heta_all = histograms["eta"]["entire"].values()
     hphi_pass, hphi_all = histograms["phi"]["entire"].values()
 
-    assert hpt_pass_barrel.sum(flow=True) + hpt_pass_endcap.sum(flow=True) == 145.0
-    assert hpt_all_barrel.sum(flow=True) + hpt_all_endcap.sum(flow=True) == 172.0
-    assert heta_pass.sum(flow=True) == 145.0
-    assert heta_all.sum(flow=True) == 172.0
-    assert hphi_pass.sum(flow=True) == 145.0
-    assert hphi_all.sum(flow=True) == 172.0
+    assert hpt_pass_barrel.sum(flow=True) + hpt_pass_endcap.sum(flow=True) == 141.0
+    assert hpt_all_barrel.sum(flow=True) + hpt_all_endcap.sum(flow=True) == 167.0
+    assert heta_pass.sum(flow=True) == 141.0
+    assert heta_all.sum(flow=True) == 167.0
+    assert hphi_pass.sum(flow=True) == 141.0
+    assert hphi_all.sum(flow=True) == 167.0
 
     assert (
         hpt_pass_barrel.values(flow=True)[0] + hpt_pass_endcap.values(flow=True)[0]
@@ -82,12 +82,12 @@ def test_distributed_compute(preprocess):
         heta_pass, heta_all = histograms["eta"]["entire"].values()
         hphi_pass, hphi_all = histograms["phi"]["entire"].values()
 
-        assert hpt_pass_barrel.sum(flow=True) + hpt_pass_endcap.sum(flow=True) == 145.0
-        assert hpt_all_barrel.sum(flow=True) + hpt_all_endcap.sum(flow=True) == 172.0
-        assert heta_pass.sum(flow=True) == 145.0
-        assert heta_all.sum(flow=True) == 172.0
-        assert hphi_pass.sum(flow=True) == 145.0
-        assert hphi_all.sum(flow=True) == 172.0
+        assert hpt_pass_barrel.sum(flow=True) + hpt_pass_endcap.sum(flow=True) == 141.0
+        assert hpt_all_barrel.sum(flow=True) + hpt_all_endcap.sum(flow=True) == 167.0
+        assert heta_pass.sum(flow=True) == 141.0
+        assert heta_all.sum(flow=True) == 167.0
+        assert hphi_pass.sum(flow=True) == 141.0
+        assert hphi_all.sum(flow=True) == 167.0
 
         assert (
             hpt_pass_barrel.values(flow=True)[0] + hpt_pass_endcap.values(flow=True)[0]

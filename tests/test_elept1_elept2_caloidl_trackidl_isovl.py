@@ -154,6 +154,58 @@ def test_local_compute(scheduler, preprocess):
     assert heta_pass_leg2.sum(flow=True) == heta_pass_both_leg2.sum(flow=True)
     assert hphi_pass_leg2.sum(flow=True) == hphi_pass_both_leg2.sum(flow=True)
 
+    assert (
+        hpt_pass_barrel_leg1.sum(flow=True) + hpt_pass_endcap_leg1.sum(flow=True)
+        == 181.0
+    )
+    assert (
+        hpt_all_barrel_leg1.sum(flow=True) + hpt_all_endcap_leg1.sum(flow=True) == 190.0
+    )
+    assert heta_pass_leg1.sum(flow=True) == 181.0
+    assert heta_all_leg1.sum(flow=True) == 190.0
+    assert hphi_pass_leg1.sum(flow=True) == 181.0
+    assert hphi_all_leg1.sum(flow=True) == 190.0
+    assert (
+        hpt_pass_barrel_leg2.sum(flow=True) + hpt_pass_endcap_leg2.sum(flow=True)
+        == 188.0
+    )
+    assert (
+        hpt_all_barrel_leg2.sum(flow=True) + hpt_all_endcap_leg2.sum(flow=True) == 197.0
+    )
+    assert heta_pass_leg2.sum(flow=True) == 188.0
+    assert heta_all_leg2.sum(flow=True) == 197.0
+    assert hphi_pass_leg2.sum(flow=True) == 188.0
+    assert hphi_all_leg2.sum(flow=True) == 197.0
+
+    assert (
+        hpt_pass_barrel_leg1.values(flow=True)[0]
+        + hpt_pass_endcap_leg1.values(flow=True)[0]
+        == 0.0
+    )
+    assert (
+        hpt_all_barrel_leg1.values(flow=True)[0]
+        + hpt_all_endcap_leg1.values(flow=True)[0]
+        == 0.0
+    )
+    assert heta_pass_leg1.values(flow=True)[0] == 0.0
+    assert heta_all_leg1.values(flow=True)[0] == 0.0
+    assert hphi_pass_leg1.values(flow=True)[0] == 0.0
+    assert hphi_all_leg1.values(flow=True)[0] == 0.0
+    assert (
+        hpt_pass_barrel_leg2.values(flow=True)[0]
+        + hpt_pass_endcap_leg2.values(flow=True)[0]
+        == 0.0
+    )
+    assert (
+        hpt_all_barrel_leg2.values(flow=True)[0]
+        + hpt_all_endcap_leg2.values(flow=True)[0]
+        == 0.0
+    )
+    assert heta_pass_leg2.values(flow=True)[0] == 0.0
+    assert heta_all_leg2.values(flow=True)[0] == 0.0
+    assert hphi_pass_leg2.values(flow=True)[0] == 0.0
+    assert hphi_all_leg2.values(flow=True)[0] == 0.0
+
 
 @pytest.mark.parametrize("preprocess", [False, True])
 def test_distributed_compute(preprocess):
@@ -303,3 +355,57 @@ def test_distributed_compute(preprocess):
         )
         assert heta_pass_leg2.sum(flow=True) == heta_pass_both_leg2.sum(flow=True)
         assert hphi_pass_leg2.sum(flow=True) == hphi_pass_both_leg2.sum(flow=True)
+
+        assert (
+            hpt_pass_barrel_leg1.sum(flow=True) + hpt_pass_endcap_leg1.sum(flow=True)
+            == 181.0
+        )
+        assert (
+            hpt_all_barrel_leg1.sum(flow=True) + hpt_all_endcap_leg1.sum(flow=True)
+            == 190.0
+        )
+        assert heta_pass_leg1.sum(flow=True) == 181.0
+        assert heta_all_leg1.sum(flow=True) == 190.0
+        assert hphi_pass_leg1.sum(flow=True) == 181.0
+        assert hphi_all_leg1.sum(flow=True) == 190.0
+        assert (
+            hpt_pass_barrel_leg2.sum(flow=True) + hpt_pass_endcap_leg2.sum(flow=True)
+            == 188.0
+        )
+        assert (
+            hpt_all_barrel_leg2.sum(flow=True) + hpt_all_endcap_leg2.sum(flow=True)
+            == 197.0
+        )
+        assert heta_pass_leg2.sum(flow=True) == 188.0
+        assert heta_all_leg2.sum(flow=True) == 197.0
+        assert hphi_pass_leg2.sum(flow=True) == 188.0
+        assert hphi_all_leg2.sum(flow=True) == 197.0
+
+        assert (
+            hpt_pass_barrel_leg1.values(flow=True)[0]
+            + hpt_pass_endcap_leg1.values(flow=True)[0]
+            == 0.0
+        )
+        assert (
+            hpt_all_barrel_leg1.values(flow=True)[0]
+            + hpt_all_endcap_leg1.values(flow=True)[0]
+            == 0.0
+        )
+        assert heta_pass_leg1.values(flow=True)[0] == 0.0
+        assert heta_all_leg1.values(flow=True)[0] == 0.0
+        assert hphi_pass_leg1.values(flow=True)[0] == 0.0
+        assert hphi_all_leg1.values(flow=True)[0] == 0.0
+        assert (
+            hpt_pass_barrel_leg2.values(flow=True)[0]
+            + hpt_pass_endcap_leg2.values(flow=True)[0]
+            == 0.0
+        )
+        assert (
+            hpt_all_barrel_leg2.values(flow=True)[0]
+            + hpt_all_endcap_leg2.values(flow=True)[0]
+            == 0.0
+        )
+        assert heta_pass_leg2.values(flow=True)[0] == 0.0
+        assert heta_all_leg2.values(flow=True)[0] == 0.0
+        assert hphi_pass_leg2.values(flow=True)[0] == 0.0
+        assert hphi_all_leg2.values(flow=True)[0] == 0.0

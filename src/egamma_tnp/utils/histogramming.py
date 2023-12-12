@@ -30,14 +30,24 @@ def get_ratio_histogram(passing_probes, all_probes):
 
 
 def fill_eager_histograms(
-    res, plateau_cut, eta_regions_pt, eta_regions_eta, eta_regions_phi, bins
+    res,
+    bins,
+    plateau_cut=None,
+    eta_regions_pt=None,
+    eta_regions_eta=None,
+    eta_regions_phi=None,
 ):
     """Fill eager Pt and Eta histograms of the passing and all probes.
 
     Parameters
     ----------
         res : tuple
-            The output of Trigger.get_arrays() with compute=True.
+            The output of Trigger.get_arrays() with compute=True for single electron triggers.
+            The output of Trigger.get_arrays()["leg1"] or Trigger.get_arrays()["leg2"] with compute=True for double electron triggers
+        bins: dict
+            The binning of the histograms.
+            Should have 3 keys "ptbins", "etabins", and "phibins".
+            Each key should have a list of bin edges for the Pt, Eta, and Phi histograms respectively.
         plateau_cut : int or float, optional
             The Pt threshold to use to ensure that we are on the efficiency plateau for eta and phi histograms.
             The default None, meaning that no extra cut is applied and the activation region is included in those histograms.
@@ -56,25 +66,33 @@ def fill_eager_histograms(
             where name is the name of the region and etamin and etamax are the absolute eta bounds.
             The Phi histograms will be split into those eta regions.
             The default is to use the entire |eta| < 2.5 region.
-        bins: dict
-            The binning of the histograms.
-            Should have 3 keys "ptbins", "etabins", and "phibins".
-            Each key should have a list of bin edges for the Pt, Eta, and Phi histograms respectively.
 
     Returns
     -------
         histograms : dict
             A dictionary of the form `{"name": [hpt_pass, hpt_all, heta_pass, heta_all, hphi_pass, hphi_all], ...}`
             Where each `"name"` is the name of each eta region defined by the user.
-            `hpt_pass` is a hist.Hist or hist.dask.Hist histogram of the Pt histogram of the passing probes.
-            `hpt_all` is a hist.Hist or hist.dask.Hist histogram of the Pt histogram of all probes.
-            `heta_pass` is a hist.Hist or hist.dask.Hist histogram of the Eta histogram of the passing probes.
-            `heta_all` is a hist.Hist or hist.dask.Hist histogram of the Eta histogram of all probes.
-            `hphi_pass` is a hist.Hist or hist.dask.Hist histogram of the Phi histogram of the passing probes.
-            `hphi_all` is a hist.Hist or hist.dask.Hist histogram of the Phi histogram of all probes.
+            `hpt_pass` is a hist.Hist histogram of the Pt histogram of the passing probes.
+            `hpt_all` is a hist.Hist histogram of the Pt histogram of all probes.
+            `heta_pass` is a hist.Hist histogram of the Eta histogram of the passing probes.
+            `heta_all` is a hist.Hist histogram of the Eta histogram of all probes.
+            `hphi_pass` is a hist.Hist histogram of the Phi histogram of the passing probes.
+            `hphi_all` is a hist.Hist histogram of the Phi histogram of all probes.
     """
     import hist
     from hist import Hist
+
+    if plateau_cut is None:
+        plateau_cut = 0
+    if eta_regions_pt is None:
+        eta_regions_pt = {
+            "barrel": [0.0, 1.4442],
+            "endcap": [1.566, 2.5],
+        }
+    if eta_regions_eta is None:
+        eta_regions_eta = {"entire": [0.0, 2.5]}
+    if eta_regions_phi is None:
+        eta_regions_phi = {"entire": [0.0, 2.5]}
 
     ptbins = bins["ptbins"]
     etabins = bins["etabins"]

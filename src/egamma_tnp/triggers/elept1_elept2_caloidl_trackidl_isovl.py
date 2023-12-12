@@ -1,10 +1,10 @@
 import dask_awkward as dak
 from coffea.lumi_tools import LumiMask
 
-from egamma_tnp.triggers.basesingleelectrontrigger import BaseSingleElectronTrigger
+from egamma_tnp.triggers.basedoubleelectrontrigger import BaseDoubleElectronTrigger
 
 
-class _TnPImpl:
+class _TnPImplOnLeg:
     def __call__(
         self,
         events,
@@ -83,7 +83,7 @@ class _TnPImpl:
     def trigger_match_probe(self, electrons, trigobjs, pt):
         pass_pt = trigobjs.pt > pt
         pass_id = abs(trigobjs.id) == 11
-        filterbit = 1
+        filterbit = 4
         pass_filterbit = trigobjs.filterBits & (0x1 << filterbit) > 0
         trigger_cands = trigobjs[pass_pt & pass_id & pass_filterbit]
         delta_r = electrons.metric_table(trigger_cands)
@@ -114,11 +114,12 @@ class _TnPImpl:
         return passing_probes, all_probes
 
 
-class ElePt_WPTight_Gsf(BaseSingleElectronTrigger):
+class ElePt1_ElePt2_CaloIdL_TrackIdL_IsoVL(BaseDoubleElectronTrigger):
     def __init__(
         self,
         names,
-        trigger_pt,
+        trigger_pt1,
+        trigger_pt2,
         *,
         avoid_ecal_transition_tags=True,
         avoid_ecal_transition_probes=False,
@@ -132,14 +133,16 @@ class ElePt_WPTight_Gsf(BaseSingleElectronTrigger):
         extra_filter=None,
         extra_filter_args=None,
     ):
-        """Tag and Probe efficiency for HLT_ElePt_WPTight_Gsf trigger from NanoAOD.
+        """Tag and Probe efficiency for HLT_ElePt1_ElePt2_CaloIdL_TrackIdL_IsoVL trigger from NanoAOD.
 
         Parameters
         ----------
             names : str or list of str
                 The dataset names to query that can contain wildcards or a list of file paths.
-            trigger_pt : int or float
-                The Pt threshold of the trigger.
+            trigger_pt1 : int or float
+                The Pt threshold of the first leg of the trigger.
+            trigger_pt2: int or float
+                The Pt threshold of the second leg of the trigger.
             avoid_ecal_transition_tags : bool, optional
                 Whether to avoid the ECAL transition region for the tags with an eta cut. The default is True.
             avoid_ecal_transition_probes : bool, optional
@@ -174,8 +177,9 @@ class ElePt_WPTight_Gsf(BaseSingleElectronTrigger):
 
         super().__init__(
             names=names,
-            perform_tnp=_TnPImpl(),
-            pt=trigger_pt - 1,
+            perform_tnp=_TnPImplOnLeg(),
+            pt1=trigger_pt1 - 1,
+            pt2=trigger_pt2 - 1,
             avoid_ecal_transition_tags=avoid_ecal_transition_tags,
             avoid_ecal_transition_probes=avoid_ecal_transition_probes,
             goldenjson=goldenjson,
@@ -191,6 +195,12 @@ class ElePt_WPTight_Gsf(BaseSingleElectronTrigger):
 
     def __repr__(self):
         if self.events is None:
-            return f"HLT_Ele{self.pt + 1}_WPTight_Gsf(Events: not loaded, Number of files: {len(self.file)}, Golden JSON: {self.goldenjson})"
+            return (
+                f"Ele{self.pt1 + 1}_Ele{self.pt2 + 1}_CaloIdL_TrackIdL_IsoVL"
+                f"(Events: not loaded, Number of files: {len(self.file)}, Golden JSON: {self.goldenjson})"
+            )
         else:
-            return f"HLT_Ele{self.pt + 1}_WPTight_Gsf(Events: {self.events}, Number of files: {len(self.file)}, Golden JSON: {self.goldenjson})"
+            return (
+                f"Ele{self.pt1 + 1}_Ele{self.pt2 + 1}_CaloIdL_TrackIdL_IsoVL"
+                f"(Events: {self.events}, Number of files: {len(self.file)}, Golden JSON: {self.goldenjson})"
+            )

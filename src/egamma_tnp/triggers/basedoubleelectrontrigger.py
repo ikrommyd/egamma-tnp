@@ -1,6 +1,6 @@
 import dask_awkward as dak
 
-from .basetrigger import BaseTrigger
+from egamma_tnp.triggers.basetrigger import BaseTrigger
 
 
 def _get_arrays_on_leg(events, perform_tnp, **kwargs):

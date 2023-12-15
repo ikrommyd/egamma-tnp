@@ -18,7 +18,7 @@ def test_local_compute(scheduler, preprocess):
         avoid_ecal_transition_probes=True,
         goldenjson=None,
         toquery=False,
-        redirect=False,
+        redirector=None,
         preprocess=preprocess,
     )
     tag_n_probe.load_events(from_root_args={"schemaclass": NanoAODSchema})
@@ -65,7 +65,7 @@ def test_distributed_compute(preprocess):
         avoid_ecal_transition_probes=True,
         goldenjson=None,
         toquery=False,
-        redirect=False,
+        redirector=None,
         preprocess=preprocess,
     )
     tag_n_probe.load_events(from_root_args={"schemaclass": NanoAODSchema})

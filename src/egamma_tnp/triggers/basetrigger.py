@@ -18,9 +18,7 @@ class BaseTrigger:
         avoid_ecal_transition_probes,
         goldenjson,
         toquery,
-        redirect,
-        custom_redirector,
-        invalid,
+        redirector,
         preprocess,
         preprocess_args,
         extra_filter,
@@ -33,9 +31,7 @@ class BaseTrigger:
         self.goldenjson = goldenjson
         self.events = None
         self._toquery = toquery
-        self._redirect = redirect
-        self._custom_redirector = custom_redirector
-        self._invalid = invalid
+        self._redirector = redirector
         self._preprocess = preprocess
         self._preprocess_args = preprocess_args
         self._extra_filter = extra_filter
@@ -44,9 +40,7 @@ class BaseTrigger:
         self.file = get_nanoevents_file(
             self.names,
             toquery=self._toquery,
-            redirect=self._redirect,
-            custom_redirector=self._custom_redirector,
-            invalid=self._invalid,
+            redirector=self._redirector,
             preprocess=self._preprocess,
             preprocess_args=self._preprocess_args,
         )

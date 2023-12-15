@@ -1,4 +1,4 @@
-from egamma_tnp.utils.rucio import dasgoclient_query, get_dataset_files_replicas
+from coffea.dataset_tools.rucio_utils import get_dataset_files_replicas
 
 
 def redirect_files(files, *, redirector="root://cmsxrootd.fnal.gov/", isrucio=False):
@@ -22,7 +22,7 @@ def redirect_files(files, *, redirector="root://cmsxrootd.fnal.gov/", isrucio=Fa
         return [redirector + file for file in files]
 
 
-def get_file_dict(datasets, *, custom_redirector=None, invalid=False):
+def get_file_dict(datasets, *, redirector=None):
     """Get the lists of files from DAS for the given dataset names.
     The list of files is returned as a dictionary with the dataset names as keys
     and the lists of files as values.
@@ -31,40 +31,26 @@ def get_file_dict(datasets, *, custom_redirector=None, invalid=False):
     ----------
         datasets : str or list of str
             The dataset names to query.
-        custom_redirector : str, optional
+        redirector : str, optional
             The xrootd redirector to add to the files. The default is None.
             If None, this function will query rucio and add the redirector for the first available site.
-        invalid : bool, optional
-            Whether to include invalid files. The default is False.
-            A custom redirector must be provided if invalid is True.
 
     Returns
     -------
         file_dict: dict
             A dictionary of {dataset : files} pairs.
     """
-    if invalid is True and custom_redirector is None:
-        raise ValueError("A custom redirector must not be None if invalid is True")
 
     file_dict = {}
     if isinstance(datasets, str):
         datasets = [datasets]
 
-    if invalid:
-        for dataset in datasets:
+    for dataset in datasets:
+        file_dict[dataset] = get_dataset_files_replicas(dataset, mode="first")[0]
+        if redirector:
             file_dict[dataset] = redirect_files(
-                dasgoclient_query(dataset, invalid=invalid),
-                redirector=custom_redirector,
-                isrucio=False,
+                file_dict[dataset], redirector=redirector, isrucio=True
             )
-
-    else:
-        for dataset in datasets:
-            file_dict[dataset] = get_dataset_files_replicas(dataset, mode="first")[0]
-            if custom_redirector:
-                file_dict[dataset] = redirect_files(
-                    file_dict[dataset], redirector=custom_redirector, isrucio=True
-                )
 
     for dataset in datasets:
         print(f"Dataset {dataset} has {len(file_dict[dataset])} files\n")
@@ -104,9 +90,7 @@ def get_nanoevents_file(
     names,
     *,
     toquery=False,
-    redirect=False,
-    custom_redirector="root://cmsxrootd.fnal.gov/",
-    invalid=False,
+    redirector=None,
     preprocess=False,
     preprocess_args=None,
 ):
@@ -118,14 +102,8 @@ def get_nanoevents_file(
             The dataset names to query or a list of file paths.
         toquery : bool, optional
             Whether to query DAS for the dataset names. The default is False.
-        redirect : bool, optional
-            Whether to add an xrootd redirector to the files. The default is False.
-        custom_redirector : str, optional
-            The xrootd redirector to add to the files. The default is "root://cmsxrootd.fnal.gov/".
-            Only used if redirect is True.
-        invalid : bool, optional
-            Whether to include invalid files. The default is False.
-            Only used if toquery is True.
+        redirector : str, optional
+            A custom xrootd redirector to add to the files. The default is None.
         preprocess : bool, optional
             Whether to preprocess the files using coffea.dataset_tools.preprocess().
             The default is False.
@@ -139,16 +117,9 @@ def get_nanoevents_file(
     """
     if preprocess_args is None:
         preprocess_args = {}
-    if redirect and custom_redirector is None:
-        raise ValueError("A custom redirector must not be None if redirect is True")
 
     if toquery:
-        if redirect:
-            file_dict = get_file_dict(
-                names, custom_redirector=custom_redirector, invalid=invalid
-            )
-        else:
-            file_dict = get_file_dict(names, custom_redirector=None, invalid=invalid)
+        file_dict = get_file_dict(names, redirector=redirector)
 
         if preprocess:
             from coffea.dataset_tools import preprocess
@@ -167,8 +138,8 @@ def get_nanoevents_file(
     else:
         if isinstance(names, str):
             names = [names]
-        if redirect:
-            names = redirect_files(names, redirector=custom_redirector, isrucio=False)
+        if redirector:
+            names = redirect_files(names, redirector=redirector, isrucio=False)
 
         file = {f: "Events" for f in names}
 

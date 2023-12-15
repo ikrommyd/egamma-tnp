@@ -429,7 +429,7 @@ class BaseDoubleElectronTrigger(BaseTrigger):
 
         if leg == "first":
             if compute:
-                arrays, self.report = _get_and_compute_arrays_on_leg(
+                arrays, report = _get_and_compute_arrays_on_leg(
                     events=self.events,
                     perform_tnp=self._perform_tnp,
                     scheduler=scheduler,
@@ -443,11 +443,11 @@ class BaseDoubleElectronTrigger(BaseTrigger):
                     perform_tnp=self._perform_tnp,
                     **kwargs_leg1,
                 )
-            return {"leg1": arrays}, self.report
-
+                report = self.report
+            return {"leg1": arrays}, report
         elif leg == "second":
             if compute:
-                arrays, self.report = _get_and_compute_arrays_on_leg(
+                arrays, report = _get_and_compute_arrays_on_leg(
                     events=self.events,
                     perform_tnp=self._perform_tnp,
                     scheduler=scheduler,
@@ -461,11 +461,12 @@ class BaseDoubleElectronTrigger(BaseTrigger):
                     perform_tnp=self._perform_tnp,
                     **kwargs_leg2,
                 )
-            return {"leg2": arrays}, self.report
+                report = self.report
+            return {"leg2": arrays}, report
 
         elif leg == "both":
             if compute:
-                arrays, self.report = _get_and_compute_both_leg_arrays(
+                arrays, report = _get_and_compute_both_leg_arrays(
                     events=self.events,
                     perform_tnp=self._perform_tnp,
                     scheduler=scheduler,
@@ -481,7 +482,8 @@ class BaseDoubleElectronTrigger(BaseTrigger):
                     kwargs_leg1=kwargs_leg1,
                     kwargs_leg2=kwargs_leg2,
                 )
-            return arrays, self.report
+                report = self.report
+            return arrays, report
 
         else:
             raise ValueError(
@@ -579,7 +581,7 @@ class BaseDoubleElectronTrigger(BaseTrigger):
 
         if leg == "first":
             if compute:
-                histograms, self.report = _get_and_compute_tnp_histograms_on_leg(
+                histograms, report = _get_and_compute_tnp_histograms_on_leg(
                     events=self.events,
                     plateau_cut=plateau_cut,
                     eta_regions_pt=eta_regions_pt,
@@ -603,11 +605,12 @@ class BaseDoubleElectronTrigger(BaseTrigger):
                     perform_tnp=self._perform_tnp,
                     **kwargs_leg1,
                 )
-            return {"leg1": histograms}, self.report
+                report = self.report
+            return {"leg1": histograms}, report
 
         elif leg == "second":
             if compute:
-                histograms, self.report = _get_and_compute_tnp_histograms_on_leg(
+                histograms, report = _get_and_compute_tnp_histograms_on_leg(
                     events=self.events,
                     plateau_cut=plateau_cut,
                     eta_regions_pt=eta_regions_pt,
@@ -631,11 +634,12 @@ class BaseDoubleElectronTrigger(BaseTrigger):
                     perform_tnp=self._perform_tnp,
                     **kwargs_leg2,
                 )
-            return {"leg2": histograms}, self.report
+                report = self.report
+            return {"leg2": histograms}, report
 
         elif leg == "both":
             if compute:
-                histograms, self.report = _get_and_compute_both_leg_tnp_histograms(
+                histograms, report = _get_and_compute_both_leg_tnp_histograms(
                     events=self.events,
                     plateau_cut=plateau_cut,
                     eta_regions_pt=eta_regions_pt,
@@ -661,7 +665,8 @@ class BaseDoubleElectronTrigger(BaseTrigger):
                     kwargs_leg1=kwargs_leg1,
                     kwargs_leg2=kwargs_leg2,
                 )
-            return histograms, self.report
+                report = self.report
+            return histograms, report
 
         else:
             raise ValueError(

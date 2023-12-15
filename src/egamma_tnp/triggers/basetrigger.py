@@ -117,6 +117,8 @@ class BaseTrigger:
         """
         from coffea.nanoevents import NanoEventsFactory
 
+        if self.report is not None:
+            self.report = None
         if from_root_args is None:
             from_root_args = {}
         if allow_read_errors_with_report:

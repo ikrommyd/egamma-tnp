@@ -298,7 +298,7 @@ class BaseSingleElectronTrigger(BaseTrigger):
                 The Phi array of all probes when the seconds electrons are the tags.
         """
         if compute:
-            arrays, self.report = _get_and_compute_arrays(
+            arrays, report = _get_and_compute_arrays(
                 events=self.events,
                 perform_tnp=self._perform_tnp,
                 pt=self.pt,
@@ -322,7 +322,8 @@ class BaseSingleElectronTrigger(BaseTrigger):
                 extra_filter=self._extra_filter,
                 extra_filter_args=self._extra_filter_args,
             )
-        return arrays, self.report
+            report = self.report
+        return arrays, report
 
     def get_tnp_histograms(
         self,
@@ -391,7 +392,7 @@ class BaseSingleElectronTrigger(BaseTrigger):
             eta_regions_phi = {"entire": [0.0, 2.5]}
 
         if compute:
-            histograms, self.report = _get_and_compute_tnp_histograms(
+            histograms, report = _get_and_compute_tnp_histograms(
                 events=self.events,
                 plateau_cut=plateau_cut,
                 eta_regions_pt=eta_regions_pt,
@@ -425,4 +426,5 @@ class BaseSingleElectronTrigger(BaseTrigger):
                 extra_filter=self._extra_filter,
                 extra_filter_args=self._extra_filter_args,
             )
-        return histograms, self.report
+            report = self.report
+        return histograms, report

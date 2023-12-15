@@ -128,11 +128,10 @@ class BaseTrigger:
                 }
             self.events, self.report = NanoEventsFactory.from_root(
                 self.file,
-                return_read_report=True,
                 **from_root_args,
             ).events()
-
-        self.events = NanoEventsFactory.from_root(
-            self.file,
-            **from_root_args,
-        ).events()
+        else:
+            self.events = NanoEventsFactory.from_root(
+                self.file,
+                **from_root_args,
+            ).events()

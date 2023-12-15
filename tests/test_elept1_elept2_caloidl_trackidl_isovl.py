@@ -12,8 +12,11 @@ NanoAODSchema.error_missing_event_ids = False
 @pytest.mark.parametrize("scheduler", ["threads", "processes", "single-threaded"])
 @pytest.mark.parametrize("preprocess", [False, True])
 def test_local_compute(scheduler, preprocess):
+    files = [os.path.abspath("tests/samples/DYto2E.root")]
+    if not preprocess:
+        files.append(os.path.abspath("tests/samples/not_a_file.root"))
     tag_n_probe = ElePt1_ElePt2_CaloIdL_TrackIdL_IsoVL(
-        os.path.abspath("tests/samples/DYto2E.root"),
+        files,
         23,
         12,
         avoid_ecal_transition_tags=True,
@@ -23,7 +26,10 @@ def test_local_compute(scheduler, preprocess):
         redirector=None,
         preprocess=preprocess,
     )
-    tag_n_probe.load_events(from_root_args={"schemaclass": NanoAODSchema})
+    tag_n_probe.load_events(
+        from_root_args={"schemaclass": NanoAODSchema},
+        allow_read_errors_with_report=True,
+    )
 
     arrays_leg1, report_arrays_leg1 = tag_n_probe.get_arrays(
         leg="first",
@@ -60,6 +66,14 @@ def test_local_compute(scheduler, preprocess):
         assert np.all(arr1 == arr2)
     for arr1, arr2 in zip(arrays_leg2["leg2"], arrays_both["leg2"]):
         assert np.all(arr1 == arr2)
+
+    if not preprocess:
+        assert report_arrays_leg1.exception[1] == "FileNotFoundError"
+        assert report_arrays_leg2.exception[1] == "FileNotFoundError"
+        assert report_arrays_both.exception[1] == "FileNotFoundError"
+        assert report_histograms_leg1.exception[1] == "FileNotFoundError"
+        assert report_histograms_leg2.exception[1] == "FileNotFoundError"
+        assert report_histograms_both.exception[1] == "FileNotFoundError"
 
     hpt_pass_barrel_leg1, hpt_all_barrel_leg1 = histograms_leg1["leg1"]["pt"][
         "barrel"
@@ -205,8 +219,11 @@ def test_local_compute(scheduler, preprocess):
 def test_distributed_compute(preprocess):
     from distributed import Client
 
+    files = [os.path.abspath("tests/samples/DYto2E.root")]
+    if not preprocess:
+        files.append(os.path.abspath("tests/samples/not_a_file.root"))
     tag_n_probe = ElePt1_ElePt2_CaloIdL_TrackIdL_IsoVL(
-        os.path.abspath("tests/samples/DYto2E.root"),
+        files,
         23,
         12,
         avoid_ecal_transition_tags=True,
@@ -216,7 +233,10 @@ def test_distributed_compute(preprocess):
         redirector=None,
         preprocess=preprocess,
     )
-    tag_n_probe.load_events(from_root_args={"schemaclass": NanoAODSchema})
+    tag_n_probe.load_events(
+        from_root_args={"schemaclass": NanoAODSchema},
+        allow_read_errors_with_report=True,
+    )
 
     with Client():
         arrays_leg1, report_arrays_leg1 = tag_n_probe.get_arrays(
@@ -254,6 +274,14 @@ def test_distributed_compute(preprocess):
             assert np.all(arr1 == arr2)
         for arr1, arr2 in zip(arrays_leg2["leg2"], arrays_both["leg2"]):
             assert np.all(arr1 == arr2)
+
+        if not preprocess:
+            assert report_arrays_leg1.exception[1] == "FileNotFoundError"
+            assert report_arrays_leg2.exception[1] == "FileNotFoundError"
+            assert report_arrays_both.exception[1] == "FileNotFoundError"
+            assert report_histograms_leg1.exception[1] == "FileNotFoundError"
+            assert report_histograms_leg2.exception[1] == "FileNotFoundError"
+            assert report_histograms_both.exception[1] == "FileNotFoundError"
 
         hpt_pass_barrel_leg1, hpt_all_barrel_leg1 = histograms_leg1["leg1"]["pt"][
             "barrel"

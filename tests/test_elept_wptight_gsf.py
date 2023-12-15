@@ -11,8 +11,11 @@ NanoAODSchema.error_missing_event_ids = False
 @pytest.mark.parametrize("scheduler", ["threads", "processes", "single-threaded"])
 @pytest.mark.parametrize("preprocess", [False, True])
 def test_local_compute(scheduler, preprocess):
+    files = [os.path.abspath("tests/samples/DYto2E.root")]
+    if not preprocess:
+        files.append(os.path.abspath("tests/samples/not_a_file.root"))
     tag_n_probe = ElePt_WPTight_Gsf(
-        os.path.abspath("tests/samples/DYto2E.root"),
+        files,
         32,
         avoid_ecal_transition_tags=True,
         avoid_ecal_transition_probes=True,
@@ -21,13 +24,19 @@ def test_local_compute(scheduler, preprocess):
         redirector=None,
         preprocess=preprocess,
     )
-    tag_n_probe.load_events(from_root_args={"schemaclass": NanoAODSchema})
+    tag_n_probe.load_events(
+        from_root_args={"schemaclass": NanoAODSchema},
+        allow_read_errors_with_report=True,
+    )
 
     histograms, report = tag_n_probe.get_tnp_histograms(
         compute=True,
         scheduler=scheduler,
         progress=True,
     )
+
+    if not preprocess:
+        assert report.exception[1] == "FileNotFoundError"
 
     hpt_pass_barrel, hpt_all_barrel = histograms["pt"]["barrel"].values()
     hpt_pass_endcap, hpt_all_endcap = histograms["pt"]["endcap"].values()
@@ -58,8 +67,11 @@ def test_local_compute(scheduler, preprocess):
 def test_distributed_compute(preprocess):
     from distributed import Client
 
+    files = [os.path.abspath("tests/samples/DYto2E.root")]
+    if not preprocess:
+        files.append(os.path.abspath("tests/samples/not_a_file.root"))
     tag_n_probe = ElePt_WPTight_Gsf(
-        os.path.abspath("tests/samples/DYto2E.root"),
+        files,
         32,
         avoid_ecal_transition_tags=True,
         avoid_ecal_transition_probes=True,
@@ -68,7 +80,10 @@ def test_distributed_compute(preprocess):
         redirector=None,
         preprocess=preprocess,
     )
-    tag_n_probe.load_events(from_root_args={"schemaclass": NanoAODSchema})
+    tag_n_probe.load_events(
+        from_root_args={"schemaclass": NanoAODSchema},
+        allow_read_errors_with_report=True,
+    )
 
     with Client():
         histograms, report = tag_n_probe.get_tnp_histograms(
@@ -76,6 +91,9 @@ def test_distributed_compute(preprocess):
             scheduler=None,
             progress=True,
         )
+
+        if not preprocess:
+            assert report.exception[1] == "FileNotFoundError"
 
         hpt_pass_barrel, hpt_all_barrel = histograms["pt"]["barrel"].values()
         hpt_pass_endcap, hpt_all_endcap = histograms["pt"]["endcap"].values()

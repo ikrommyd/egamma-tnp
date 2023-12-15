@@ -38,6 +38,7 @@ samples2023 = {
     ],
 }
 
+
 mc124x_postEE = {
     "MC124x": [
         "/DYToLL_M-50_TuneCP5_13p6TeV-pythia8/Run3Summer22EENanoAODv10-Poisson60KeepRAW_124X_mcRun3_2022_realistic_postEE_v1-v2/NANOAODSIM",
@@ -72,10 +73,6 @@ caloidvt_gsftrkidt_thresholds = [115, 135]
 dataset_dicts = [
     samples2022,
     samples2023,
-    mc124x_postEE,
-    mc124x_preEE,
-    mc126x_preEE,
-    mc126x_mll_50to120_preEE,
 ]
 
 if __name__ == "__main__":
@@ -171,11 +168,10 @@ if __name__ == "__main__":
                     else:
                         goldenjson = None
 
-                    redirect = True if "MC126x_MLL_50to120" in name else False
-                    custom_redirector = (
+                    redirector = (
                         "root://cmsio2.rc.ufl.edu/"
                         if "MC126x_MLL_50to120" in name
-                        else "root://cmsxrootd.fnal.gov/"
+                        else None
                     )
 
                     tag_n_probe = trigger(
@@ -183,19 +179,19 @@ if __name__ == "__main__":
                         pt,
                         goldenjson=goldenjson,
                         toquery=True,
-                        redirect=redirect,
-                        custom_redirector=custom_redirector,
+                        redirector=redirector,
                         preprocess=True,
-                        preprocess_args={"maybe_step_size": 100_000},
+                        preprocess_args={
+                            "skip_bad_files": True,
+                            "maybe_step_size": 100_000,
+                        },
                     )
 
                     print("Starting to load events")
-                    tag_n_probe.load_events(
-                        from_root_args={"uproot_options": {"timeout": 120}}
-                    )
+                    tag_n_probe.load_events(allow_read_errors_with_report=True)
                     print(tag_n_probe)
 
-                    res = tag_n_probe.get_tnp_histograms(
+                    res, report = tag_n_probe.get_tnp_histograms(
                         eta_regions_pt={
                             "barrel": [0.0, 1.4442],
                             "endcap_loweta": [1.566, 2.0],

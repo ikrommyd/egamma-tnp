@@ -37,49 +37,22 @@ def _get_arrays(events, perform_tnp, **kwargs):
     )
 
 
-def _get_and_compute_arrays(events, perform_tnp, scheduler, progress, **kwargs):
+def _get_and_compute_arrays(events, perform_tnp, scheduler, progress, report, **kwargs):
     import dask
     from dask.diagnostics import ProgressBar
 
-    (
-        pt_pass1,
-        pt_pass2,
-        pt_all1,
-        pt_all2,
-        eta_pass1,
-        eta_pass2,
-        eta_all1,
-        eta_all2,
-        phi_pass1,
-        phi_pass2,
-        phi_all1,
-        phi_all2,
-    ) = _get_arrays(events, perform_tnp, **kwargs)
+    arrays = _get_arrays(events, perform_tnp, **kwargs)
 
     if progress:
         pbar = ProgressBar()
         pbar.register()
 
-    res = dask.compute(
-        pt_pass1,
-        pt_pass2,
-        pt_all1,
-        pt_all2,
-        eta_pass1,
-        eta_pass2,
-        eta_all1,
-        eta_all2,
-        phi_pass1,
-        phi_pass2,
-        phi_all1,
-        phi_all2,
-        scheduler=scheduler,
-    )
+    res, report = dask.compute(arrays, report, scheduler=scheduler)
 
     if progress:
         pbar.unregister()
 
-    return res
+    return res, report
 
 
 def _get_tnp_histograms(
@@ -99,6 +72,7 @@ def _get_tnp_histograms(
     etabins = bins["etabins"]
     phibins = bins["phibins"]
 
+    arrays = _get_arrays(events, perform_tnp, **kwargs)
     (
         pt_pass1,
         pt_pass2,
@@ -112,7 +86,7 @@ def _get_tnp_histograms(
         phi_pass2,
         phi_all1,
         phi_all2,
-    ) = _get_arrays(events, perform_tnp, **kwargs)
+    ) = arrays
 
     histograms = {}
     histograms["pt"] = {}
@@ -215,6 +189,7 @@ def _get_and_compute_tnp_histograms(
     perform_tnp,
     scheduler,
     progress,
+    report,
     **kwargs,
 ):
     import dask
@@ -235,12 +210,12 @@ def _get_and_compute_tnp_histograms(
         pbar = ProgressBar()
         pbar.register()
 
-    res = dask.compute(histograms, scheduler=scheduler)[0]
+    res, report = dask.compute(histograms, report, scheduler=scheduler)
 
     if progress:
         pbar.unregister()
 
-    return res
+    return res, report
 
 
 class BaseSingleElectronTrigger(BaseTrigger):
@@ -323,7 +298,7 @@ class BaseSingleElectronTrigger(BaseTrigger):
                 The Phi array of all probes when the seconds electrons are the tags.
         """
         if compute:
-            return _get_and_compute_arrays(
+            arrays, self.report = _get_and_compute_arrays(
                 events=self.events,
                 perform_tnp=self._perform_tnp,
                 pt=self.pt,
@@ -332,11 +307,12 @@ class BaseSingleElectronTrigger(BaseTrigger):
                 goldenjson=self.goldenjson,
                 scheduler=scheduler,
                 progress=progress,
+                report=self.report,
                 extra_filter=self._extra_filter,
                 extra_filter_args=self._extra_filter_args,
             )
         else:
-            return _get_arrays(
+            arrays = _get_arrays(
                 events=self.events,
                 perform_tnp=self._perform_tnp,
                 pt=self.pt,
@@ -346,6 +322,7 @@ class BaseSingleElectronTrigger(BaseTrigger):
                 extra_filter=self._extra_filter,
                 extra_filter_args=self._extra_filter_args,
             )
+        return arrays, self.report
 
     def get_tnp_histograms(
         self,
@@ -414,7 +391,7 @@ class BaseSingleElectronTrigger(BaseTrigger):
             eta_regions_phi = {"entire": [0.0, 2.5]}
 
         if compute:
-            return _get_and_compute_tnp_histograms(
+            histograms, self.report = _get_and_compute_tnp_histograms(
                 events=self.events,
                 plateau_cut=plateau_cut,
                 eta_regions_pt=eta_regions_pt,
@@ -428,11 +405,12 @@ class BaseSingleElectronTrigger(BaseTrigger):
                 goldenjson=self.goldenjson,
                 scheduler=scheduler,
                 progress=progress,
+                report=self.report,
                 extra_filter=self._extra_filter,
                 extra_filter_args=self._extra_filter_args,
             )
         else:
-            return _get_tnp_histograms(
+            histograms = _get_tnp_histograms(
                 events=self.events,
                 plateau_cut=plateau_cut,
                 eta_regions_pt=eta_regions_pt,
@@ -447,3 +425,4 @@ class BaseSingleElectronTrigger(BaseTrigger):
                 extra_filter=self._extra_filter,
                 extra_filter_args=self._extra_filter_args,
             )
+        return histograms, self.report

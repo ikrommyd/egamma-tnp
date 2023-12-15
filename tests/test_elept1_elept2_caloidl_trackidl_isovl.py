@@ -25,40 +25,34 @@ def test_local_compute(scheduler, preprocess):
     )
     tag_n_probe.load_events(from_root_args={"schemaclass": NanoAODSchema})
 
-    arrays_leg1 = tag_n_probe.get_arrays(
+    arrays_leg1, report_arrays_leg1 = tag_n_probe.get_arrays(
         leg="first",
         compute=True,
-        scheduler=scheduler,
         progress=True,
     )
-    arrays_leg2 = tag_n_probe.get_arrays(
+    arrays_leg2, report_arrays_leg2 = tag_n_probe.get_arrays(
         leg="second",
         compute=True,
-        scheduler=scheduler,
         progress=True,
     )
-    arrays_both = tag_n_probe.get_arrays(
+    arrays_both, report_arrays_both = tag_n_probe.get_arrays(
         leg="both",
         compute=True,
-        scheduler=scheduler,
         progress=True,
     )
-    histograms_leg1 = tag_n_probe.get_tnp_histograms(
+    histograms_leg1, report_histograms_leg1 = tag_n_probe.get_tnp_histograms(
         leg="first",
         compute=True,
-        scheduler=scheduler,
         progress=True,
     )
-    histograms_leg2 = tag_n_probe.get_tnp_histograms(
+    histograms_leg2, report_histograms_leg2 = tag_n_probe.get_tnp_histograms(
         leg="second",
         compute=True,
-        scheduler=scheduler,
         progress=True,
     )
-    histograms_both = tag_n_probe.get_tnp_histograms(
+    histograms_both, report_histograms_both = tag_n_probe.get_tnp_histograms(
         leg="both",
         compute=True,
-        scheduler=scheduler,
         progress=True,
     )
 
@@ -225,32 +219,32 @@ def test_distributed_compute(preprocess):
     tag_n_probe.load_events(from_root_args={"schemaclass": NanoAODSchema})
 
     with Client():
-        arrays_leg1 = tag_n_probe.get_arrays(
+        arrays_leg1, report_arrays_leg1 = tag_n_probe.get_arrays(
             leg="first",
             compute=True,
             progress=True,
         )
-        arrays_leg2 = tag_n_probe.get_arrays(
+        arrays_leg2, report_arrays_leg2 = tag_n_probe.get_arrays(
             leg="second",
             compute=True,
             progress=True,
         )
-        arrays_both = tag_n_probe.get_arrays(
+        arrays_both, report_arrays_both = tag_n_probe.get_arrays(
             leg="both",
             compute=True,
             progress=True,
         )
-        histograms_leg1 = tag_n_probe.get_tnp_histograms(
+        histograms_leg1, report_histograms_leg1 = tag_n_probe.get_tnp_histograms(
             leg="first",
             compute=True,
             progress=True,
         )
-        histograms_leg2 = tag_n_probe.get_tnp_histograms(
+        histograms_leg2, report_histograms_leg2 = tag_n_probe.get_tnp_histograms(
             leg="second",
             compute=True,
             progress=True,
         )
-        histograms_both = tag_n_probe.get_tnp_histograms(
+        histograms_both, report_histograms_both = tag_n_probe.get_tnp_histograms(
             leg="both",
             compute=True,
             progress=True,

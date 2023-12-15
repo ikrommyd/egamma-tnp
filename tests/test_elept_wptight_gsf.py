@@ -23,7 +23,7 @@ def test_local_compute(scheduler, preprocess):
     )
     tag_n_probe.load_events(from_root_args={"schemaclass": NanoAODSchema})
 
-    histograms = tag_n_probe.get_tnp_histograms(
+    histograms, report = tag_n_probe.get_tnp_histograms(
         compute=True,
         scheduler=scheduler,
         progress=True,
@@ -71,7 +71,7 @@ def test_distributed_compute(preprocess):
     tag_n_probe.load_events(from_root_args={"schemaclass": NanoAODSchema})
 
     with Client():
-        histograms = tag_n_probe.get_tnp_histograms(
+        histograms, report = tag_n_probe.get_tnp_histograms(
             compute=True,
             scheduler=None,
             progress=True,

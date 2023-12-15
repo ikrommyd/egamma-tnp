@@ -44,6 +44,7 @@ class BaseTrigger:
             preprocess=self._preprocess,
             preprocess_args=self._preprocess_args,
         )
+        self.report = None
 
         if goldenjson is not None and not os.path.exists(goldenjson):
             raise FileNotFoundError(f"Golden JSON {goldenjson} does not exist.")
@@ -105,7 +106,7 @@ class BaseTrigger:
             newkey = redirect_files(key, redirector=redirector, isrucio=isrucio).pop()
             self.file[newkey] = self.file.pop(key)
 
-    def load_events(self, from_root_args=None):
+    def load_events(self, from_root_args=None, allow_read_errors_with_report=False):
         """Load the events from the names.
 
         Parameters
@@ -118,6 +119,18 @@ class BaseTrigger:
 
         if from_root_args is None:
             from_root_args = {}
+        if allow_read_errors_with_report:
+            if "uproot_options" in from_root_args:
+                from_root_args["uproot_options"]["allow_read_errors_with_report"] = True
+            else:
+                from_root_args["uproot_options"] = {
+                    "allow_read_errors_with_report": True
+                }
+            self.events, self.report = NanoEventsFactory.from_root(
+                self.file,
+                return_read_report=True,
+                **from_root_args,
+            ).events()
 
         self.events = NanoEventsFactory.from_root(
             self.file,

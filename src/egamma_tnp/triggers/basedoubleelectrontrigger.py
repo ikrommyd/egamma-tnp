@@ -445,6 +445,7 @@ class BaseDoubleElectronTrigger(BaseTrigger):
                 )
                 report = self.report
             return {"leg1": arrays}, report
+
         elif leg == "second":
             if compute:
                 arrays, report = _get_and_compute_arrays_on_leg(

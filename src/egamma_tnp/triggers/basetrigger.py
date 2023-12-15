@@ -18,9 +18,7 @@ class BaseTrigger:
         avoid_ecal_transition_probes,
         goldenjson,
         toquery,
-        redirect,
-        custom_redirector,
-        invalid,
+        redirector,
         preprocess,
         preprocess_args,
         extra_filter,
@@ -33,9 +31,7 @@ class BaseTrigger:
         self.goldenjson = goldenjson
         self.events = None
         self._toquery = toquery
-        self._redirect = redirect
-        self._custom_redirector = custom_redirector
-        self._invalid = invalid
+        self._redirector = redirector
         self._preprocess = preprocess
         self._preprocess_args = preprocess_args
         self._extra_filter = extra_filter
@@ -44,12 +40,11 @@ class BaseTrigger:
         self.file = get_nanoevents_file(
             self.names,
             toquery=self._toquery,
-            redirect=self._redirect,
-            custom_redirector=self._custom_redirector,
-            invalid=self._invalid,
+            redirector=self._redirector,
             preprocess=self._preprocess,
             preprocess_args=self._preprocess_args,
         )
+        self.report = None
 
         if goldenjson is not None and not os.path.exists(goldenjson):
             raise FileNotFoundError(f"Golden JSON {goldenjson} does not exist.")
@@ -111,7 +106,7 @@ class BaseTrigger:
             newkey = redirect_files(key, redirector=redirector, isrucio=isrucio).pop()
             self.file[newkey] = self.file.pop(key)
 
-    def load_events(self, from_root_args=None):
+    def load_events(self, from_root_args=None, allow_read_errors_with_report=False):
         """Load the events from the names.
 
         Parameters
@@ -122,10 +117,23 @@ class BaseTrigger:
         """
         from coffea.nanoevents import NanoEventsFactory
 
+        if self.report is not None:
+            self.report = None
         if from_root_args is None:
             from_root_args = {}
-
-        self.events = NanoEventsFactory.from_root(
-            self.file,
-            **from_root_args,
-        ).events()
+        if allow_read_errors_with_report:
+            if "uproot_options" in from_root_args:
+                from_root_args["uproot_options"]["allow_read_errors_with_report"] = True
+            else:
+                from_root_args["uproot_options"] = {
+                    "allow_read_errors_with_report": True
+                }
+            self.events, self.report = NanoEventsFactory.from_root(
+                self.file,
+                **from_root_args,
+            ).events()
+        else:
+            self.events = NanoEventsFactory.from_root(
+                self.file,
+                **from_root_args,
+            ).events()

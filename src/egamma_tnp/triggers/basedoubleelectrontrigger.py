@@ -37,49 +37,24 @@ def _get_arrays_on_leg(events, perform_tnp, **kwargs):
     )
 
 
-def _get_and_compute_arrays_on_leg(events, perform_tnp, scheduler, progress, **kwargs):
+def _get_and_compute_arrays_on_leg(
+    events, perform_tnp, scheduler, progress, report, **kwargs
+):
     import dask
     from dask.diagnostics import ProgressBar
 
-    (
-        pt_pass1,
-        pt_pass2,
-        pt_all1,
-        pt_all2,
-        eta_pass1,
-        eta_pass2,
-        eta_all1,
-        eta_all2,
-        phi_pass1,
-        phi_pass2,
-        phi_all1,
-        phi_all2,
-    ) = _get_arrays_on_leg(events, perform_tnp, **kwargs)
+    arrays = _get_arrays_on_leg(events, perform_tnp, **kwargs)
 
     if progress:
         pbar = ProgressBar()
         pbar.register()
 
-    res = dask.compute(
-        pt_pass1,
-        pt_pass2,
-        pt_all1,
-        pt_all2,
-        eta_pass1,
-        eta_pass2,
-        eta_all1,
-        eta_all2,
-        phi_pass1,
-        phi_pass2,
-        phi_all1,
-        phi_all2,
-        scheduler=scheduler,
-    )
+    res, report = dask.compute(arrays, report, scheduler=scheduler)
 
     if progress:
         pbar.unregister()
 
-    return res
+    return res, report
 
 
 def _get_both_leg_arrays(events, perform_tnp, kwargs_leg1, kwargs_leg2):
@@ -90,7 +65,7 @@ def _get_both_leg_arrays(events, perform_tnp, kwargs_leg1, kwargs_leg2):
 
 
 def _get_and_compute_both_leg_arrays(
-    events, perform_tnp, scheduler, progress, kwargs_leg1, kwargs_leg2
+    events, perform_tnp, scheduler, progress, report, kwargs_leg1, kwargs_leg2
 ):
     import dask
     from dask.diagnostics import ProgressBar
@@ -101,12 +76,12 @@ def _get_and_compute_both_leg_arrays(
         pbar = ProgressBar()
         pbar.register()
 
-    res = dask.compute(arrays, scheduler=scheduler)[0]
+    res, report = dask.compute(arrays, report, scheduler=scheduler)
 
     if progress:
         pbar.unregister()
 
-    return res
+    return res, report
 
 
 def _get_tnp_histograms_on_leg(
@@ -126,6 +101,7 @@ def _get_tnp_histograms_on_leg(
     etabins = bins["etabins"]
     phibins = bins["phibins"]
 
+    arrays = _get_arrays_on_leg(events, perform_tnp, **kwargs)
     (
         pt_pass1,
         pt_pass2,
@@ -139,7 +115,7 @@ def _get_tnp_histograms_on_leg(
         phi_pass2,
         phi_all1,
         phi_all2,
-    ) = _get_arrays_on_leg(events, perform_tnp, **kwargs)
+    ) = arrays
 
     histograms = {}
     histograms["pt"] = {}
@@ -242,6 +218,7 @@ def _get_and_compute_tnp_histograms_on_leg(
     perform_tnp,
     scheduler,
     progress,
+    report,
     **kwargs,
 ):
     import dask
@@ -262,12 +239,12 @@ def _get_and_compute_tnp_histograms_on_leg(
         pbar = ProgressBar()
         pbar.register()
 
-    res = dask.compute(histograms, scheduler=scheduler)[0]
+    res, report = dask.compute(histograms, report, scheduler=scheduler)
 
     if progress:
         pbar.unregister()
 
-    return res
+    return res, report
 
 
 def _get_both_leg_tnp_histograms(
@@ -315,6 +292,7 @@ def _get_and_compute_both_leg_tnp_histograms(
     perform_tnp,
     scheduler,
     progress,
+    report,
     kwargs_leg1,
     kwargs_leg2,
 ):
@@ -337,12 +315,12 @@ def _get_and_compute_both_leg_tnp_histograms(
         pbar = ProgressBar()
         pbar.register()
 
-    res = dask.compute(histograms, scheduler=scheduler)[0]
+    res, report = dask.compute(histograms, report, scheduler=scheduler)
 
     if progress:
         pbar.unregister()
 
-    return res
+    return res, report
 
 
 class BaseDoubleElectronTrigger(BaseTrigger):
@@ -361,9 +339,7 @@ class BaseDoubleElectronTrigger(BaseTrigger):
         avoid_ecal_transition_probes,
         goldenjson,
         toquery,
-        redirect,
-        custom_redirector,
-        invalid,
+        redirector,
         preprocess,
         preprocess_args,
         extra_filter,
@@ -376,9 +352,7 @@ class BaseDoubleElectronTrigger(BaseTrigger):
             avoid_ecal_transition_probes,
             goldenjson,
             toquery,
-            redirect,
-            custom_redirector,
-            invalid,
+            redirector,
             preprocess,
             preprocess_args,
             extra_filter,
@@ -455,11 +429,12 @@ class BaseDoubleElectronTrigger(BaseTrigger):
 
         if leg == "first":
             if compute:
-                arrays = _get_and_compute_arrays_on_leg(
+                arrays, report = _get_and_compute_arrays_on_leg(
                     events=self.events,
                     perform_tnp=self._perform_tnp,
                     scheduler=scheduler,
                     progress=progress,
+                    report=self.report,
                     **kwargs_leg1,
                 )
             else:
@@ -468,15 +443,16 @@ class BaseDoubleElectronTrigger(BaseTrigger):
                     perform_tnp=self._perform_tnp,
                     **kwargs_leg1,
                 )
-            return {"leg1": arrays}
-
+                report = self.report
+            return {"leg1": arrays}, report
         elif leg == "second":
             if compute:
-                arrays = _get_and_compute_arrays_on_leg(
+                arrays, report = _get_and_compute_arrays_on_leg(
                     events=self.events,
                     perform_tnp=self._perform_tnp,
                     scheduler=scheduler,
                     progress=progress,
+                    report=self.report,
                     **kwargs_leg2,
                 )
             else:
@@ -485,15 +461,17 @@ class BaseDoubleElectronTrigger(BaseTrigger):
                     perform_tnp=self._perform_tnp,
                     **kwargs_leg2,
                 )
-            return {"leg2": arrays}
+                report = self.report
+            return {"leg2": arrays}, report
 
         elif leg == "both":
             if compute:
-                arrays = _get_and_compute_both_leg_arrays(
+                arrays, report = _get_and_compute_both_leg_arrays(
                     events=self.events,
                     perform_tnp=self._perform_tnp,
                     scheduler=scheduler,
                     progress=progress,
+                    report=self.report,
                     kwargs_leg1=kwargs_leg1,
                     kwargs_leg2=kwargs_leg2,
                 )
@@ -504,7 +482,8 @@ class BaseDoubleElectronTrigger(BaseTrigger):
                     kwargs_leg1=kwargs_leg1,
                     kwargs_leg2=kwargs_leg2,
                 )
-            return arrays
+                report = self.report
+            return arrays, report
 
         else:
             raise ValueError(
@@ -602,7 +581,7 @@ class BaseDoubleElectronTrigger(BaseTrigger):
 
         if leg == "first":
             if compute:
-                histograms = _get_and_compute_tnp_histograms_on_leg(
+                histograms, report = _get_and_compute_tnp_histograms_on_leg(
                     events=self.events,
                     plateau_cut=plateau_cut,
                     eta_regions_pt=eta_regions_pt,
@@ -612,6 +591,7 @@ class BaseDoubleElectronTrigger(BaseTrigger):
                     perform_tnp=self._perform_tnp,
                     scheduler=scheduler,
                     progress=progress,
+                    report=self.report,
                     **kwargs_leg1,
                 )
             else:
@@ -625,11 +605,12 @@ class BaseDoubleElectronTrigger(BaseTrigger):
                     perform_tnp=self._perform_tnp,
                     **kwargs_leg1,
                 )
-            return {"leg1": histograms}
+                report = self.report
+            return {"leg1": histograms}, report
 
         elif leg == "second":
             if compute:
-                histograms = _get_and_compute_tnp_histograms_on_leg(
+                histograms, report = _get_and_compute_tnp_histograms_on_leg(
                     events=self.events,
                     plateau_cut=plateau_cut,
                     eta_regions_pt=eta_regions_pt,
@@ -639,6 +620,7 @@ class BaseDoubleElectronTrigger(BaseTrigger):
                     perform_tnp=self._perform_tnp,
                     scheduler=scheduler,
                     progress=progress,
+                    report=self.report,
                     **kwargs_leg2,
                 )
             else:
@@ -652,11 +634,12 @@ class BaseDoubleElectronTrigger(BaseTrigger):
                     perform_tnp=self._perform_tnp,
                     **kwargs_leg2,
                 )
-            return {"leg2": histograms}
+                report = self.report
+            return {"leg2": histograms}, report
 
         elif leg == "both":
             if compute:
-                histograms = _get_and_compute_both_leg_tnp_histograms(
+                histograms, report = _get_and_compute_both_leg_tnp_histograms(
                     events=self.events,
                     plateau_cut=plateau_cut,
                     eta_regions_pt=eta_regions_pt,
@@ -666,6 +649,7 @@ class BaseDoubleElectronTrigger(BaseTrigger):
                     perform_tnp=self._perform_tnp,
                     scheduler=scheduler,
                     progress=progress,
+                    report=self.report,
                     kwargs_leg1=kwargs_leg1,
                     kwargs_leg2=kwargs_leg2,
                 )
@@ -681,7 +665,8 @@ class BaseDoubleElectronTrigger(BaseTrigger):
                     kwargs_leg1=kwargs_leg1,
                     kwargs_leg2=kwargs_leg2,
                 )
-            return histograms
+                report = self.report
+            return histograms, report
 
         else:
             raise ValueError(

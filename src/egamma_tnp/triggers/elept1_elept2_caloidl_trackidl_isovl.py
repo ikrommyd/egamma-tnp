@@ -125,9 +125,7 @@ class ElePt1_ElePt2_CaloIdL_TrackIdL_IsoVL(BaseDoubleElectronTrigger):
         avoid_ecal_transition_probes=False,
         goldenjson=None,
         toquery=False,
-        redirect=False,
-        custom_redirector="root://cmsxrootd.fnal.gov/",
-        invalid=False,
+        redirector=None,
         preprocess=False,
         preprocess_args=None,
         extra_filter=None,
@@ -153,12 +151,8 @@ class ElePt1_ElePt2_CaloIdL_TrackIdL_IsoVL(BaseDoubleElectronTrigger):
                 Whether to query DAS for the dataset names. The default is False.
             redirect : bool, optional
                 Whether to add an xrootd redirector to the files. The default is False.
-            custom_redirector : str, optional
-                The xrootd redirector to add to the files. The default is "root://cmsxrootd.fnal.gov/".
-                Only used if redirect is True.
-            invalid : bool, optional
-                Whether to include invalid files. The default is False.
-                Only used if toquery is True.
+            redirector : str, optional
+                A custom xrootd redirector to add to the files. The default is None.
             preprocess : bool, optional
                 Whether to preprocess the files using coffea.dataset_tools.preprocess().
                 The default is False.
@@ -184,9 +178,7 @@ class ElePt1_ElePt2_CaloIdL_TrackIdL_IsoVL(BaseDoubleElectronTrigger):
             avoid_ecal_transition_probes=avoid_ecal_transition_probes,
             goldenjson=goldenjson,
             toquery=toquery,
-            redirect=redirect,
-            custom_redirector=custom_redirector,
-            invalid=invalid,
+            redirector=redirector,
             preprocess=preprocess,
             preprocess_args=preprocess_args,
             extra_filter=extra_filter,

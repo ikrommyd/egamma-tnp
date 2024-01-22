@@ -112,3 +112,6 @@ dask-worker-space/
 root_files/
 .DS_Store
 notebooks/*.pdf
+
+# VCS versioning
+src/coffea/_version.py

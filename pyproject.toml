@@ -53,15 +53,9 @@ dev = [
   "pytest-mpl",
 ]
 
-[tool.hatch.version]
-source = "vcs"
-path = "src/egamma_tnp/__init__.py"
-
-[tool.hatch.build.hooks.vcs]
-version-file = "src/egamma_tnp/version.py"
-
-[tool.setuptools_scm]
-write_to = "src/egamma_tnp/_version.py"
+[tool.hatch]
+version.source = "vcs"
+build.hooks.vcs.version-file = "src/egamma_tnp/_version.py"
 
 [tool.hatch.metadata]
 allow-direct-references = true

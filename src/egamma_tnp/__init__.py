@@ -1,6 +1,6 @@
 from egamma_tnp.config import config
 
-from . import version
+from . import _version
 
-__version__ = version.__version__
+__version__ = _version.__version__
 __all__ = ("config",)

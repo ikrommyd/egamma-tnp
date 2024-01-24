@@ -3,6 +3,7 @@ import os
 
 import dask_awkward as dak
 from coffea.dataset_tools import apply_to_fileset
+from coffea.nanoevents import NanoAODSchema
 
 
 class PerformTnP:
@@ -205,23 +206,21 @@ class BaseSingleElectronTrigger:
         with open(config_path) as f:
             self._bins = json.load(f)
 
-        self._perform_tnp = self._tnp_impl_class(
-            pt=self.pt - 1,
-            avoid_ecal_transition_tags=self.avoid_ecal_transition_tags,
-            avoid_ecal_transition_probes=self.avoid_ecal_transition_probes,
-            goldenjson=self.goldenjson,
-            extra_filter=self._extra_filter,
-            extra_filter_args=self._extra_filter_args,
-        )
-
     def get_arrays(
-        self, uproot_options=None, compute=False, scheduler=None, progress=True
+        self,
+        schmemaclass=NanoAODSchema,
+        uproot_options=None,
+        compute=False,
+        scheduler=None,
+        progress=True,
     ):
         """Get the Pt and Eta arrays of the passing and all probes.
         WARNING: Not recommended to be used for large datasets as the arrays can be very large.
 
         Parameters
         ----------
+            schemaclass: BaseSchema, default NanoAODSchema
+                The nanoevents schema to interpret the input dataset with.
             uproot_options : dict, optional
                 Options to pass to uproot. Pass at least {"allow_read_errors_with_report": True} to turn on file access reports.
             compute : bool, optional
@@ -264,10 +263,21 @@ class BaseSingleElectronTrigger:
         """
         if uproot_options is None:
             uproot_options = {}
-        data_manipulation_class = PerformTnP(perfom_tnp=self._perform_tnp)
+
+        perform_tnp = self._tnp_impl_class(
+            pt=self.pt - 1,
+            avoid_ecal_transition_tags=self.avoid_ecal_transition_tags,
+            avoid_ecal_transition_probes=self.avoid_ecal_transition_probes,
+            goldenjson=self.goldenjson,
+            extra_filter=self._extra_filter,
+            extra_filter_args=self._extra_filter_args,
+        )
+        data_manipulation_class = PerformTnP(perfom_tnp=perform_tnp)
+
         to_compute = apply_to_fileset(
             data_manipulation_class.get_arrays,
             self.fileset,
+            schmemaclass=schmemaclass,
             uproot_options=uproot_options,
         )
         if compute:
@@ -287,6 +297,7 @@ class BaseSingleElectronTrigger:
 
     def get_tnp_histograms(
         self,
+        schmemaclass=NanoAODSchema,
         uproot_options=None,
         plateau_cut=None,
         eta_regions_pt=None,
@@ -300,6 +311,8 @@ class BaseSingleElectronTrigger:
 
         Parameters
         ----------
+            schemaclass: BaseSchema, default NanoAODSchema
+                The nanoevents schema to interpret the input dataset with.
             uproot_options : dict, optional
                 Options to pass to uproot. Pass at least {"allow_read_errors_with_report": True} to turn on file access reports.
             plateau_cut : int or float, optional
@@ -357,14 +370,24 @@ class BaseSingleElectronTrigger:
 
         if uproot_options is None:
             uproot_options = {}
+
+        perform_tnp = self._tnp_impl_class(
+            pt=self.pt - 1,
+            avoid_ecal_transition_tags=self.avoid_ecal_transition_tags,
+            avoid_ecal_transition_probes=self.avoid_ecal_transition_probes,
+            goldenjson=self.goldenjson,
+            extra_filter=self._extra_filter,
+            extra_filter_args=self._extra_filter_args,
+        )
         data_manipulation_class = PerformTnP(
-            perform_tnp=self._perform_tnp,
+            perform_tnp=perform_tnp,
             plateau_cut=plateau_cut,
             eta_regions_pt=eta_regions_pt,
             eta_regions_eta=eta_regions_eta,
             eta_regions_phi=eta_regions_phi,
             bins=self._bins,
         )
+
         to_compute = apply_to_fileset(
             data_manipulation_class.get_histograms,
             self.fileset,

@@ -146,8 +146,6 @@ class ElePt_WPTight_Gsf(BaseSingleElectronTrigger):
                 The golden json to use for luminosity masking. The default is None.
             toquery : bool, optional
                 Whether to query DAS for the dataset names. The default is False.
-            redirect : bool, optional
-                Whether to add an xrootd redirector to the files. The default is False.
             redirector : str, optional
                 A custom xrootd redirector to add to the files. The default is None.
             preprocess : bool, optional

@@ -1,13 +1,12 @@
 import dask_awkward as dak
 from coffea.lumi_tools import LumiMask
 
-from egamma_tnp.triggers.basedoubleelectrontrigger import BaseDoubleElectronTrigger
+from egamma_tnp.triggers.basesingleelectrontrigger import BaseSingleElectronTrigger
 
 
-class _TnPImplOnLeg:
-    def __call__(
+class TnPImpl:
+    def __init__(
         self,
-        events,
         pt,
         avoid_ecal_transition_tags,
         avoid_ecal_transition_probes,
@@ -15,16 +14,24 @@ class _TnPImplOnLeg:
         extra_filter,
         extra_filter_args,
     ):
-        if extra_filter is not None:
-            events = extra_filter(events, **extra_filter_args)
-        if goldenjson is not None:
-            events = self.apply_lumimasking(events, goldenjson)
+        self.pt = pt
+        self.avoid_ecal_transition_tags = avoid_ecal_transition_tags
+        self.avoid_ecal_transition_probes = avoid_ecal_transition_probes
+        self.goldenjson = goldenjson
+        self.extra_filter = extra_filter
+        self.extra_filter_args = extra_filter_args
+
+    def __call__(self, events):
+        if self.extra_filter is not None:
+            events = self.extra_filter(events, **self.extra_filter_args)
+        if self.goldenjson is not None:
+            events = self.apply_lumimasking(events, self.goldenjson)
         good_events, good_locations = self.filter_events(events)
         ele_for_tnp = good_events.Electron[good_locations]
         zcands1 = dak.combinations(ele_for_tnp, 2, fields=["tag", "probe"])
         zcands2 = dak.combinations(ele_for_tnp, 2, fields=["probe", "tag"])
 
-        if avoid_ecal_transition_tags:
+        if self.avoid_ecal_transition_tags:
             tags1 = zcands1.tag
             pass_eta_ebeegap_tags1 = (abs(tags1.eta) < 1.4442) | (
                 abs(tags1.eta) > 1.566
@@ -35,7 +42,7 @@ class _TnPImplOnLeg:
                 abs(tags2.eta) > 1.566
             )
             zcands2 = zcands2[pass_eta_ebeegap_tags2]
-        if avoid_ecal_transition_probes:
+        if self.avoid_ecal_transition_probes:
             probes1 = zcands1.probe
             pass_eta_ebeegap_probes1 = (abs(probes1.eta) < 1.4442) | (
                 abs(probes1.eta) > 1.566
@@ -47,8 +54,8 @@ class _TnPImplOnLeg:
             )
             zcands2 = zcands2[pass_eta_ebeegap_probes2]
 
-        p1, a1 = self.find_probes(zcands1, good_events.TrigObj, pt)
-        p2, a2 = self.find_probes(zcands2, good_events.TrigObj, pt)
+        p1, a1 = self.find_probes(zcands1, good_events.TrigObj, self.pt)
+        p2, a2 = self.find_probes(zcands2, good_events.TrigObj, self.pt)
 
         return p1, a1, p2, a2
 
@@ -83,7 +90,7 @@ class _TnPImplOnLeg:
     def trigger_match_probe(self, electrons, trigobjs, pt):
         pass_pt = trigobjs.pt > pt
         pass_id = abs(trigobjs.id) == 11
-        filterbit = 4
+        filterbit = 1
         pass_filterbit = trigobjs.filterBits & (0x1 << filterbit) > 0
         trigger_cands = trigobjs[pass_pt & pass_id & pass_filterbit]
         delta_r = electrons.metric_table(trigger_cands)
@@ -114,85 +121,54 @@ class _TnPImplOnLeg:
         return passing_probes, all_probes
 
 
-class ElePt1_ElePt2_CaloIdL_TrackIdL_IsoVL(BaseDoubleElectronTrigger):
+class ElePt_WPTight_Gsf(BaseSingleElectronTrigger):
     def __init__(
         self,
-        names,
-        trigger_pt1,
-        trigger_pt2,
+        fileset,
+        trigger_pt,
         *,
         avoid_ecal_transition_tags=True,
         avoid_ecal_transition_probes=False,
         goldenjson=None,
-        toquery=False,
-        redirector=None,
-        preprocess=False,
-        preprocess_args=None,
         extra_filter=None,
         extra_filter_args=None,
     ):
-        """Tag and Probe efficiency for HLT_ElePt1_ElePt2_CaloIdL_TrackIdL_IsoVL trigger from NanoAOD.
+        """Tag and Probe efficiency for HLT_ElePt_WPTight_Gsf trigger from NanoAOD.
 
         Parameters
         ----------
-            names : str or list of str
-                The dataset names to query that can contain wildcards or a list of file paths.
-            trigger_pt1 : int or float
-                The Pt threshold of the first leg of the trigger.
-            trigger_pt2: int or float
-                The Pt threshold of the second leg of the trigger.
+            fileset : str or list of str
+                The fileset to calculate the trigger efficiencies for.
+            trigger_pt : int or float
+                The Pt threshold of the trigger.
             avoid_ecal_transition_tags : bool, optional
                 Whether to avoid the ECAL transition region for the tags with an eta cut. The default is True.
             avoid_ecal_transition_probes : bool, optional
                 Whether to avoid the ECAL transition region for the probes with an eta cut. The default is False.
             goldenjson : str, optional
                 The golden json to use for luminosity masking. The default is None.
-            toquery : bool, optional
-                Whether to query DAS for the dataset names. The default is False.
-            redirect : bool, optional
-                Whether to add an xrootd redirector to the files. The default is False.
-            redirector : str, optional
-                A custom xrootd redirector to add to the files. The default is None.
-            preprocess : bool, optional
-                Whether to preprocess the files using coffea.dataset_tools.preprocess().
-                The default is False.
-            preprocess_args : dict, optional
-                Extra arguments to pass to coffea.dataset_tools.preprocess(). The default is {}.
             extra_filter : Callable, optional
                 An extra function to filter the events. The default is None.
                 Must take in a coffea NanoEventsArray and return a filtered NanoEventsArray of the events you want to keep.
             extra_filter_args : dict, optional
                 Extra arguments to pass to extra_filter. The default is {}.
         """
-        if preprocess_args is None:
-            preprocess_args = {}
         if extra_filter_args is None:
             extra_filter_args = {}
 
         super().__init__(
-            names=names,
-            perform_tnp=_TnPImplOnLeg(),
-            pt1=trigger_pt1 - 1,
-            pt2=trigger_pt2 - 1,
+            fileset=fileset,
+            tnpimpl_class=TnPImpl,
+            pt=trigger_pt,
             avoid_ecal_transition_tags=avoid_ecal_transition_tags,
             avoid_ecal_transition_probes=avoid_ecal_transition_probes,
             goldenjson=goldenjson,
-            toquery=toquery,
-            redirector=redirector,
-            preprocess=preprocess,
-            preprocess_args=preprocess_args,
             extra_filter=extra_filter,
             extra_filter_args=extra_filter_args,
         )
 
     def __repr__(self):
-        if self.events is None:
-            return (
-                f"Ele{self.pt1 + 1}_Ele{self.pt2 + 1}_CaloIdL_TrackIdL_IsoVL"
-                f"(Events: not loaded, Number of files: {len(self.file)}, Golden JSON: {self.goldenjson})"
-            )
-        else:
-            return (
-                f"Ele{self.pt1 + 1}_Ele{self.pt2 + 1}_CaloIdL_TrackIdL_IsoVL"
-                f"(Events: {self.events}, Number of files: {len(self.file)}, Golden JSON: {self.goldenjson})"
-            )
+        n_of_files = 0
+        for dataset in self.fileset:
+            n_of_files += len(dataset["files"])
+        return f"HLT_Ele{self.pt}_WPTight_Gsf(Events: not loaded, Number of files: {n_of_files}, Golden JSON: {self.goldenjson})"

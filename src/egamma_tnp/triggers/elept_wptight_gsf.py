@@ -159,7 +159,7 @@ class ElePt_WPTight_Gsf(BaseSingleElectronTrigger):
         super().__init__(
             fileset=fileset,
             tnpimpl_class=TnPImpl,
-            pt=trigger_pt,
+            pt=trigger_pt - 1,
             avoid_ecal_transition_tags=avoid_ecal_transition_tags,
             avoid_ecal_transition_probes=avoid_ecal_transition_probes,
             goldenjson=goldenjson,
@@ -171,4 +171,4 @@ class ElePt_WPTight_Gsf(BaseSingleElectronTrigger):
         n_of_files = 0
         for dataset in self.fileset:
             n_of_files += len(dataset["files"])
-        return f"HLT_Ele{self.pt}_WPTight_Gsf(Events: not loaded, Number of files: {n_of_files}, Golden JSON: {self.goldenjson})"
+        return f"HLT_Ele{self.pt+1}_WPTight_Gsf(Events: not loaded, Number of files: {n_of_files}, Golden JSON: {self.goldenjson})"

@@ -265,7 +265,7 @@ class BaseSingleElectronTrigger:
             uproot_options = {}
 
         perform_tnp = self._tnpimpl_class(
-            pt=self.pt - 1,
+            pt=self.pt,
             avoid_ecal_transition_tags=self.avoid_ecal_transition_tags,
             avoid_ecal_transition_probes=self.avoid_ecal_transition_probes,
             goldenjson=self.goldenjson,
@@ -372,7 +372,7 @@ class BaseSingleElectronTrigger:
             uproot_options = {}
 
         perform_tnp = self._tnpimpl_class(
-            pt=self.pt - 1,
+            pt=self.pt,
             avoid_ecal_transition_tags=self.avoid_ecal_transition_tags,
             avoid_ecal_transition_probes=self.avoid_ecal_transition_probes,
             goldenjson=self.goldenjson,

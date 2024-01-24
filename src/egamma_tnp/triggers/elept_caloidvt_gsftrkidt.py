@@ -121,7 +121,7 @@ class TnPImpl:
         return passing_probes, all_probes
 
 
-class ElePt_WPTight_Gsf(BaseSingleElectronTrigger):
+class ElePt_CaloIdVT_GsfTrkIdT(BaseSingleElectronTrigger):
     def __init__(
         self,
         fileset,

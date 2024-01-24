@@ -1,7 +1,7 @@
 import dask_awkward as dak
 from coffea.lumi_tools import LumiMask
 
-from egamma_tnp.triggers.basesingleelectrontrigger import BaseSingleElectronTrigger
+from egamma_tnp.triggers.basedoubleelectrontrigger import BaseDoubleElectronTrigger
 
 
 class TnPImpl:
@@ -121,7 +121,7 @@ class TnPImpl:
         return passing_probes, all_probes
 
 
-class ElePt_WPTight_Gsf(BaseSingleElectronTrigger):
+class ElePt1_ElePt2_CaloIdL_TrackIdL_IsoVL(BaseDoubleElectronTrigger):
     def __init__(
         self,
         fileset,

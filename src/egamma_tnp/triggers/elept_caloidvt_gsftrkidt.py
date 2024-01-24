@@ -90,7 +90,7 @@ class TnPImpl:
     def trigger_match_probe(self, electrons, trigobjs, pt):
         pass_pt = trigobjs.pt > pt
         pass_id = abs(trigobjs.id) == 11
-        filterbit = 1
+        filterbit = 11
         pass_filterbit = trigobjs.filterBits & (0x1 << filterbit) > 0
         trigger_cands = trigobjs[pass_pt & pass_id & pass_filterbit]
         delta_r = electrons.metric_table(trigger_cands)
@@ -133,7 +133,7 @@ class ElePt_CaloIdVT_GsfTrkIdT(BaseSingleElectronTrigger):
         extra_filter=None,
         extra_filter_args=None,
     ):
-        """Tag and Probe efficiency for HLT_ElePt_WPTight_Gsf trigger from NanoAOD.
+        """Tag and Probe efficiency for HLT_ElePt_CaloIdVT_GsfTrkIdT trigger from NanoAOD.
 
         Parameters
         ----------
@@ -171,4 +171,4 @@ class ElePt_CaloIdVT_GsfTrkIdT(BaseSingleElectronTrigger):
         n_of_files = 0
         for dataset in self.fileset:
             n_of_files += len(dataset["files"])
-        return f"HLT_Ele{self.pt}_WPTight_Gsf(Events: not loaded, Number of files: {n_of_files}, Golden JSON: {self.goldenjson})"
+        return f"HLT_Ele{self.pt}_CaloIdVT_GsfTrkIdT(Events: not loaded, Number of files: {n_of_files}, Golden JSON: {self.goldenjson})"

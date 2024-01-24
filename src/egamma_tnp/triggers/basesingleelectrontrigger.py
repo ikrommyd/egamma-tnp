@@ -7,7 +7,7 @@ from coffea.nanoevents import NanoAODSchema
 
 
 class PerformTnP:
-    def __init_(
+    def __init__(
         self,
         perform_tnp,
         plateau_cut=None,
@@ -206,7 +206,7 @@ class BaseSingleElectronTrigger:
         with open(config_path) as f:
             self._bins = json.load(f)
 
-    def get_arrays(
+    def get_tnp_arrays(
         self,
         schmemaclass=NanoAODSchema,
         uproot_options=None,
@@ -264,7 +264,7 @@ class BaseSingleElectronTrigger:
         if uproot_options is None:
             uproot_options = {}
 
-        perform_tnp = self._tnp_impl_class(
+        perform_tnp = self._tnpimpl_class(
             pt=self.pt - 1,
             avoid_ecal_transition_tags=self.avoid_ecal_transition_tags,
             avoid_ecal_transition_probes=self.avoid_ecal_transition_probes,
@@ -371,7 +371,7 @@ class BaseSingleElectronTrigger:
         if uproot_options is None:
             uproot_options = {}
 
-        perform_tnp = self._tnp_impl_class(
+        perform_tnp = self._tnpimpl_class(
             pt=self.pt - 1,
             avoid_ecal_transition_tags=self.avoid_ecal_transition_tags,
             avoid_ecal_transition_probes=self.avoid_ecal_transition_probes,

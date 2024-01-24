@@ -1,6 +1,7 @@
-import dask_awkward as dak
+import json
+import os
 
-from egamma_tnp.triggers.basetrigger import BaseTrigger
+import dask_awkward as dak
 
 
 def _get_arrays_on_leg(events, perform_tnp, **kwargs):
@@ -323,7 +324,7 @@ def _get_and_compute_both_leg_tnp_histograms(
     return res, report
 
 
-class BaseDoubleElectronTrigger(BaseTrigger):
+class BaseDoubleElectronTrigger:
     """BaseDoubleElectronTrigger class for HLT Trigger efficiency from NanoAOD.
 
     This class holds the basic methods for all the Tag and Probe classes for different double electron triggers.
@@ -331,35 +332,34 @@ class BaseDoubleElectronTrigger(BaseTrigger):
 
     def __init__(
         self,
-        names,
+        fileset,
         perform_tnp,
         pt1,
         pt2,
         avoid_ecal_transition_tags,
         avoid_ecal_transition_probes,
         goldenjson,
-        toquery,
-        redirector,
-        preprocess,
-        preprocess_args,
         extra_filter,
         extra_filter_args,
     ):
-        super().__init__(
-            names,
-            perform_tnp,
-            avoid_ecal_transition_tags,
-            avoid_ecal_transition_probes,
-            goldenjson,
-            toquery,
-            redirector,
-            preprocess,
-            preprocess_args,
-            extra_filter,
-            extra_filter_args,
-        )
+        self.fileset = fileset
+        self._perform_tnp = perform_tnp
         self.pt1 = pt1
         self.pt2 = pt2
+        self.avoid_ecal_transition_tags = avoid_ecal_transition_tags
+        self.avoid_ecal_transition_probes = avoid_ecal_transition_probes
+        self.goldenjson = goldenjson
+        self._extra_filter = extra_filter
+        self._extra_filter_args = extra_filter_args
+
+        if goldenjson is not None and not os.path.exists(goldenjson):
+            raise FileNotFoundError(f"Golden JSON {goldenjson} does not exist.")
+
+        config_path = os.path.join(
+            os.path.dirname(__file__), "..", "config/runtime_config.json"
+        )
+        with open(config_path) as f:
+            self._bins = json.load(f)
 
     def get_arrays(self, leg="both", compute=False, scheduler=None, progress=True):
         """Get the Pt and Eta arrays of the passing and all probes.

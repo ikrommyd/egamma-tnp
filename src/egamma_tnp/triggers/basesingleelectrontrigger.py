@@ -235,6 +235,8 @@ class BaseSingleElectronTrigger:
 
         Returns
         -------
+            A tuple of the form (arrays, report) if `allow_read_errors_with_report` is True, otherwise just arrays.
+            arrays : dict of tuples of the same form as fileset where for each dataset the following arrays are present:
             The fileset where for each dataset the following arrays are added:
                 pt_pass1: awkward.Array or dask_awkward.Array
                     The Pt array of the passing probes when the firsts electrons are the tags.
@@ -260,6 +262,8 @@ class BaseSingleElectronTrigger:
                     The Phi array of all probes when the firsts electrons are the tags.
                 phi_all2: awkward.Array or dask_awkward.Array
                     The Phi array of all probes when the seconds electrons are the tags.
+                report: dict of awkward arrays of the same form as fileset.
+                    For each dataset an awkward array that contains information about the file access is present.
         """
         if uproot_options is None:
             uproot_options = {}
@@ -288,12 +292,13 @@ class BaseSingleElectronTrigger:
                 pbar = ProgressBar()
                 pbar.register()
 
-            computed = dask.compute(*to_compute, scheduler=scheduler)
+            computed = dask.compute(to_compute, scheduler=scheduler)
 
             if progress:
                 pbar.unregister()
 
-            return computed
+            return computed[0]
+        return to_compute
 
     def get_tnp_histograms(
         self,
@@ -345,16 +350,19 @@ class BaseSingleElectronTrigger:
 
         Returns
         -------
-            The fileset where for each dataset the following histograms are added:
-                histograms : dict
-                    A dictionary of the form `{"name": [hpt_pass, hpt_all, heta_pass, heta_all, hphi_pass, hphi_all], ...}`
-                    Where each `"name"` is the name of each eta region defined by the user.
-                    `hpt_pass` is a hist.Hist or hist.dask.Hist histogram of the Pt histogram of the passing probes.
-                    `hpt_all` is a hist.Hist or hist.dask.Hist histogram of the Pt histogram of all probes.
-                    `heta_pass` is a hist.Hist or hist.dask.Hist histogram of the Eta histogram of the passing probes.
-                    `heta_all` is a hist.Hist or hist.dask.Hist histogram of the Eta histogram of all probes.
-                    `hphi_pass` is a hist.Hist or hist.dask.Hist histogram of the Phi histogram of the passing probes.
-                    `hphi_all` is a hist.Hist or hist.dask.Hist histogram of the Phi histogram of all probes.
+            A tuple of the form (histograms, report) if `allow_read_errors_with_report` is True, otherwise just histograms.
+            histograms : dict of dicts of the same form as fileset where for each dataset the following dictionary is present:
+                A dictionary of the form `{"name": [hpt_pass, hpt_all, heta_pass, heta_all, hphi_pass, hphi_all], ...}`
+                Where each `"name"` is the name of each eta region defined by the user.
+                `hpt_pass` is a hist.Hist or hist.dask.Hist histogram of the Pt histogram of the passing probes.
+                `hpt_all` is a hist.Hist or hist.dask.Hist histogram of the Pt histogram of all probes.
+                `heta_pass` is a hist.Hist or hist.dask.Hist histogram of the Eta histogram of the passing probes.
+                `heta_all` is a hist.Hist or hist.dask.Hist histogram of the Eta histogram of all probes.
+                `hphi_pass` is a hist.Hist or hist.dask.Hist histogram of the Phi histogram of the passing probes.
+                `hphi_all` is a hist.Hist or hist.dask.Hist histogram of the Phi histogram of all probes.
+            report: dict of awkward arrays of the same form as fileset.
+                For each dataset an awkward array that contains information about the file access is present.
+
         """
         if plateau_cut is None:
             plateau_cut = 0
@@ -401,9 +409,9 @@ class BaseSingleElectronTrigger:
                 pbar = ProgressBar()
                 pbar.register()
 
-            computed = dask.compute(*to_compute, scheduler=scheduler)
+            computed = dask.compute(to_compute, scheduler=scheduler)
 
             if progress:
                 pbar.unregister()
-
-            return computed
+            return computed[0]
+        return to_compute

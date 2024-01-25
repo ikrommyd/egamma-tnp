@@ -8,35 +8,36 @@ from egamma_tnp.triggers import ElePt_WPTight_Gsf
 NanoAODSchema.error_missing_event_ids = False
 
 
+fileset = {
+    "sample": {
+        "files": {
+            os.path.abspath("tests/samples/DYto2E.root"): "Events",
+            os.path.abspath("tests/samples/not_a_file.root"): "Events",
+        }
+    }
+}
+
+
 @pytest.mark.parametrize("scheduler", ["threads", "processes", "single-threaded"])
-@pytest.mark.parametrize("preprocess", [False, True])
-def test_local_compute(scheduler, preprocess):
-    files = [os.path.abspath("tests/samples/DYto2E.root")]
-    if not preprocess:
-        files.append(os.path.abspath("tests/samples/not_a_file.root"))
+def test_local_compute(scheduler):
     tag_n_probe = ElePt_WPTight_Gsf(
-        files,
+        fileset,
         32,
         avoid_ecal_transition_tags=True,
         avoid_ecal_transition_probes=True,
         goldenjson=None,
-        toquery=False,
-        redirector=None,
-        preprocess=preprocess,
-    )
-    tag_n_probe.load_events(
-        from_root_args={"schemaclass": NanoAODSchema},
-        allow_read_errors_with_report=True,
     )
 
-    histograms, report = tag_n_probe.get_tnp_histograms(
+    res = tag_n_probe.get_tnp_histograms(
+        uproot_options={"allow_read_errors_with_report": True},
         compute=True,
         scheduler=scheduler,
         progress=True,
     )
+    histograms = res[0]["sample"]
+    report = res[1]["sample"]
 
-    if not preprocess:
-        assert report.exception[1] == "FileNotFoundError"
+    assert report.exception[1] == "FileNotFoundError"
 
     hpt_pass_barrel, hpt_all_barrel = histograms["pt"]["barrel"].values()
     hpt_pass_endcap, hpt_all_endcap = histograms["pt"]["endcap"].values()
@@ -63,37 +64,28 @@ def test_local_compute(scheduler, preprocess):
     assert hphi_all.values(flow=True)[0] == 0.0
 
 
-@pytest.mark.parametrize("preprocess", [False, True])
-def test_distributed_compute(preprocess):
+def test_distributed_compute():
     from distributed import Client
 
-    files = [os.path.abspath("tests/samples/DYto2E.root")]
-    if not preprocess:
-        files.append(os.path.abspath("tests/samples/not_a_file.root"))
     tag_n_probe = ElePt_WPTight_Gsf(
-        files,
+        fileset,
         32,
         avoid_ecal_transition_tags=True,
         avoid_ecal_transition_probes=True,
         goldenjson=None,
-        toquery=False,
-        redirector=None,
-        preprocess=preprocess,
-    )
-    tag_n_probe.load_events(
-        from_root_args={"schemaclass": NanoAODSchema},
-        allow_read_errors_with_report=True,
     )
 
     with Client():
-        histograms, report = tag_n_probe.get_tnp_histograms(
+        res = tag_n_probe.get_tnp_histograms(
+            uproot_options={"allow_read_errors_with_report": True},
             compute=True,
             scheduler=None,
             progress=True,
         )
+        histograms = res[0]["sample"]
+        report = res[1]["sample"]
 
-        if not preprocess:
-            assert report.exception[1] == "FileNotFoundError"
+        assert report.exception[1] == "FileNotFoundError"
 
         hpt_pass_barrel, hpt_all_barrel = histograms["pt"]["barrel"].values()
         hpt_pass_endcap, hpt_all_endcap = histograms["pt"]["endcap"].values()

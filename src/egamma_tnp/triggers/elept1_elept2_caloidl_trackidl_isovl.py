@@ -4,7 +4,7 @@ from coffea.lumi_tools import LumiMask
 from egamma_tnp.triggers.basedoubleelectrontrigger import BaseDoubleElectronTrigger
 
 
-class TnPImpl:
+class TnPImplOnLeg:
     def __init__(
         self,
         pt,
@@ -90,7 +90,7 @@ class TnPImpl:
     def trigger_match_probe(self, electrons, trigobjs, pt):
         pass_pt = trigobjs.pt > pt
         pass_id = abs(trigobjs.id) == 11
-        filterbit = 1
+        filterbit = 4
         pass_filterbit = trigobjs.filterBits & (0x1 << filterbit) > 0
         trigger_cands = trigobjs[pass_pt & pass_id & pass_filterbit]
         delta_r = electrons.metric_table(trigger_cands)
@@ -125,7 +125,8 @@ class ElePt1_ElePt2_CaloIdL_TrackIdL_IsoVL(BaseDoubleElectronTrigger):
     def __init__(
         self,
         fileset,
-        trigger_pt,
+        trigger_pt1,
+        trigger_pt2,
         *,
         avoid_ecal_transition_tags=True,
         avoid_ecal_transition_probes=False,
@@ -133,14 +134,16 @@ class ElePt1_ElePt2_CaloIdL_TrackIdL_IsoVL(BaseDoubleElectronTrigger):
         extra_filter=None,
         extra_filter_args=None,
     ):
-        """Tag and Probe efficiency for HLT_ElePt_WPTight_Gsf trigger from NanoAOD.
+        """Tag and Probe efficiency for HLT_ElePt1_ElePt2_CaloIdL_TrackIdL_IsoVL trigger from NanoAOD.
 
         Parameters
         ----------
             fileset : str or list of str
                 The fileset to calculate the trigger efficiencies for.
-            trigger_pt : int or float
-                The Pt threshold of the trigger.
+            trigger_pt1 : int or float
+                The Pt threshold of first leg of the trigger.
+            trigger_pt2 : int or float
+                The Pt threshold of second leg of the trigger.
             avoid_ecal_transition_tags : bool, optional
                 Whether to avoid the ECAL transition region for the tags with an eta cut. The default is True.
             avoid_ecal_transition_probes : bool, optional
@@ -158,8 +161,9 @@ class ElePt1_ElePt2_CaloIdL_TrackIdL_IsoVL(BaseDoubleElectronTrigger):
 
         super().__init__(
             fileset=fileset,
-            tnpimpl_class=TnPImpl,
-            pt=trigger_pt,
+            tnpimpl_class=TnPImplOnLeg,
+            pt1=trigger_pt1 - 1,
+            pt2=trigger_pt2 - 1,
             avoid_ecal_transition_tags=avoid_ecal_transition_tags,
             avoid_ecal_transition_probes=avoid_ecal_transition_probes,
             goldenjson=goldenjson,
@@ -171,4 +175,4 @@ class ElePt1_ElePt2_CaloIdL_TrackIdL_IsoVL(BaseDoubleElectronTrigger):
         n_of_files = 0
         for dataset in self.fileset:
             n_of_files += len(dataset["files"])
-        return f"HLT_Ele{self.pt}_WPTight_Gsf(Events: not loaded, Number of files: {n_of_files}, Golden JSON: {self.goldenjson})"
+        return f"HLT_Ele{self.pt1 + 1}_Ele{self.pt2 + 1}_CaloIdL_TrackIdL_IsoVL(Number of files: {n_of_files}, Golden JSON: {self.goldenjson})"

@@ -171,4 +171,4 @@ class ElePt_CaloIdVT_GsfTrkIdT(BaseSingleElectronTrigger):
         n_of_files = 0
         for dataset in self.fileset:
             n_of_files += len(dataset["files"])
-        return f"HLT_Ele{self.pt+2}_CaloIdVT_GsfTrkIdT(Events: not loaded, Number of files: {n_of_files}, Golden JSON: {self.goldenjson})"
+        return f"HLT_Ele{self.pt+2}_CaloIdVT_GsfTrkIdT(Number of files: {n_of_files}, Golden JSON: {self.goldenjson})"

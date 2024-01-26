@@ -7,10 +7,10 @@ from coffea.dataset_tools import apply_to_fileset
 from coffea.nanoevents import NanoAODSchema
 
 
-class BaseSingleElectronTrigger:
+class BaseDoubleElectronTrigger:
     """BaseDoubleElectronTrigger class for HLT Trigger efficiency from NanoAOD.
 
-    This class holds the basic methods for all the Tag and Probe classes for different single double triggers.
+    This class holds the basic methods for all the Tag and Probe classes for different double triggers.
     """
 
     def __init__(
@@ -121,7 +121,7 @@ class BaseSingleElectronTrigger:
             extra_filter_args=self._extra_filter_args,
         )
         data_manipulation_leg1 = partial(
-            self._get_tnp_arrays_on_leg_core, perform_tnp=perform_tnp_leg1
+            self._get_tnp_arrays_on_leg_core, perform_tnp=perform_tnp_leg1, leg="leg1"
         )
         perform_tnp_leg2 = self._tnpimpl_class(
             pt=self.pt2,
@@ -132,10 +132,10 @@ class BaseSingleElectronTrigger:
             extra_filter_args=self._extra_filter_args,
         )
         data_manipulation_leg2 = partial(
-            self._get_tnp_arrays_on_leg_core, perform_tnp=perform_tnp_leg2
+            self._get_tnp_arrays_on_leg_core, perform_tnp=perform_tnp_leg2, leg="leg2"
         )
         data_manipulation_both = partial(
-            self._get_arrays_on_both_legs_core,
+            self._get_tnp_arrays_on_both_legs_core,
             perform_tnp_leg1=perform_tnp_leg1,
             perform_tnp_leg2=perform_tnp_leg2,
         )
@@ -177,15 +177,9 @@ class BaseSingleElectronTrigger:
             if progress:
                 pbar.unregister()
 
-            if leg != "both":
-                return {leg: computed[0]}
-            else:
-                return computed[0]
+            return computed[0]
 
-        if leg != "both":
-            return {leg: to_compute}
-        else:
-            return to_compute
+        return to_compute
 
     def get_tnp_histograms(
         self,
@@ -283,6 +277,7 @@ class BaseSingleElectronTrigger:
         data_manipulation_leg1 = partial(
             self._get_tnp_histograms_on_leg_core,
             perform_tnp=perform_tnp_leg1,
+            leg="leg1",
             plateau_cut=plateau_cut,
             eta_regions_pt=eta_regions_pt,
             eta_regions_eta=eta_regions_eta,
@@ -300,6 +295,7 @@ class BaseSingleElectronTrigger:
         data_manipulation_leg2 = partial(
             self._get_tnp_histograms_on_leg_core,
             perform_tnp=perform_tnp_leg2,
+            leg="leg2",
             plateau_cut=plateau_cut,
             eta_regions_pt=eta_regions_pt,
             eta_regions_eta=eta_regions_eta,
@@ -352,17 +348,11 @@ class BaseSingleElectronTrigger:
             if progress:
                 pbar.unregister()
 
-            if leg != "both":
-                return {leg: computed[0]}
-            else:
-                return computed[0]
+            return computed[0]
 
-        if leg != "both":
-            return {leg: to_compute}
-        else:
-            return to_compute
+        return to_compute
 
-    def _get_tnp_arrays_on_leg_core(self, events, perform_tnp):
+    def _get_tnp_arrays_on_leg(self, events, perform_tnp):
         p1, a1, p2, a2 = perform_tnp(events)
 
         pt_pass1 = dak.flatten(p1.pt)
@@ -395,13 +385,18 @@ class BaseSingleElectronTrigger:
             phi_all2,
         )
 
-    def _get_arrays_on_both_legs_core(self, events, perform_tnp_leg1, perform_tnp_leg2):
+    def _get_tnp_arrays_on_leg_core(self, events, perform_tnp, leg):
+        return {leg: self._get_tnp_arrays_on_leg(events, perform_tnp)}
+
+    def _get_tnp_arrays_on_both_legs_core(
+        self, events, perform_tnp_leg1, perform_tnp_leg2
+    ):
         return {
-            "leg1": self._get_tnp_arrays_on_leg_core(events, perform_tnp_leg1),
-            "leg2": self._get_tnp_arrays_on_leg_core(events, perform_tnp_leg2),
+            "leg1": self._get_tnp_arrays_on_leg(events, perform_tnp_leg1),
+            "leg2": self._get_tnp_arrays_on_leg(events, perform_tnp_leg2),
         }
 
-    def _get_tnp_histograms_on_leg_core(
+    def _get_tnp_histograms_on_leg(
         self,
         events,
         perform_tnp,
@@ -418,7 +413,7 @@ class BaseSingleElectronTrigger:
         etabins = bins["etabins"]
         phibins = bins["phibins"]
 
-        arrays = self._get_tnp_arrays_core(events, perform_tnp)
+        arrays = self._get_tnp_arrays_on_leg(events, perform_tnp)
         (
             pt_pass1,
             pt_pass2,
@@ -524,6 +519,29 @@ class BaseSingleElectronTrigger:
 
         return histograms
 
+    def _get_tnp_histograms_on_leg_core(
+        self,
+        events,
+        perform_tnp,
+        leg,
+        plateau_cut,
+        eta_regions_pt,
+        eta_regions_eta,
+        eta_regions_phi,
+        bins,
+    ):
+        return {
+            leg: self._get_tnp_histograms_on_leg(
+                events,
+                perform_tnp,
+                plateau_cut,
+                eta_regions_pt,
+                eta_regions_eta,
+                eta_regions_phi,
+                bins,
+            )
+        }
+
     def _get_tnp_histograms_on_both_legs_core(
         self,
         events,
@@ -536,7 +554,7 @@ class BaseSingleElectronTrigger:
         bins,
     ):
         return {
-            "leg1": self._get_tnp_histograms_on_leg_core(
+            "leg1": self._get_tnp_histograms_on_leg(
                 events,
                 perform_tnp_leg1,
                 plateau_cut,
@@ -545,7 +563,7 @@ class BaseSingleElectronTrigger:
                 eta_regions_phi,
                 bins,
             ),
-            "leg2": self._get_tnp_histograms_on_leg_core(
+            "leg2": self._get_tnp_histograms_on_leg(
                 events,
                 perform_tnp_leg2,
                 plateau_cut,

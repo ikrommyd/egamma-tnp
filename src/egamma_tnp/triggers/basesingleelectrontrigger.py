@@ -134,6 +134,7 @@ class BaseSingleElectronTrigger:
                 pbar.unregister()
 
             return computed[0]
+
         return to_compute
 
     def get_tnp_histograms(
@@ -251,7 +252,9 @@ class BaseSingleElectronTrigger:
 
             if progress:
                 pbar.unregister()
+
             return computed[0]
+
         return to_compute
 
     def _get_tnp_arrays_core(self, events, perform_tnp):

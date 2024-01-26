@@ -1,174 +1,10 @@
 import json
 import os
+from functools import partial
 
 import dask_awkward as dak
 from coffea.dataset_tools import apply_to_fileset
 from coffea.nanoevents import NanoAODSchema
-
-
-class PerformTnP:
-    def __init__(
-        self,
-        perform_tnp,
-        plateau_cut=None,
-        eta_regions_pt=None,
-        eta_regions_eta=None,
-        eta_regions_phi=None,
-        bins=None,
-    ):
-        self.perform_tnp = perform_tnp
-        self.plateau_cut = plateau_cut
-        self.eta_regions_pt = eta_regions_pt
-        self.eta_regions_eta = eta_regions_eta
-        self.eta_regions_phi = eta_regions_phi
-        self.bins = bins
-
-    def get_arrays(self, events):
-        p1, a1, p2, a2 = self.perform_tnp(events)
-
-        pt_pass1 = dak.flatten(p1.pt)
-        pt_pass2 = dak.flatten(p2.pt)
-        pt_all1 = dak.flatten(a1.pt)
-        pt_all2 = dak.flatten(a2.pt)
-
-        eta_pass1 = dak.flatten(p1.eta)
-        eta_pass2 = dak.flatten(p2.eta)
-        eta_all1 = dak.flatten(a1.eta)
-        eta_all2 = dak.flatten(a2.eta)
-
-        phi_pass1 = dak.flatten(p1.phi)
-        phi_pass2 = dak.flatten(p2.phi)
-        phi_all1 = dak.flatten(a1.phi)
-        phi_all2 = dak.flatten(a2.phi)
-
-        return (
-            pt_pass1,
-            pt_pass2,
-            pt_all1,
-            pt_all2,
-            eta_pass1,
-            eta_pass2,
-            eta_all1,
-            eta_all2,
-            phi_pass1,
-            phi_pass2,
-            phi_all1,
-            phi_all2,
-        )
-
-    def get_histograms(self, events):
-        import hist
-        from hist.dask import Hist
-
-        ptbins = self.bins["ptbins"]
-        etabins = self.bins["etabins"]
-        phibins = self.bins["phibins"]
-
-        arrays = self.get_arrays(events)
-        (
-            pt_pass1,
-            pt_pass2,
-            pt_all1,
-            pt_all2,
-            eta_pass1,
-            eta_pass2,
-            eta_all1,
-            eta_all2,
-            phi_pass1,
-            phi_pass2,
-            phi_all1,
-            phi_all2,
-        ) = arrays
-
-        histograms = {}
-        histograms["pt"] = {}
-        histograms["eta"] = {}
-        histograms["phi"] = {}
-
-        plateau_mask_pass1 = pt_pass1 > self.plateau_cut
-        plateau_mask_pass2 = pt_pass2 > self.plateau_cut
-        plateau_mask_all1 = pt_all1 > self.plateau_cut
-        plateau_mask_all2 = pt_all2 > self.plateau_cut
-
-        for name_pt, region_pt in self.eta_regions_pt.items():
-            eta_mask_pt_pass1 = (abs(eta_pass1) > region_pt[0]) & (
-                abs(eta_pass1) < region_pt[1]
-            )
-            eta_mask_pt_pass2 = (abs(eta_pass2) > region_pt[0]) & (
-                abs(eta_pass2) < region_pt[1]
-            )
-            eta_mask_pt_all1 = (abs(eta_all1) > region_pt[0]) & (
-                abs(eta_all1) < region_pt[1]
-            )
-            eta_mask_pt_all2 = (abs(eta_all2) > region_pt[0]) & (
-                abs(eta_all2) < region_pt[1]
-            )
-            hpt_pass = Hist(
-                hist.axis.Variable(ptbins, name=f"hpt_{name_pt}", label="Pt [GeV]")
-            )
-            hpt_all = Hist(
-                hist.axis.Variable(ptbins, name=f"hpt_{name_pt}", label="Pt [GeV]")
-            )
-            hpt_pass.fill(pt_pass1[eta_mask_pt_pass1])
-            hpt_pass.fill(pt_pass2[eta_mask_pt_pass2])
-            hpt_all.fill(pt_all1[eta_mask_pt_all1])
-            hpt_all.fill(pt_all2[eta_mask_pt_all2])
-
-            histograms["pt"][name_pt] = {"passing": hpt_pass, "all": hpt_all}
-
-        for name_eta, region_eta in self.eta_regions_eta.items():
-            eta_mask_eta_pass1 = (abs(eta_pass1) > region_eta[0]) & (
-                abs(eta_pass1) < region_eta[1]
-            )
-            eta_mask_eta_pass2 = (abs(eta_pass2) > region_eta[0]) & (
-                abs(eta_pass2) < region_eta[1]
-            )
-            eta_mask_eta_all1 = (abs(eta_all1) > region_eta[0]) & (
-                abs(eta_all1) < region_eta[1]
-            )
-            eta_mask_eta_all2 = (abs(eta_all2) > region_eta[0]) & (
-                abs(eta_all2) < region_eta[1]
-            )
-            heta_pass = Hist(
-                hist.axis.Variable(etabins, name=f"heta_{name_eta}", label="eta")
-            )
-            heta_all = Hist(
-                hist.axis.Variable(etabins, name=f"heta_{name_eta}", label="eta")
-            )
-            heta_pass.fill(eta_pass1[plateau_mask_pass1 & eta_mask_eta_pass1])
-            heta_pass.fill(eta_pass2[plateau_mask_pass2 & eta_mask_eta_pass2])
-            heta_all.fill(eta_all1[plateau_mask_all1 & eta_mask_eta_all1])
-            heta_all.fill(eta_all2[plateau_mask_all2 & eta_mask_eta_all2])
-
-            histograms["eta"][name_eta] = {"passing": heta_pass, "all": heta_all}
-
-        for name_phi, region_phi in self.eta_regions_phi.items():
-            eta_mask_phi_pass1 = (abs(eta_pass1) > region_phi[0]) & (
-                abs(eta_pass1) < region_phi[1]
-            )
-            eta_mask_phi_pass2 = (abs(eta_pass2) > region_phi[0]) & (
-                abs(eta_pass2) < region_phi[1]
-            )
-            eta_mask_phi_all1 = (abs(eta_all1) > region_phi[0]) & (
-                abs(eta_all1) < region_phi[1]
-            )
-            eta_mask_phi_all2 = (abs(eta_all2) > region_phi[0]) & (
-                abs(eta_all2) < region_phi[1]
-            )
-            hphi_pass = Hist(
-                hist.axis.Variable(phibins, name=f"hphi_{name_phi}", label="phi")
-            )
-            hphi_all = Hist(
-                hist.axis.Variable(phibins, name=f"hphi_{name_phi}", label="phi")
-            )
-            hphi_pass.fill(phi_pass1[plateau_mask_pass1 & eta_mask_phi_pass1])
-            hphi_pass.fill(phi_pass2[plateau_mask_pass2 & eta_mask_phi_pass2])
-            hphi_all.fill(phi_all1[plateau_mask_all1 & eta_mask_phi_all1])
-            hphi_all.fill(phi_all2[plateau_mask_all2 & eta_mask_phi_all2])
-
-            histograms["phi"][name_phi] = {"passing": hphi_pass, "all": hphi_all}
-
-        return histograms
 
 
 class BaseSingleElectronTrigger:
@@ -208,11 +44,11 @@ class BaseSingleElectronTrigger:
 
     def get_tnp_arrays(
         self,
-        schmemaclass=NanoAODSchema,
+        schemaclass=NanoAODSchema,
         uproot_options=None,
         compute=False,
         scheduler=None,
-        progress=True,
+        progress=False,
     ):
         """Get the Pt and Eta arrays of the passing and all probes.
         WARNING: Not recommended to be used for large datasets as the arrays can be very large.
@@ -230,8 +66,8 @@ class BaseSingleElectronTrigger:
                 The dask scheduler to use. The default is None.
                 Only used if compute is True.
             progress : bool, optional
-                Whether to show a progress bar if `compute` is True. The default is True.
-                Only used if compute is True and no distributed Client is used.
+                Whether to show a progress bar if `compute` is True. The default is False.
+                Only meaningful if compute is True and no distributed Client is used.
 
         Returns
         -------
@@ -276,12 +112,12 @@ class BaseSingleElectronTrigger:
             extra_filter=self._extra_filter,
             extra_filter_args=self._extra_filter_args,
         )
-        data_manipulation_class = PerformTnP(perfom_tnp=perform_tnp)
+        data_manipulation = partial(self._get_tnp_arrays_core, perform_tnp=perform_tnp)
 
         to_compute = apply_to_fileset(
-            data_manipulation_class.get_arrays,
-            self.fileset,
-            schmemaclass=schmemaclass,
+            data_manipulation=data_manipulation,
+            fileset=self.fileset,
+            schemaclass=schemaclass,
             uproot_options=uproot_options,
         )
         if compute:
@@ -302,7 +138,7 @@ class BaseSingleElectronTrigger:
 
     def get_tnp_histograms(
         self,
-        schmemaclass=NanoAODSchema,
+        schemaclass=NanoAODSchema,
         uproot_options=None,
         plateau_cut=None,
         eta_regions_pt=None,
@@ -310,7 +146,7 @@ class BaseSingleElectronTrigger:
         eta_regions_phi=None,
         compute=False,
         scheduler=None,
-        progress=True,
+        progress=False,
     ):
         """Get the Pt and Eta histograms of the passing and all probes.
 
@@ -345,8 +181,8 @@ class BaseSingleElectronTrigger:
                 The dask scheduler to use. The default is None.
                 Only used if compute is True.
             progress : bool, optional
-                Whether to show a progress bar if `compute` is True. The default is True.
-                Only used if compute is True and no distributed Client is used.
+                Whether to show a progress bar if `compute` is True. The default is False.
+                Only meaningful if compute is True and no distributed Client is used.
 
         Returns
         -------
@@ -387,7 +223,8 @@ class BaseSingleElectronTrigger:
             extra_filter=self._extra_filter,
             extra_filter_args=self._extra_filter_args,
         )
-        data_manipulation_class = PerformTnP(
+        data_manipulation = partial(
+            self._get_tnp_histograms_core,
             perform_tnp=perform_tnp,
             plateau_cut=plateau_cut,
             eta_regions_pt=eta_regions_pt,
@@ -397,8 +234,9 @@ class BaseSingleElectronTrigger:
         )
 
         to_compute = apply_to_fileset(
-            data_manipulation_class.get_histograms,
-            self.fileset,
+            data_manipulation=data_manipulation,
+            fileset=self.fileset,
+            schemaclass=schemaclass,
             uproot_options=uproot_options,
         )
         if compute:
@@ -415,3 +253,159 @@ class BaseSingleElectronTrigger:
                 pbar.unregister()
             return computed[0]
         return to_compute
+
+    def _get_tnp_arrays_core(self, events, perform_tnp):
+        p1, a1, p2, a2 = perform_tnp(events)
+
+        pt_pass1 = dak.flatten(p1.pt)
+        pt_pass2 = dak.flatten(p2.pt)
+        pt_all1 = dak.flatten(a1.pt)
+        pt_all2 = dak.flatten(a2.pt)
+
+        eta_pass1 = dak.flatten(p1.eta)
+        eta_pass2 = dak.flatten(p2.eta)
+        eta_all1 = dak.flatten(a1.eta)
+        eta_all2 = dak.flatten(a2.eta)
+
+        phi_pass1 = dak.flatten(p1.phi)
+        phi_pass2 = dak.flatten(p2.phi)
+        phi_all1 = dak.flatten(a1.phi)
+        phi_all2 = dak.flatten(a2.phi)
+
+        return (
+            pt_pass1,
+            pt_pass2,
+            pt_all1,
+            pt_all2,
+            eta_pass1,
+            eta_pass2,
+            eta_all1,
+            eta_all2,
+            phi_pass1,
+            phi_pass2,
+            phi_all1,
+            phi_all2,
+        )
+
+    def _get_tnp_histograms_core(
+        self,
+        events,
+        perform_tnp,
+        plateau_cut,
+        eta_regions_pt,
+        eta_regions_eta,
+        eta_regions_phi,
+        bins,
+    ):
+        import hist
+        from hist.dask import Hist
+
+        ptbins = bins["ptbins"]
+        etabins = bins["etabins"]
+        phibins = bins["phibins"]
+
+        arrays = self._get_tnp_arrays_core(events, perform_tnp)
+        (
+            pt_pass1,
+            pt_pass2,
+            pt_all1,
+            pt_all2,
+            eta_pass1,
+            eta_pass2,
+            eta_all1,
+            eta_all2,
+            phi_pass1,
+            phi_pass2,
+            phi_all1,
+            phi_all2,
+        ) = arrays
+
+        histograms = {}
+        histograms["pt"] = {}
+        histograms["eta"] = {}
+        histograms["phi"] = {}
+
+        plateau_mask_pass1 = pt_pass1 > plateau_cut
+        plateau_mask_pass2 = pt_pass2 > plateau_cut
+        plateau_mask_all1 = pt_all1 > plateau_cut
+        plateau_mask_all2 = pt_all2 > plateau_cut
+
+        for name_pt, region_pt in eta_regions_pt.items():
+            eta_mask_pt_pass1 = (abs(eta_pass1) > region_pt[0]) & (
+                abs(eta_pass1) < region_pt[1]
+            )
+            eta_mask_pt_pass2 = (abs(eta_pass2) > region_pt[0]) & (
+                abs(eta_pass2) < region_pt[1]
+            )
+            eta_mask_pt_all1 = (abs(eta_all1) > region_pt[0]) & (
+                abs(eta_all1) < region_pt[1]
+            )
+            eta_mask_pt_all2 = (abs(eta_all2) > region_pt[0]) & (
+                abs(eta_all2) < region_pt[1]
+            )
+            hpt_pass = Hist(
+                hist.axis.Variable(ptbins, name=f"hpt_{name_pt}", label="Pt [GeV]")
+            )
+            hpt_all = Hist(
+                hist.axis.Variable(ptbins, name=f"hpt_{name_pt}", label="Pt [GeV]")
+            )
+            hpt_pass.fill(pt_pass1[eta_mask_pt_pass1])
+            hpt_pass.fill(pt_pass2[eta_mask_pt_pass2])
+            hpt_all.fill(pt_all1[eta_mask_pt_all1])
+            hpt_all.fill(pt_all2[eta_mask_pt_all2])
+
+            histograms["pt"][name_pt] = {"passing": hpt_pass, "all": hpt_all}
+
+        for name_eta, region_eta in eta_regions_eta.items():
+            eta_mask_eta_pass1 = (abs(eta_pass1) > region_eta[0]) & (
+                abs(eta_pass1) < region_eta[1]
+            )
+            eta_mask_eta_pass2 = (abs(eta_pass2) > region_eta[0]) & (
+                abs(eta_pass2) < region_eta[1]
+            )
+            eta_mask_eta_all1 = (abs(eta_all1) > region_eta[0]) & (
+                abs(eta_all1) < region_eta[1]
+            )
+            eta_mask_eta_all2 = (abs(eta_all2) > region_eta[0]) & (
+                abs(eta_all2) < region_eta[1]
+            )
+            heta_pass = Hist(
+                hist.axis.Variable(etabins, name=f"heta_{name_eta}", label="eta")
+            )
+            heta_all = Hist(
+                hist.axis.Variable(etabins, name=f"heta_{name_eta}", label="eta")
+            )
+            heta_pass.fill(eta_pass1[plateau_mask_pass1 & eta_mask_eta_pass1])
+            heta_pass.fill(eta_pass2[plateau_mask_pass2 & eta_mask_eta_pass2])
+            heta_all.fill(eta_all1[plateau_mask_all1 & eta_mask_eta_all1])
+            heta_all.fill(eta_all2[plateau_mask_all2 & eta_mask_eta_all2])
+
+            histograms["eta"][name_eta] = {"passing": heta_pass, "all": heta_all}
+
+        for name_phi, region_phi in eta_regions_phi.items():
+            eta_mask_phi_pass1 = (abs(eta_pass1) > region_phi[0]) & (
+                abs(eta_pass1) < region_phi[1]
+            )
+            eta_mask_phi_pass2 = (abs(eta_pass2) > region_phi[0]) & (
+                abs(eta_pass2) < region_phi[1]
+            )
+            eta_mask_phi_all1 = (abs(eta_all1) > region_phi[0]) & (
+                abs(eta_all1) < region_phi[1]
+            )
+            eta_mask_phi_all2 = (abs(eta_all2) > region_phi[0]) & (
+                abs(eta_all2) < region_phi[1]
+            )
+            hphi_pass = Hist(
+                hist.axis.Variable(phibins, name=f"hphi_{name_phi}", label="phi")
+            )
+            hphi_all = Hist(
+                hist.axis.Variable(phibins, name=f"hphi_{name_phi}", label="phi")
+            )
+            hphi_pass.fill(phi_pass1[plateau_mask_pass1 & eta_mask_phi_pass1])
+            hphi_pass.fill(phi_pass2[plateau_mask_pass2 & eta_mask_phi_pass2])
+            hphi_all.fill(phi_all1[plateau_mask_all1 & eta_mask_phi_all1])
+            hphi_all.fill(phi_all2[plateau_mask_all2 & eta_mask_phi_all2])
+
+            histograms["phi"][name_phi] = {"passing": hphi_pass, "all": hphi_all}
+
+        return histograms

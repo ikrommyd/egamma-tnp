@@ -235,18 +235,13 @@ class BaseDoubleElectronTrigger:
 
         Returns
         -------
-            histogram_dict: dict
-            A dictionary with keys "leg1" and/or "leg2" depending on the leg parameter.
-            The value for each key is a tuple of the form (histograms, report) if `allow_read_errors_with_report` is True, otherwise just histograms.
+            A tuple of the form (histograms, report) if `allow_read_errors_with_report` is True, otherwise just histograms.
             histograms : dict of dicts of the same form as fileset where for each dataset the following dictionary is present:
-                A dictionary of the form `{"name": [hpt_pass, hpt_all, heta_pass, heta_all, hphi_pass, hphi_all], ...}`
-                Where each `"name"` is the name of each eta region defined by the user.
-                `hpt_pass` is a hist.Hist or hist.dask.Hist histogram of the Pt histogram of the passing probes.
-                `hpt_all` is a hist.Hist or hist.dask.Hist histogram of the Pt histogram of all probes.
-                `heta_pass` is a hist.Hist or hist.dask.Hist histogram of the Eta histogram of the passing probes.
-                `heta_all` is a hist.Hist or hist.dask.Hist histogram of the Eta histogram of all probes.
-                `hphi_pass` is a hist.Hist or hist.dask.Hist histogram of the Phi histogram of the passing probes.
-                `hphi_all` is a hist.Hist or hist.dask.Hist histogram of the Phi histogram of all probes.
+                A dictionary of the form `{"leg": {"var": {"name": {"passing": passing_probes, "all": all_probes}, ...}, ...}, ...}`
+                where "leg" can be "leg1" and/or "leg2" depending on the leg parameter.
+                `"var"` can be `"pt"`, `"eta"`, or `"phi"`.
+                Each `"name"` is the name of eta region specified by the user and `passing_probes` and `all_probes` are `hist.dask.Hist` objects.
+                These are the histograms of the passing and all probes respectively.
             report: dict of awkward arrays of the same form as fileset.
                 For each dataset an awkward array that contains information about the file access is present.
 

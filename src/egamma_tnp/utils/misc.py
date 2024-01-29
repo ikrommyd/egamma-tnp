@@ -1,4 +1,5 @@
 import json
+import re
 
 import numpy as np
 
@@ -35,7 +36,35 @@ def merge_goldenjsons(files, outfile):
         json.dump(output, f, indent=2)
 
 
+def find_pt_threshold(s):
+    """Find the pt threshold of a filter from the filter name.
+
+    Parameters
+    ----------
+        s : str
+            The filter name.
+    """
+    # Extract all numbers following "Ele" in the string
+    numbers = re.findall(r"Ele(\d+)", s)
+
+    # Convert extracted numbers to integers
+    numbers = [int(num) for num in numbers]
+
+    # If 'Leg1' is in the string, return the first number
+    if "Leg1" in s:
+        return numbers[0]
+    # Otherwise, return the second number if there are two, else return the first
+    else:
+        return numbers[1] if len(numbers) > 1 else numbers[0]
+
+
 def replace_nans(arr):
+    """Replace nans in an array with 0 before the first float and 1 after.
+
+    Parameters
+    ----------
+        arr : np.array
+    """
     arr = np.array(arr)
 
     # Find the index of first non-nan value

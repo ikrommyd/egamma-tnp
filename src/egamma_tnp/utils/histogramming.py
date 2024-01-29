@@ -1,4 +1,5 @@
 import numpy as np
+import uproot
 from hist import intervals
 
 
@@ -70,14 +71,10 @@ def fill_eager_histograms(
     Returns
     -------
         histograms : dict
-            A dictionary of the form `{"name": [hpt_pass, hpt_all, heta_pass, heta_all, hphi_pass, hphi_all], ...}`
-            Where each `"name"` is the name of each eta region defined by the user.
-            `hpt_pass` is a hist.Hist histogram of the Pt histogram of the passing probes.
-            `hpt_all` is a hist.Hist histogram of the Pt histogram of all probes.
-            `heta_pass` is a hist.Hist histogram of the Eta histogram of the passing probes.
-            `heta_all` is a hist.Hist histogram of the Eta histogram of all probes.
-            `hphi_pass` is a hist.Hist histogram of the Phi histogram of the passing probes.
-            `hphi_all` is a hist.Hist histogram of the Phi histogram of all probes.
+            A dictionary of the form `{"var": {"name": {"passing": passing_probes, "all": all_probes}, ...}, ...}`
+            Where `"var"` can be `"pt"`, `"eta"`, or `"phi"`.
+            Each `"name"` is the name of eta region specified by the user and `passing_probes` and `all_probes` are `hist.Hist` objects.
+            The are the histograms of the passing and all probes respectively.
     """
     import hist
     from hist import Hist
@@ -202,3 +199,21 @@ def fill_eager_histograms(
         histograms["phi"][name_phi] = {"passing": hphi_pass, "all": hphi_all}
 
     return histograms
+
+
+def save_hists(path, res):
+    """Save histograms to a ROOT file.
+
+    Parameters
+    ----------
+        path : str
+            The path to the ROOT file.
+        res : dict
+            A histogram dictionary of the form {"var": {"region": {"passing": hist.Hist, "all": hist.Hist}, ...}, ...}
+
+    """
+    with uproot.recreate(path) as f:
+        for var, region_dict in res.items():
+            for region_name, hists in region_dict.items():
+                for i, (histname, h) in enumerate(hists.items()):
+                    f[f"{var}/{region_name}/{histname}"] = h

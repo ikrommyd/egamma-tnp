@@ -1,5 +1,6 @@
+from functools import partial
+
 import dask_awkward as dak
-import partial
 from coffea.dataset_tools import apply_to_fileset
 from coffea.lumi_tools import LumiMask
 from coffea.nanoevents import BaseSchema

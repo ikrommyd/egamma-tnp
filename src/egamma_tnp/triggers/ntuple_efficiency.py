@@ -239,7 +239,7 @@ class TagNProbeFromNTuples:
         all_probe_events = events[
             pass_tight_id & in_mass_window & pass_pt_tags & pass_pt_probes
         ]
-        passing_probe_events = all_probe_events[all_probe_events[filter] == 1]
+        passing_probe_events = all_probe_events[all_probe_events[self.filter] == 1]
 
         passing_probes = dak.zip(
             {

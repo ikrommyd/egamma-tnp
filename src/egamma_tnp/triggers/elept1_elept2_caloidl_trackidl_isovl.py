@@ -138,7 +138,7 @@ class ElePt1_ElePt2_CaloIdL_TrackIdL_IsoVL(BaseDoubleElectronTrigger):
 
         Parameters
         ----------
-            fileset : str or list of str
+            fileset : dict
                 The fileset to calculate the trigger efficiencies for.
             trigger_pt1 : int or float
                 The Pt threshold of first leg of the trigger.

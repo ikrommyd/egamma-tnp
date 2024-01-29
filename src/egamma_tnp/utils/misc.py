@@ -43,6 +43,10 @@ def find_pt_threshold(s):
     ----------
         s : str
             The filter name.
+    Returns
+    -------
+        int
+            The pt threshold.
     """
     # Extract all numbers following "Ele" in the string
     numbers = re.findall(r"Ele(\d+)", s)
@@ -50,6 +54,9 @@ def find_pt_threshold(s):
     # Convert extracted numbers to integers
     numbers = [int(num) for num in numbers]
 
+    # Return 0 if no numbers were found
+    if not numbers:
+        return 0
     # If 'Leg1' is in the string, return the first number
     if "Leg1" in s:
         return numbers[0]
@@ -64,6 +71,11 @@ def replace_nans(arr):
     Parameters
     ----------
         arr : np.array
+
+    Returns
+    -------
+        np.array
+            The array with nans replaced.
     """
     arr = np.array(arr)
 

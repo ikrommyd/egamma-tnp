@@ -1,4 +1,3 @@
-import json
 import os
 from functools import partial
 
@@ -35,12 +34,6 @@ class BaseSingleElectronTrigger:
 
         if goldenjson is not None and not os.path.exists(goldenjson):
             raise FileNotFoundError(f"Golden JSON {goldenjson} does not exist.")
-
-        config_path = os.path.join(
-            os.path.dirname(__file__), "..", "config/runtime_config.json"
-        )
-        with open(config_path) as f:
-            self._bins = json.load(f)
 
     def get_tnp_arrays(
         self,
@@ -227,7 +220,6 @@ class BaseSingleElectronTrigger:
             eta_regions_pt=eta_regions_pt,
             eta_regions_eta=eta_regions_eta,
             eta_regions_phi=eta_regions_phi,
-            bins=self._bins,
         )
 
         to_compute = apply_to_fileset(
@@ -294,14 +286,15 @@ class BaseSingleElectronTrigger:
         eta_regions_pt,
         eta_regions_eta,
         eta_regions_phi,
-        bins,
     ):
         import hist
         from hist.dask import Hist
 
-        ptbins = bins["ptbins"]
-        etabins = bins["etabins"]
-        phibins = bins["phibins"]
+        import egamma_tnp
+
+        ptbins = egamma_tnp.config.get("ptbins")
+        etabins = egamma_tnp.config.get("etabins")
+        phibins = egamma_tnp.config.get("phibins")
 
         arrays = self._get_tnp_arrays_core(events, perform_tnp)
         (

@@ -137,7 +137,7 @@ class ElePt_CaloIdVT_GsfTrkIdT(BaseSingleElectronTrigger):
 
         Parameters
         ----------
-            fileset : str or list of str
+            fileset : dict
                 The fileset to calculate the trigger efficiencies for.
             trigger_pt : int or float
                 The Pt threshold of the trigger.

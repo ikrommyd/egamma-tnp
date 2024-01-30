@@ -11,6 +11,7 @@ class TagNProbeFromNTuples:
         self,
         fileset,
         filter,
+        *,
         trigger_pt=None,
         goldenjson=None,
         extra_filter=None,

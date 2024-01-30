@@ -93,8 +93,10 @@ class TagNProbeFromNTuples:
         if uproot_options is None:
             uproot_options = {}
 
+        data_manipulation = self._find_probes
+
         to_compute = apply_to_fileset(
-            data_manipulation=self._find_probes,
+            data_manipulation=data_manipulation,
             fileset=self.fileset,
             schemaclass=schemaclass,
             uproot_options=uproot_options,

@@ -132,13 +132,18 @@ To do this you would do
 ```python
 from egamma_tnp.plot import plot_efficiency
 
-hpt_pass_barrel, hpt_all_barrel = histograms["ZJets"]["pt"]["barrel"]
-hpt_pass_endcap, hpt_all_endcap = histograms["ZJets"]["pt"]["endcap"]
-heta_pass, heta_all = histograms["ZJets"]["eta"]["entire"]
-hphi_pass, hphi_all = histograms["ZJets"]["phi"]["entire"]
+hpt_pass_barrel, hpt_all_barrel = histograms["ZJets"]["pt"]["barrel"].values()
+hpt_pass_endcap, hpt_all_endcap = histograms["ZJets"]["pt"]["endcap"].values()
+heta_pass, heta_all = histograms["ZJets"]["eta"]["entire"].values()
+hphi_pass, hphi_all = histograms["ZJets"]["phi"]["entire"].values()
 
-plot_efficiency(hpt_pass, hpt_all)
+plot_efficiency(hpt_pass_barrel, hpt_all_barrel)
+plt.show()
+plot_efficiency(hpt_pass_endcap, hpt_all_endcap)
+plt.show()
 plot_efficiency(heta_pass, heta_all)
+plt.show()
 plot_efficiency(hphi_pass, hphi_all)
+plt.show()
 ```
 The customization of those plots is up to the user. Using [mplhep](https://github.com/scikit-hep/mplhep) is recommended.

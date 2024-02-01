@@ -173,6 +173,6 @@ class ElePt1_ElePt2_CaloIdL_TrackIdL_IsoVL(BaseDoubleElectronTrigger):
 
     def __repr__(self):
         n_of_files = 0
-        for dataset in self.fileset:
+        for dataset in self.fileset.values():
             n_of_files += len(dataset["files"])
         return f"HLT_Ele{self.pt1 + 1}_Ele{self.pt2 + 1}_CaloIdL_TrackIdL_IsoVL(Number of files: {n_of_files}, Golden JSON: {self.goldenjson})"

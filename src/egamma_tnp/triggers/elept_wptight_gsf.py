@@ -169,6 +169,6 @@ class ElePt_WPTight_Gsf(BaseSingleElectronTrigger):
 
     def __repr__(self):
         n_of_files = 0
-        for dataset in self.fileset:
+        for dataset in self.fileset.values():
             n_of_files += len(dataset["files"])
         return f"HLT_Ele{self.pt+1}_WPTight_Gsf(Number of files: {n_of_files}, Golden JSON: {self.goldenjson})"

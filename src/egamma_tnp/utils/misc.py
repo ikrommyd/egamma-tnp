@@ -1,7 +1,45 @@
 import json
 import re
 
+import numba
 import numpy as np
+
+
+@numba.vectorize(
+    [
+        numba.float32(numba.float32, numba.float32),
+        numba.float64(numba.float64, numba.float64),
+    ]
+)
+def delta_phi(a, b):
+    """Compute difference in angle given two angles a and b
+
+    Returns a value within [-pi, pi)
+    """
+    return (a - b + np.pi) % (2 * np.pi) - np.pi
+
+
+@numba.vectorize(
+    [
+        numba.float32(numba.float32, numba.float32, numba.float32, numba.float32),
+        numba.float64(numba.float64, numba.float64, numba.float64, numba.float64),
+    ]
+)
+def delta_r(eta1, phi1, eta2, phi2):
+    r"""Distance in (eta,phi) plane given two pairs of (eta,phi)
+
+    :math:`\sqrt{\Delta\eta^2 + \Delta\phi^2}`
+    """
+    deta = eta1 - eta2
+    dphi = delta_phi(phi1, phi2)
+    return np.hypot(deta, dphi)
+
+
+def delta_r_SC(electron, other):
+    """Distance in (eta,phi) plane between electron and another object using the electron's SC eta."""
+    return delta_r(
+        electron.eta + electron.deltaEtaSC, electron.phi, other.eta, other.phi
+    )
 
 
 def merge_goldenjsons(files, outfile):

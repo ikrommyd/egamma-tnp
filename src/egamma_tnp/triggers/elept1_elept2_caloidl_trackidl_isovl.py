@@ -8,6 +8,7 @@ class TnPImplOnLeg:
     def __init__(
         self,
         pt,
+        filterbit,
         avoid_ecal_transition_tags,
         avoid_ecal_transition_probes,
         goldenjson,
@@ -15,6 +16,7 @@ class TnPImplOnLeg:
         extra_filter_args,
     ):
         self.pt = pt
+        self.filterbit = filterbit
         self.avoid_ecal_transition_tags = avoid_ecal_transition_tags
         self.avoid_ecal_transition_probes = avoid_ecal_transition_probes
         self.goldenjson = goldenjson
@@ -54,8 +56,12 @@ class TnPImplOnLeg:
             )
             zcands2 = zcands2[pass_eta_ebeegap_probes2]
 
-        p1, a1 = self.find_probes(zcands1, good_events.TrigObj, self.pt - 1)
-        p2, a2 = self.find_probes(zcands2, good_events.TrigObj, self.pt - 1)
+        p1, a1 = self.find_probes(
+            zcands1, good_events.TrigObj, self.pt - 1, self.filterbit
+        )
+        p2, a2 = self.find_probes(
+            zcands2, good_events.TrigObj, self.pt - 1, self.filterbit
+        )
 
         return p1, a1, p2, a2
 
@@ -87,10 +93,9 @@ class TnPImplOnLeg:
         trig_matched_locs = n_of_trigger_matches >= 1
         return trig_matched_locs
 
-    def trigger_match_probe(self, electrons, trigobjs, pt):
+    def trigger_match_probe(self, electrons, trigobjs, pt, filterbit):
         pass_pt = trigobjs.pt > pt
         pass_id = abs(trigobjs.id) == 11
-        filterbit = 4
         pass_filterbit = trigobjs.filterBits & (0x1 << filterbit) > 0
         trigger_cands = trigobjs[pass_pt & pass_id & pass_filterbit]
         delta_r = electrons.metric_table(trigger_cands)
@@ -99,7 +104,7 @@ class TnPImplOnLeg:
         trig_matched_locs = n_of_trigger_matches >= 1
         return trig_matched_locs
 
-    def find_probes(self, zcands, trigobjs, pt):
+    def find_probes(self, zcands, trigobjs, pt, filterbit):
         pt_cond_tags = zcands.tag.pt > 30
         pt_cond_probes = zcands.probe.pt > pt
         trig_matched_tag = self.trigger_match_tag(zcands.tag, trigobjs, 30)
@@ -116,7 +121,9 @@ class TnPImplOnLeg:
         isZ = in_mass_window & opposite_charge
         dr_condition = dr > 0.0
         all_probes = probes[isZ & dr_condition]
-        trig_matched_probe = self.trigger_match_probe(all_probes, trigobjs, pt)
+        trig_matched_probe = self.trigger_match_probe(
+            all_probes, trigobjs, pt, filterbit
+        )
         passing_probes = all_probes[trig_matched_probe]
         return passing_probes, all_probes
 
@@ -164,6 +171,8 @@ class ElePt1_ElePt2_CaloIdL_TrackIdL_IsoVL(BaseDoubleElectronTrigger):
             tnpimpl_class=TnPImplOnLeg,
             pt1=trigger_pt1,
             pt2=trigger_pt2,
+            filterbit1=4,
+            filterbit2=4,
             avoid_ecal_transition_tags=avoid_ecal_transition_tags,
             avoid_ecal_transition_probes=avoid_ecal_transition_probes,
             goldenjson=goldenjson,

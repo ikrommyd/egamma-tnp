@@ -17,6 +17,7 @@ class BaseSingleElectronTrigger:
         fileset,
         tnpimpl_class,
         pt,
+        filterbit,
         avoid_ecal_transition_tags,
         avoid_ecal_transition_probes,
         goldenjson,
@@ -26,6 +27,7 @@ class BaseSingleElectronTrigger:
         self.fileset = fileset
         self._tnpimpl_class = tnpimpl_class
         self.pt = pt
+        self.filterbit = filterbit
         self.avoid_ecal_transition_tags = avoid_ecal_transition_tags
         self.avoid_ecal_transition_probes = avoid_ecal_transition_probes
         self.goldenjson = goldenjson
@@ -99,6 +101,7 @@ class BaseSingleElectronTrigger:
 
         perform_tnp = self._tnpimpl_class(
             pt=self.pt,
+            filterbit=self.filterbit,
             avoid_ecal_transition_tags=self.avoid_ecal_transition_tags,
             avoid_ecal_transition_probes=self.avoid_ecal_transition_probes,
             goldenjson=self.goldenjson,
@@ -207,6 +210,7 @@ class BaseSingleElectronTrigger:
 
         perform_tnp = self._tnpimpl_class(
             pt=self.pt,
+            filterbit=self.filterbit,
             avoid_ecal_transition_tags=self.avoid_ecal_transition_tags,
             avoid_ecal_transition_probes=self.avoid_ecal_transition_probes,
             goldenjson=self.goldenjson,

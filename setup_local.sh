@@ -10,7 +10,9 @@ else
   export COFFEA_IMAGE=\$1
 fi
 
-SINGULARITY_SHELL=\$(which bash) singularity exec -B \${PWD}:/srv -B /cvmfs --pwd /srv \\
+export APPTAINER_BINDPATH=/cvmfs,/cvmfs/grid.cern.ch/etc/grid-security/vomses:/etc/vomses,/cvmfs/grid.cern.ch/etc/grid-security:/etc/grid-security
+
+APPTAINER_SHELL=\$(which bash) apptainer exec -B \${PWD}:/srv --pwd /srv \\
   /cvmfs/unpacked.cern.ch/registry.hub.docker.com/\${COFFEA_IMAGE} \\
   /bin/bash --rcfile /srv/.bashrc
 EOF
@@ -40,4 +42,4 @@ alias pip="python -m pip"
 EOF
 
 chmod u+x shell .bashrc
-echo "Wrote shell and .bashrc to current directory. Run ./shell to start the singularity shell"
+echo "Wrote shell and .bashrc to current directory. Run ./shell to start the apptainer shell"

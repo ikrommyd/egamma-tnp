@@ -54,8 +54,8 @@ class TnPImplOnLeg:
             )
             zcands2 = zcands2[pass_eta_ebeegap_probes2]
 
-        p1, a1 = self.find_probes(zcands1, good_events.TrigObj, self.pt)
-        p2, a2 = self.find_probes(zcands2, good_events.TrigObj, self.pt)
+        p1, a1 = self.find_probes(zcands1, good_events.TrigObj, self.pt - 1)
+        p2, a2 = self.find_probes(zcands2, good_events.TrigObj, self.pt - 1)
 
         return p1, a1, p2, a2
 
@@ -162,8 +162,8 @@ class ElePt1_ElePt2_CaloIdL_TrackIdL_IsoVL(BaseDoubleElectronTrigger):
         super().__init__(
             fileset=fileset,
             tnpimpl_class=TnPImplOnLeg,
-            pt1=trigger_pt1 - 1,
-            pt2=trigger_pt2 - 1,
+            pt1=trigger_pt1,
+            pt2=trigger_pt2,
             avoid_ecal_transition_tags=avoid_ecal_transition_tags,
             avoid_ecal_transition_probes=avoid_ecal_transition_probes,
             goldenjson=goldenjson,
@@ -175,4 +175,4 @@ class ElePt1_ElePt2_CaloIdL_TrackIdL_IsoVL(BaseDoubleElectronTrigger):
         n_of_files = 0
         for dataset in self.fileset.values():
             n_of_files += len(dataset["files"])
-        return f"HLT_Ele{self.pt1 + 1}_Ele{self.pt2 + 1}_CaloIdL_TrackIdL_IsoVL(Number of files: {n_of_files}, Golden JSON: {self.goldenjson})"
+        return f"HLT_Ele{self.pt1}_Ele{self.pt2}_CaloIdL_TrackIdL_IsoVL(Number of files: {n_of_files}, Golden JSON: {self.goldenjson})"

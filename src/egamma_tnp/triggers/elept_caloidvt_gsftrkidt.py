@@ -54,8 +54,8 @@ class TnPImpl:
             )
             zcands2 = zcands2[pass_eta_ebeegap_probes2]
 
-        p1, a1 = self.find_probes(zcands1, good_events.TrigObj, self.pt)
-        p2, a2 = self.find_probes(zcands2, good_events.TrigObj, self.pt)
+        p1, a1 = self.find_probes(zcands1, good_events.TrigObj, self.pt - 2)
+        p2, a2 = self.find_probes(zcands2, good_events.TrigObj, self.pt - 2)
 
         return p1, a1, p2, a2
 
@@ -159,7 +159,7 @@ class ElePt_CaloIdVT_GsfTrkIdT(BaseSingleElectronTrigger):
         super().__init__(
             fileset=fileset,
             tnpimpl_class=TnPImpl,
-            pt=trigger_pt - 2,
+            pt=trigger_pt,
             avoid_ecal_transition_tags=avoid_ecal_transition_tags,
             avoid_ecal_transition_probes=avoid_ecal_transition_probes,
             goldenjson=goldenjson,
@@ -171,4 +171,4 @@ class ElePt_CaloIdVT_GsfTrkIdT(BaseSingleElectronTrigger):
         n_of_files = 0
         for dataset in self.fileset.values():
             n_of_files += len(dataset["files"])
-        return f"HLT_Ele{self.pt+2}_CaloIdVT_GsfTrkIdT(Number of files: {n_of_files}, Golden JSON: {self.goldenjson})"
+        return f"HLT_Ele{self.pt}_CaloIdVT_GsfTrkIdT(Number of files: {n_of_files}, Golden JSON: {self.goldenjson})"

@@ -105,7 +105,7 @@ class TnPImplOnLeg:
         return trig_matched_locs
 
     def find_probes(self, zcands, trigobjs, pt, filterbit):
-        pt_cond_tags = zcands.tag.pt > 30
+        pt_cond_tags = zcands.tag.pt > 35
         pt_cond_probes = zcands.probe.pt > pt
         trig_matched_tag = self.trigger_match_tag(zcands.tag, trigobjs, 30)
         zcands = zcands[trig_matched_tag & pt_cond_tags & pt_cond_probes]
@@ -128,12 +128,11 @@ class TnPImplOnLeg:
         return passing_probes, all_probes
 
 
-class ElePt1_ElePt2_CaloIdL_TrackIdL_IsoVL(BaseDoubleElectronTrigger):
+class DoubleElePt_CaloIdL_MW(BaseDoubleElectronTrigger):
     def __init__(
         self,
         fileset,
-        trigger_pt1,
-        trigger_pt2,
+        trigger_pt,
         *,
         avoid_ecal_transition_tags=True,
         avoid_ecal_transition_probes=False,
@@ -141,16 +140,14 @@ class ElePt1_ElePt2_CaloIdL_TrackIdL_IsoVL(BaseDoubleElectronTrigger):
         extra_filter=None,
         extra_filter_args=None,
     ):
-        """Tag and Probe efficiency for HLT_ElePt1_ElePt2_CaloIdL_TrackIdL_IsoVL trigger from NanoAOD.
+        """Tag and Probe efficiency for DoubleElePt_CaloIdL_MW trigger from NanoAOD.
 
         Parameters
         ----------
             fileset : dict
                 The fileset to calculate the trigger efficiencies for.
-            trigger_pt1 : int or float
-                The Pt threshold of first leg of the trigger.
-            trigger_pt2 : int or float
-                The Pt threshold of second leg of the trigger.
+            trigger_pt: int or float
+                The Pt threshold of the trigger.
             avoid_ecal_transition_tags : bool, optional
                 Whether to avoid the ECAL transition region for the tags with an eta cut. The default is True.
             avoid_ecal_transition_probes : bool, optional
@@ -169,10 +166,10 @@ class ElePt1_ElePt2_CaloIdL_TrackIdL_IsoVL(BaseDoubleElectronTrigger):
         super().__init__(
             fileset=fileset,
             tnpimpl_class=TnPImplOnLeg,
-            pt1=trigger_pt1,
-            pt2=trigger_pt2,
-            filterbit1=4,
-            filterbit2=5,
+            pt1=trigger_pt,
+            pt2=trigger_pt,
+            filterbit1=15,
+            filterbit2=16,
             avoid_ecal_transition_tags=avoid_ecal_transition_tags,
             avoid_ecal_transition_probes=avoid_ecal_transition_probes,
             goldenjson=goldenjson,
@@ -184,4 +181,4 @@ class ElePt1_ElePt2_CaloIdL_TrackIdL_IsoVL(BaseDoubleElectronTrigger):
         n_of_files = 0
         for dataset in self.fileset.values():
             n_of_files += len(dataset["files"])
-        return f"HLT_Ele{self.pt1}_Ele{self.pt2}_CaloIdL_TrackIdL_IsoVL(Number of files: {n_of_files}, Golden JSON: {self.goldenjson})"
+        return f"HLT_DoubleEle{self.pt}_CaloIdL_MW(Number of files: {n_of_files}, Golden JSON: {self.goldenjson})"

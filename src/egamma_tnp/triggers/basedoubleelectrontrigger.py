@@ -18,6 +18,8 @@ class BaseDoubleElectronTrigger:
         tnpimpl_class,
         pt1,
         pt2,
+        filterbit1,
+        filterbit2,
         avoid_ecal_transition_tags,
         avoid_ecal_transition_probes,
         goldenjson,
@@ -28,6 +30,8 @@ class BaseDoubleElectronTrigger:
         self._tnpimpl_class = tnpimpl_class
         self.pt1 = pt1
         self.pt2 = pt2
+        self.filterbit1 = filterbit1
+        self.filterbit2 = filterbit2
         self.avoid_ecal_transition_tags = avoid_ecal_transition_tags
         self.avoid_ecal_transition_probes = avoid_ecal_transition_probes
         self.goldenjson = goldenjson
@@ -107,6 +111,7 @@ class BaseDoubleElectronTrigger:
 
         perform_tnp_leg1 = self._tnpimpl_class(
             pt=self.pt1,
+            filterbit=self.filterbit1,
             avoid_ecal_transition_tags=self.avoid_ecal_transition_tags,
             avoid_ecal_transition_probes=self.avoid_ecal_transition_probes,
             goldenjson=self.goldenjson,
@@ -118,6 +123,7 @@ class BaseDoubleElectronTrigger:
         )
         perform_tnp_leg2 = self._tnpimpl_class(
             pt=self.pt2,
+            filterbit=self.filterbit2,
             avoid_ecal_transition_tags=self.avoid_ecal_transition_tags,
             avoid_ecal_transition_probes=self.avoid_ecal_transition_probes,
             goldenjson=self.goldenjson,
@@ -256,6 +262,7 @@ class BaseDoubleElectronTrigger:
 
         perform_tnp_leg1 = self._tnpimpl_class(
             pt=self.pt1,
+            filterbit=self.filterbit1,
             avoid_ecal_transition_tags=self.avoid_ecal_transition_tags,
             avoid_ecal_transition_probes=self.avoid_ecal_transition_probes,
             goldenjson=self.goldenjson,
@@ -273,6 +280,7 @@ class BaseDoubleElectronTrigger:
         )
         perform_tnp_leg2 = self._tnpimpl_class(
             pt=self.pt2,
+            filterbit=self.filterbit2,
             avoid_ecal_transition_tags=self.avoid_ecal_transition_tags,
             avoid_ecal_transition_probes=self.avoid_ecal_transition_probes,
             goldenjson=self.goldenjson,

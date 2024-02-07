@@ -5,7 +5,7 @@ import pytest
 from coffea.dataset_tools import preprocess
 from coffea.nanoevents import NanoAODSchema
 
-from egamma_tnp.triggers import ElePt1_ElePt2_CaloIdL_TrackIdL_IsoVL
+from egamma_tnp.triggers import DoubleElePt_CaloIdL_MW
 
 NanoAODSchema.error_missing_event_ids = False
 
@@ -38,10 +38,9 @@ def test_without_compute(do_preprocess, allow_read_errors_with_report):
             )
             fileset = fileset_available
 
-    tag_n_probe = ElePt1_ElePt2_CaloIdL_TrackIdL_IsoVL(
+    tag_n_probe = DoubleElePt_CaloIdL_MW(
         fileset,
-        23,
-        12,
+        33,
         avoid_ecal_transition_tags=True,
         avoid_ecal_transition_probes=True,
         goldenjson=None,
@@ -245,10 +244,9 @@ def test_local_compute(do_preprocess, allow_read_errors_with_report, scheduler):
             )
             fileset = fileset_available
 
-    tag_n_probe = ElePt1_ElePt2_CaloIdL_TrackIdL_IsoVL(
+    tag_n_probe = DoubleElePt_CaloIdL_MW(
         fileset,
-        23,
-        12,
+        33,
         avoid_ecal_transition_tags=True,
         avoid_ecal_transition_probes=True,
         goldenjson=None,
@@ -437,26 +435,25 @@ def test_local_compute(do_preprocess, allow_read_errors_with_report, scheduler):
     assert hphi_pass_leg2.sum(flow=True) == hphi_pass_both_leg2.sum(flow=True)
 
     assert (
-        hpt_pass_barrel_leg1.sum(flow=True) + hpt_pass_endcap_leg1.sum(flow=True)
-        == 181.0
+        hpt_pass_barrel_leg1.sum(flow=True) + hpt_pass_endcap_leg1.sum(flow=True) == 0.0
     )
     assert (
-        hpt_all_barrel_leg1.sum(flow=True) + hpt_all_endcap_leg1.sum(flow=True) == 190.0
+        hpt_all_barrel_leg1.sum(flow=True) + hpt_all_endcap_leg1.sum(flow=True) == 138.0
     )
-    assert heta_pass_leg1.sum(flow=True) == 181.0
-    assert heta_all_leg1.sum(flow=True) == 190.0
-    assert hphi_pass_leg1.sum(flow=True) == 181.0
-    assert hphi_all_leg1.sum(flow=True) == 190.0
+    assert heta_pass_leg1.sum(flow=True) == 0.0
+    assert heta_all_leg1.sum(flow=True) == 138.0
+    assert hphi_pass_leg1.sum(flow=True) == 0.0
+    assert hphi_all_leg1.sum(flow=True) == 138.0
     assert (
         hpt_pass_barrel_leg2.sum(flow=True) + hpt_pass_endcap_leg2.sum(flow=True) == 0.0
     )
     assert (
-        hpt_all_barrel_leg2.sum(flow=True) + hpt_all_endcap_leg2.sum(flow=True) == 197.0
+        hpt_all_barrel_leg2.sum(flow=True) + hpt_all_endcap_leg2.sum(flow=True) == 138.0
     )
     assert heta_pass_leg2.sum(flow=True) == 0.0
-    assert heta_all_leg2.sum(flow=True) == 197.0
+    assert heta_all_leg2.sum(flow=True) == 138.0
     assert hphi_pass_leg2.sum(flow=True) == 0.0
-    assert hphi_all_leg2.sum(flow=True) == 197.0
+    assert hphi_all_leg2.sum(flow=True) == 138.0
 
     assert (
         hpt_pass_barrel_leg1.values(flow=True)[0]
@@ -518,10 +515,9 @@ def test_distributed_compute(do_preprocess, allow_read_errors_with_report):
             )
             fileset = fileset_available
 
-    tag_n_probe = ElePt1_ElePt2_CaloIdL_TrackIdL_IsoVL(
+    tag_n_probe = DoubleElePt_CaloIdL_MW(
         fileset,
-        23,
-        12,
+        33,
         avoid_ecal_transition_tags=True,
         avoid_ecal_transition_probes=True,
         goldenjson=None,
@@ -732,28 +728,28 @@ def test_distributed_compute(do_preprocess, allow_read_errors_with_report):
 
         assert (
             hpt_pass_barrel_leg1.sum(flow=True) + hpt_pass_endcap_leg1.sum(flow=True)
-            == 181.0
+            == 0.0
         )
         assert (
             hpt_all_barrel_leg1.sum(flow=True) + hpt_all_endcap_leg1.sum(flow=True)
-            == 190.0
+            == 138.0
         )
-        assert heta_pass_leg1.sum(flow=True) == 181.0
-        assert heta_all_leg1.sum(flow=True) == 190.0
-        assert hphi_pass_leg1.sum(flow=True) == 181.0
-        assert hphi_all_leg1.sum(flow=True) == 190.0
+        assert heta_pass_leg1.sum(flow=True) == 0.0
+        assert heta_all_leg1.sum(flow=True) == 138.0
+        assert hphi_pass_leg1.sum(flow=True) == 0.0
+        assert hphi_all_leg1.sum(flow=True) == 138.0
         assert (
             hpt_pass_barrel_leg2.sum(flow=True) + hpt_pass_endcap_leg2.sum(flow=True)
             == 0.0
         )
         assert (
             hpt_all_barrel_leg2.sum(flow=True) + hpt_all_endcap_leg2.sum(flow=True)
-            == 197.0
+            == 138.0
         )
         assert heta_pass_leg2.sum(flow=True) == 0.0
-        assert heta_all_leg2.sum(flow=True) == 197.0
+        assert heta_all_leg2.sum(flow=True) == 138.0
         assert hphi_pass_leg2.sum(flow=True) == 0.0
-        assert hphi_all_leg2.sum(flow=True) == 197.0
+        assert hphi_all_leg2.sum(flow=True) == 138.0
 
         assert (
             hpt_pass_barrel_leg1.values(flow=True)[0]

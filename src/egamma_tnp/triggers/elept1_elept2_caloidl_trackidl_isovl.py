@@ -172,7 +172,7 @@ class ElePt1_ElePt2_CaloIdL_TrackIdL_IsoVL(BaseDoubleElectronTrigger):
             pt1=trigger_pt1,
             pt2=trigger_pt2,
             filterbit1=4,
-            filterbit2=4,
+            filterbit2=5,
             avoid_ecal_transition_tags=avoid_ecal_transition_tags,
             avoid_ecal_transition_probes=avoid_ecal_transition_probes,
             goldenjson=goldenjson,

@@ -2,6 +2,7 @@ import dask_awkward as dak
 from coffea.lumi_tools import LumiMask
 
 from egamma_tnp.triggers.basesingleelectrontrigger import BaseSingleElectronTrigger
+from egamma_tnp.utils import delta_r_SC
 
 
 class TnPImpl:
@@ -84,10 +85,9 @@ class TnPImpl:
     def trigger_match_tag(self, electrons, trigobjs, pt):
         pass_pt = trigobjs.pt > pt
         pass_id = abs(trigobjs.id) == 11
-        filterbit = 1
-        pass_filterbit = trigobjs.filterBits & (0x1 << filterbit) > 0
+        pass_filterbit = trigobjs.filterBits & (0x1 << 1) > 0
         trigger_cands = trigobjs[pass_pt & pass_id & pass_filterbit]
-        delta_r = electrons.metric_table(trigger_cands)
+        delta_r = electrons.metric_table(trigger_cands, metric=delta_r_SC)
         pass_delta_r = delta_r < 0.1
         n_of_trigger_matches = dak.sum(pass_delta_r, axis=2)
         trig_matched_locs = n_of_trigger_matches >= 1
@@ -98,7 +98,7 @@ class TnPImpl:
         pass_id = abs(trigobjs.id) == 11
         pass_filterbit = trigobjs.filterBits & (0x1 << filterbit) > 0
         trigger_cands = trigobjs[pass_pt & pass_id & pass_filterbit]
-        delta_r = electrons.metric_table(trigger_cands)
+        delta_r = electrons.metric_table(trigger_cands, metric=delta_r_SC)
         pass_delta_r = delta_r < 0.1
         n_of_trigger_matches = dak.sum(pass_delta_r, axis=2)
         trig_matched_locs = n_of_trigger_matches >= 1

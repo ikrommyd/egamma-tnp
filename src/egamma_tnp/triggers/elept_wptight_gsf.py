@@ -72,11 +72,14 @@ class TnPImpl:
         return events[mask]
 
     def filter_events(self, events):
+        pass_hlt = events.HLT.Ele30_WPTight_Gsf & getattr(
+            events.HLT, f"Ele{self.pt}_WPTight_Gsf"
+        )
         two_electrons = dak.num(events.Electron) == 2
         abs_eta = abs(events.Electron.eta)
         pass_tight_id = events.Electron.cutBased == 4
         pass_eta = abs_eta <= 2.5
-        pass_selection = two_electrons & pass_eta & pass_tight_id
+        pass_selection = pass_hlt & two_electrons & pass_eta & pass_tight_id
         n_of_tags = dak.sum(pass_selection, axis=1)
         good_events = events[n_of_tags == 2]
         good_locations = pass_selection[n_of_tags == 2]

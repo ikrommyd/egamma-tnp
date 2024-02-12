@@ -48,9 +48,8 @@ Homepage = "https://github.com/iasonkrom/egamma-tnp"
 dev = [
   "pre-commit",
   "black[jupyter]",
-  "flake8",
+  "ruff",
   "pytest",
-  "pytest-mpl",
 ]
 
 [tool.hatch]
@@ -71,3 +70,9 @@ log_cli_level = "DEBUG"
 filterwarnings = [
   "ignore:There is no current event loop",
 ]
+
+[tool.ruff]
+line-length = 160
+
+[tool.ruff.lint]
+ignore = ["F403", "F405", "E402"]

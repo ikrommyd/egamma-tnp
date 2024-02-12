@@ -57,12 +57,8 @@ class TnPImplOnLeg:
             )
             zcands2 = zcands2[pass_eta_ebeegap_probes2]
 
-        p1, a1 = self.find_probes(
-            zcands1, good_events.TrigObj, self.pt - 1, self.filterbit
-        )
-        p2, a2 = self.find_probes(
-            zcands2, good_events.TrigObj, self.pt - 1, self.filterbit
-        )
+        p1, a1 = self.find_probes(zcands1, good_events.TrigObj, self.pt, self.filterbit)
+        p2, a2 = self.find_probes(zcands2, good_events.TrigObj, self.pt, self.filterbit)
 
         return p1, a1, p2, a2
 
@@ -97,7 +93,7 @@ class TnPImplOnLeg:
         return trig_matched_locs
 
     def trigger_match_probe(self, electrons, trigobjs, pt, filterbit):
-        pass_pt = trigobjs.pt > pt
+        pass_pt = trigobjs.pt > pt - 3
         pass_id = abs(trigobjs.id) == 11
         pass_filterbit = trigobjs.filterBits & (0x1 << filterbit) > 0
         trigger_cands = trigobjs[pass_pt & pass_id & pass_filterbit]

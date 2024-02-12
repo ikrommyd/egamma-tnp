@@ -57,12 +57,8 @@ class TnPImplOnLeg:
             )
             zcands2 = zcands2[pass_eta_ebeegap_probes2]
 
-        p1, a1 = self.find_probes(
-            zcands1, good_events.TrigObj, self.pt - 1, self.filterbit
-        )
-        p2, a2 = self.find_probes(
-            zcands2, good_events.TrigObj, self.pt - 1, self.filterbit
-        )
+        p1, a1 = self.find_probes(zcands1, good_events.TrigObj, self.pt, self.filterbit)
+        p2, a2 = self.find_probes(zcands2, good_events.TrigObj, self.pt, self.filterbit)
 
         return p1, a1, p2, a2
 
@@ -109,7 +105,7 @@ class TnPImplOnLeg:
 
     def find_probes(self, zcands, trigobjs, pt, filterbit):
         pt_cond_tags = zcands.tag.pt > 30
-        pt_cond_probes = zcands.probe.pt > pt
+        pt_cond_probes = zcands.probe.pt > pt - 3
         trig_matched_tag = self.trigger_match_tag(zcands.tag, trigobjs, 30)
         zcands = zcands[trig_matched_tag & pt_cond_tags & pt_cond_probes]
         events_with_tags = dak.num(zcands.tag, axis=1) >= 1

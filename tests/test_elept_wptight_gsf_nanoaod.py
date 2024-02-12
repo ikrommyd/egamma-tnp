@@ -135,12 +135,12 @@ def test_local_compute(do_preprocess, allow_read_errors_with_report):
     heta_pass, heta_all = histograms["eta"]["entire"].values()
     hphi_pass, hphi_all = histograms["phi"]["entire"].values()
 
-    assert hpt_pass_barrel.sum(flow=True) + hpt_pass_endcap.sum(flow=True) == 954.0
-    assert hpt_all_barrel.sum(flow=True) + hpt_all_endcap.sum(flow=True) == 1124.0
-    assert heta_pass.sum(flow=True) == 954.0
-    assert heta_all.sum(flow=True) == 1124.0
-    assert hphi_pass.sum(flow=True) == 954.0
-    assert hphi_all.sum(flow=True) == 1124.0
+    assert hpt_pass_barrel.sum(flow=True) + hpt_pass_endcap.sum(flow=True) == 956.0
+    assert hpt_all_barrel.sum(flow=True) + hpt_all_endcap.sum(flow=True) == 1153.0
+    assert heta_pass.sum(flow=True) == 956.0
+    assert heta_all.sum(flow=True) == 1153.0
+    assert hphi_pass.sum(flow=True) == 956.0
+    assert hphi_all.sum(flow=True) == 1153.0
 
     assert (
         hpt_pass_barrel.values(flow=True)[0] + hpt_pass_endcap.values(flow=True)[0]
@@ -216,12 +216,12 @@ def test_distributed_compute(do_preprocess, allow_read_errors_with_report):
         heta_pass, heta_all = histograms["eta"]["entire"].values()
         hphi_pass, hphi_all = histograms["phi"]["entire"].values()
 
-        assert hpt_pass_barrel.sum(flow=True) + hpt_pass_endcap.sum(flow=True) == 954.0
-        assert hpt_all_barrel.sum(flow=True) + hpt_all_endcap.sum(flow=True) == 1124.0
-        assert heta_pass.sum(flow=True) == 954.0
-        assert heta_all.sum(flow=True) == 1124.0
-        assert hphi_pass.sum(flow=True) == 954.0
-        assert hphi_all.sum(flow=True) == 1124.0
+        assert hpt_pass_barrel.sum(flow=True) + hpt_pass_endcap.sum(flow=True) == 956.0
+        assert hpt_all_barrel.sum(flow=True) + hpt_all_endcap.sum(flow=True) == 1153.0
+        assert heta_pass.sum(flow=True) == 956.0
+        assert heta_all.sum(flow=True) == 1153.0
+        assert hphi_pass.sum(flow=True) == 956.0
+        assert hphi_all.sum(flow=True) == 1153.0
 
         assert (
             hpt_pass_barrel.values(flow=True)[0] + hpt_pass_endcap.values(flow=True)[0]

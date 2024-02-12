@@ -68,9 +68,7 @@ class TnPImplOnLeg:
         return events[mask]
 
     def filter_events(self, events):
-        pass_hlt = (
-            events.HLT.Ele30_WPTight_Gsf & events.HLT.Ele23_Ele12_CaloIdL_TrackIdL_IsoVL
-        )
+        pass_hlt = events.HLT.Ele30_WPTight_Gsf
         two_electrons = dak.num(events.Electron) == 2
         abs_eta = abs(events.Electron.eta)
         pass_tight_id = events.Electron.cutBased == 4

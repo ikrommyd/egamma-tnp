@@ -60,7 +60,29 @@ class TnPImpl:
         p1, a1 = self.find_probes(zcands1, good_events.TrigObj, self.pt, self.filterbit)
         p2, a2 = self.find_probes(zcands2, good_events.TrigObj, self.pt, self.filterbit)
 
-        return p1, a1, p2, a2
+        p = dak.concatenate([p1, p2])
+        a = dak.concatenate([a1, a2])
+
+        passing_probes = dak.flatten(
+            dak.zip(
+                {
+                    "pt": p.pt,
+                    "eta": p.eta,
+                    "phi": p.phi,
+                }
+            )
+        )
+        all_probes = dak.flatten(
+            dak.zip(
+                {
+                    "pt": a.pt,
+                    "eta": a.eta,
+                    "phi": a.phi,
+                }
+            )
+        )
+
+        return passing_probes, all_probes
 
     def apply_lumimasking(self, events, goldenjson):
         lumimask = LumiMask(goldenjson)

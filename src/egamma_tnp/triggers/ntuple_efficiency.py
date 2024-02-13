@@ -183,21 +183,6 @@ class TagNProbeFromNTuples:
                 For each dataset an awkward array that contains information about the file access is present.
 
         """
-        if plateau_cut is None:
-            plateau_cut = 0
-        if eta_regions_pt is None:
-            eta_regions_pt = {
-                "barrel": [0.0, 1.4442],
-                "endcap": [1.566, 2.5],
-            }
-        if eta_regions_eta is None:
-            eta_regions_eta = {"entire": [0.0, 2.5]}
-        if eta_regions_phi is None:
-            eta_regions_phi = {"entire": [0.0, 2.5]}
-
-        if uproot_options is None:
-            uproot_options = {}
-
         data_manipulation = partial(
             self._make_tnp_histograms,
             plateau_cut=plateau_cut,
@@ -269,84 +254,14 @@ class TagNProbeFromNTuples:
         eta_regions_eta,
         eta_regions_phi,
     ):
-        import hist
-        from hist.dask import Hist
-
-        import egamma_tnp
-
-        ptbins = egamma_tnp.config.get("ptbins")
-        etabins = egamma_tnp.config.get("etabins")
-        phibins = egamma_tnp.config.get("phibins")
+        from egamma_tnp.utils import fill_tnp_histograms
 
         passing_probes, all_probes = self._find_probes(events)
-
-        pt_pass = passing_probes.pt
-        pt_all = all_probes.pt
-        eta_pass = passing_probes.eta
-        eta_all = all_probes.eta
-        phi_pass = passing_probes.phi
-        phi_all = all_probes.phi
-
-        histograms = {}
-        histograms["pt"] = {}
-        histograms["eta"] = {}
-        histograms["phi"] = {}
-
-        plateau_mask_pass = pt_pass > plateau_cut
-        plateau_mask_all = pt_all > plateau_cut
-
-        for name_pt, region_pt in eta_regions_pt.items():
-            eta_mask_pt_pass = (abs(eta_pass) > region_pt[0]) & (
-                abs(eta_pass) < region_pt[1]
-            )
-            eta_mask_pt_all = (abs(eta_all) > region_pt[0]) & (
-                abs(eta_all) < region_pt[1]
-            )
-            hpt_pass = Hist(
-                hist.axis.Variable(ptbins, name=f"hpt_{name_pt}", label="Pt [GeV]")
-            )
-            hpt_all = Hist(
-                hist.axis.Variable(ptbins, name=f"hpt_{name_pt}", label="Pt [GeV]")
-            )
-            hpt_pass.fill(pt_pass[eta_mask_pt_pass])
-            hpt_all.fill(pt_all[eta_mask_pt_all])
-
-            histograms["pt"][name_pt] = {"passing": hpt_pass, "all": hpt_all}
-
-        for name_eta, region_eta in eta_regions_eta.items():
-            eta_mask_eta_pass = (abs(eta_pass) > region_eta[0]) & (
-                abs(eta_pass) < region_eta[1]
-            )
-            eta_mask_eta_all = (abs(eta_all) > region_eta[0]) & (
-                abs(eta_all) < region_eta[1]
-            )
-            heta_pass = Hist(
-                hist.axis.Variable(etabins, name=f"heta_{name_eta}", label="eta")
-            )
-            heta_all = Hist(
-                hist.axis.Variable(etabins, name=f"heta_{name_eta}", label="eta")
-            )
-            heta_pass.fill(eta_pass[plateau_mask_pass & eta_mask_eta_pass])
-            heta_all.fill(eta_all[plateau_mask_all & eta_mask_eta_all])
-
-            histograms["eta"][name_eta] = {"passing": heta_pass, "all": heta_all}
-
-        for name_phi, region_phi in eta_regions_phi.items():
-            eta_mask_phi_pass = (abs(eta_pass) > region_phi[0]) & (
-                abs(eta_pass) < region_phi[1]
-            )
-            eta_mask_phi_all = (abs(eta_all) > region_phi[0]) & (
-                abs(eta_all) < region_phi[1]
-            )
-            hphi_pass = Hist(
-                hist.axis.Variable(phibins, name=f"hphi_{name_phi}", label="phi")
-            )
-            hphi_all = Hist(
-                hist.axis.Variable(phibins, name=f"hphi_{name_phi}", label="phi")
-            )
-            hphi_pass.fill(phi_pass[plateau_mask_pass & eta_mask_phi_pass])
-            hphi_all.fill(phi_all[plateau_mask_all & eta_mask_phi_all])
-
-            histograms["phi"][name_phi] = {"passing": hphi_pass, "all": hphi_all}
-
-        return histograms
+        return fill_tnp_histograms(
+            passing_probes,
+            all_probes,
+            plateau_cut=plateau_cut,
+            eta_regions_pt=eta_regions_pt,
+            eta_regions_eta=eta_regions_eta,
+            eta_regions_phi=eta_regions_phi,
+        )

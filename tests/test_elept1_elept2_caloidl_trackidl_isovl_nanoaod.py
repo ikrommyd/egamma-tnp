@@ -332,10 +332,16 @@ def test_local_compute(do_preprocess, allow_read_errors_with_report):
         histograms_leg2 = res_leg2["sample"]
         histograms_both = res_both["sample"]
 
-    for arr1, arr2 in zip(arrays_leg1["leg1"], arrays_both["leg1"]):
-        assert np.all(arr1 == arr2)
-    for arr1, arr2 in zip(arrays_leg2["leg2"], arrays_both["leg2"]):
-        assert np.all(arr1 == arr2)
+    arrays_pass_leg1, arrays_all_leg1 = arrays_leg1["leg1"]
+    arrays_pass_leg2, arrays_all_leg2 = arrays_leg2["leg2"]
+    arrays_pass_both_leg1, arrays_all_both_leg1 = arrays_both["leg1"]
+    arrays_pass_both_leg2, arrays_all_both_leg2 = arrays_both["leg2"]
+
+    for field in ["pt", "eta", "phi"]:
+        assert np.all(arrays_pass_leg1[field] == arrays_pass_both_leg1[field])
+        assert np.all(arrays_pass_leg2[field] == arrays_pass_both_leg2[field])
+        assert np.all(arrays_all_leg1[field] == arrays_all_both_leg1[field])
+        assert np.all(arrays_all_leg2[field] == arrays_all_both_leg2[field])
 
     if not preprocess:
         assert report_arrays_leg1.exception[1] == "FileNotFoundError"
@@ -620,10 +626,16 @@ def test_distributed_compute(do_preprocess, allow_read_errors_with_report):
             histograms_leg2 = res_leg2["sample"]
             histograms_both = res_both["sample"]
 
-        for arr1, arr2 in zip(arrays_leg1["leg1"], arrays_both["leg1"]):
-            assert np.all(arr1 == arr2)
-        for arr1, arr2 in zip(arrays_leg2["leg2"], arrays_both["leg2"]):
-            assert np.all(arr1 == arr2)
+        arrays_pass_leg1, arrays_all_leg1 = arrays_leg1["leg1"]
+        arrays_pass_leg2, arrays_all_leg2 = arrays_leg2["leg2"]
+        arrays_pass_both_leg1, arrays_all_both_leg1 = arrays_both["leg1"]
+        arrays_pass_both_leg2, arrays_all_both_leg2 = arrays_both["leg2"]
+
+        for field in ["pt", "eta", "phi"]:
+            assert np.all(arrays_pass_leg1[field] == arrays_pass_both_leg1[field])
+            assert np.all(arrays_pass_leg2[field] == arrays_pass_both_leg2[field])
+            assert np.all(arrays_all_leg1[field] == arrays_all_both_leg1[field])
+            assert np.all(arrays_all_leg2[field] == arrays_all_both_leg2[field])
 
         if not preprocess:
             assert report_arrays_leg1.exception[1] == "FileNotFoundError"

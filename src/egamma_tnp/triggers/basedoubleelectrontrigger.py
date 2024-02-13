@@ -1,7 +1,6 @@
 import os
 from functools import partial
 
-import dask_awkward as dak
 from coffea.dataset_tools import apply_to_fileset
 from coffea.nanoevents import NanoAODSchema
 
@@ -119,7 +118,7 @@ class BaseDoubleElectronTrigger:
             extra_filter_args=self._extra_filter_args,
         )
         data_manipulation_leg1 = partial(
-            self._get_tnp_arrays_on_leg_core, perform_tnp=perform_tnp_leg1, leg="leg1"
+            self._make_tnp_arrays_on_leg, perform_tnp=perform_tnp_leg1, leg="leg1"
         )
         perform_tnp_leg2 = self._tnpimpl_class(
             pt=self.pt2,
@@ -131,10 +130,10 @@ class BaseDoubleElectronTrigger:
             extra_filter_args=self._extra_filter_args,
         )
         data_manipulation_leg2 = partial(
-            self._get_tnp_arrays_on_leg_core, perform_tnp=perform_tnp_leg2, leg="leg2"
+            self._make_tnp_arrays_on_leg, perform_tnp=perform_tnp_leg2, leg="leg2"
         )
         data_manipulation_both = partial(
-            self._get_tnp_arrays_on_both_legs_core,
+            self._make_tnp_arrays_on_both_legs,
             perform_tnp_leg1=perform_tnp_leg1,
             perform_tnp_leg2=perform_tnp_leg2,
         )
@@ -245,18 +244,6 @@ class BaseDoubleElectronTrigger:
                 For each dataset an awkward array that contains information about the file access is present.
 
         """
-        if plateau_cut is None:
-            plateau_cut = 0
-        if eta_regions_pt is None:
-            eta_regions_pt = {
-                "barrel": [0.0, 1.4442],
-                "endcap": [1.566, 2.5],
-            }
-        if eta_regions_eta is None:
-            eta_regions_eta = {"entire": [0.0, 2.5]}
-        if eta_regions_phi is None:
-            eta_regions_phi = {"entire": [0.0, 2.5]}
-
         if uproot_options is None:
             uproot_options = {}
 
@@ -270,7 +257,7 @@ class BaseDoubleElectronTrigger:
             extra_filter_args=self._extra_filter_args,
         )
         data_manipulation_leg1 = partial(
-            self._get_tnp_histograms_on_leg_core,
+            self._make_tnp_histograms_on_leg,
             perform_tnp=perform_tnp_leg1,
             leg="leg1",
             plateau_cut=plateau_cut,
@@ -288,7 +275,7 @@ class BaseDoubleElectronTrigger:
             extra_filter_args=self._extra_filter_args,
         )
         data_manipulation_leg2 = partial(
-            self._get_tnp_histograms_on_leg_core,
+            self._make_tnp_histograms_on_leg,
             perform_tnp=perform_tnp_leg2,
             leg="leg2",
             plateau_cut=plateau_cut,
@@ -297,7 +284,7 @@ class BaseDoubleElectronTrigger:
             eta_regions_phi=eta_regions_phi,
         )
         data_manipulation_both = partial(
-            self._get_tnp_histograms_on_both_legs_core,
+            self._make_tnp_histograms_on_both_legs,
             perform_tnp_leg1=perform_tnp_leg1,
             perform_tnp_leg2=perform_tnp_leg2,
             plateau_cut=plateau_cut,
@@ -345,51 +332,16 @@ class BaseDoubleElectronTrigger:
 
         return to_compute
 
-    def _get_tnp_arrays_on_leg(self, events, perform_tnp):
-        p1, a1, p2, a2 = perform_tnp(events)
+    def _make_tnp_arrays_on_leg(self, events, perform_tnp, leg):
+        return {leg: perform_tnp(events)}
 
-        pt_pass1 = dak.flatten(p1.pt)
-        pt_pass2 = dak.flatten(p2.pt)
-        pt_all1 = dak.flatten(a1.pt)
-        pt_all2 = dak.flatten(a2.pt)
-
-        eta_pass1 = dak.flatten(p1.eta)
-        eta_pass2 = dak.flatten(p2.eta)
-        eta_all1 = dak.flatten(a1.eta)
-        eta_all2 = dak.flatten(a2.eta)
-
-        phi_pass1 = dak.flatten(p1.phi)
-        phi_pass2 = dak.flatten(p2.phi)
-        phi_all1 = dak.flatten(a1.phi)
-        phi_all2 = dak.flatten(a2.phi)
-
-        return (
-            pt_pass1,
-            pt_pass2,
-            pt_all1,
-            pt_all2,
-            eta_pass1,
-            eta_pass2,
-            eta_all1,
-            eta_all2,
-            phi_pass1,
-            phi_pass2,
-            phi_all1,
-            phi_all2,
-        )
-
-    def _get_tnp_arrays_on_leg_core(self, events, perform_tnp, leg):
-        return {leg: self._get_tnp_arrays_on_leg(events, perform_tnp)}
-
-    def _get_tnp_arrays_on_both_legs_core(
-        self, events, perform_tnp_leg1, perform_tnp_leg2
-    ):
+    def _make_tnp_arrays_on_both_legs(self, events, perform_tnp_leg1, perform_tnp_leg2):
         return {
-            "leg1": self._get_tnp_arrays_on_leg(events, perform_tnp_leg1),
-            "leg2": self._get_tnp_arrays_on_leg(events, perform_tnp_leg2),
+            "leg1": perform_tnp_leg1(events),
+            "leg2": perform_tnp_leg2(events),
         }
 
-    def _get_tnp_histograms_on_leg(
+    def _make_tnp_histograms_on_leg_core(
         self,
         events,
         perform_tnp,
@@ -398,122 +350,19 @@ class BaseDoubleElectronTrigger:
         eta_regions_eta,
         eta_regions_phi,
     ):
-        import hist
-        from hist.dask import Hist
+        from egamma_tnp.utils import fill_tnp_histograms
 
-        import egamma_tnp
+        passing_probes, all_probes = perform_tnp(events)
+        return fill_tnp_histograms(
+            passing_probes,
+            all_probes,
+            plateau_cut=plateau_cut,
+            eta_regions_pt=eta_regions_pt,
+            eta_regions_eta=eta_regions_eta,
+            eta_regions_phi=eta_regions_phi,
+        )
 
-        ptbins = egamma_tnp.config.get("ptbins")
-        etabins = egamma_tnp.config.get("etabins")
-        phibins = egamma_tnp.config.get("phibins")
-
-        arrays = self._get_tnp_arrays_on_leg(events, perform_tnp)
-        (
-            pt_pass1,
-            pt_pass2,
-            pt_all1,
-            pt_all2,
-            eta_pass1,
-            eta_pass2,
-            eta_all1,
-            eta_all2,
-            phi_pass1,
-            phi_pass2,
-            phi_all1,
-            phi_all2,
-        ) = arrays
-
-        histograms = {}
-        histograms["pt"] = {}
-        histograms["eta"] = {}
-        histograms["phi"] = {}
-
-        plateau_mask_pass1 = pt_pass1 > plateau_cut
-        plateau_mask_pass2 = pt_pass2 > plateau_cut
-        plateau_mask_all1 = pt_all1 > plateau_cut
-        plateau_mask_all2 = pt_all2 > plateau_cut
-
-        for name_pt, region_pt in eta_regions_pt.items():
-            eta_mask_pt_pass1 = (abs(eta_pass1) > region_pt[0]) & (
-                abs(eta_pass1) < region_pt[1]
-            )
-            eta_mask_pt_pass2 = (abs(eta_pass2) > region_pt[0]) & (
-                abs(eta_pass2) < region_pt[1]
-            )
-            eta_mask_pt_all1 = (abs(eta_all1) > region_pt[0]) & (
-                abs(eta_all1) < region_pt[1]
-            )
-            eta_mask_pt_all2 = (abs(eta_all2) > region_pt[0]) & (
-                abs(eta_all2) < region_pt[1]
-            )
-            hpt_pass = Hist(
-                hist.axis.Variable(ptbins, name=f"hpt_{name_pt}", label="Pt [GeV]")
-            )
-            hpt_all = Hist(
-                hist.axis.Variable(ptbins, name=f"hpt_{name_pt}", label="Pt [GeV]")
-            )
-            hpt_pass.fill(pt_pass1[eta_mask_pt_pass1])
-            hpt_pass.fill(pt_pass2[eta_mask_pt_pass2])
-            hpt_all.fill(pt_all1[eta_mask_pt_all1])
-            hpt_all.fill(pt_all2[eta_mask_pt_all2])
-
-            histograms["pt"][name_pt] = {"passing": hpt_pass, "all": hpt_all}
-
-        for name_eta, region_eta in eta_regions_eta.items():
-            eta_mask_eta_pass1 = (abs(eta_pass1) > region_eta[0]) & (
-                abs(eta_pass1) < region_eta[1]
-            )
-            eta_mask_eta_pass2 = (abs(eta_pass2) > region_eta[0]) & (
-                abs(eta_pass2) < region_eta[1]
-            )
-            eta_mask_eta_all1 = (abs(eta_all1) > region_eta[0]) & (
-                abs(eta_all1) < region_eta[1]
-            )
-            eta_mask_eta_all2 = (abs(eta_all2) > region_eta[0]) & (
-                abs(eta_all2) < region_eta[1]
-            )
-            heta_pass = Hist(
-                hist.axis.Variable(etabins, name=f"heta_{name_eta}", label="eta")
-            )
-            heta_all = Hist(
-                hist.axis.Variable(etabins, name=f"heta_{name_eta}", label="eta")
-            )
-            heta_pass.fill(eta_pass1[plateau_mask_pass1 & eta_mask_eta_pass1])
-            heta_pass.fill(eta_pass2[plateau_mask_pass2 & eta_mask_eta_pass2])
-            heta_all.fill(eta_all1[plateau_mask_all1 & eta_mask_eta_all1])
-            heta_all.fill(eta_all2[plateau_mask_all2 & eta_mask_eta_all2])
-
-            histograms["eta"][name_eta] = {"passing": heta_pass, "all": heta_all}
-
-        for name_phi, region_phi in eta_regions_phi.items():
-            eta_mask_phi_pass1 = (abs(eta_pass1) > region_phi[0]) & (
-                abs(eta_pass1) < region_phi[1]
-            )
-            eta_mask_phi_pass2 = (abs(eta_pass2) > region_phi[0]) & (
-                abs(eta_pass2) < region_phi[1]
-            )
-            eta_mask_phi_all1 = (abs(eta_all1) > region_phi[0]) & (
-                abs(eta_all1) < region_phi[1]
-            )
-            eta_mask_phi_all2 = (abs(eta_all2) > region_phi[0]) & (
-                abs(eta_all2) < region_phi[1]
-            )
-            hphi_pass = Hist(
-                hist.axis.Variable(phibins, name=f"hphi_{name_phi}", label="phi")
-            )
-            hphi_all = Hist(
-                hist.axis.Variable(phibins, name=f"hphi_{name_phi}", label="phi")
-            )
-            hphi_pass.fill(phi_pass1[plateau_mask_pass1 & eta_mask_phi_pass1])
-            hphi_pass.fill(phi_pass2[plateau_mask_pass2 & eta_mask_phi_pass2])
-            hphi_all.fill(phi_all1[plateau_mask_all1 & eta_mask_phi_all1])
-            hphi_all.fill(phi_all2[plateau_mask_all2 & eta_mask_phi_all2])
-
-            histograms["phi"][name_phi] = {"passing": hphi_pass, "all": hphi_all}
-
-        return histograms
-
-    def _get_tnp_histograms_on_leg_core(
+    def _make_tnp_histograms_on_leg(
         self,
         events,
         perform_tnp,
@@ -524,7 +373,7 @@ class BaseDoubleElectronTrigger:
         eta_regions_phi,
     ):
         return {
-            leg: self._get_tnp_histograms_on_leg(
+            leg: self._make_tnp_histograms_on_leg_core(
                 events,
                 perform_tnp,
                 plateau_cut,
@@ -534,7 +383,7 @@ class BaseDoubleElectronTrigger:
             )
         }
 
-    def _get_tnp_histograms_on_both_legs_core(
+    def _make_tnp_histograms_on_both_legs(
         self,
         events,
         perform_tnp_leg1,
@@ -545,7 +394,7 @@ class BaseDoubleElectronTrigger:
         eta_regions_phi,
     ):
         return {
-            "leg1": self._get_tnp_histograms_on_leg(
+            "leg1": self._make_tnp_histograms_on_leg_core(
                 events,
                 perform_tnp_leg1,
                 plateau_cut,
@@ -553,7 +402,7 @@ class BaseDoubleElectronTrigger:
                 eta_regions_eta,
                 eta_regions_phi,
             ),
-            "leg2": self._get_tnp_histograms_on_leg(
+            "leg2": self._make_tnp_histograms_on_leg_core(
                 events,
                 perform_tnp_leg2,
                 plateau_cut,

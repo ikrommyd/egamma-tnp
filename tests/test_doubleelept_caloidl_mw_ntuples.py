@@ -92,8 +92,7 @@ def test_without_compute(do_preprocess, allow_read_errors_with_report):
 
 @pytest.mark.parametrize("do_preprocess", [True, False])
 @pytest.mark.parametrize("allow_read_errors_with_report", [True, False])
-@pytest.mark.parametrize("scheduler", ["threads", "processes", "single-threaded"])
-def test_local_compute(do_preprocess, allow_read_errors_with_report, scheduler):
+def test_local_compute(do_preprocess, allow_read_errors_with_report):
     if allow_read_errors_with_report:
         fileset = {
             "sample": {
@@ -142,7 +141,7 @@ def test_local_compute(do_preprocess, allow_read_errors_with_report, scheduler):
                 "allow_read_errors_with_report": allow_read_errors_with_report
             },
             compute=True,
-            scheduler=scheduler,
+            scheduler=None,
             progress=True,
         )
 

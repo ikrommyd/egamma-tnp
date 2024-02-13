@@ -2,6 +2,7 @@ import dask_awkward as dak
 from coffea.lumi_tools import LumiMask
 
 from egamma_tnp.triggers.basedoubleelectrontrigger import BaseDoubleElectronTrigger
+from egamma_tnp.utils import delta_r_SC
 
 
 class TnPImplOnLeg:
@@ -56,12 +57,8 @@ class TnPImplOnLeg:
             )
             zcands2 = zcands2[pass_eta_ebeegap_probes2]
 
-        p1, a1 = self.find_probes(
-            zcands1, good_events.TrigObj, self.pt - 1, self.filterbit
-        )
-        p2, a2 = self.find_probes(
-            zcands2, good_events.TrigObj, self.pt - 1, self.filterbit
-        )
+        p1, a1 = self.find_probes(zcands1, good_events.TrigObj, self.pt, self.filterbit)
+        p2, a2 = self.find_probes(zcands2, good_events.TrigObj, self.pt, self.filterbit)
 
         return p1, a1, p2, a2
 
@@ -71,11 +68,12 @@ class TnPImplOnLeg:
         return events[mask]
 
     def filter_events(self, events):
+        pass_hlt = events.HLT.Ele30_WPTight_Gsf
         two_electrons = dak.num(events.Electron) == 2
         abs_eta = abs(events.Electron.eta)
         pass_tight_id = events.Electron.cutBased == 4
         pass_eta = abs_eta <= 2.5
-        pass_selection = two_electrons & pass_eta & pass_tight_id
+        pass_selection = pass_hlt & two_electrons & pass_eta & pass_tight_id
         n_of_tags = dak.sum(pass_selection, axis=1)
         good_events = events[n_of_tags == 2]
         good_locations = pass_selection[n_of_tags == 2]
@@ -84,21 +82,20 @@ class TnPImplOnLeg:
     def trigger_match_tag(self, electrons, trigobjs, pt):
         pass_pt = trigobjs.pt > pt
         pass_id = abs(trigobjs.id) == 11
-        filterbit = 1
-        pass_filterbit = trigobjs.filterBits & (0x1 << filterbit) > 0
+        pass_filterbit = trigobjs.filterBits & (0x1 << 1) > 0
         trigger_cands = trigobjs[pass_pt & pass_id & pass_filterbit]
-        delta_r = electrons.metric_table(trigger_cands)
+        delta_r = electrons.metric_table(trigger_cands, metric=delta_r_SC)
         pass_delta_r = delta_r < 0.1
         n_of_trigger_matches = dak.sum(pass_delta_r, axis=2)
         trig_matched_locs = n_of_trigger_matches >= 1
         return trig_matched_locs
 
     def trigger_match_probe(self, electrons, trigobjs, pt, filterbit):
-        pass_pt = trigobjs.pt > pt
+        pass_pt = trigobjs.pt > pt - 3
         pass_id = abs(trigobjs.id) == 11
         pass_filterbit = trigobjs.filterBits & (0x1 << filterbit) > 0
         trigger_cands = trigobjs[pass_pt & pass_id & pass_filterbit]
-        delta_r = electrons.metric_table(trigger_cands)
+        delta_r = electrons.metric_table(trigger_cands, metric=delta_r_SC)
         pass_delta_r = delta_r < 0.1
         n_of_trigger_matches = dak.sum(pass_delta_r, axis=2)
         trig_matched_locs = n_of_trigger_matches >= 1

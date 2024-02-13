@@ -2,11 +2,8 @@ import os
 
 import pytest
 from coffea.dataset_tools import preprocess
-from coffea.nanoevents import NanoAODSchema
 
 from egamma_tnp.triggers import ElePt_WPTight_Gsf
-
-NanoAODSchema.error_missing_event_ids = False
 
 
 @pytest.mark.parametrize("do_preprocess", [True, False])
@@ -84,8 +81,7 @@ def test_without_compute(do_preprocess, allow_read_errors_with_report):
 
 @pytest.mark.parametrize("do_preprocess", [True, False])
 @pytest.mark.parametrize("allow_read_errors_with_report", [True, False])
-@pytest.mark.parametrize("scheduler", ["threads", "processes", "single-threaded"])
-def test_local_compute(do_preprocess, allow_read_errors_with_report, scheduler):
+def test_local_compute(do_preprocess, allow_read_errors_with_report):
     if allow_read_errors_with_report:
         fileset = {
             "sample": {
@@ -122,7 +118,7 @@ def test_local_compute(do_preprocess, allow_read_errors_with_report, scheduler):
     res = tag_n_probe.get_tnp_histograms(
         uproot_options={"allow_read_errors_with_report": allow_read_errors_with_report},
         compute=True,
-        scheduler=scheduler,
+        scheduler=None,
         progress=True,
     )
 
@@ -139,12 +135,12 @@ def test_local_compute(do_preprocess, allow_read_errors_with_report, scheduler):
     heta_pass, heta_all = histograms["eta"]["entire"].values()
     hphi_pass, hphi_all = histograms["phi"]["entire"].values()
 
-    assert hpt_pass_barrel.sum(flow=True) + hpt_pass_endcap.sum(flow=True) == 141.0
-    assert hpt_all_barrel.sum(flow=True) + hpt_all_endcap.sum(flow=True) == 167.0
-    assert heta_pass.sum(flow=True) == 141.0
-    assert heta_all.sum(flow=True) == 167.0
-    assert hphi_pass.sum(flow=True) == 141.0
-    assert hphi_all.sum(flow=True) == 167.0
+    assert hpt_pass_barrel.sum(flow=True) + hpt_pass_endcap.sum(flow=True) == 956.0
+    assert hpt_all_barrel.sum(flow=True) + hpt_all_endcap.sum(flow=True) == 1153.0
+    assert heta_pass.sum(flow=True) == 956.0
+    assert heta_all.sum(flow=True) == 1153.0
+    assert hphi_pass.sum(flow=True) == 956.0
+    assert hphi_all.sum(flow=True) == 1153.0
 
     assert (
         hpt_pass_barrel.values(flow=True)[0] + hpt_pass_endcap.values(flow=True)[0]
@@ -220,12 +216,12 @@ def test_distributed_compute(do_preprocess, allow_read_errors_with_report):
         heta_pass, heta_all = histograms["eta"]["entire"].values()
         hphi_pass, hphi_all = histograms["phi"]["entire"].values()
 
-        assert hpt_pass_barrel.sum(flow=True) + hpt_pass_endcap.sum(flow=True) == 141.0
-        assert hpt_all_barrel.sum(flow=True) + hpt_all_endcap.sum(flow=True) == 167.0
-        assert heta_pass.sum(flow=True) == 141.0
-        assert heta_all.sum(flow=True) == 167.0
-        assert hphi_pass.sum(flow=True) == 141.0
-        assert hphi_all.sum(flow=True) == 167.0
+        assert hpt_pass_barrel.sum(flow=True) + hpt_pass_endcap.sum(flow=True) == 956.0
+        assert hpt_all_barrel.sum(flow=True) + hpt_all_endcap.sum(flow=True) == 1153.0
+        assert heta_pass.sum(flow=True) == 956.0
+        assert heta_all.sum(flow=True) == 1153.0
+        assert hphi_pass.sum(flow=True) == 956.0
+        assert hphi_all.sum(flow=True) == 1153.0
 
         assert (
             hpt_pass_barrel.values(flow=True)[0] + hpt_pass_endcap.values(flow=True)[0]

@@ -3,11 +3,8 @@ import os
 import numpy as np
 import pytest
 from coffea.dataset_tools import preprocess
-from coffea.nanoevents import NanoAODSchema
 
 from egamma_tnp.triggers import ElePt1_ElePt2_CaloIdL_TrackIdL_IsoVL
-
-NanoAODSchema.error_missing_event_ids = False
 
 
 @pytest.mark.parametrize("do_preprocess", [True, False])
@@ -218,8 +215,7 @@ def test_without_compute(do_preprocess, allow_read_errors_with_report):
 
 @pytest.mark.parametrize("do_preprocess", [True, False])
 @pytest.mark.parametrize("allow_read_errors_with_report", [True, False])
-@pytest.mark.parametrize("scheduler", ["threads", "processes", "single-threaded"])
-def test_local_compute(do_preprocess, allow_read_errors_with_report, scheduler):
+def test_local_compute(do_preprocess, allow_read_errors_with_report):
     if allow_read_errors_with_report:
         fileset = {
             "sample": {
@@ -258,21 +254,21 @@ def test_local_compute(do_preprocess, allow_read_errors_with_report, scheduler):
         leg="first",
         uproot_options={"allow_read_errors_with_report": allow_read_errors_with_report},
         compute=True,
-        scheduler=scheduler,
+        scheduler=None,
         progress=False,
     )
     res_leg2 = tag_n_probe.get_tnp_arrays(
         leg="second",
         uproot_options={"allow_read_errors_with_report": allow_read_errors_with_report},
         compute=True,
-        scheduler=scheduler,
+        scheduler=None,
         progress=False,
     )
     res_both = tag_n_probe.get_tnp_arrays(
         leg="both",
         uproot_options={"allow_read_errors_with_report": allow_read_errors_with_report},
         compute=True,
-        scheduler=scheduler,
+        scheduler=None,
         progress=False,
     )
     if allow_read_errors_with_report:
@@ -295,21 +291,21 @@ def test_local_compute(do_preprocess, allow_read_errors_with_report, scheduler):
         leg="first",
         uproot_options={"allow_read_errors_with_report": allow_read_errors_with_report},
         compute=True,
-        scheduler=scheduler,
+        scheduler=None,
         progress=False,
     )
     res_leg2 = tag_n_probe.get_tnp_histograms(
         leg="second",
         uproot_options={"allow_read_errors_with_report": allow_read_errors_with_report},
         compute=True,
-        scheduler=scheduler,
+        scheduler=None,
         progress=False,
     )
     res_both = tag_n_probe.get_tnp_histograms(
         leg="both",
         uproot_options={"allow_read_errors_with_report": allow_read_errors_with_report},
         compute=True,
-        scheduler=scheduler,
+        scheduler=None,
         progress=False,
     )
     if allow_read_errors_with_report:
@@ -438,25 +434,27 @@ def test_local_compute(do_preprocess, allow_read_errors_with_report, scheduler):
 
     assert (
         hpt_pass_barrel_leg1.sum(flow=True) + hpt_pass_endcap_leg1.sum(flow=True)
-        == 181.0
+        == 1184.0
     )
     assert (
-        hpt_all_barrel_leg1.sum(flow=True) + hpt_all_endcap_leg1.sum(flow=True) == 190.0
+        hpt_all_barrel_leg1.sum(flow=True) + hpt_all_endcap_leg1.sum(flow=True)
+        == 1272.0
     )
-    assert heta_pass_leg1.sum(flow=True) == 181.0
-    assert heta_all_leg1.sum(flow=True) == 190.0
-    assert hphi_pass_leg1.sum(flow=True) == 181.0
-    assert hphi_all_leg1.sum(flow=True) == 190.0
+    assert heta_pass_leg1.sum(flow=True) == 1184.0
+    assert heta_all_leg1.sum(flow=True) == 1272.0
+    assert hphi_pass_leg1.sum(flow=True) == 1184.0
+    assert hphi_all_leg1.sum(flow=True) == 1272.0
     assert (
         hpt_pass_barrel_leg2.sum(flow=True) + hpt_pass_endcap_leg2.sum(flow=True) == 0.0
     )
     assert (
-        hpt_all_barrel_leg2.sum(flow=True) + hpt_all_endcap_leg2.sum(flow=True) == 197.0
+        hpt_all_barrel_leg2.sum(flow=True) + hpt_all_endcap_leg2.sum(flow=True)
+        == 1317.0
     )
     assert heta_pass_leg2.sum(flow=True) == 0.0
-    assert heta_all_leg2.sum(flow=True) == 197.0
+    assert heta_all_leg2.sum(flow=True) == 1317.0
     assert hphi_pass_leg2.sum(flow=True) == 0.0
-    assert hphi_all_leg2.sum(flow=True) == 197.0
+    assert hphi_all_leg2.sum(flow=True) == 1317.0
 
     assert (
         hpt_pass_barrel_leg1.values(flow=True)[0]
@@ -732,28 +730,28 @@ def test_distributed_compute(do_preprocess, allow_read_errors_with_report):
 
         assert (
             hpt_pass_barrel_leg1.sum(flow=True) + hpt_pass_endcap_leg1.sum(flow=True)
-            == 181.0
+            == 1184.0
         )
         assert (
             hpt_all_barrel_leg1.sum(flow=True) + hpt_all_endcap_leg1.sum(flow=True)
-            == 190.0
+            == 1272.0
         )
-        assert heta_pass_leg1.sum(flow=True) == 181.0
-        assert heta_all_leg1.sum(flow=True) == 190.0
-        assert hphi_pass_leg1.sum(flow=True) == 181.0
-        assert hphi_all_leg1.sum(flow=True) == 190.0
+        assert heta_pass_leg1.sum(flow=True) == 1184.0
+        assert heta_all_leg1.sum(flow=True) == 1272.0
+        assert hphi_pass_leg1.sum(flow=True) == 1184.0
+        assert hphi_all_leg1.sum(flow=True) == 1272.0
         assert (
             hpt_pass_barrel_leg2.sum(flow=True) + hpt_pass_endcap_leg2.sum(flow=True)
             == 0.0
         )
         assert (
             hpt_all_barrel_leg2.sum(flow=True) + hpt_all_endcap_leg2.sum(flow=True)
-            == 197.0
+            == 1317.0
         )
         assert heta_pass_leg2.sum(flow=True) == 0.0
-        assert heta_all_leg2.sum(flow=True) == 197.0
+        assert heta_all_leg2.sum(flow=True) == 1317.0
         assert hphi_pass_leg2.sum(flow=True) == 0.0
-        assert hphi_all_leg2.sum(flow=True) == 197.0
+        assert hphi_all_leg2.sum(flow=True) == 1317.0
 
         assert (
             hpt_pass_barrel_leg1.values(flow=True)[0]

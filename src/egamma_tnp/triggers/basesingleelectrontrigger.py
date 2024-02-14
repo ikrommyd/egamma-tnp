@@ -1,7 +1,6 @@
 import os
 from functools import partial
 
-import dask_awkward as dak
 from coffea.dataset_tools import apply_to_fileset
 from coffea.nanoevents import NanoAODSchema
 
@@ -66,35 +65,16 @@ class BaseSingleElectronTrigger:
 
         Returns
         -------
-            A tuple of the form (arrays, report) if `allow_read_errors_with_report` is True, otherwise just arrays.
-            arrays : dict of tuples of the same form as fileset where for each dataset the following arrays are present:
-            The fileset where for each dataset the following arrays are added:
-                pt_pass1: awkward.Array or dask_awkward.Array
-                    The Pt array of the passing probes when the firsts electrons are the tags.
-                pt_pass2: awkward.Array or dask_awkward.Array
-                    The Pt array of the passing probes when the seconds electrons are the tags.
-                pt_all1: awkward.Array or dask_awkward.Array
-                    The Pt array of all probes when the firsts electrons are the tags.
-                pt_all2: awkward.Array or dask_awkward.Array
-                    The Pt array of all probes when the seconds electrons are the tags.
-                eta_pass1: awkward.Array or dask_awkward.Array
-                    The Eta array of the passing probes when the firsts electrons are the tags.
-                eta_pass2: awkward.Array or dask_awkward.Array
-                    The Eta array of the passing probes when the seconds electrons are the tags.
-                eta_all1: awkward.Array or dask_awkward.Array
-                    The Eta array of all probes when the firsts electrons are the tags.
-                eta_all2: awkward.Array or dask_awkward.Array
-                    The Eta array of all probes when the seconds electrons are the tags.
-                phi_pass1: awkward.Array or dask_awkward.Array
-                    The Phi array of the passing probes when the firsts electrons are the tags.
-                phi_pass2: awkward.Array or dask_awkward.Array
-                    The Phi array of the passing probes when the seconds electrons are the tags.
-                phi_all1: awkward.Array or dask_awkward.Array
-                    The Phi array of all probes when the firsts electrons are the tags.
-                phi_all2: awkward.Array or dask_awkward.Array
-                    The Phi array of all probes when the seconds electrons are the tags.
-                report: dict of awkward arrays of the same form as fileset.
-                    For each dataset an awkward array that contains information about the file access is present.
+            arrays :a tuple of dask awkward zip items of the form (passing_probes, all_probes).
+                Each of the zip items has the following fields:
+                    pt: dask_awkward.Array
+                        The Pt array of the probes.
+                    eta: dask_awkward.array
+                        The Eta array of the probes.
+                    phi: dask_awkward.array
+                        The Phi array of the probes.
+            report: dict of awkward arrays of the same form as fileset.
+                For each dataset an awkward array that contains information about the file access is present.
         """
         if uproot_options is None:
             uproot_options = {}
@@ -108,7 +88,7 @@ class BaseSingleElectronTrigger:
             extra_filter=self._extra_filter,
             extra_filter_args=self._extra_filter_args,
         )
-        data_manipulation = partial(self._get_tnp_arrays_core, perform_tnp=perform_tnp)
+        data_manipulation = perform_tnp
 
         to_compute = apply_to_fileset(
             data_manipulation=data_manipulation,
@@ -191,20 +171,7 @@ class BaseSingleElectronTrigger:
                 These are the histograms of the passing and all probes respectively.
             report: dict of awkward arrays of the same form as fileset.
                 For each dataset an awkward array that contains information about the file access is present.
-
         """
-        if plateau_cut is None:
-            plateau_cut = 0
-        if eta_regions_pt is None:
-            eta_regions_pt = {
-                "barrel": [0.0, 1.4442],
-                "endcap": [1.566, 2.5],
-            }
-        if eta_regions_eta is None:
-            eta_regions_eta = {"entire": [0.0, 2.5]}
-        if eta_regions_phi is None:
-            eta_regions_phi = {"entire": [0.0, 2.5]}
-
         if uproot_options is None:
             uproot_options = {}
 
@@ -218,7 +185,7 @@ class BaseSingleElectronTrigger:
             extra_filter_args=self._extra_filter_args,
         )
         data_manipulation = partial(
-            self._get_tnp_histograms_core,
+            self._make_tnp_histograms,
             perform_tnp=perform_tnp,
             plateau_cut=plateau_cut,
             eta_regions_pt=eta_regions_pt,
@@ -249,40 +216,7 @@ class BaseSingleElectronTrigger:
 
         return to_compute
 
-    def _get_tnp_arrays_core(self, events, perform_tnp):
-        p1, a1, p2, a2 = perform_tnp(events)
-
-        pt_pass1 = dak.flatten(p1.pt)
-        pt_pass2 = dak.flatten(p2.pt)
-        pt_all1 = dak.flatten(a1.pt)
-        pt_all2 = dak.flatten(a2.pt)
-
-        eta_pass1 = dak.flatten(p1.eta)
-        eta_pass2 = dak.flatten(p2.eta)
-        eta_all1 = dak.flatten(a1.eta)
-        eta_all2 = dak.flatten(a2.eta)
-
-        phi_pass1 = dak.flatten(p1.phi)
-        phi_pass2 = dak.flatten(p2.phi)
-        phi_all1 = dak.flatten(a1.phi)
-        phi_all2 = dak.flatten(a2.phi)
-
-        return (
-            pt_pass1,
-            pt_pass2,
-            pt_all1,
-            pt_all2,
-            eta_pass1,
-            eta_pass2,
-            eta_all1,
-            eta_all2,
-            phi_pass1,
-            phi_pass2,
-            phi_all1,
-            phi_all2,
-        )
-
-    def _get_tnp_histograms_core(
+    def _make_tnp_histograms(
         self,
         events,
         perform_tnp,
@@ -291,117 +225,14 @@ class BaseSingleElectronTrigger:
         eta_regions_eta,
         eta_regions_phi,
     ):
-        import hist
-        from hist.dask import Hist
+        from egamma_tnp.utils import fill_tnp_histograms
 
-        import egamma_tnp
-
-        ptbins = egamma_tnp.config.get("ptbins")
-        etabins = egamma_tnp.config.get("etabins")
-        phibins = egamma_tnp.config.get("phibins")
-
-        arrays = self._get_tnp_arrays_core(events, perform_tnp)
-        (
-            pt_pass1,
-            pt_pass2,
-            pt_all1,
-            pt_all2,
-            eta_pass1,
-            eta_pass2,
-            eta_all1,
-            eta_all2,
-            phi_pass1,
-            phi_pass2,
-            phi_all1,
-            phi_all2,
-        ) = arrays
-
-        histograms = {}
-        histograms["pt"] = {}
-        histograms["eta"] = {}
-        histograms["phi"] = {}
-
-        plateau_mask_pass1 = pt_pass1 > plateau_cut
-        plateau_mask_pass2 = pt_pass2 > plateau_cut
-        plateau_mask_all1 = pt_all1 > plateau_cut
-        plateau_mask_all2 = pt_all2 > plateau_cut
-
-        for name_pt, region_pt in eta_regions_pt.items():
-            eta_mask_pt_pass1 = (abs(eta_pass1) > region_pt[0]) & (
-                abs(eta_pass1) < region_pt[1]
-            )
-            eta_mask_pt_pass2 = (abs(eta_pass2) > region_pt[0]) & (
-                abs(eta_pass2) < region_pt[1]
-            )
-            eta_mask_pt_all1 = (abs(eta_all1) > region_pt[0]) & (
-                abs(eta_all1) < region_pt[1]
-            )
-            eta_mask_pt_all2 = (abs(eta_all2) > region_pt[0]) & (
-                abs(eta_all2) < region_pt[1]
-            )
-            hpt_pass = Hist(
-                hist.axis.Variable(ptbins, name=f"hpt_{name_pt}", label="Pt [GeV]")
-            )
-            hpt_all = Hist(
-                hist.axis.Variable(ptbins, name=f"hpt_{name_pt}", label="Pt [GeV]")
-            )
-            hpt_pass.fill(pt_pass1[eta_mask_pt_pass1])
-            hpt_pass.fill(pt_pass2[eta_mask_pt_pass2])
-            hpt_all.fill(pt_all1[eta_mask_pt_all1])
-            hpt_all.fill(pt_all2[eta_mask_pt_all2])
-
-            histograms["pt"][name_pt] = {"passing": hpt_pass, "all": hpt_all}
-
-        for name_eta, region_eta in eta_regions_eta.items():
-            eta_mask_eta_pass1 = (abs(eta_pass1) > region_eta[0]) & (
-                abs(eta_pass1) < region_eta[1]
-            )
-            eta_mask_eta_pass2 = (abs(eta_pass2) > region_eta[0]) & (
-                abs(eta_pass2) < region_eta[1]
-            )
-            eta_mask_eta_all1 = (abs(eta_all1) > region_eta[0]) & (
-                abs(eta_all1) < region_eta[1]
-            )
-            eta_mask_eta_all2 = (abs(eta_all2) > region_eta[0]) & (
-                abs(eta_all2) < region_eta[1]
-            )
-            heta_pass = Hist(
-                hist.axis.Variable(etabins, name=f"heta_{name_eta}", label="eta")
-            )
-            heta_all = Hist(
-                hist.axis.Variable(etabins, name=f"heta_{name_eta}", label="eta")
-            )
-            heta_pass.fill(eta_pass1[plateau_mask_pass1 & eta_mask_eta_pass1])
-            heta_pass.fill(eta_pass2[plateau_mask_pass2 & eta_mask_eta_pass2])
-            heta_all.fill(eta_all1[plateau_mask_all1 & eta_mask_eta_all1])
-            heta_all.fill(eta_all2[plateau_mask_all2 & eta_mask_eta_all2])
-
-            histograms["eta"][name_eta] = {"passing": heta_pass, "all": heta_all}
-
-        for name_phi, region_phi in eta_regions_phi.items():
-            eta_mask_phi_pass1 = (abs(eta_pass1) > region_phi[0]) & (
-                abs(eta_pass1) < region_phi[1]
-            )
-            eta_mask_phi_pass2 = (abs(eta_pass2) > region_phi[0]) & (
-                abs(eta_pass2) < region_phi[1]
-            )
-            eta_mask_phi_all1 = (abs(eta_all1) > region_phi[0]) & (
-                abs(eta_all1) < region_phi[1]
-            )
-            eta_mask_phi_all2 = (abs(eta_all2) > region_phi[0]) & (
-                abs(eta_all2) < region_phi[1]
-            )
-            hphi_pass = Hist(
-                hist.axis.Variable(phibins, name=f"hphi_{name_phi}", label="phi")
-            )
-            hphi_all = Hist(
-                hist.axis.Variable(phibins, name=f"hphi_{name_phi}", label="phi")
-            )
-            hphi_pass.fill(phi_pass1[plateau_mask_pass1 & eta_mask_phi_pass1])
-            hphi_pass.fill(phi_pass2[plateau_mask_pass2 & eta_mask_phi_pass2])
-            hphi_all.fill(phi_all1[plateau_mask_all1 & eta_mask_phi_all1])
-            hphi_all.fill(phi_all2[plateau_mask_all2 & eta_mask_phi_all2])
-
-            histograms["phi"][name_phi] = {"passing": hphi_pass, "all": hphi_all}
-
-        return histograms
+        passing_probes, all_probes = perform_tnp(events)
+        return fill_tnp_histograms(
+            passing_probes,
+            all_probes,
+            plateau_cut=plateau_cut,
+            eta_regions_pt=eta_regions_pt,
+            eta_regions_eta=eta_regions_eta,
+            eta_regions_phi=eta_regions_phi,
+        )

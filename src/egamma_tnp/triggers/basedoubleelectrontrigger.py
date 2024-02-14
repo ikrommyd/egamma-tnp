@@ -76,34 +76,16 @@ class BaseDoubleElectronTrigger:
             array_dict: dict
             A dictionary with keys "leg1" and/or "leg2" depending on the leg parameter.
             The value for each key is a tuple of the form (arrays, report) if `allow_read_errors_with_report` is True, otherwise just arrays.
-            arrays : dict of tuples of the same form as fileset where for each dataset the following arrays are present:
-            The fileset where for each dataset the following arrays are added:
-                pt_pass1: awkward.Array or dask_awkward.Array
-                    The Pt array of the passing probes when the firsts electrons are the tags.
-                pt_pass2: awkward.Array or dask_awkward.Array
-                    The Pt array of the passing probes when the seconds electrons are the tags.
-                pt_all1: awkward.Array or dask_awkward.Array
-                    The Pt array of all probes when the firsts electrons are the tags.
-                pt_all2: awkward.Array or dask_awkward.Array
-                    The Pt array of all probes when the seconds electrons are the tags.
-                eta_pass1: awkward.Array or dask_awkward.Array
-                    The Eta array of the passing probes when the firsts electrons are the tags.
-                eta_pass2: awkward.Array or dask_awkward.Array
-                    The Eta array of the passing probes when the seconds electrons are the tags.
-                eta_all1: awkward.Array or dask_awkward.Array
-                    The Eta array of all probes when the firsts electrons are the tags.
-                eta_all2: awkward.Array or dask_awkward.Array
-                    The Eta array of all probes when the seconds electrons are the tags.
-                phi_pass1: awkward.Array or dask_awkward.Array
-                    The Phi array of the passing probes when the firsts electrons are the tags.
-                phi_pass2: awkward.Array or dask_awkward.Array
-                    The Phi array of the passing probes when the seconds electrons are the tags.
-                phi_all1: awkward.Array or dask_awkward.Array
-                    The Phi array of all probes when the firsts electrons are the tags.
-                phi_all2: awkward.Array or dask_awkward.Array
-                    The Phi array of all probes when the seconds electrons are the tags.
-                report: dict of awkward arrays of the same form as fileset.
-                    For each dataset an awkward array that contains information about the file access is present.
+            arrays :a tuple of dask awkward zip items of the form (passing_probes, all_probes).
+                Each of the zip items has the following fields:
+                    pt: dask_awkward.Array
+                        The Pt array of the probes.
+                    eta: dask_awkward.array
+                        The Eta array of the probes.
+                    phi: dask_awkward.array
+                        The Phi array of the probes.
+            report: dict of awkward arrays of the same form as fileset.
+                For each dataset an awkward array that contains information about the file access is present.
         """
         if uproot_options is None:
             uproot_options = {}

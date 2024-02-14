@@ -68,14 +68,11 @@ def fill_tnp_histograms(
     Returns
     -------
         histograms : dict
-            A dictionary of the form `{"name": [hpt_pass, hpt_all, heta_pass, heta_all, hphi_pass, hphi_all], ...}`
-            Where each `"name"` is the name of each eta region defined by the user.
-            `hpt_pass` is a hist.Hist or hist.dask.Hist histogram of the Pt histogram of the passing probes.
-            `hpt_all` is a hist.Hist or hist.dask.Hist histogram of the Pt histogram of all probes.
-            `heta_pass` is a hist.Hist or hist.dask.Hist histogram of the Eta histogram of the passing probes.
-            `heta_all` is a hist.Hist or hist.dask.Hist histogram of the Eta histogram of all probes.
-            `hphi_pass` is a hist.Hist or hist.dask.Hist histogram of the Phi histogram of the passing probes.
-            `hphi_all` is a hist.Hist or hist.dask.Hist histogram of the Phi histogram of all probes.
+            A dictionary of the form `{"var": {"name": {"passing": passing_probes, "all": all_probes}, ...}, ...}`
+            where `"var"` can be `"pt"`, `"eta"`, or `"phi"`.
+            Each `"name"` is the name of eta region specified by the user.
+            `passing_probes` and `all_probes` are `hist.Hist` or `hist.dask.Hist` objects.
+            These are the histograms of the passing and all probes respectively.
     """
     import hist
 
@@ -181,10 +178,9 @@ def save_hists(path, res):
             The path to the ROOT file.
         res : dict
             A histogram dictionary of the form {"var": {"region": {"passing": hist.Hist, "all": hist.Hist}, ...}, ...}
-
     """
     with uproot.recreate(path) as f:
         for var, region_dict in res.items():
             for region_name, hists in region_dict.items():
-                for i, (histname, h) in enumerate(hists.items()):
+                for histname, h in hists.items():
                     f[f"{var}/{region_name}/{histname}"] = h

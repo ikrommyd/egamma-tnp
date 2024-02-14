@@ -48,5 +48,4 @@ repos:
 - repo: https://github.com/abravalheri/validate-pyproject
   rev: v0.24
   hooks:
-    - id: nbstripout
-      exclude: ^notebooks/|^EGM_HLT_STEAM_20October2023.ipynb|^DPNote_EGM_2023.ipynb|^ntuple_efficiency.ipynb|^compare_ntuple_to_nanoaod.ipynb
+    - id: validate-pyproject

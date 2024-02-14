@@ -72,7 +72,31 @@ filterwarnings = [
 ]
 
 [tool.ruff]
-line-length = 160
+src = ["src"]
 
 [tool.ruff.lint]
-ignore = ["F403", "F405", "E402"]
+extend-select = [
+    "B",           # flake8-bugbear
+    "I",           # isort
+    "C4",          # flake8-comprehensions
+    "ISC",         # flake8-implicit-str-concat
+    "G",           # flake8-logging-format
+    "PGH",         # pygrep-hooks
+    "PIE",         # flake8-pie
+    "PL",          # pylint
+    "RUF",         # Ruff-specific
+    "T20",         # flake8-print
+    "UP",          # pyupgrade
+    "YTT",         # flake8-2020
+    "EXE",         # flake8-executable
+    "NPY",         # NumPy specific rules
+    "TID251",      # flake8-tidy-imports
+]
+ignore = [
+    "PLR",     # Design related pylint codes
+    "ISC001",  # Conflicts with the formatter in 0.1.2
+]
+unfixable = [
+    "T20",  # Removes print statements
+    "F841", # Removes unused variables
+]

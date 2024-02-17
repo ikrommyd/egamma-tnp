@@ -180,6 +180,9 @@ class TagNProbeFromNTuples:
             report: dict of awkward arrays of the same form as fileset.
                 For each dataset an awkward array that contains information about the file access is present.
         """
+        if uproot_options is None:
+            uproot_options = {}
+
         data_manipulation = partial(
             self._make_tnp_histograms,
             plateau_cut=plateau_cut,

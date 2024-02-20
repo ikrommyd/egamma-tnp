@@ -440,15 +440,15 @@ def test_local_compute(do_preprocess, allow_read_errors_with_report):
 
     assert (
         hpt_pass_barrel_leg1.sum(flow=True) + hpt_pass_endcap_leg1.sum(flow=True)
-        == 1184.0
+        == 1181.0
     )
     assert (
         hpt_all_barrel_leg1.sum(flow=True) + hpt_all_endcap_leg1.sum(flow=True)
         == 1272.0
     )
-    assert heta_pass_leg1.sum(flow=True) == 1184.0
+    assert heta_pass_leg1.sum(flow=True) == 1181.0
     assert heta_all_leg1.sum(flow=True) == 1272.0
-    assert hphi_pass_leg1.sum(flow=True) == 1184.0
+    assert hphi_pass_leg1.sum(flow=True) == 1181.0
     assert hphi_all_leg1.sum(flow=True) == 1272.0
     assert (
         hpt_pass_barrel_leg2.sum(flow=True) + hpt_pass_endcap_leg2.sum(flow=True) == 0.0
@@ -742,15 +742,15 @@ def test_distributed_compute(do_preprocess, allow_read_errors_with_report):
 
         assert (
             hpt_pass_barrel_leg1.sum(flow=True) + hpt_pass_endcap_leg1.sum(flow=True)
-            == 1184.0
+            == 1181.0
         )
         assert (
             hpt_all_barrel_leg1.sum(flow=True) + hpt_all_endcap_leg1.sum(flow=True)
             == 1272.0
         )
-        assert heta_pass_leg1.sum(flow=True) == 1184.0
+        assert heta_pass_leg1.sum(flow=True) == 1181.0
         assert heta_all_leg1.sum(flow=True) == 1272.0
-        assert hphi_pass_leg1.sum(flow=True) == 1184.0
+        assert hphi_pass_leg1.sum(flow=True) == 1181.0
         assert hphi_all_leg1.sum(flow=True) == 1272.0
         assert (
             hpt_pass_barrel_leg2.sum(flow=True) + hpt_pass_endcap_leg2.sum(flow=True)

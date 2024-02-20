@@ -57,8 +57,8 @@ class TnPImpl:
             )
             zcands2 = zcands2[pass_eta_ebeegap_probes2]
 
-        p1, a1 = self.find_probes(zcands1, good_events.TrigObj, self.pt, self.filterbit)
-        p2, a2 = self.find_probes(zcands2, good_events.TrigObj, self.pt, self.filterbit)
+        p1, a1 = self.find_probes(zcands1, good_events, self.pt, self.filterbit)
+        p2, a2 = self.find_probes(zcands2, good_events, self.pt, self.filterbit)
 
         p = dak.concatenate([p1, p2])
         a = dak.concatenate([a1, a2])
@@ -123,7 +123,8 @@ class TnPImpl:
         trig_matched_locs = n_of_trigger_matches >= 1
         return trig_matched_locs
 
-    def find_probes(self, zcands, trigobjs, pt, filterbit):
+    def find_probes(self, zcands, good_events, pt, filterbit):
+        trigobjs = good_events.TrigObj
         pt_cond_tags = zcands.tag.pt > 30
         pt_cond_probes = zcands.probe.pt > pt - 3
         trig_matched_tag = self.trigger_match_tag(zcands.tag, trigobjs, 30)
@@ -143,7 +144,10 @@ class TnPImpl:
         trig_matched_probe = self.trigger_match_probe(
             all_probes, trigobjs, pt, filterbit
         )
-        passing_probes = all_probes[trig_matched_probe]
+        passing_probes = all_probes[
+            trig_matched_probe
+            & getattr(good_events[events_with_tags].HLT, f"Ele{pt}_CaloIdVT_GsfTrkIdT")
+        ]
         return passing_probes, all_probes
 
 

@@ -166,7 +166,8 @@ class BaseDoubleElectronTrigger:
         leg="both",
         schemaclass=NanoAODSchema,
         uproot_options=None,
-        plateau_cut=None,
+        plateau_cut1=None,
+        plateau_cut2=None,
         eta_regions_pt=None,
         eta_regions_eta=None,
         eta_regions_phi=None,
@@ -185,9 +186,12 @@ class BaseDoubleElectronTrigger:
                 The nanoevents schema to interpret the input dataset with.
             uproot_options : dict, optional
                 Options to pass to uproot. Pass at least {"allow_read_errors_with_report": True} to turn on file access reports.
-            plateau_cut : int or float, optional
-                The Pt threshold to use to ensure that we are on the efficiency plateau for eta and phi histograms.
-                The default None, meaning that no extra cut is applied and the activation region is included in those histograms.
+            plateau_cut1 : int or float, optional
+                The Pt threshold to use to ensure that we are on the efficiency plateau for eta and phi histograms for the first leg.
+                The default is None, meaning that no extra cut is applied and the activation region is included in those histograms.
+            plateau_cut2 : int or float, optional,
+                The Pt threshold to use to ensure that we are on the efficiency plateau for eta and phi histograms for the second leg.
+                The default is None, meaning that no extra cut is applied and the activation region is included in those histograms.
             eta_regions_pt : dict, optional
                 A dictionary of the form `{"name": [etamin, etamax], ...}`
                 where name is the name of the region and etamin and etamax are the absolute eta bounds.
@@ -242,7 +246,7 @@ class BaseDoubleElectronTrigger:
             self._make_tnp_histograms_on_leg,
             perform_tnp=perform_tnp_leg1,
             leg="leg1",
-            plateau_cut=plateau_cut,
+            plateau_cut=plateau_cut1,
             eta_regions_pt=eta_regions_pt,
             eta_regions_eta=eta_regions_eta,
             eta_regions_phi=eta_regions_phi,
@@ -260,7 +264,7 @@ class BaseDoubleElectronTrigger:
             self._make_tnp_histograms_on_leg,
             perform_tnp=perform_tnp_leg2,
             leg="leg2",
-            plateau_cut=plateau_cut,
+            plateau_cut=plateau_cut2,
             eta_regions_pt=eta_regions_pt,
             eta_regions_eta=eta_regions_eta,
             eta_regions_phi=eta_regions_phi,
@@ -269,7 +273,8 @@ class BaseDoubleElectronTrigger:
             self._make_tnp_histograms_on_both_legs,
             perform_tnp_leg1=perform_tnp_leg1,
             perform_tnp_leg2=perform_tnp_leg2,
-            plateau_cut=plateau_cut,
+            plateau_cut1=plateau_cut1,
+            plateau_cut2=plateau_cut2,
             eta_regions_pt=eta_regions_pt,
             eta_regions_eta=eta_regions_eta,
             eta_regions_phi=eta_regions_phi,
@@ -370,7 +375,8 @@ class BaseDoubleElectronTrigger:
         events,
         perform_tnp_leg1,
         perform_tnp_leg2,
-        plateau_cut,
+        plateau_cut1,
+        plateau_cut2,
         eta_regions_pt,
         eta_regions_eta,
         eta_regions_phi,
@@ -379,7 +385,7 @@ class BaseDoubleElectronTrigger:
             "leg1": self._make_tnp_histograms_on_leg_core(
                 events,
                 perform_tnp_leg1,
-                plateau_cut,
+                plateau_cut1,
                 eta_regions_pt,
                 eta_regions_eta,
                 eta_regions_phi,
@@ -387,7 +393,7 @@ class BaseDoubleElectronTrigger:
             "leg2": self._make_tnp_histograms_on_leg_core(
                 events,
                 perform_tnp_leg2,
-                plateau_cut,
+                plateau_cut2,
                 eta_regions_pt,
                 eta_regions_eta,
                 eta_regions_phi,

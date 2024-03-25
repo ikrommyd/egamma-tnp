@@ -73,6 +73,7 @@ filterwarnings = [
 
 [tool.ruff]
 src = ["src"]
+extend-include = ["*.ipynb"]
 
 [tool.ruff.lint]
 extend-select = [

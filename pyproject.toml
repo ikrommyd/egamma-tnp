@@ -101,3 +101,4 @@ unfixable = [
     "T20",  # Removes print statements
     "F841", # Removes unused variables
 ]
+extend-include = ["*.ipynb"]

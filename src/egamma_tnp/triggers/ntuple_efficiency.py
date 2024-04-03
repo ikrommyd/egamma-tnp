@@ -215,6 +215,8 @@ class TagNProbeFromNTuples:
         return to_compute
 
     def _find_probes(self, events):
+        if self.extra_filter is not None:
+            events = self.extra_filter(events, **self.extra_filter_args)
         if self.goldenjson is not None:
             lumimask = LumiMask(self.goldenjson)
             mask = lumimask(events.run, events.lumi)

@@ -39,7 +39,7 @@ def fill_tnp_histograms(
     eta_regions_phi=None,
     delayed=True,
 ):
-    """Get the Pt and Eta histograms of the passing and all probes.
+    """Get the Pt, Eta and Phi histograms of the passing and all probes.
 
     Parameters
     ----------

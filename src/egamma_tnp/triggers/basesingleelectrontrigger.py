@@ -44,7 +44,7 @@ class BaseSingleElectronTrigger:
         scheduler=None,
         progress=False,
     ):
-        """Get the Pt and Eta arrays of the passing and all probes.
+        """Get the Pt, Eta and Phi arrays of the passing and all probes.
         WARNING: Not recommended to be used for large datasets as the arrays can be very large.
 
         Parameters
@@ -125,7 +125,7 @@ class BaseSingleElectronTrigger:
         scheduler=None,
         progress=False,
     ):
-        """Get the Pt and Eta histograms of the passing and all probes.
+        """Get the Pt, Eta and Phi histograms of the passing and all probes.
 
         Parameters
         ----------

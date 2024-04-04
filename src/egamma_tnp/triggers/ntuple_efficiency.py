@@ -214,7 +214,7 @@ class TagNProbeFromNTuples:
 
         return to_compute
 
-    def _find_probes(self, events):
+    def _find_probe_events(self, events):
         if self.extra_filter is not None:
             events = self.extra_filter(events, **self.extra_filter_args)
         if self.goldenjson is not None:
@@ -231,6 +231,11 @@ class TagNProbeFromNTuples:
         ]
         passing_probe_events = all_probe_events[all_probe_events[self.filter] == 1]
 
+        return passing_probe_events, all_probe_events
+
+    def _find_probes(self, events):
+        passing_probe_events, all_probe_events = self._find_probe_events(events)
+
         passing_probes = dak.zip(
             {
                 "pt": passing_probe_events.el_pt,
@@ -243,6 +248,29 @@ class TagNProbeFromNTuples:
                 "pt": all_probe_events.el_pt,
                 "eta": all_probe_events.el_eta,
                 "phi": all_probe_events.el_phi,
+            }
+        )
+
+        return passing_probes, all_probes
+
+    def _find_probes_mll(self, events):
+        passing_probe_events, all_probe_events = self._find_probe_events(events)
+
+        passing_probes = dak.zip(
+            {
+                "pt": passing_probe_events.el_pt,
+                "eta": passing_probe_events.el_eta,
+                "phi": passing_probe_events.el_phi,
+                "mass": passing_probe_events.pair_mass,
+            }
+        )
+
+        all_probes = dak.zip(
+            {
+                "pt": all_probe_events.el_pt,
+                "eta": all_probe_events.el_eta,
+                "phi": all_probe_events.el_phi,
+                "mass": all_probe_events.pair_mass,
             }
         )
 

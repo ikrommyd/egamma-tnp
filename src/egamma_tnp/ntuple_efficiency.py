@@ -18,6 +18,8 @@ class TagNProbeFromNTuples:
         goldenjson=None,
         extra_filter=None,
         extra_filter_args=None,
+        use_sc_eta=False,
+        use_sc_phi=False,
     ):
         """Tag and Probe efficiency from E/Gamma NTuples
 
@@ -46,6 +48,10 @@ class TagNProbeFromNTuples:
                 Must take in a coffea NanoEventsArray and return a filtered NanoEventsArray of the events you want to keep.
             extra_filter_args : dict, optional
                 Extra arguments to pass to extra_filter. The default is {}.
+            use_sc_eta : bool, optional
+                Use the supercluster Eta instead of the Eta from the primary vertex. The default is False.
+            use_sc_phi : bool, optional
+                Use the supercluster Phi instead of the Phi from the primary vertex. The default is False.
         """
         if extra_filter_args is None:
             extra_filter_args = {}
@@ -62,6 +68,8 @@ class TagNProbeFromNTuples:
         self.goldenjson = goldenjson
         self.extra_filter = extra_filter
         self.extra_filter_args = extra_filter_args
+        self.use_sc_eta = use_sc_eta
+        self.use_sc_phi = use_sc_phi
 
     def get_tnp_arrays(
         self,
@@ -259,6 +267,11 @@ class TagNProbeFromNTuples:
             lumimask = LumiMask(self.goldenjson)
             mask = lumimask(events.run, events.lumi)
             events = events[mask]
+
+        if self.use_sc_eta:
+            events["el_eta"] = events.el_sc_eta
+        if self.use_sc_phi:
+            events["el_phi"] = events.el_sc_phi
 
         passint_probe_events, all_probe_events = self._find_probe_events(events)
 

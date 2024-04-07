@@ -12,6 +12,8 @@ class TagNProbeFromNTuples:
         fileset,
         filter,
         *,
+        cut_and_count=True,
+        cutbased_id=None,
         trigger_pt=None,
         goldenjson=None,
         extra_filter=None,
@@ -25,6 +27,13 @@ class TagNProbeFromNTuples:
                 The fileset to calculate the trigger efficiencies for.
             filter: str
                 The name of the filter to calculate the efficiencies for.
+            cut_and_count: bool, optional
+                Whether to use the cut and count method to find the probes coming from a Z boson.
+                If False, invariant mass histograms of the tag-probe pairs will be filled to be fit by a Signal+Background model.
+                The default is True.
+            cutbased_id: str, optional
+                The name of the cutbased ID to apply to the probes.
+                If None, no cutbased ID is applied. The default is None.
             trigger_pt: int or float, optional
                 The Pt threshold of the probe electron to calculate efficiencies over that threshold. The default is None.
                 Should be very slightly below the Pt threshold of the filter.
@@ -48,6 +57,8 @@ class TagNProbeFromNTuples:
             self.trigger_pt = trigger_pt
         self.fileset = fileset
         self.filter = filter
+        self.cut_and_count = cut_and_count
+        self.cutbased_id = cutbased_id
         self.goldenjson = goldenjson
         self.extra_filter = extra_filter
         self.extra_filter_args = extra_filter_args
@@ -183,13 +194,22 @@ class TagNProbeFromNTuples:
         if uproot_options is None:
             uproot_options = {}
 
-        data_manipulation = partial(
-            self._make_tnp_histograms,
-            plateau_cut=plateau_cut,
-            eta_regions_pt=eta_regions_pt,
-            eta_regions_eta=eta_regions_eta,
-            eta_regions_phi=eta_regions_phi,
-        )
+        if self.cut_and_count:
+            data_manipulation = partial(
+                self._make_cutncount_histograms,
+                plateau_cut=plateau_cut,
+                eta_regions_pt=eta_regions_pt,
+                eta_regions_eta=eta_regions_eta,
+                eta_regions_phi=eta_regions_phi,
+            )
+        else:
+            data_manipulation = partial(
+                self._make_mll_histograms,
+                plateau_cut=plateau_cut,
+                eta_regions_pt=eta_regions_pt,
+                eta_regions_eta=eta_regions_eta,
+                eta_regions_phi=eta_regions_phi,
+            )
 
         to_compute = apply_to_fileset(
             data_manipulation=data_manipulation,
@@ -215,6 +235,24 @@ class TagNProbeFromNTuples:
         return to_compute
 
     def _find_probe_events(self, events):
+        pass_pt_tags = events.tag_Ele_pt > 35
+        pass_pt_probes = events.el_pt > self.trigger_pt
+        if self.cutbased_id:
+            pass_cutbased_id = events[self.cutbased_id] == 1
+        else:
+            pass_cutbased_id = True
+        if self.cut_and_count:
+            in_mass_window = abs(events.pair_mass - 91.1876) < 30
+        else:
+            in_mass_window = True
+        all_probe_events = events[
+            pass_cutbased_id & in_mass_window & pass_pt_tags & pass_pt_probes
+        ]
+        passing_probe_events = all_probe_events[all_probe_events[self.filter] == 1]
+
+        return passing_probe_events, all_probe_events
+
+    def _find_probes(self, events):
         if self.extra_filter is not None:
             events = self.extra_filter(events, **self.extra_filter_args)
         if self.goldenjson is not None:
@@ -222,61 +260,44 @@ class TagNProbeFromNTuples:
             mask = lumimask(events.run, events.lumi)
             events = events[mask]
 
-        pass_pt_tags = events.tag_Ele_pt > 35
-        pass_pt_probes = events.el_pt > self.trigger_pt
-        pass_tight_id = events.passingCutBasedTight122XV1 == 1
-        in_mass_window = abs(events.pair_mass - 91.1876) < 30
-        all_probe_events = events[
-            pass_tight_id & in_mass_window & pass_pt_tags & pass_pt_probes
-        ]
-        passing_probe_events = all_probe_events[all_probe_events[self.filter] == 1]
+        passint_probe_events, all_probe_events = self._find_probe_events(events)
 
-        return passing_probe_events, all_probe_events
-
-    def _find_probes(self, events):
-        passing_probe_events, all_probe_events = self._find_probe_events(events)
-
-        passing_probes = dak.zip(
-            {
-                "pt": passing_probe_events.el_pt,
-                "eta": passing_probe_events.el_eta,
-                "phi": passing_probe_events.el_phi,
-            }
-        )
-        all_probes = dak.zip(
-            {
-                "pt": all_probe_events.el_pt,
-                "eta": all_probe_events.el_eta,
-                "phi": all_probe_events.el_phi,
-            }
-        )
-
-        return passing_probes, all_probes
-
-    def _find_probes_mll(self, events):
-        passing_probe_events, all_probe_events = self._find_probe_events(events)
-
-        passing_probes = dak.zip(
-            {
-                "pt": passing_probe_events.el_pt,
-                "eta": passing_probe_events.el_eta,
-                "phi": passing_probe_events.el_phi,
-                "mass": passing_probe_events.pair_mass,
-            }
-        )
-
-        all_probes = dak.zip(
-            {
-                "pt": all_probe_events.el_pt,
-                "eta": all_probe_events.el_eta,
-                "phi": all_probe_events.el_phi,
-                "mass": all_probe_events.pair_mass,
-            }
-        )
+        if self.cut_and_count:
+            passing_probes = dak.zip(
+                {
+                    "pt": passint_probe_events.el_pt,
+                    "eta": passint_probe_events.el_eta,
+                    "phi": passint_probe_events.el_phi,
+                }
+            )
+            all_probes = dak.zip(
+                {
+                    "pt": all_probe_events.el_pt,
+                    "eta": all_probe_events.el_eta,
+                    "phi": all_probe_events.el_phi,
+                }
+            )
+        else:
+            passing_probes = dak.zip(
+                {
+                    "pt": passint_probe_events.el_pt,
+                    "eta": passint_probe_events.el_eta,
+                    "phi": passint_probe_events.el_phi,
+                    "pair_mass": passint_probe_events.pair_mass,
+                }
+            )
+            all_probes = dak.zip(
+                {
+                    "pt": all_probe_events.el_pt,
+                    "eta": all_probe_events.el_eta,
+                    "phi": all_probe_events.el_phi,
+                    "pair_mass": all_probe_events.pair_mass,
+                }
+            )
 
         return passing_probes, all_probes
 
-    def _make_tnp_histograms(
+    def _make_cutncount_histograms(
         self,
         events,
         plateau_cut,
@@ -284,10 +305,30 @@ class TagNProbeFromNTuples:
         eta_regions_eta,
         eta_regions_phi,
     ):
-        from egamma_tnp.utils import fill_tnp_histograms
+        from egamma_tnp.utils import fill_cutncount_histograms
 
         passing_probes, all_probes = self._find_probes(events)
-        return fill_tnp_histograms(
+        return fill_cutncount_histograms(
+            passing_probes,
+            all_probes,
+            plateau_cut=plateau_cut,
+            eta_regions_pt=eta_regions_pt,
+            eta_regions_eta=eta_regions_eta,
+            eta_regions_phi=eta_regions_phi,
+        )
+
+    def _make_mll_histograms(
+        self,
+        events,
+        plateau_cut,
+        eta_regions_pt,
+        eta_regions_eta,
+        eta_regions_phi,
+    ):
+        from egamma_tnp.utils import fill_mll_histograms
+
+        passing_probes, all_probes = self._find_probes(events)
+        return fill_mll_histograms(
             passing_probes,
             all_probes,
             plateau_cut=plateau_cut,

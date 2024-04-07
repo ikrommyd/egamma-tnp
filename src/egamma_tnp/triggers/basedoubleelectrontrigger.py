@@ -337,10 +337,10 @@ class BaseDoubleElectronTrigger:
         eta_regions_eta,
         eta_regions_phi,
     ):
-        from egamma_tnp.utils import fill_tnp_histograms
+        from egamma_tnp.utils import fill_cutncount_histograms
 
         passing_probes, all_probes = perform_tnp(events)
-        return fill_tnp_histograms(
+        return fill_cutncount_histograms(
             passing_probes,
             all_probes,
             plateau_cut=plateau_cut,

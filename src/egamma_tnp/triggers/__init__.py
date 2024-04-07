@@ -4,14 +4,12 @@ from egamma_tnp.triggers.elept1_elept2_caloidl_trackidl_isovl import (
 )
 from egamma_tnp.triggers.elept_caloidvt_gsftrkidt import ElePt_CaloIdVT_GsfTrkIdT
 from egamma_tnp.triggers.elept_wptight_gsf import ElePt_WPTight_Gsf
-from egamma_tnp.triggers.ntuple_efficiency import TagNProbeFromNTuples
 
 __all__ = (
     "DoubleElePt_CaloIdL_MW",
     "ElePt_WPTight_Gsf",
     "ElePt_CaloIdVT_GsfTrkIdT",
     "ElePt1_ElePt2_CaloIdL_TrackIdL_IsoVL",
-    "TagNProbeFromNTuples",
 )
 
 

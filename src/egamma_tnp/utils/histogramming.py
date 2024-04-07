@@ -30,7 +30,7 @@ def get_ratio_histogram(passing_probes, all_probes):
     return ratio, yerr
 
 
-def fill_tnp_histograms(
+def fill_cutncount_histograms(
     passing_probes,
     all_probes,
     plateau_cut=None,

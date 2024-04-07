@@ -3,7 +3,7 @@ import os
 import pytest
 from coffea.dataset_tools import preprocess
 
-from egamma_tnp.triggers import TagNProbeFromNTuples
+from egamma_tnp import TagNProbeFromNTuples
 
 
 @pytest.mark.parametrize("do_preprocess", [True, False])
@@ -40,12 +40,14 @@ def test_without_compute(do_preprocess, allow_read_errors_with_report):
         fileset,
         "passHltEle23Ele12CaloIdLTrackIdLIsoVLLeg1L1match",
         trigger_pt=5,
+        cutbased_id="passingCutBasedTight122XV1",
         goldenjson=None,
     )
     tag_n_probe_leg2 = TagNProbeFromNTuples(
         fileset,
         "passHltEle23Ele12CaloIdLTrackIdLIsoVLLeg2",
         trigger_pt=5,
+        cutbased_id="passingCutBasedTight122XV1",
         goldenjson=None,
     )
 
@@ -124,12 +126,14 @@ def test_local_compute(do_preprocess, allow_read_errors_with_report):
         fileset,
         "passHltEle23Ele12CaloIdLTrackIdLIsoVLLeg1L1match",
         trigger_pt=5,
+        cutbased_id="passingCutBasedTight122XV1",
         goldenjson=None,
     )
     tag_n_probe_leg2 = TagNProbeFromNTuples(
         fileset,
         "passHltEle23Ele12CaloIdLTrackIdLIsoVLLeg2",
         trigger_pt=5,
+        cutbased_id="passingCutBasedTight122XV1",
         goldenjson=None,
     )
 
@@ -217,12 +221,14 @@ def test_distributed_compute(do_preprocess, allow_read_errors_with_report):
         fileset,
         "passHltEle23Ele12CaloIdLTrackIdLIsoVLLeg1L1match",
         trigger_pt=5,
+        cutbased_id="passingCutBasedTight122XV1",
         goldenjson=None,
     )
     tag_n_probe_leg2 = TagNProbeFromNTuples(
         fileset,
         "passHltEle23Ele12CaloIdLTrackIdLIsoVLLeg2",
         trigger_pt=5,
+        cutbased_id="passingCutBasedTight122XV1",
         goldenjson=None,
     )
 

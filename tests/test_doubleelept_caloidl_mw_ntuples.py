@@ -42,6 +42,7 @@ def test_without_compute(do_preprocess, allow_read_errors_with_report):
         probes_pt_cut=5,
         cutbased_id="passingCutBasedTight122XV1",
         goldenjson=None,
+        avoid_ecal_transition_tags=False,
     )
     tag_n_probe_leg2 = TagNProbeFromNTuples(
         fileset,
@@ -49,6 +50,7 @@ def test_without_compute(do_preprocess, allow_read_errors_with_report):
         probes_pt_cut=5,
         cutbased_id="passingCutBasedTight122XV1",
         goldenjson=None,
+        avoid_ecal_transition_tags=False,
     )
 
     for tag_n_probe in [tag_n_probe_leg1, tag_n_probe_leg2]:
@@ -128,6 +130,7 @@ def test_local_compute(do_preprocess, allow_read_errors_with_report):
         probes_pt_cut=5,
         cutbased_id="passingCutBasedTight122XV1",
         goldenjson=None,
+        avoid_ecal_transition_tags=False,
     )
     tag_n_probe_leg2 = TagNProbeFromNTuples(
         fileset,
@@ -135,6 +138,7 @@ def test_local_compute(do_preprocess, allow_read_errors_with_report):
         probes_pt_cut=5,
         cutbased_id="passingCutBasedTight122XV1",
         goldenjson=None,
+        avoid_ecal_transition_tags=False,
     )
 
     for tag_n_probe, target_pt, target_eta_phi in zip(
@@ -226,6 +230,7 @@ def test_distributed_compute(do_preprocess, allow_read_errors_with_report):
         probes_pt_cut=5,
         cutbased_id="passingCutBasedTight122XV1",
         goldenjson=None,
+        avoid_ecal_transition_tags=False,
     )
     tag_n_probe_leg2 = TagNProbeFromNTuples(
         fileset,
@@ -233,6 +238,7 @@ def test_distributed_compute(do_preprocess, allow_read_errors_with_report):
         probes_pt_cut=5,
         cutbased_id="passingCutBasedTight122XV1",
         goldenjson=None,
+        avoid_ecal_transition_tags=False,
     )
 
     with Client():

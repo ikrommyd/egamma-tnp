@@ -21,6 +21,8 @@ class TagNProbeFromNTuples:
         extra_filter_args=None,
         use_sc_eta=False,
         use_sc_phi=False,
+        avoid_ecal_transition_tags=True,
+        avoid_ecal_transition_probes=False,
     ):
         """Tag and Probe efficiency from E/Gamma NTuples
 
@@ -73,6 +75,8 @@ class TagNProbeFromNTuples:
         self.extra_filter_args = extra_filter_args
         self.use_sc_eta = use_sc_eta
         self.use_sc_phi = use_sc_phi
+        self.avoid_ecal_transition_tags = avoid_ecal_transition_tags
+        self.avoid_ecal_transition_probes = avoid_ecal_transition_probes
 
     def __repr__(self):
         n_of_files = 0
@@ -289,6 +293,17 @@ class TagNProbeFromNTuples:
             events["el_eta"] = events.el_sc_eta
         if self.use_sc_phi:
             events["el_phi"] = events.el_sc_phi
+
+        if self.avoid_ecal_transition_tags:
+            pass_eta_ebeegap_tags = (abs(events.tag_Ele_eta) < 1.4442) | (
+                abs(events.tag_Ele_eta) > 1.566
+            )
+            events = events[pass_eta_ebeegap_tags]
+        if self.avoid_ecal_transition_probes:
+            pass_eta_ebeegap_probes = (abs(events.el_eta) < 1.4442) | (
+                abs(events.el_eta) > 1.566
+            )
+            events = events[pass_eta_ebeegap_probes]
 
         pass_pt_tags = events.tag_Ele_pt > self.tags_pt_cut
         pass_abseta_tags = abs(events.tag_Ele_eta) < self.tags_abseta_cut

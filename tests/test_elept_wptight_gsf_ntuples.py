@@ -42,6 +42,7 @@ def test_without_compute(do_preprocess, allow_read_errors_with_report):
         probes_pt_cut=5,
         cutbased_id="passingCutBasedTight122XV1",
         goldenjson=None,
+        avoid_ecal_transition_tags=False,
     )
 
     res = tag_n_probe.get_tnp_histograms(
@@ -118,6 +119,7 @@ def test_local_compute(do_preprocess, allow_read_errors_with_report):
         probes_pt_cut=5,
         cutbased_id="passingCutBasedTight122XV1",
         goldenjson=None,
+        avoid_ecal_transition_tags=False,
     )
 
     res = tag_n_probe.get_tnp_histograms(
@@ -201,6 +203,7 @@ def test_distributed_compute(do_preprocess, allow_read_errors_with_report):
         probes_pt_cut=5,
         cutbased_id="passingCutBasedTight122XV1",
         goldenjson=None,
+        avoid_ecal_transition_tags=False,
     )
 
     with Client():

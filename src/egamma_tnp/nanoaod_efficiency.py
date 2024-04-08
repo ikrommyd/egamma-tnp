@@ -21,7 +21,6 @@ class TagNProbeFromNanoAOD:
         probes_pt_cut=None,
         tags_abseta_cut=2.5,
         filterbit=None,
-        cut_and_count=True,
         cutbased_id=None,
         goldenjson=None,
         extra_filter=None,
@@ -57,10 +56,6 @@ class TagNProbeFromNanoAOD:
             If it fails to do so, it will set it to 0.
         tags_abseta_cut: int or float, optional
             The absolute Eta cut to apply to the tag electrons. The default is 2.5.
-        cut_and_count: bool, optional
-            Whether to use the cut and count method to find the probes coming from a Z boson.
-            If False, invariant mass histograms of the tag-probe pairs will be filled to be fit by a Signal+Background model.
-            The default is True.
         cutbased_id: str, optional
             The name of the cutbased ID to apply to the probes.
             If None, no cutbased ID is applied. The default is None.
@@ -109,7 +104,6 @@ class TagNProbeFromNanoAOD:
         self.tags_pt_cut = tags_pt_cut
         self.tags_abseta_cut = tags_abseta_cut
         self.filterbit = filterbit
-        self.cut_and_count = cut_and_count
         self.cutbased_id = cutbased_id
         self.goldenjson = goldenjson
         self.extra_filter = extra_filter
@@ -125,6 +119,7 @@ class TagNProbeFromNanoAOD:
 
     def get_tnp_arrays(
         self,
+        cut_and_count=True,
         schemaclass=NanoAODSchema,
         uproot_options=None,
         compute=False,
@@ -136,6 +131,10 @@ class TagNProbeFromNanoAOD:
 
         Parameters
         ----------
+            cut_and_count: bool, optional
+                Whether to use the cut and count method to find the probes coming from a Z boson.
+                If False, invariant mass histograms of the tag-probe pairs will be filled to be fit by a Signal+Background model.
+                The default is True.
             schemaclass: BaseSchema, default BaseSchema
                 The nanoevents schema to interpret the input dataset with.
             uproot_options : dict, optional
@@ -167,7 +166,7 @@ class TagNProbeFromNanoAOD:
         if uproot_options is None:
             uproot_options = {}
 
-        data_manipulation = self._find_probes
+        data_manipulation = partial(self._find_probes, cut_and_count=cut_and_count)
 
         to_compute = apply_to_fileset(
             data_manipulation=data_manipulation,
@@ -194,12 +193,13 @@ class TagNProbeFromNanoAOD:
 
     def get_tnp_histograms(
         self,
-        schemaclass=NanoAODSchema,
-        uproot_options=None,
+        cut_and_count=True,
         plateau_cut=None,
         eta_regions_pt=None,
         eta_regions_eta=None,
         eta_regions_phi=None,
+        schemaclass=NanoAODSchema,
+        uproot_options=None,
         compute=False,
         scheduler=None,
         progress=False,
@@ -208,10 +208,10 @@ class TagNProbeFromNanoAOD:
 
         Parameters
         ----------
-            schemaclass: BaseSchema, default BaseSchema
-                 The nanoevents schema to interpret the input dataset with.
-            uproot_options : dict, optional
-                Options to pass to uproot. Pass at least {"allow_read_errors_with_report": True} to turn on file access reports.
+            cut_and_count: bool, optional
+                Whether to use the cut and count method to find the probes coming from a Z boson.
+                If False, invariant mass histograms of the tag-probe pairs will be filled to be fit by a Signal+Background model.
+                The default is True.
             plateau_cut : int or float, optional
                 The Pt threshold to use to ensure that we are on the efficiency plateau for eta and phi histograms.
                 The default None, meaning that no extra cut is applied and the activation region is included in those histograms.
@@ -230,6 +230,10 @@ class TagNProbeFromNanoAOD:
                 where name is the name of the region and etamin and etamax are the absolute eta bounds.
                 The Phi histograms will be split into those eta regions.
                 The default is to use the entire |eta| < 2.5 region.
+            schemaclass: BaseSchema, default BaseSchema
+                 The nanoevents schema to interpret the input dataset with.
+            uproot_options : dict, optional
+                Options to pass to uproot. Pass at least {"allow_read_errors_with_report": True} to turn on file access reports.
             compute : bool, optional
                 Whether to return the computed hist.Hist histograms or the delayed hist.dask.Hist histograms.
                 The default is False.
@@ -254,7 +258,7 @@ class TagNProbeFromNanoAOD:
         if uproot_options is None:
             uproot_options = {}
 
-        if self.cut_and_count:
+        if cut_and_count:
             data_manipulation = partial(
                 self._make_cutncount_histograms,
                 plateau_cut=plateau_cut,
@@ -294,7 +298,7 @@ class TagNProbeFromNanoAOD:
 
         return to_compute
 
-    def _find_probes(self, events):
+    def _find_probes(self, events, cut_and_count):
         if self.extra_filter is not None:
             events = self.extra_filter(events, **self.extra_filter_args)
         if self.goldenjson is not None:
@@ -329,12 +333,12 @@ class TagNProbeFromNanoAOD:
             pt_probes=self.probes_pt_cut,
             abseta_tags=self.tags_abseta_cut,
             filterbit=self.filterbit,
-            cut_and_count=self.cut_and_count,
+            cut_and_count=cut_and_count,
             use_sc_eta=self.use_sc_eta,
             hlt_filter=self.hlt_filter,
         )
 
-        if self.cut_and_count:
+        if cut_and_count:
             zcands2 = dak.combinations(ele_for_tnp, 2, fields=["probe", "tag"])
 
             if self.avoid_ecal_transition_tags:
@@ -358,7 +362,7 @@ class TagNProbeFromNanoAOD:
                 pt_probes=self.probes_pt_cut,
                 abseta_tags=self.tags_abseta_cut,
                 filterbit=self.filterbit,
-                cut_and_count=self.cut_and_count,
+                cut_and_count=cut_and_count,
                 use_sc_eta=self.use_sc_eta,
                 hlt_filter=self.hlt_filter,
             )
@@ -368,7 +372,7 @@ class TagNProbeFromNanoAOD:
         else:
             p, a = p1, a1
 
-        if self.cut_and_count:
+        if cut_and_count:
             passing_probes = dak.flatten(
                 dak.zip(
                     {
@@ -421,7 +425,7 @@ class TagNProbeFromNanoAOD:
     ):
         from egamma_tnp.utils import fill_cutncount_histograms
 
-        passing_probes, all_probes = self._find_probes(events)
+        passing_probes, all_probes = self._find_probes(events, cut_and_count=True)
         return fill_cutncount_histograms(
             passing_probes,
             all_probes,
@@ -441,7 +445,7 @@ class TagNProbeFromNanoAOD:
     ):
         from egamma_tnp.utils import fill_mll_histograms
 
-        passing_probes, all_probes = self._find_probes(events)
+        passing_probes, all_probes = self._find_probes(events, cut_and_count=False)
         return fill_mll_histograms(
             passing_probes,
             all_probes,

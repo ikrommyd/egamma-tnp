@@ -74,6 +74,12 @@ class TagNProbeFromNTuples:
         self.use_sc_eta = use_sc_eta
         self.use_sc_phi = use_sc_phi
 
+    def __repr__(self):
+        n_of_files = 0
+        for dataset in self.fileset.values():
+            n_of_files += len(dataset["files"])
+        return f"TagNProbeFromNTuples({self.filter}, Number of files: {n_of_files}, Golden JSON: {self.goldenjson})"
+
     def get_tnp_arrays(
         self,
         cut_and_count=True,

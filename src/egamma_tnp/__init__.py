@@ -6,3 +6,7 @@ from . import _version
 
 __version__ = _version.__version__
 __all__ = ("config", "TagNProbeFromNTuples", "TagNProbeFromNanoAOD")
+
+
+def dir():
+    return __all__

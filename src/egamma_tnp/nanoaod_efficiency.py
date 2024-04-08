@@ -117,6 +117,12 @@ class TagNProbeFromNanoAOD:
         if goldenjson is not None and not os.path.exists(goldenjson):
             raise FileNotFoundError(f"Golden JSON {goldenjson} does not exist.")
 
+    def __repr__(self):
+        n_of_files = 0
+        for dataset in self.fileset.values():
+            n_of_files += len(dataset["files"])
+        return f"TagNProbeFromNanoAOD({self.filter}, Number of files: {n_of_files}, Golden JSON: {self.goldenjson})"
+
     def get_tnp_arrays(
         self,
         cut_and_count=True,

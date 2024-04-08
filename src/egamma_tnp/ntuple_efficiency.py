@@ -55,6 +55,10 @@ class TagNProbeFromNTuples:
                 Use the supercluster Eta instead of the Eta from the primary vertex. The default is False.
             use_sc_phi : bool, optional
                 Use the supercluster Phi instead of the Phi from the primary vertex. The default is False.
+            avoid_ecal_transition_tags : bool, optional
+                Whether to avoid the ECAL transition region for the tags with an eta cut. The default is True.
+            avoid_ecal_transition_probes : bool, optional
+                Whether to avoid the ECAL transition region for the probes with an eta cut. The default is False.
         """
         if extra_filter_args is None:
             extra_filter_args = {}

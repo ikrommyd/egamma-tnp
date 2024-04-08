@@ -56,8 +56,8 @@ class TagNProbeFromNanoAOD:
             If it fails to do so, it will set it to 0.
         tags_abseta_cut: int or float, optional
             The absolute Eta cut to apply to the tag electrons. The default is 2.5.
-        cutbased_id: str, optional
-            The name of the cutbased ID to apply to the probes.
+        cutbased_id: int, optional
+            The number of the cutbased ID to apply to the electrons.
             If None, no cutbased ID is applied. The default is None.
         goldenjson: str, optional
             The golden json to use for luminosity masking. The default is None.
@@ -70,6 +70,13 @@ class TagNProbeFromNanoAOD:
             Use the supercluster Eta instead of the Eta from the primary vertex. The default is False.
         use_sc_phi : bool, optional
             Use the supercluster Phi instead of the Phi from the primary vertex. The default is False.
+        avoid_ecal_transition_tags : bool, optional
+            Whether to avoid the ECAL transition region for the tags with an eta cut. The default is True.
+        avoid_ecal_transition_probes : bool, optional
+            Whether to avoid the ECAL transition region for the probes with an eta cut. The default is False.
+        hlt_filter : str, optional
+            The HLT filter to also require an event to have passed to consider a probe belonging to that event as passing.
+            If None, no such requirement is applied. The default is None.
         """
         if for_trigger is False:
             raise NotImplementedError(

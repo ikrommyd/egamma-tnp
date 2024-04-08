@@ -53,6 +53,8 @@ class ElePt_WPTight_Gsf:
                 extra_filter_args=extra_filter_args,
                 use_sc_eta=True,
                 use_sc_phi=False,
+                avoid_ecal_transition_tags=avoid_ecal_transition_tags,
+                avoid_ecal_transition_probes=avoid_ecal_transition_probes,
             )
         else:
             # Create an instance of TagNProbeFromNanoAOD
@@ -133,6 +135,8 @@ class ElePt_CaloIdVT_GsfTrkIdT:
                 extra_filter_args=extra_filter_args,
                 use_sc_eta=True,
                 use_sc_phi=False,
+                avoid_ecal_transition_tags=avoid_ecal_transition_tags,
+                avoid_ecal_transition_probes=avoid_ecal_transition_probes,
             )
         else:
             # Create an instance of TagNProbeFromNanoAOD

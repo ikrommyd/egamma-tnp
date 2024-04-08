@@ -264,7 +264,7 @@ class TagNProbeFromNTuples:
         if cut_and_count:
             in_mass_window = abs(events.pair_mass - 91.1876) < 30
         else:
-            in_mass_window = True
+            in_mass_window = (events.pair_mass > 50) & (events.pair_mass < 130)
         all_probe_events = events[pass_cutbased_id & in_mass_window & pass_pt_probes]
         passing_probe_events = all_probe_events[all_probe_events[self.filter] == 1]
 

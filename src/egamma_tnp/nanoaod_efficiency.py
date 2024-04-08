@@ -510,7 +510,7 @@ def _process_zcands(
     if cut_and_count:
         in_mass_window = abs(mass - 91.1876) < 30
     else:
-        in_mass_window = True
+        in_mass_window = (mass > 50) & (mass < 130)
     opposite_charge = tags.charge * probes.charge == -1
     isZ = in_mass_window & opposite_charge
     dr_condition = dr > 0.0

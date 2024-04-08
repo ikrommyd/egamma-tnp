@@ -88,6 +88,10 @@ class TagNProbeFromNanoAOD:
             raise ValueError(
                 "TrigObj filerbit must be provided for trigger efficiencies."
             )
+        if filter == "None" and trigger_pt is None and for_trigger:
+            raise ValueError(
+                "An HLT filter name or a trigger Pt threshold must be provided for trigger efficiencies."
+            )
         if extra_filter_args is None:
             extra_filter_args = {}
         if probes_pt_cut is None:

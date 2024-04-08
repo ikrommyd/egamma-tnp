@@ -12,6 +12,8 @@ class TagNProbeFromNTuples:
         fileset,
         filter,
         *,
+        tags_pt_cut=35,
+        tags_abseta_cut=2.5,
         cut_and_count=True,
         cutbased_id=None,
         trigger_pt=None,
@@ -29,6 +31,10 @@ class TagNProbeFromNTuples:
                 The fileset to calculate the trigger efficiencies for.
             filter: str
                 The name of the filter to calculate the efficiencies for.
+        tags_pt_cut: int or float, optional
+            The Pt cut to apply to the tag electrons. The default is 35.
+        tags_abseta_cut: int or float, optional
+            The absolute Eta cut to apply to the tag electrons. The default is 2.5.
             cut_and_count: bool, optional
                 Whether to use the cut and count method to find the probes coming from a Z boson.
                 If False, invariant mass histograms of the tag-probe pairs will be filled to be fit by a Signal+Background model.
@@ -63,6 +69,8 @@ class TagNProbeFromNTuples:
             self.trigger_pt = trigger_pt
         self.fileset = fileset
         self.filter = filter
+        self.tags_pt_cut = tags_pt_cut
+        self.tags_abseta_cut = tags_abseta_cut
         self.cut_and_count = cut_and_count
         self.cutbased_id = cutbased_id
         self.goldenjson = goldenjson
@@ -243,7 +251,6 @@ class TagNProbeFromNTuples:
         return to_compute
 
     def _find_probe_events(self, events):
-        pass_pt_tags = events.tag_Ele_pt > 35
         pass_pt_probes = events.el_pt > self.trigger_pt
         if self.cutbased_id:
             pass_cutbased_id = events[self.cutbased_id] == 1
@@ -253,9 +260,7 @@ class TagNProbeFromNTuples:
             in_mass_window = abs(events.pair_mass - 91.1876) < 30
         else:
             in_mass_window = True
-        all_probe_events = events[
-            pass_cutbased_id & in_mass_window & pass_pt_tags & pass_pt_probes
-        ]
+        all_probe_events = events[pass_cutbased_id & in_mass_window & pass_pt_probes]
         passing_probe_events = all_probe_events[all_probe_events[self.filter] == 1]
 
         return passing_probe_events, all_probe_events
@@ -267,20 +272,24 @@ class TagNProbeFromNTuples:
             lumimask = LumiMask(self.goldenjson)
             mask = lumimask(events.run, events.lumi)
             events = events[mask]
-
         if self.use_sc_eta:
             events["el_eta"] = events.el_sc_eta
         if self.use_sc_phi:
             events["el_phi"] = events.el_sc_phi
 
-        passint_probe_events, all_probe_events = self._find_probe_events(events)
+        pass_pt_tags = events.tag_Ele_pt > self.tags_pt_cut
+        pass_abseta_tags = abs(events.tag_Ele_eta) < self.tags_abseta_cut
+        opposite_charge = events.tag_Ele_q * events.el_q == -1
+        events = events[pass_pt_tags & pass_abseta_tags & opposite_charge]
+
+        passing_probe_events, all_probe_events = self._find_probe_events(events)
 
         if self.cut_and_count:
             passing_probes = dak.zip(
                 {
-                    "pt": passint_probe_events.el_pt,
-                    "eta": passint_probe_events.el_eta,
-                    "phi": passint_probe_events.el_phi,
+                    "pt": passing_probe_events.el_pt,
+                    "eta": passing_probe_events.el_eta,
+                    "phi": passing_probe_events.el_phi,
                 }
             )
             all_probes = dak.zip(
@@ -293,10 +302,10 @@ class TagNProbeFromNTuples:
         else:
             passing_probes = dak.zip(
                 {
-                    "pt": passint_probe_events.el_pt,
-                    "eta": passint_probe_events.el_eta,
-                    "phi": passint_probe_events.el_phi,
-                    "pair_mass": passint_probe_events.pair_mass,
+                    "pt": passing_probe_events.el_pt,
+                    "eta": passing_probe_events.el_eta,
+                    "phi": passing_probe_events.el_phi,
+                    "pair_mass": passing_probe_events.pair_mass,
                 }
             )
             all_probes = dak.zip(

@@ -244,8 +244,8 @@ def fill_mll_histograms(
     eta_all = all_probes.eta
     phi_pass = passing_probes.phi
     phi_all = all_probes.phi
-    mll_pass = passing_probes.mass
-    mll_all = all_probes.mass
+    mll_pass = passing_probes.pair_mass
+    mll_all = all_probes.pair_mass
 
     histograms = {}
     histograms["pt"] = {}

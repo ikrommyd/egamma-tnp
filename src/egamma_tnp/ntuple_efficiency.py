@@ -83,7 +83,7 @@ class TagNProbeFromNTuples:
         scheduler=None,
         progress=False,
     ):
-        """Get the Pt, Eta and Phi arrays of the passing and all probes.
+        """Get the Pt, Eta and Phi arrays of the passing and failing probes.
         WARNING: Not recommended to be used for large datasets as the arrays can be very large.
 
         Parameters
@@ -109,7 +109,7 @@ class TagNProbeFromNTuples:
         Returns
         -------
             A tuple of the form (arrays, report) if `allow_read_errors_with_report` is True, otherwise just arrays.
-            arrays :a tuple of dask awkward zip items of the form (passing_probes, all_probes).
+            arrays :a tuple of dask awkward zip items of the form (passing_probes, failing_probes).
                 Each of the zip items has the following fields:
                     pt: dask_awkward.Array
                         The Pt array of the probes.
@@ -161,7 +161,7 @@ class TagNProbeFromNTuples:
         scheduler=None,
         progress=False,
     ):
-        """Get the Pt, Eta and Phi histograms of the passing and all probes.
+        """Get the Pt, Eta and Phi histograms of the passing and failing probes.
 
         Parameters
         ----------
@@ -205,10 +205,10 @@ class TagNProbeFromNTuples:
         -------
             A tuple of the form (histograms, report) if `allow_read_errors_with_report` is True, otherwise just histograms.
             histograms : dict of dicts of the same form as fileset where for each dataset the following dictionary is present:
-                A dictionary of the form `{"var": {"name": {"passing": passing_probes, "all": all_probes}, ...}, ...}`
+                A dictionary of the form `{"var": {"name": {"passing": passing_probes, "failing": failing_probes}, ...}, ...}`
                 where `"var"` can be `"pt"`, `"eta"`, or `"phi"`.
-                Each `"name"` is the name of eta region specified by the user and `passing_probes` and `all_probes` are `hist.dask.Hist` objects.
-                These are the histograms of the passing and all probes respectively.
+                Each `"name"` is the name of eta region specified by the user and `passing_probes` and `failing_probes` are `hist.dask.Hist` objects.
+                These are the histograms of the passing and failing probes respectively.
             report: dict of awkward arrays of the same form as fileset.
                 For each dataset an awkward array that contains information about the file access is present.
         """
@@ -266,9 +266,11 @@ class TagNProbeFromNTuples:
         else:
             in_mass_window = (events.pair_mass > 50) & (events.pair_mass < 130)
         all_probe_events = events[pass_cutbased_id & in_mass_window & pass_pt_probes]
-        passing_probe_events = all_probe_events[all_probe_events[self.filter] == 1]
+        passing_locs = all_probe_events[self.filter] == 1
+        passing_probe_events = all_probe_events[passing_locs]
+        failing_probe_events = all_probe_events[~passing_locs]
 
-        return passing_probe_events, all_probe_events
+        return passing_probe_events, failing_probe_events
 
     def _find_probes(self, events, cut_and_count):
         if self.extra_filter is not None:
@@ -287,7 +289,7 @@ class TagNProbeFromNTuples:
         opposite_charge = events.tag_Ele_q * events.el_q == -1
         events = events[pass_pt_tags & pass_abseta_tags & opposite_charge]
 
-        passing_probe_events, all_probe_events = self._find_probe_events(
+        passing_probe_events, failing_probe_events = self._find_probe_events(
             events, cut_and_count=cut_and_count
         )
 
@@ -299,11 +301,11 @@ class TagNProbeFromNTuples:
                     "phi": passing_probe_events.el_phi,
                 }
             )
-            all_probes = dak.zip(
+            failing_probes = dak.zip(
                 {
-                    "pt": all_probe_events.el_pt,
-                    "eta": all_probe_events.el_eta,
-                    "phi": all_probe_events.el_phi,
+                    "pt": failing_probe_events.el_pt,
+                    "eta": failing_probe_events.el_eta,
+                    "phi": failing_probe_events.el_phi,
                 }
             )
         else:
@@ -315,16 +317,16 @@ class TagNProbeFromNTuples:
                     "pair_mass": passing_probe_events.pair_mass,
                 }
             )
-            all_probes = dak.zip(
+            failing_probes = dak.zip(
                 {
-                    "pt": all_probe_events.el_pt,
-                    "eta": all_probe_events.el_eta,
-                    "phi": all_probe_events.el_phi,
-                    "pair_mass": all_probe_events.pair_mass,
+                    "pt": failing_probe_events.el_pt,
+                    "eta": failing_probe_events.el_eta,
+                    "phi": failing_probe_events.el_phi,
+                    "pair_mass": failing_probe_events.pair_mass,
                 }
             )
 
-        return passing_probes, all_probes
+        return passing_probes, failing_probes
 
     def _make_cutncount_histograms(
         self,
@@ -336,10 +338,10 @@ class TagNProbeFromNTuples:
     ):
         from egamma_tnp.utils import fill_cutncount_histograms
 
-        passing_probes, all_probes = self._find_probes(events, cut_and_count=True)
+        passing_probes, failing_probes = self._find_probes(events, cut_and_count=True)
         return fill_cutncount_histograms(
             passing_probes,
-            all_probes,
+            failing_probes,
             plateau_cut=plateau_cut,
             eta_regions_pt=eta_regions_pt,
             eta_regions_eta=eta_regions_eta,
@@ -356,10 +358,10 @@ class TagNProbeFromNTuples:
     ):
         from egamma_tnp.utils import fill_mll_histograms
 
-        passing_probes, all_probes = self._find_probes(events, cut_and_count=False)
+        passing_probes, failing_probes = self._find_probes(events, cut_and_count=False)
         return fill_mll_histograms(
             passing_probes,
-            all_probes,
+            failing_probes,
             plateau_cut=plateau_cut,
             eta_regions_pt=eta_regions_pt,
             eta_regions_eta=eta_regions_eta,

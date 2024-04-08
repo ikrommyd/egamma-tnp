@@ -126,7 +126,7 @@ class TagNProbeFromNanoAOD:
         scheduler=None,
         progress=False,
     ):
-        """Get the Pt, Eta and Phi arrays of the passing and all probes.
+        """Get the Pt, Eta and Phi arrays of the passing and failing probes.
         WARNING: Not recommended to be used for large datasets as the arrays can be very large.
 
         Parameters
@@ -152,7 +152,7 @@ class TagNProbeFromNanoAOD:
         Returns
         -------
             A tuple of the form (arrays, report) if `allow_read_errors_with_report` is True, otherwise just arrays.
-            arrays :a tuple of dask awkward zip items of the form (passing_probes, all_probes).
+            arrays :a tuple of dask awkward zip items of the form (passing_probes, failing_probes).
                 Each of the zip items has the following fields:
                     pt: dask_awkward.Array
                         The Pt array of the probes.
@@ -204,7 +204,7 @@ class TagNProbeFromNanoAOD:
         scheduler=None,
         progress=False,
     ):
-        """Get the Pt, Eta and Phi histograms of the passing and all probes.
+        """Get the Pt, Eta and Phi histograms of the passing and failing probes.
 
         Parameters
         ----------
@@ -248,10 +248,10 @@ class TagNProbeFromNanoAOD:
         -------
             A tuple of the form (histograms, report) if `allow_read_errors_with_report` is True, otherwise just histograms.
             histograms : dict of dicts of the same form as fileset where for each dataset the following dictionary is present:
-                A dictionary of the form `{"var": {"name": {"passing": passing_probes, "all": all_probes}, ...}, ...}`
+                A dictionary of the form `{"var": {"name": {"passing": passing_probes, "failing": failing_probes}, ...}, ...}`
                 where `"var"` can be `"pt"`, `"eta"`, or `"phi"`.
-                Each `"name"` is the name of eta region specified by the user and `passing_probes` and `all_probes` are `hist.dask.Hist` objects.
-                These are the histograms of the passing and all probes respectively.
+                Each `"name"` is the name of eta region specified by the user and `passing_probes` and `failing_probes` are `hist.dask.Hist` objects.
+                These are the histograms of the passing and failing probes respectively.
             report: dict of awkward arrays of the same form as fileset.
                 For each dataset an awkward array that contains information about the file access is present.
         """
@@ -325,7 +325,7 @@ class TagNProbeFromNanoAOD:
             )
             zcands1 = zcands1[pass_eta_ebeegap_probes1]
 
-        p1, a1 = _process_zcands(
+        p1, f1 = _process_zcands(
             zcands=zcands1,
             good_events=good_events,
             trigger_pt=self.trigger_pt,
@@ -354,7 +354,7 @@ class TagNProbeFromNanoAOD:
                 )
                 zcands2 = zcands2[pass_eta_ebeegap_probes2]
 
-            p2, a2 = _process_zcands(
+            p2, f2 = _process_zcands(
                 zcands=zcands2,
                 good_events=good_events,
                 trigger_pt=self.trigger_pt,
@@ -367,10 +367,10 @@ class TagNProbeFromNanoAOD:
                 hlt_filter=self.hlt_filter,
             )
 
-            p, a = dak.concatenate([p1, p2]), dak.concatenate([a1, a2])
+            p, f = dak.concatenate([p1, p2]), dak.concatenate([f1, f2])
 
         else:
-            p, a = p1, a1
+            p, f = p1, f1
 
         if cut_and_count:
             passing_probes = dak.flatten(
@@ -382,12 +382,12 @@ class TagNProbeFromNanoAOD:
                     }
                 )
             )
-            all_probes = dak.flatten(
+            failing_probes = dak.flatten(
                 dak.zip(
                     {
-                        "pt": a.pt,
-                        "eta": a.eta,
-                        "phi": a.phi,
+                        "pt": f.pt,
+                        "eta": f.eta,
+                        "phi": f.phi,
                     }
                 )
             )
@@ -402,18 +402,18 @@ class TagNProbeFromNanoAOD:
                     }
                 )
             )
-            all_probes = dak.flatten(
+            failing_probes = dak.flatten(
                 dak.zip(
                     {
-                        "pt": a.pt,
-                        "eta": a.eta,
-                        "phi": a.phi,
-                        "pair_mass": a.pair_mass,
+                        "pt": f.pt,
+                        "eta": f.eta,
+                        "phi": f.phi,
+                        "pair_mass": f.pair_mass,
                     }
                 )
             )
 
-        return passing_probes, all_probes
+        return passing_probes, failing_probes
 
     def _make_cutncount_histograms(
         self,
@@ -425,10 +425,10 @@ class TagNProbeFromNanoAOD:
     ):
         from egamma_tnp.utils import fill_cutncount_histograms
 
-        passing_probes, all_probes = self._find_probes(events, cut_and_count=True)
+        passing_probes, failing_probes = self._find_probes(events, cut_and_count=True)
         return fill_cutncount_histograms(
             passing_probes,
-            all_probes,
+            failing_probes,
             plateau_cut=plateau_cut,
             eta_regions_pt=eta_regions_pt,
             eta_regions_eta=eta_regions_eta,
@@ -445,10 +445,10 @@ class TagNProbeFromNanoAOD:
     ):
         from egamma_tnp.utils import fill_mll_histograms
 
-        passing_probes, all_probes = self._find_probes(events, cut_and_count=False)
+        passing_probes, failing_probes = self._find_probes(events, cut_and_count=False)
         return fill_mll_histograms(
             passing_probes,
-            all_probes,
+            failing_probes,
             plateau_cut=plateau_cut,
             eta_regions_pt=eta_regions_pt,
             eta_regions_eta=eta_regions_eta,
@@ -522,8 +522,15 @@ def _process_zcands(
     )
     if hlt_filter is None:
         passing_probes = all_probes[trig_matched_probe]
+        failing_probes = all_probes[~trig_matched_probe]
     else:
         passing_probes = all_probes[
             trig_matched_probe & getattr(good_events[events_with_tags].HLT, hlt_filter)
         ]
-    return passing_probes, all_probes
+        failing_probes = all_probes[
+            ~(
+                trig_matched_probe
+                & getattr(good_events[events_with_tags].HLT, hlt_filter)
+            )
+        ]
+    return passing_probes, failing_probes

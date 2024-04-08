@@ -13,9 +13,9 @@ class TagNProbeFromNanoAOD:
     def __init__(
         self,
         fileset,
-        filter,
         for_trigger,
         *,
+        filter="None",
         trigger_pt=None,
         tags_pt_cut=35,
         probes_pt_cut=None,
@@ -38,10 +38,10 @@ class TagNProbeFromNanoAOD:
         ----------
         fileset: dict
             The fileset to calculate the trigger efficiencies for.
-        filter: str
-            The name of the filter to calculate the efficiencies for.
         for_trigger: bool
             Whether the filter is a trigger or not.
+        filter: str
+            The name of the filter to calculate the efficiencies for.
         trigger_pt: int or float, optional
             The Pt threshold of the trigger to calculate the efficiencies over that threshold.
             If None, it will attempt to infer it from the filter name.

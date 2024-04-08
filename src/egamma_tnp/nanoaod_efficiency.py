@@ -16,12 +16,13 @@ class TagNProbeFromNanoAOD:
         filter,
         for_trigger,
         *,
+        trigger_pt=None,
         tags_pt_cut=35,
+        probes_pt_cut=None,
         tags_abseta_cut=2.5,
         filterbit=None,
         cut_and_count=True,
         cutbased_id=None,
-        trigger_pt=None,
         goldenjson=None,
         extra_filter=None,
         extra_filter_args=None,
@@ -41,8 +42,18 @@ class TagNProbeFromNanoAOD:
             The name of the filter to calculate the efficiencies for.
         for_trigger: bool
             Whether the filter is a trigger or not.
+        trigger_pt: int or float, optional
+            The Pt threshold of the trigger to calculate the efficiencies over that threshold.
+            If None, it will attempt to infer it from the filter name.
+            If it fails to do so, it will set it to 0.
+            The default is None.
         tags_pt_cut: int or float, optional
             The Pt cut to apply to the tag electrons. The default is 35.
+        probes_pt_cut: int or float, optional
+            The Pt threshold of the probe electron to calculate efficiencies over that threshold. The default is None.
+            Should be very slightly below the Pt threshold of the filter.
+            If it is None, it will attempt to infer it from the filter name.
+            If it fails to do so, it will set it to 0.
         tags_abseta_cut: int or float, optional
             The absolute Eta cut to apply to the tag electrons. The default is 2.5.
         cut_and_count: bool, optional
@@ -52,11 +63,6 @@ class TagNProbeFromNanoAOD:
         cutbased_id: str, optional
             The name of the cutbased ID to apply to the probes.
             If None, no cutbased ID is applied. The default is None.
-        trigger_pt: int or float, optional
-            The Pt threshold of the probe electron to calculate efficiencies over that threshold. The default is None.
-            Should be very slightly below the Pt threshold of the filter.
-            If it is None, it will attempt to infer it from the filter name.
-            If it fails to do so, it will set it to 0.
         goldenjson: str, optional
             The golden json to use for luminosity masking. The default is None.
         extra_filter : Callable, optional
@@ -81,6 +87,12 @@ class TagNProbeFromNanoAOD:
             )
         if extra_filter_args is None:
             extra_filter_args = {}
+        if probes_pt_cut is None:
+            from egamma_tnp.utils.misc import find_pt_threshold
+
+            self.probes_pt_cut = find_pt_threshold(filter) - 3
+        else:
+            self.probes_pt_cut = probes_pt_cut
         if trigger_pt is None:
             from egamma_tnp.utils.misc import find_pt_threshold
 
@@ -89,6 +101,7 @@ class TagNProbeFromNanoAOD:
             self.trigger_pt = trigger_pt
         if cutbased_id is None:
             cutbased_id = 4
+
         self.fileset = fileset
         self.filter = filter
         self.for_trigger = for_trigger
@@ -310,8 +323,9 @@ class TagNProbeFromNanoAOD:
         p1, a1 = _process_zcands(
             zcands=zcands1,
             good_events=good_events,
+            trigger_pt=self.trigger_pt,
             pt_tags=self.tags_pt_cut,
-            pt_probes=self.trigger_pt,
+            pt_probes=self.probes_pt_cut,
             abseta_tags=self.tags_abseta_cut,
             filterbit=self.filterbit,
             cut_and_count=self.cut_and_count,
@@ -338,8 +352,9 @@ class TagNProbeFromNanoAOD:
             p2, a2 = _process_zcands(
                 zcands=zcands2,
                 good_events=good_events,
+                trigger_pt=self.trigger_pt,
                 pt_tags=self.tags_pt_cut,
-                pt_probes=self.trigger_pt,
+                pt_probes=self.probes_pt_cut,
                 abseta_tags=self.tags_abseta_cut,
                 filterbit=self.filterbit,
                 cut_and_count=self.cut_and_count,
@@ -465,6 +480,7 @@ def _trigger_match(electrons, trigobjs, pt, filterbit, use_sc_eta):
 def _process_zcands(
     zcands,
     good_events,
+    trigger_pt,
     pt_tags,
     pt_probes,
     abseta_tags,
@@ -476,8 +492,8 @@ def _process_zcands(
     trigobjs = good_events.TrigObj
     pt_cond_tags = zcands.tag.pt > pt_tags
     eta_cond_tags = abs(zcands.tag.eta) < abseta_tags
-    pt_cond_probes = zcands.probe.pt > pt_probes - 3
-    trig_matched_tag = _trigger_match(zcands.tag, trigobjs, pt_tags, 1, use_sc_eta)
+    pt_cond_probes = zcands.probe.pt > pt_probes
+    trig_matched_tag = _trigger_match(zcands.tag, trigobjs, 30, 1, use_sc_eta)
     zcands = zcands[trig_matched_tag & pt_cond_tags & pt_cond_probes & eta_cond_tags]
     events_with_tags = dak.num(zcands.tag, axis=1) >= 1
     zcands = zcands[events_with_tags]
@@ -497,7 +513,7 @@ def _process_zcands(
     pair_mass = mass[isZ & dr_condition]
     all_probes["pair_mass"] = pair_mass
     trig_matched_probe = _trigger_match(
-        all_probes, trigobjs, pt_probes, filterbit, use_sc_eta
+        all_probes, trigobjs, trigger_pt, filterbit, use_sc_eta
     )
     if hlt_filter is None:
         passing_probes = all_probes[trig_matched_probe]

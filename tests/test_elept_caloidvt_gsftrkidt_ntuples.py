@@ -39,7 +39,7 @@ def test_without_compute(do_preprocess, allow_read_errors_with_report):
     tag_n_probe = TagNProbeFromNTuples(
         fileset,
         "passHltEle115CaloIdVTGsfTrkIdTGsf",
-        trigger_pt=5,
+        probes_pt_cut=5,
         cutbased_id="passingCutBasedTight122XV1",
         goldenjson=None,
     )
@@ -114,7 +114,7 @@ def test_local_compute(do_preprocess, allow_read_errors_with_report):
     tag_n_probe = TagNProbeFromNTuples(
         fileset,
         "passHltEle115CaloIdVTGsfTrkIdTGsf",
-        trigger_pt=5,
+        probes_pt_cut=5,
         cutbased_id="passingCutBasedTight122XV1",
         goldenjson=None,
     )
@@ -194,7 +194,7 @@ def test_distributed_compute(do_preprocess, allow_read_errors_with_report):
     tag_n_probe = TagNProbeFromNTuples(
         fileset,
         "passHltEle115CaloIdVTGsfTrkIdTGsf",
-        trigger_pt=5,
+        probes_pt_cut=5,
         cutbased_id="passingCutBasedTight122XV1",
         goldenjson=None,
     )

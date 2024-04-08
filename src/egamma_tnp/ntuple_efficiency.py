@@ -13,10 +13,10 @@ class TagNProbeFromNTuples:
         filter,
         *,
         tags_pt_cut=35,
+        probes_pt_cut=None,
         tags_abseta_cut=2.5,
         cut_and_count=True,
         cutbased_id=None,
-        trigger_pt=None,
         goldenjson=None,
         extra_filter=None,
         extra_filter_args=None,
@@ -31,10 +31,15 @@ class TagNProbeFromNTuples:
                 The fileset to calculate the trigger efficiencies for.
             filter: str
                 The name of the filter to calculate the efficiencies for.
-        tags_pt_cut: int or float, optional
-            The Pt cut to apply to the tag electrons. The default is 35.
-        tags_abseta_cut: int or float, optional
-            The absolute Eta cut to apply to the tag electrons. The default is 2.5.
+            tags_pt_cut: int or float, optional
+                The Pt cut to apply to the tag electrons. The default is 35.
+            probes_pt_cut: int or float, optional
+                The Pt threshold of the probe electron to calculate efficiencies over that threshold. The default is None.
+                Should be very slightly below the Pt threshold of the filter.
+                If it is None, it will attempt to infer it from the filter name.
+                If it fails to do so, it will set it to 0.
+            tags_abseta_cut: int or float, optional
+                The absolute Eta cut to apply to the tag electrons. The default is 2.5.
             cut_and_count: bool, optional
                 Whether to use the cut and count method to find the probes coming from a Z boson.
                 If False, invariant mass histograms of the tag-probe pairs will be filled to be fit by a Signal+Background model.
@@ -42,11 +47,6 @@ class TagNProbeFromNTuples:
             cutbased_id: str, optional
                 The name of the cutbased ID to apply to the probes.
                 If None, no cutbased ID is applied. The default is None.
-            trigger_pt: int or float, optional
-                The Pt threshold of the probe electron to calculate efficiencies over that threshold. The default is None.
-                Should be very slightly below the Pt threshold of the filter.
-                If it is None, it will attempt to infer it from the filter name.
-                If it fails to do so, it will set it to 0.
             goldenjson: str, optional
                 The golden json to use for luminosity masking. The default is None.
             extra_filter : Callable, optional
@@ -61,12 +61,13 @@ class TagNProbeFromNTuples:
         """
         if extra_filter_args is None:
             extra_filter_args = {}
-        if trigger_pt is None:
+        if probes_pt_cut is None:
             from egamma_tnp.utils.misc import find_pt_threshold
 
-            self.trigger_pt = find_pt_threshold(filter) - 3
+            self.probes_pt_cut = find_pt_threshold(filter) - 3
         else:
-            self.trigger_pt = trigger_pt
+            self.probes_pt_cut = probes_pt_cut
+
         self.fileset = fileset
         self.filter = filter
         self.tags_pt_cut = tags_pt_cut
@@ -251,7 +252,7 @@ class TagNProbeFromNTuples:
         return to_compute
 
     def _find_probe_events(self, events):
-        pass_pt_probes = events.el_pt > self.trigger_pt
+        pass_pt_probes = events.el_pt > self.probes_pt_cut
         if self.cutbased_id:
             pass_cutbased_id = events[self.cutbased_id] == 1
         else:

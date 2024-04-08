@@ -82,16 +82,19 @@ class TagNProbeFromNanoAOD:
         if trigger_pt is None:
             from egamma_tnp.utils.misc import find_pt_threshold
 
-            self.trigger_pt = find_pt_threshold(filter) - 3
+            self.trigger_pt = find_pt_threshold(filter)
         else:
             self.trigger_pt = trigger_pt
+        if cutbased_id is None:
+            cutbased_id = 4
         self.fileset = fileset
         self.filter = filter
         self.for_trigger = for_trigger
+        self.tags_pt_cut = tags_pt_cut
+        self.tags_abseta_cut = tags_abseta_cut
         self.filterbit = filterbit
         self.cut_and_count = cut_and_count
         self.cutbased_id = cutbased_id
-        self.trigger_pt = trigger_pt
         self.goldenjson = goldenjson
         self.extra_filter = extra_filter
         self.extra_filter_args = extra_filter_args
@@ -303,14 +306,14 @@ class TagNProbeFromNanoAOD:
             zcands1 = zcands1[pass_eta_ebeegap_probes1]
 
         p1, a1 = _process_zcands(
-            zcands1,
-            good_events,
-            self.pt_tags,
-            self.pt_probes,
-            self.abseta_tags,
-            self.filterbit,
-            self.cut_and_count,
-            self.hlt_filter,
+            zcands=zcands1,
+            good_events=good_events,
+            pt_tags=self.tags_pt_cut,
+            pt_probes=self.trigger_pt,
+            abseta_tags=self.tags_abseta_cut,
+            filterbit=self.filterbit,
+            cut_and_count=self.cut_and_count,
+            hlt_filter=self.hlt_filter,
         )
 
         if self.cut_and_count:
@@ -330,14 +333,14 @@ class TagNProbeFromNanoAOD:
                 zcands2 = zcands2[pass_eta_ebeegap_probes2]
 
             p2, a2 = _process_zcands(
-                zcands2,
-                good_events,
-                self.pt_probes,
-                self.pt_tags,
-                self.abseta_probes,
-                self.filterbit,
-                self.cut_and_count,
-                self.hlt_filter,
+                zcands=zcands2,
+                good_events=good_events,
+                pt_tags=self.tags_pt_cut,
+                pt_probes=self.trigger_pt,
+                abseta_tags=self.tags_abseta_cut,
+                filterbit=self.filterbit,
+                cut_and_count=self.cut_and_count,
+                hlt_filter=self.hlt_filter,
             )
 
             p, a = dak.concatenate([p1, p2]), dak.concatenate([a1, a2])
@@ -467,7 +470,7 @@ def _process_zcands(
     trigobjs = good_events.TrigObj
     pt_cond_tags = zcands.tag.pt > pt_tags
     eta_cond_tags = abs(zcands.tag.eta) < abseta_tags
-    pt_cond_probes = zcands.probe.pt > pt_probes
+    pt_cond_probes = zcands.probe.pt > pt_probes - 3
     trig_matched_tag = _trigger_match(zcands.tag, trigobjs, pt_tags, 1)
     zcands = zcands[trig_matched_tag & pt_cond_tags & pt_cond_probes & eta_cond_tags]
     events_with_tags = dak.num(zcands.tag, axis=1) >= 1

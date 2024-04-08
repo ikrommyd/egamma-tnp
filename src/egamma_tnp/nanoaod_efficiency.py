@@ -32,7 +32,8 @@ class TagNProbeFromNanoAOD:
         avoid_ecal_transition_probes=False,
         hlt_filter=None,
     ):
-        """Tag and Probe efficiency from E/Gamma NTuples
+        """Tag and Probe efficiency from NanoAOD and EGamma NanoAOD.
+        Can only perform trigger efficiencies at the moment.
 
         Parameters
         ----------

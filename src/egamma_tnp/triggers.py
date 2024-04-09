@@ -53,9 +53,7 @@ class ElePt_WPTight_Gsf:
         extra_filter_args=None,
     ):
         if from_ntuples:
-            instance = TagNProbeFromNTuples.__new__(TagNProbeFromNTuples)
-            TagNProbeFromNTuples.__init__(
-                instance,
+            instance = TagNProbeFromNTuples(
                 fileset=fileset,
                 filter=f"passHltEle{trigger_pt}WPTightGsf",
                 tags_pt_cut=tags_pt_cut,
@@ -71,9 +69,7 @@ class ElePt_WPTight_Gsf:
                 avoid_ecal_transition_probes=avoid_ecal_transition_probes,
             )
         else:
-            instance = TagNProbeFromNanoAOD.__new__(TagNProbeFromNanoAOD)
-            TagNProbeFromNanoAOD.__init__(
-                instance,
+            instance = TagNProbeFromNanoAOD(
                 fileset=fileset,
                 filter=f"passHltEle{trigger_pt}WPTightGsf",
                 for_trigger=True,
@@ -148,9 +144,7 @@ class ElePt_CaloIdVT_GsfTrkIdT:
         extra_filter_args=None,
     ):
         if from_ntuples:
-            instance = TagNProbeFromNTuples.__new__(TagNProbeFromNTuples)
-            TagNProbeFromNTuples.__init__(
-                instance,
+            instance = TagNProbeFromNTuples(
                 fileset=fileset,
                 filter=f"passHltEle{trigger_pt}CaloIdVTGsfTrkIdTGsf",
                 tags_pt_cut=tags_pt_cut,
@@ -166,9 +160,7 @@ class ElePt_CaloIdVT_GsfTrkIdT:
                 avoid_ecal_transition_probes=avoid_ecal_transition_probes,
             )
         else:
-            instance = TagNProbeFromNanoAOD.__new__(TagNProbeFromNanoAOD)
-            TagNProbeFromNanoAOD.__init__(
-                instance,
+            instance = TagNProbeFromNanoAOD(
                 fileset=fileset,
                 filter=f"passHltEle{trigger_pt}CaloIdVTGsfTrkIdTGsf",
                 for_trigger=True,
@@ -246,9 +238,7 @@ class ElePt1_ElePt2_CaloIdL_TrackIdL_IsoVL_Leg1:
         extra_filter_args=None,
     ):
         if from_ntuples:
-            instance = TagNProbeFromNTuples.__new__(TagNProbeFromNTuples)
-            TagNProbeFromNTuples.__init__(
-                instance,
+            instance = TagNProbeFromNTuples(
                 fileset=fileset,
                 filter=f"passHltEle{trigger_pt1}Ele{trigger_pt2}CaloIdLTrackIdLIsoVLLeg1L1match",
                 tags_pt_cut=tags_pt_cut,
@@ -264,9 +254,7 @@ class ElePt1_ElePt2_CaloIdL_TrackIdL_IsoVL_Leg1:
                 avoid_ecal_transition_probes=avoid_ecal_transition_probes,
             )
         else:
-            instance = TagNProbeFromNanoAOD.__new__(TagNProbeFromNanoAOD)
-            TagNProbeFromNanoAOD.__init__(
-                instance,
+            instance = TagNProbeFromNanoAOD(
                 fileset=fileset,
                 filter=f"passHltEle{trigger_pt1}Ele{trigger_pt2}CaloIdLTrackIdLIsoVLLeg1L1match",
                 for_trigger=True,
@@ -344,9 +332,7 @@ class ElePt1_ElePt2_CaloIdL_TrackIdL_IsoVL_Leg2:
         extra_filter_args=None,
     ):
         if from_ntuples:
-            instance = TagNProbeFromNTuples.__new__(TagNProbeFromNTuples)
-            TagNProbeFromNTuples.__init__(
-                instance,
+            instance = TagNProbeFromNTuples(
                 fileset=fileset,
                 filter=f"passHltEle{trigger_pt1}Ele{trigger_pt2}CaloIdLTrackIdLIsoVLLeg2",
                 tags_pt_cut=tags_pt_cut,
@@ -362,9 +348,7 @@ class ElePt1_ElePt2_CaloIdL_TrackIdL_IsoVL_Leg2:
                 avoid_ecal_transition_probes=avoid_ecal_transition_probes,
             )
         else:
-            instance = TagNProbeFromNanoAOD.__new__(TagNProbeFromNanoAOD)
-            TagNProbeFromNanoAOD.__init__(
-                instance,
+            instance = TagNProbeFromNanoAOD(
                 fileset=fileset,
                 filter=f"passHltEle{trigger_pt1}Ele{trigger_pt2}CaloIdLTrackIdLIsoVLLeg2",
                 for_trigger=True,
@@ -439,9 +423,7 @@ class DoubleElePt_CaloIdL_MW_SeededLeg:
         extra_filter_args=None,
     ):
         if from_ntuples:
-            instance = TagNProbeFromNTuples.__new__(TagNProbeFromNTuples)
-            TagNProbeFromNTuples.__init__(
-                instance,
+            instance = TagNProbeFromNTuples(
                 fileset=fileset,
                 filter=f"passHltDoubleEle{trigger_pt}CaloIdLMWSeedLegL1match",
                 tags_pt_cut=tags_pt_cut,
@@ -457,9 +439,7 @@ class DoubleElePt_CaloIdL_MW_SeededLeg:
                 avoid_ecal_transition_probes=avoid_ecal_transition_probes,
             )
         else:
-            instance = TagNProbeFromNanoAOD.__new__(TagNProbeFromNanoAOD)
-            TagNProbeFromNanoAOD.__init__(
-                instance,
+            instance = TagNProbeFromNanoAOD(
                 fileset=fileset,
                 filter=f"passHltDoubleEle{trigger_pt}CaloIdLMWSeedLegL1match",
                 for_trigger=True,
@@ -534,9 +514,7 @@ class DoubleElePt_CaloIdL_MW_UnseededLeg:
         extra_filter_args=None,
     ):
         if from_ntuples:
-            instance = TagNProbeFromNTuples.__new__(TagNProbeFromNTuples)
-            TagNProbeFromNTuples.__init__(
-                instance,
+            instance = TagNProbeFromNTuples(
                 fileset=fileset,
                 filter=f"passHltDoubleEle{trigger_pt}CaloIdLMWUnsLeg",
                 tags_pt_cut=tags_pt_cut,
@@ -552,9 +530,7 @@ class DoubleElePt_CaloIdL_MW_UnseededLeg:
                 avoid_ecal_transition_probes=avoid_ecal_transition_probes,
             )
         else:
-            instance = TagNProbeFromNanoAOD.__new__(TagNProbeFromNanoAOD)
-            TagNProbeFromNanoAOD.__init__(
-                instance,
+            instance = TagNProbeFromNanoAOD(
                 fileset=fileset,
                 filter=f"passHltDoubleEle{trigger_pt}CaloIdLMWUnsLeg",
                 for_trigger=True,

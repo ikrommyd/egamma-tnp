@@ -16,17 +16,15 @@ def test_without_compute(do_preprocess, allow_read_errors_with_report):
         fileset = {
             "sample": {
                 "files": {
-                    os.path.abspath("tests/samples/TnPNTuples.root"): "fitter_tree",
-                    os.path.abspath("tests/samples/not_a_file.root"): "fitter_tree",
+                    os.path.abspath("tests/samples/DYto2E.root"): "Events",
+                    os.path.abspath("tests/samples/not_a_file.root"): "Events",
                 }
             }
         }
     else:
         fileset = {
             "sample": {
-                "files": {
-                    os.path.abspath("tests/samples/TnPNTuples.root"): "fitter_tree"
-                }
+                "files": {os.path.abspath("tests/samples/DYto2E.root"): "Events"}
             }
         }
 
@@ -41,21 +39,19 @@ def test_without_compute(do_preprocess, allow_read_errors_with_report):
 
     tag_n_probe_leg1 = DoubleElePt_CaloIdL_MW_SeededLeg(
         fileset,
-        trigger_pt=33,
-        from_ntuples=True,
-        tags_pt_cut=35,
-        probes_pt_cut=5,
-        use_sc_eta=False,
-        avoid_ecal_transition_tags=False,
+        33,
+        probes_pt_cut=30,
+        avoid_ecal_transition_tags=True,
+        avoid_ecal_transition_probes=True,
+        goldenjson=None,
     )
     tag_n_probe_leg2 = DoubleElePt_CaloIdL_MW_UnseededLeg(
         fileset,
-        trigger_pt=33,
-        from_ntuples=True,
-        tags_pt_cut=35,
-        probes_pt_cut=5,
-        use_sc_eta=False,
-        avoid_ecal_transition_tags=False,
+        33,
+        probes_pt_cut=30,
+        avoid_ecal_transition_tags=True,
+        avoid_ecal_transition_probes=True,
+        goldenjson=None,
     )
 
     for tag_n_probe in [tag_n_probe_leg1, tag_n_probe_leg2]:
@@ -106,17 +102,15 @@ def test_local_compute(do_preprocess, allow_read_errors_with_report):
         fileset = {
             "sample": {
                 "files": {
-                    os.path.abspath("tests/samples/TnPNTuples.root"): "fitter_tree",
-                    os.path.abspath("tests/samples/not_a_file.root"): "fitter_tree",
+                    os.path.abspath("tests/samples/DYto2E.root"): "Events",
+                    os.path.abspath("tests/samples/not_a_file.root"): "Events",
                 }
             }
         }
     else:
         fileset = {
             "sample": {
-                "files": {
-                    os.path.abspath("tests/samples/TnPNTuples.root"): "fitter_tree"
-                }
+                "files": {os.path.abspath("tests/samples/DYto2E.root"): "Events"}
             }
         }
 
@@ -131,25 +125,28 @@ def test_local_compute(do_preprocess, allow_read_errors_with_report):
 
     tag_n_probe_leg1 = DoubleElePt_CaloIdL_MW_SeededLeg(
         fileset,
-        trigger_pt=33,
-        from_ntuples=True,
+        33,
         tags_pt_cut=35,
-        probes_pt_cut=5,
-        use_sc_eta=False,
-        avoid_ecal_transition_tags=False,
+        probes_pt_cut=30,
+        avoid_ecal_transition_tags=True,
+        avoid_ecal_transition_probes=True,
+        goldenjson=None,
     )
     tag_n_probe_leg2 = DoubleElePt_CaloIdL_MW_UnseededLeg(
         fileset,
-        trigger_pt=33,
-        from_ntuples=True,
+        33,
         tags_pt_cut=35,
-        probes_pt_cut=5,
-        use_sc_eta=False,
-        avoid_ecal_transition_tags=False,
+        probes_pt_cut=30,
+        avoid_ecal_transition_tags=True,
+        avoid_ecal_transition_probes=True,
+        goldenjson=None,
     )
 
-    for tag_n_probe, target_pt, target_eta_phi in zip(
-        [tag_n_probe_leg1, tag_n_probe_leg2], [361.0, 367.0], [372.0, 378.0]
+    for tag_n_probe, target_pt, target_eta_phi, total_sum in zip(
+        [tag_n_probe_leg1, tag_n_probe_leg2],
+        [0.0, 0.0],
+        [0.0, 0.0],
+        [893.0, 893.0],
     ):
         res = tag_n_probe.get_tnp_histograms(
             uproot_options={
@@ -178,12 +175,12 @@ def test_local_compute(do_preprocess, allow_read_errors_with_report):
         )
         assert (
             hpt_fail_barrel.sum(flow=True) + hpt_fail_endcap.sum(flow=True)
-            == 490.0 - target_pt
+            == total_sum - target_pt
         )
         assert heta_pass.sum(flow=True) == target_eta_phi
-        assert heta_fail.sum(flow=True) == 505.0 - target_eta_phi
+        assert heta_fail.sum(flow=True) == total_sum - target_eta_phi
         assert hphi_pass.sum(flow=True) == target_eta_phi
-        assert hphi_fail.sum(flow=True) == 505.0 - target_eta_phi
+        assert hphi_fail.sum(flow=True) == total_sum - target_eta_phi
 
         assert (
             hpt_pass_barrel.values(flow=True)[0] + hpt_pass_endcap.values(flow=True)[0]
@@ -208,17 +205,15 @@ def test_distributed_compute(do_preprocess, allow_read_errors_with_report):
         fileset = {
             "sample": {
                 "files": {
-                    os.path.abspath("tests/samples/TnPNTuples.root"): "fitter_tree",
-                    os.path.abspath("tests/samples/not_a_file.root"): "fitter_tree",
+                    os.path.abspath("tests/samples/DYto2E.root"): "Events",
+                    os.path.abspath("tests/samples/not_a_file.root"): "Events",
                 }
             }
         }
     else:
         fileset = {
             "sample": {
-                "files": {
-                    os.path.abspath("tests/samples/TnPNTuples.root"): "fitter_tree"
-                }
+                "files": {os.path.abspath("tests/samples/DYto2E.root"): "Events"}
             }
         }
 
@@ -233,26 +228,27 @@ def test_distributed_compute(do_preprocess, allow_read_errors_with_report):
 
     tag_n_probe_leg1 = DoubleElePt_CaloIdL_MW_SeededLeg(
         fileset,
-        trigger_pt=33,
-        from_ntuples=True,
-        tags_pt_cut=35,
-        probes_pt_cut=5,
-        use_sc_eta=False,
-        avoid_ecal_transition_tags=False,
+        33,
+        probes_pt_cut=30,
+        avoid_ecal_transition_tags=True,
+        avoid_ecal_transition_probes=True,
+        goldenjson=None,
     )
     tag_n_probe_leg2 = DoubleElePt_CaloIdL_MW_UnseededLeg(
         fileset,
-        trigger_pt=33,
-        from_ntuples=True,
-        tags_pt_cut=35,
-        probes_pt_cut=5,
-        use_sc_eta=False,
-        avoid_ecal_transition_tags=False,
+        33,
+        probes_pt_cut=30,
+        avoid_ecal_transition_tags=True,
+        avoid_ecal_transition_probes=True,
+        goldenjson=None,
     )
 
     with Client():
-        for tag_n_probe, target_pt, target_eta_phi in zip(
-            [tag_n_probe_leg1, tag_n_probe_leg2], [361.0, 367.0], [372.0, 378.0]
+        for tag_n_probe, target_pt, target_eta_phi, total_sum in zip(
+            [tag_n_probe_leg1, tag_n_probe_leg2],
+            [1181.0, 0.0],
+            [1181.0, 0.0],
+            [1272.0, 1317.0],
         ):
             res = tag_n_probe.get_tnp_histograms(
                 uproot_options={
@@ -282,12 +278,12 @@ def test_distributed_compute(do_preprocess, allow_read_errors_with_report):
             )
             assert (
                 hpt_fail_barrel.sum(flow=True) + hpt_fail_endcap.sum(flow=True)
-                == 490.0 - target_pt
+                == total_sum - target_pt
             )
             assert heta_pass.sum(flow=True) == target_eta_phi
-            assert heta_fail.sum(flow=True) == 505.0 - target_eta_phi
+            assert heta_fail.sum(flow=True) == total_sum - target_eta_phi
             assert hphi_pass.sum(flow=True) == target_eta_phi
-            assert hphi_fail.sum(flow=True) == 505.0 - target_eta_phi
+            assert hphi_fail.sum(flow=True) == total_sum - target_eta_phi
 
             assert (
                 hpt_pass_barrel.values(flow=True)[0]

@@ -12,6 +12,10 @@ class ElePt_WPTight_Gsf:
             The Pt threshold of the trigger.
         from_ntuples : bool, optional
             Whether the fileset is E/Gamma NTuples or NanoAOD. The default is False.
+        use_sc_eta : bool, optional
+            Use the supercluster Eta instead of the Eta from the primary vertex. The default is False.
+        use_sc_phi : bool, optional
+            Use the supercluster Phi instead of the Phi from the primary vertex. The default is False.
         avoid_ecal_transition_tags : bool, optional
             Whether to avoid the ECAL transition region for the tags with an eta cut. The default is True.
         avoid_ecal_transition_probes : bool, optional
@@ -31,6 +35,8 @@ class ElePt_WPTight_Gsf:
         trigger_pt,
         *,
         from_ntuples=False,
+        use_sc_eta=False,
+        use_sc_phi=False,
         avoid_ecal_transition_tags=True,
         avoid_ecal_transition_probes=False,
         goldenjson=None,
@@ -50,8 +56,8 @@ class ElePt_WPTight_Gsf:
                 goldenjson=goldenjson,
                 extra_filter=extra_filter,
                 extra_filter_args=extra_filter_args,
-                use_sc_eta=True,
-                use_sc_phi=False,
+                use_sc_eta=use_sc_eta,
+                use_sc_phi=use_sc_phi,
                 avoid_ecal_transition_tags=avoid_ecal_transition_tags,
                 avoid_ecal_transition_probes=avoid_ecal_transition_probes,
             )
@@ -71,8 +77,8 @@ class ElePt_WPTight_Gsf:
                 goldenjson=goldenjson,
                 extra_filter=extra_filter,
                 extra_filter_args=extra_filter_args,
-                use_sc_eta=True,
-                use_sc_phi=False,
+                use_sc_eta=use_sc_eta,
+                use_sc_phi=use_sc_phi,
                 avoid_ecal_transition_tags=avoid_ecal_transition_tags,
                 avoid_ecal_transition_probes=avoid_ecal_transition_probes,
                 hlt_filter=f"Ele{trigger_pt}_WPTight_Gsf",
@@ -92,6 +98,10 @@ class ElePt_CaloIdVT_GsfTrkIdT:
             The Pt threshold of the trigger.
         from_ntuples : bool, optional
             Whether the fileset is E/Gamma NTuples or NanoAOD. The default is False.
+        use_sc_eta : bool, optional
+            Use the supercluster Eta instead of the Eta from the primary vertex. The default is False.
+        use_sc_phi : bool, optional
+            Use the supercluster Phi instead of the Phi from the primary vertex. The default is False.
         avoid_ecal_transition_tags : bool, optional
             Whether to avoid the ECAL transition region for the tags with an eta cut. The default is True.
         avoid_ecal_transition_probes : bool, optional
@@ -111,6 +121,8 @@ class ElePt_CaloIdVT_GsfTrkIdT:
         trigger_pt,
         *,
         from_ntuples=False,
+        use_sc_eta=False,
+        use_sc_phi=False,
         avoid_ecal_transition_tags=True,
         avoid_ecal_transition_probes=False,
         goldenjson=None,
@@ -130,8 +142,8 @@ class ElePt_CaloIdVT_GsfTrkIdT:
                 goldenjson=goldenjson,
                 extra_filter=extra_filter,
                 extra_filter_args=extra_filter_args,
-                use_sc_eta=True,
-                use_sc_phi=False,
+                use_sc_eta=use_sc_eta,
+                use_sc_phi=use_sc_phi,
                 avoid_ecal_transition_tags=avoid_ecal_transition_tags,
                 avoid_ecal_transition_probes=avoid_ecal_transition_probes,
             )
@@ -151,8 +163,8 @@ class ElePt_CaloIdVT_GsfTrkIdT:
                 goldenjson=goldenjson,
                 extra_filter=extra_filter,
                 extra_filter_args=extra_filter_args,
-                use_sc_eta=True,
-                use_sc_phi=False,
+                use_sc_eta=use_sc_eta,
+                use_sc_phi=use_sc_phi,
                 avoid_ecal_transition_tags=avoid_ecal_transition_tags,
                 avoid_ecal_transition_probes=avoid_ecal_transition_probes,
                 hlt_filter=f"Ele{trigger_pt}_CaloIdVT_GsfTrkIdT",
@@ -174,6 +186,10 @@ class ElePt1_ElePt2_CaloIdL_TrackIdL_IsoVL_Leg1:
             The Pt threshold of the low-Pt leg of the trigger.
         from_ntuples : bool, optional
             Whether the fileset is E/Gamma NTuples or NanoAOD. The default is False.
+        use_sc_eta : bool, optional
+            Use the supercluster Eta instead of the Eta from the primary vertex. The default is False.
+        use_sc_phi : bool, optional
+            Use the supercluster Phi instead of the Phi from the primary vertex. The default is False.
         avoid_ecal_transition_tags : bool, optional
             Whether to avoid the ECAL transition region for the tags with an eta cut. The default is True.
         avoid_ecal_transition_probes : bool, optional
@@ -194,6 +210,8 @@ class ElePt1_ElePt2_CaloIdL_TrackIdL_IsoVL_Leg1:
         trigger_pt2,
         *,
         from_ntuples=False,
+        use_sc_eta=False,
+        use_sc_phi=False,
         avoid_ecal_transition_tags=True,
         avoid_ecal_transition_probes=False,
         goldenjson=None,
@@ -213,8 +231,8 @@ class ElePt1_ElePt2_CaloIdL_TrackIdL_IsoVL_Leg1:
                 goldenjson=goldenjson,
                 extra_filter=extra_filter,
                 extra_filter_args=extra_filter_args,
-                use_sc_eta=True,
-                use_sc_phi=False,
+                use_sc_eta=use_sc_eta,
+                use_sc_phi=use_sc_phi,
                 avoid_ecal_transition_tags=avoid_ecal_transition_tags,
                 avoid_ecal_transition_probes=avoid_ecal_transition_probes,
             )
@@ -234,8 +252,8 @@ class ElePt1_ElePt2_CaloIdL_TrackIdL_IsoVL_Leg1:
                 goldenjson=goldenjson,
                 extra_filter=extra_filter,
                 extra_filter_args=extra_filter_args,
-                use_sc_eta=True,
-                use_sc_phi=False,
+                use_sc_eta=use_sc_eta,
+                use_sc_phi=use_sc_phi,
                 avoid_ecal_transition_tags=avoid_ecal_transition_tags,
                 avoid_ecal_transition_probes=avoid_ecal_transition_probes,
                 hlt_filter=f"Ele{trigger_pt1}_Ele{trigger_pt2}_CaloIdL_TrackIdL_IsoVL",
@@ -257,6 +275,10 @@ class ElePt1_ElePt2_CaloIdL_TrackIdL_IsoVL_Leg2:
             The Pt threshold of the low-Pt leg of the trigger.
         from_ntuples : bool, optional
             Whether the fileset is E/Gamma NTuples or NanoAOD. The default is False.
+        use_sc_eta : bool, optional
+            Use the supercluster Eta instead of the Eta from the primary vertex. The default is False.
+        use_sc_phi : bool, optional
+            Use the supercluster Phi instead of the Phi from the primary vertex. The default is False.
         avoid_ecal_transition_tags : bool, optional
             Whether to avoid the ECAL transition region for the tags with an eta cut. The default is True.
         avoid_ecal_transition_probes : bool, optional
@@ -277,6 +299,8 @@ class ElePt1_ElePt2_CaloIdL_TrackIdL_IsoVL_Leg2:
         trigger_pt2,
         *,
         from_ntuples=False,
+        use_sc_eta=False,
+        use_sc_phi=False,
         avoid_ecal_transition_tags=True,
         avoid_ecal_transition_probes=False,
         goldenjson=None,
@@ -296,8 +320,8 @@ class ElePt1_ElePt2_CaloIdL_TrackIdL_IsoVL_Leg2:
                 goldenjson=goldenjson,
                 extra_filter=extra_filter,
                 extra_filter_args=extra_filter_args,
-                use_sc_eta=True,
-                use_sc_phi=False,
+                use_sc_eta=use_sc_eta,
+                use_sc_phi=use_sc_phi,
                 avoid_ecal_transition_tags=avoid_ecal_transition_tags,
                 avoid_ecal_transition_probes=avoid_ecal_transition_probes,
             )
@@ -317,8 +341,8 @@ class ElePt1_ElePt2_CaloIdL_TrackIdL_IsoVL_Leg2:
                 goldenjson=goldenjson,
                 extra_filter=extra_filter,
                 extra_filter_args=extra_filter_args,
-                use_sc_eta=True,
-                use_sc_phi=False,
+                use_sc_eta=use_sc_eta,
+                use_sc_phi=use_sc_phi,
                 avoid_ecal_transition_tags=avoid_ecal_transition_tags,
                 avoid_ecal_transition_probes=avoid_ecal_transition_probes,
                 hlt_filter=f"Ele{trigger_pt1}_Ele{trigger_pt2}_CaloIdL_TrackIdL_IsoVL",
@@ -338,6 +362,10 @@ class DoubleElePt_CaloIdL_MW_SeededLeg:
             The Pt threshold of the trigger.
         from_ntuples : bool, optional
             Whether the fileset is E/Gamma NTuples or NanoAOD. The default is False.
+        use_sc_eta : bool, optional
+            Use the supercluster Eta instead of the Eta from the primary vertex. The default is False.
+        use_sc_phi : bool, optional
+            Use the supercluster Phi instead of the Phi from the primary vertex. The default is False.
         avoid_ecal_transition_tags : bool, optional
             Whether to avoid the ECAL transition region for the tags with an eta cut. The default is True.
         avoid_ecal_transition_probes : bool, optional
@@ -357,6 +385,8 @@ class DoubleElePt_CaloIdL_MW_SeededLeg:
         trigger_pt,
         *,
         from_ntuples=False,
+        use_sc_eta=False,
+        use_sc_phi=False,
         avoid_ecal_transition_tags=True,
         avoid_ecal_transition_probes=False,
         goldenjson=None,
@@ -376,8 +406,8 @@ class DoubleElePt_CaloIdL_MW_SeededLeg:
                 goldenjson=goldenjson,
                 extra_filter=extra_filter,
                 extra_filter_args=extra_filter_args,
-                use_sc_eta=True,
-                use_sc_phi=False,
+                use_sc_eta=use_sc_eta,
+                use_sc_phi=use_sc_phi,
                 avoid_ecal_transition_tags=avoid_ecal_transition_tags,
                 avoid_ecal_transition_probes=avoid_ecal_transition_probes,
             )
@@ -397,8 +427,8 @@ class DoubleElePt_CaloIdL_MW_SeededLeg:
                 goldenjson=goldenjson,
                 extra_filter=extra_filter,
                 extra_filter_args=extra_filter_args,
-                use_sc_eta=True,
-                use_sc_phi=False,
+                use_sc_eta=use_sc_eta,
+                use_sc_phi=use_sc_phi,
                 avoid_ecal_transition_tags=avoid_ecal_transition_tags,
                 avoid_ecal_transition_probes=avoid_ecal_transition_probes,
                 hlt_filter=f"DoubleEle{trigger_pt}_CaloIdL_MW",
@@ -418,6 +448,10 @@ class DoubleElePt_CaloIdL_MW_UnseededLeg:
             The Pt threshold of the trigger.
         from_ntuples : bool, optional
             Whether the fileset is E/Gamma NTuples or NanoAOD. The default is False.
+        use_sc_eta : bool, optional
+            Use the supercluster Eta instead of the Eta from the primary vertex. The default is False.
+        use_sc_phi : bool, optional
+            Use the supercluster Phi instead of the Phi from the primary vertex. The default is False.
         avoid_ecal_transition_tags : bool, optional
             Whether to avoid the ECAL transition region for the tags with an eta cut. The default is True.
         avoid_ecal_transition_probes : bool, optional
@@ -437,6 +471,8 @@ class DoubleElePt_CaloIdL_MW_UnseededLeg:
         trigger_pt,
         *,
         from_ntuples=False,
+        use_sc_eta=False,
+        use_sc_phi=False,
         avoid_ecal_transition_tags=True,
         avoid_ecal_transition_probes=False,
         goldenjson=None,
@@ -456,8 +492,8 @@ class DoubleElePt_CaloIdL_MW_UnseededLeg:
                 goldenjson=goldenjson,
                 extra_filter=extra_filter,
                 extra_filter_args=extra_filter_args,
-                use_sc_eta=True,
-                use_sc_phi=False,
+                use_sc_eta=use_sc_eta,
+                use_sc_phi=use_sc_phi,
                 avoid_ecal_transition_tags=avoid_ecal_transition_tags,
                 avoid_ecal_transition_probes=avoid_ecal_transition_probes,
             )
@@ -477,8 +513,8 @@ class DoubleElePt_CaloIdL_MW_UnseededLeg:
                 goldenjson=goldenjson,
                 extra_filter=extra_filter,
                 extra_filter_args=extra_filter_args,
-                use_sc_eta=True,
-                use_sc_phi=False,
+                use_sc_eta=use_sc_eta,
+                use_sc_phi=use_sc_phi,
                 avoid_ecal_transition_tags=avoid_ecal_transition_tags,
                 avoid_ecal_transition_probes=avoid_ecal_transition_probes,
                 hlt_filter=f"DoubleEle{trigger_pt}_CaloIdL_MW",

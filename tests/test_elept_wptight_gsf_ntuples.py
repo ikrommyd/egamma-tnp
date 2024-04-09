@@ -3,7 +3,7 @@ import os
 import pytest
 from coffea.dataset_tools import preprocess
 
-from egamma_tnp import TagNProbeFromNTuples
+from egamma_tnp.triggers import ElePt_WPTight_Gsf
 
 
 @pytest.mark.parametrize("do_preprocess", [True, False])
@@ -36,12 +36,13 @@ def test_without_compute(do_preprocess, allow_read_errors_with_report):
             )
             fileset = fileset_available
 
-    tag_n_probe = TagNProbeFromNTuples(
+    tag_n_probe = ElePt_WPTight_Gsf(
         fileset,
-        "passHltEle32WPTightGsf",
+        trigger_pt=32,
+        from_ntuples=True,
+        tags_pt_cut=35,
         probes_pt_cut=5,
-        cutbased_id="passingCutBasedTight122XV1",
-        goldenjson=None,
+        use_sc_eta=False,
         avoid_ecal_transition_tags=False,
     )
 
@@ -113,12 +114,13 @@ def test_local_compute(do_preprocess, allow_read_errors_with_report):
             )
             fileset = fileset_available
 
-    tag_n_probe = TagNProbeFromNTuples(
+    tag_n_probe = ElePt_WPTight_Gsf(
         fileset,
-        "passHltEle32WPTightGsf",
+        trigger_pt=32,
+        from_ntuples=True,
+        tags_pt_cut=35,
         probes_pt_cut=5,
-        cutbased_id="passingCutBasedTight122XV1",
-        goldenjson=None,
+        use_sc_eta=False,
         avoid_ecal_transition_tags=False,
     )
 
@@ -197,12 +199,13 @@ def test_distributed_compute(do_preprocess, allow_read_errors_with_report):
             )
             fileset = fileset_available
 
-    tag_n_probe = TagNProbeFromNTuples(
+    tag_n_probe = ElePt_WPTight_Gsf(
         fileset,
-        "passHltEle32WPTightGsf",
+        trigger_pt=32,
+        from_ntuples=True,
+        tags_pt_cut=35,
         probes_pt_cut=5,
-        cutbased_id="passingCutBasedTight122XV1",
-        goldenjson=None,
+        use_sc_eta=False,
         avoid_ecal_transition_tags=False,
     )
 

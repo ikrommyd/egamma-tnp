@@ -3,7 +3,10 @@ import os
 import pytest
 from coffea.dataset_tools import preprocess
 
-from egamma_tnp import TagNProbeFromNTuples
+from egamma_tnp.triggers import (
+    DoubleElePt_CaloIdL_MW_SeededLeg,
+    DoubleElePt_CaloIdL_MW_UnseededLeg,
+)
 
 
 @pytest.mark.parametrize("do_preprocess", [True, False])
@@ -36,20 +39,22 @@ def test_without_compute(do_preprocess, allow_read_errors_with_report):
             )
             fileset = fileset_available
 
-    tag_n_probe_leg1 = TagNProbeFromNTuples(
+    tag_n_probe_leg1 = DoubleElePt_CaloIdL_MW_SeededLeg(
         fileset,
-        "passHltDoubleEle33CaloIdLMWSeedLegL1match",
+        trigger_pt=33,
+        from_ntuples=True,
+        tags_pt_cut=35,
         probes_pt_cut=5,
-        cutbased_id="passingCutBasedTight122XV1",
-        goldenjson=None,
+        use_sc_eta=False,
         avoid_ecal_transition_tags=False,
     )
-    tag_n_probe_leg2 = TagNProbeFromNTuples(
+    tag_n_probe_leg2 = DoubleElePt_CaloIdL_MW_UnseededLeg(
         fileset,
-        "passHltDoubleEle33CaloIdLMWUnsLeg",
+        trigger_pt=33,
+        from_ntuples=True,
+        tags_pt_cut=35,
         probes_pt_cut=5,
-        cutbased_id="passingCutBasedTight122XV1",
-        goldenjson=None,
+        use_sc_eta=False,
         avoid_ecal_transition_tags=False,
     )
 
@@ -124,20 +129,22 @@ def test_local_compute(do_preprocess, allow_read_errors_with_report):
             )
             fileset = fileset_available
 
-    tag_n_probe_leg1 = TagNProbeFromNTuples(
+    tag_n_probe_leg1 = DoubleElePt_CaloIdL_MW_SeededLeg(
         fileset,
-        "passHltDoubleEle33CaloIdLMWSeedLegL1match",
+        trigger_pt=33,
+        from_ntuples=True,
+        tags_pt_cut=35,
         probes_pt_cut=5,
-        cutbased_id="passingCutBasedTight122XV1",
-        goldenjson=None,
+        use_sc_eta=False,
         avoid_ecal_transition_tags=False,
     )
-    tag_n_probe_leg2 = TagNProbeFromNTuples(
+    tag_n_probe_leg2 = DoubleElePt_CaloIdL_MW_UnseededLeg(
         fileset,
-        "passHltDoubleEle33CaloIdLMWUnsLeg",
+        trigger_pt=33,
+        from_ntuples=True,
+        tags_pt_cut=35,
         probes_pt_cut=5,
-        cutbased_id="passingCutBasedTight122XV1",
-        goldenjson=None,
+        use_sc_eta=False,
         avoid_ecal_transition_tags=False,
     )
 
@@ -224,20 +231,22 @@ def test_distributed_compute(do_preprocess, allow_read_errors_with_report):
             )
             fileset = fileset_available
 
-    tag_n_probe_leg1 = TagNProbeFromNTuples(
+    tag_n_probe_leg1 = DoubleElePt_CaloIdL_MW_SeededLeg(
         fileset,
-        "passHltDoubleEle33CaloIdLMWSeedLegL1match",
+        trigger_pt=33,
+        from_ntuples=True,
+        tags_pt_cut=35,
         probes_pt_cut=5,
-        cutbased_id="passingCutBasedTight122XV1",
-        goldenjson=None,
+        use_sc_eta=False,
         avoid_ecal_transition_tags=False,
     )
-    tag_n_probe_leg2 = TagNProbeFromNTuples(
+    tag_n_probe_leg2 = DoubleElePt_CaloIdL_MW_UnseededLeg(
         fileset,
-        "passHltDoubleEle33CaloIdLMWUnsLeg",
+        trigger_pt=33,
+        from_ntuples=True,
+        tags_pt_cut=35,
         probes_pt_cut=5,
-        cutbased_id="passingCutBasedTight122XV1",
-        goldenjson=None,
+        use_sc_eta=False,
         avoid_ecal_transition_tags=False,
     )
 

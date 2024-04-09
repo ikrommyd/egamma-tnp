@@ -351,7 +351,7 @@ class ElePt1_ElePt2_CaloIdL_TrackIdL_IsoVL_Leg2:
                 filter=f"passHltEle{trigger_pt1}Ele{trigger_pt2}CaloIdLTrackIdLIsoVLLeg2",
                 tags_pt_cut=tags_pt_cut,
                 probes_pt_cut=probes_pt_cut,
-                tags_abseta_cut=2,
+                tags_abseta_cut=2.5,
                 cutbased_id="passingCutBasedTight122XV1",
                 goldenjson=goldenjson,
                 extra_filter=extra_filter,
@@ -371,7 +371,7 @@ class ElePt1_ElePt2_CaloIdL_TrackIdL_IsoVL_Leg2:
                 trigger_pt=trigger_pt2,
                 tags_pt_cut=tags_pt_cut,
                 probes_pt_cut=probes_pt_cut,
-                tags_abseta_cut=2,
+                tags_abseta_cut=2.5,
                 filterbit=5,
                 cutbased_id=4,
                 goldenjson=goldenjson,
@@ -573,3 +573,5 @@ class DoubleElePt_CaloIdL_MW_UnseededLeg:
                 avoid_ecal_transition_probes=avoid_ecal_transition_probes,
                 hlt_filter=f"DoubleEle{trigger_pt}_CaloIdL_MW",
             )
+
+        return instance

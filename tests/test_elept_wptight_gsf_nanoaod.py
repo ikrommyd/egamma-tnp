@@ -37,6 +37,7 @@ def test_without_compute(do_preprocess, allow_read_errors_with_report):
     tag_n_probe = ElePt_WPTight_Gsf(
         fileset,
         32,
+        probes_pt_cut=29,
         avoid_ecal_transition_tags=True,
         avoid_ecal_transition_probes=True,
         goldenjson=None,
@@ -111,6 +112,7 @@ def test_local_compute(do_preprocess, allow_read_errors_with_report):
     tag_n_probe = ElePt_WPTight_Gsf(
         fileset,
         32,
+        probes_pt_cut=29,
         avoid_ecal_transition_tags=True,
         avoid_ecal_transition_probes=True,
         goldenjson=None,
@@ -193,6 +195,7 @@ def test_distributed_compute(do_preprocess, allow_read_errors_with_report):
     tag_n_probe = ElePt_WPTight_Gsf(
         fileset,
         32,
+        probes_pt_cut=29,
         avoid_ecal_transition_tags=True,
         avoid_ecal_transition_probes=True,
         goldenjson=None,

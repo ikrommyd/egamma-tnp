@@ -12,6 +12,13 @@ class ElePt_WPTight_Gsf:
             The Pt threshold of the trigger.
         from_ntuples : bool, optional
             Whether the fileset is E/Gamma NTuples or NanoAOD. The default is False.
+        tags_pt_cut: int or float, optional
+            The Pt cut to apply to the tag electrons. The default is 30.
+        probes_pt_cut: int or float, optional
+            The Pt threshold of the probe electron to calculate efficiencies over that threshold. The default is 27.
+            Should be very slightly below the Pt threshold of the filter.
+            If it is None, it will attempt to infer it from the filter name.
+            If it fails to do so, it will set it to 0.
         use_sc_eta : bool, optional
             Use the supercluster Eta instead of the Eta from the primary vertex. The default is False.
         use_sc_phi : bool, optional
@@ -35,6 +42,8 @@ class ElePt_WPTight_Gsf:
         trigger_pt,
         *,
         from_ntuples=False,
+        tags_pt_cut=30,
+        probes_pt_cut=27,
         use_sc_eta=False,
         use_sc_phi=False,
         avoid_ecal_transition_tags=True,
@@ -49,8 +58,8 @@ class ElePt_WPTight_Gsf:
                 instance,
                 fileset=fileset,
                 filter=f"passHltEle{trigger_pt}WPTightGsf",
-                tags_pt_cut=30,
-                probes_pt_cut=trigger_pt - 3,
+                tags_pt_cut=tags_pt_cut,
+                probes_pt_cut=probes_pt_cut,
                 tags_abseta_cut=2.5,
                 cutbased_id="passingCutBasedTight122XV1",
                 goldenjson=goldenjson,
@@ -69,8 +78,8 @@ class ElePt_WPTight_Gsf:
                 filter=f"passHltEle{trigger_pt}WPTightGsf",
                 for_trigger=True,
                 trigger_pt=trigger_pt,
-                tags_pt_cut=30,
-                probes_pt_cut=trigger_pt - 3,
+                tags_pt_cut=tags_pt_cut,
+                probes_pt_cut=probes_pt_cut,
                 tags_abseta_cut=2.5,
                 filterbit=1,
                 cutbased_id=4,
@@ -98,6 +107,13 @@ class ElePt_CaloIdVT_GsfTrkIdT:
             The Pt threshold of the trigger.
         from_ntuples : bool, optional
             Whether the fileset is E/Gamma NTuples or NanoAOD. The default is False.
+        tags_pt_cut: int or float, optional
+            The Pt cut to apply to the tag electrons. The default is 30.
+        probes_pt_cut: int or float, optional
+            The Pt threshold of the probe electron to calculate efficiencies over that threshold. The default is 112.
+            Should be very slightly below the Pt threshold of the filter.
+            If it is None, it will attempt to infer it from the filter name.
+            If it fails to do so, it will set it to 0.
         use_sc_eta : bool, optional
             Use the supercluster Eta instead of the Eta from the primary vertex. The default is False.
         use_sc_phi : bool, optional
@@ -121,6 +137,8 @@ class ElePt_CaloIdVT_GsfTrkIdT:
         trigger_pt,
         *,
         from_ntuples=False,
+        tags_pt_cut=30,
+        probes_pt_cut=112,
         use_sc_eta=False,
         use_sc_phi=False,
         avoid_ecal_transition_tags=True,
@@ -135,8 +153,8 @@ class ElePt_CaloIdVT_GsfTrkIdT:
                 instance,
                 fileset=fileset,
                 filter=f"passHltEle{trigger_pt}CaloIdVTGsfTrkIdTGsf",
-                tags_pt_cut=30,
-                probes_pt_cut=trigger_pt - 3,
+                tags_pt_cut=tags_pt_cut,
+                probes_pt_cut=probes_pt_cut,
                 tags_abseta_cut=2.5,
                 cutbased_id="passingCutBasedTight122XV1",
                 goldenjson=goldenjson,
@@ -155,8 +173,8 @@ class ElePt_CaloIdVT_GsfTrkIdT:
                 filter=f"passHltEle{trigger_pt}CaloIdVTGsfTrkIdTGsf",
                 for_trigger=True,
                 trigger_pt=trigger_pt,
-                tags_pt_cut=30,
-                probes_pt_cut=trigger_pt - 3,
+                tags_pt_cut=tags_pt_cut,
+                probes_pt_cut=probes_pt_cut,
                 tags_abseta_cut=2.5,
                 filterbit=11,
                 cutbased_id=4,
@@ -186,6 +204,13 @@ class ElePt1_ElePt2_CaloIdL_TrackIdL_IsoVL_Leg1:
             The Pt threshold of the low-Pt leg of the trigger.
         from_ntuples : bool, optional
             Whether the fileset is E/Gamma NTuples or NanoAOD. The default is False.
+        tags_pt_cut: int or float, optional
+            The Pt cut to apply to the tag electrons. The default is 30.
+        probes_pt_cut: int or float, optional
+            The Pt threshold of the probe electron to calculate efficiencies over that threshold. The default is 20.
+            Should be very slightly below the Pt threshold of the filter.
+            If it is None, it will attempt to infer it from the filter name.
+            If it fails to do so, it will set it to 0.
         use_sc_eta : bool, optional
             Use the supercluster Eta instead of the Eta from the primary vertex. The default is False.
         use_sc_phi : bool, optional
@@ -210,6 +235,8 @@ class ElePt1_ElePt2_CaloIdL_TrackIdL_IsoVL_Leg1:
         trigger_pt2,
         *,
         from_ntuples=False,
+        tags_pt_cut=30,
+        probes_pt_cut=20,
         use_sc_eta=False,
         use_sc_phi=False,
         avoid_ecal_transition_tags=True,
@@ -224,8 +251,8 @@ class ElePt1_ElePt2_CaloIdL_TrackIdL_IsoVL_Leg1:
                 instance,
                 fileset=fileset,
                 filter=f"passHltEle{trigger_pt1}Ele{trigger_pt2}CaloIdLTrackIdLIsoVLLeg1L1match",
-                tags_pt_cut=30,
-                probes_pt_cut=trigger_pt1 - 3,
+                tags_pt_cut=tags_pt_cut,
+                probes_pt_cut=probes_pt_cut,
                 tags_abseta_cut=2.5,
                 cutbased_id="passingCutBasedTight122XV1",
                 goldenjson=goldenjson,
@@ -244,8 +271,8 @@ class ElePt1_ElePt2_CaloIdL_TrackIdL_IsoVL_Leg1:
                 filter=f"passHltEle{trigger_pt1}Ele{trigger_pt2}CaloIdLTrackIdLIsoVLLeg1L1match",
                 for_trigger=True,
                 trigger_pt=trigger_pt1,
-                tags_pt_cut=30,
-                probes_pt_cut=trigger_pt1 - 3,
+                tags_pt_cut=tags_pt_cut,
+                probes_pt_cut=probes_pt_cut,
                 tags_abseta_cut=2.5,
                 filterbit=4,
                 cutbased_id=4,
@@ -275,6 +302,13 @@ class ElePt1_ElePt2_CaloIdL_TrackIdL_IsoVL_Leg2:
             The Pt threshold of the low-Pt leg of the trigger.
         from_ntuples : bool, optional
             Whether the fileset is E/Gamma NTuples or NanoAOD. The default is False.
+        tags_pt_cut: int or float, optional
+            The Pt cut to apply to the tag electrons. The default is 30.
+        probes_pt_cut: int or float, optional
+            The Pt threshold of the probe electron to calculate efficiencies over that threshold. The default is 9.
+            Should be very slightly below the Pt threshold of the filter.
+            If it is None, it will attempt to infer it from the filter name.
+            If it fails to do so, it will set it to 0.
         use_sc_eta : bool, optional
             Use the supercluster Eta instead of the Eta from the primary vertex. The default is False.
         use_sc_phi : bool, optional
@@ -299,6 +333,8 @@ class ElePt1_ElePt2_CaloIdL_TrackIdL_IsoVL_Leg2:
         trigger_pt2,
         *,
         from_ntuples=False,
+        tags_pt_cut=30,
+        probes_pt_cut=9,
         use_sc_eta=False,
         use_sc_phi=False,
         avoid_ecal_transition_tags=True,
@@ -313,8 +349,8 @@ class ElePt1_ElePt2_CaloIdL_TrackIdL_IsoVL_Leg2:
                 instance,
                 fileset=fileset,
                 filter=f"passHltEle{trigger_pt1}Ele{trigger_pt2}CaloIdLTrackIdLIsoVLLeg2",
-                tags_pt_cut=30,
-                probes_pt_cut=trigger_pt2 - 3,
+                tags_pt_cut=tags_pt_cut,
+                probes_pt_cut=probes_pt_cut,
                 tags_abseta_cut=2,
                 cutbased_id="passingCutBasedTight122XV1",
                 goldenjson=goldenjson,
@@ -333,8 +369,8 @@ class ElePt1_ElePt2_CaloIdL_TrackIdL_IsoVL_Leg2:
                 filter=f"passHltEle{trigger_pt1}Ele{trigger_pt2}CaloIdLTrackIdLIsoVLLeg2",
                 for_trigger=True,
                 trigger_pt=trigger_pt2,
-                tags_pt_cut=30,
-                probes_pt_cut=trigger_pt2 - 3,
+                tags_pt_cut=tags_pt_cut,
+                probes_pt_cut=probes_pt_cut,
                 tags_abseta_cut=2,
                 filterbit=5,
                 cutbased_id=4,
@@ -362,6 +398,13 @@ class DoubleElePt_CaloIdL_MW_SeededLeg:
             The Pt threshold of the trigger.
         from_ntuples : bool, optional
             Whether the fileset is E/Gamma NTuples or NanoAOD. The default is False.
+        tags_pt_cut: int or float, optional
+            The Pt cut to apply to the tag electrons. The default is 35.
+        probes_pt_cut: int or float, optional
+            The Pt threshold of the probe electron to calculate efficiencies over that threshold. The default is 30.
+            Should be very slightly below the Pt threshold of the filter.
+            If it is None, it will attempt to infer it from the filter name.
+            If it fails to do so, it will set it to 0.
         use_sc_eta : bool, optional
             Use the supercluster Eta instead of the Eta from the primary vertex. The default is False.
         use_sc_phi : bool, optional
@@ -385,6 +428,8 @@ class DoubleElePt_CaloIdL_MW_SeededLeg:
         trigger_pt,
         *,
         from_ntuples=False,
+        tags_pt_cut=35,
+        probes_pt_cut=30,
         use_sc_eta=False,
         use_sc_phi=False,
         avoid_ecal_transition_tags=True,
@@ -399,8 +444,8 @@ class DoubleElePt_CaloIdL_MW_SeededLeg:
                 instance,
                 fileset=fileset,
                 filter=f"passHltDoubleEle{trigger_pt}CaloIdLMWSeedLegL1match",
-                tags_pt_cut=35,
-                probes_pt_cut=trigger_pt - 3,
+                tags_pt_cut=tags_pt_cut,
+                probes_pt_cut=probes_pt_cut,
                 tags_abseta_cut=2.5,
                 cutbased_id="passingCutBasedTight122XV1",
                 goldenjson=goldenjson,
@@ -419,8 +464,8 @@ class DoubleElePt_CaloIdL_MW_SeededLeg:
                 filter=f"passHltDoubleEle{trigger_pt}CaloIdLMWSeedLegL1match",
                 for_trigger=True,
                 trigger_pt=trigger_pt,
-                tags_pt_cut=35,
-                probes_pt_cut=trigger_pt - 3,
+                tags_pt_cut=tags_pt_cut,
+                probes_pt_cut=probes_pt_cut,
                 tags_abseta_cut=2.5,
                 filterbit=15,
                 cutbased_id=4,
@@ -448,6 +493,13 @@ class DoubleElePt_CaloIdL_MW_UnseededLeg:
             The Pt threshold of the trigger.
         from_ntuples : bool, optional
             Whether the fileset is E/Gamma NTuples or NanoAOD. The default is False.
+        tags_pt_cut: int or float, optional
+            The Pt cut to apply to the tag electrons. The default is 35.
+        probes_pt_cut: int or float, optional
+            The Pt threshold of the probe electron to calculate efficiencies over that threshold. The default is 30.
+            Should be very slightly below the Pt threshold of the filter.
+            If it is None, it will attempt to infer it from the filter name.
+            If it fails to do so, it will set it to 0.
         use_sc_eta : bool, optional
             Use the supercluster Eta instead of the Eta from the primary vertex. The default is False.
         use_sc_phi : bool, optional
@@ -471,6 +523,8 @@ class DoubleElePt_CaloIdL_MW_UnseededLeg:
         trigger_pt,
         *,
         from_ntuples=False,
+        tags_pt_cut=35,
+        probes_pt_cut=30,
         use_sc_eta=False,
         use_sc_phi=False,
         avoid_ecal_transition_tags=True,
@@ -485,8 +539,8 @@ class DoubleElePt_CaloIdL_MW_UnseededLeg:
                 instance,
                 fileset=fileset,
                 filter=f"passHltDoubleEle{trigger_pt}CaloIdLMWUnsLeg",
-                tags_pt_cut=35,
-                probes_pt_cut=trigger_pt - 3,
+                tags_pt_cut=tags_pt_cut,
+                probes_pt_cut=probes_pt_cut,
                 tags_abseta_cut=2.5,
                 cutbased_id="passingCutBasedTight122XV1",
                 goldenjson=goldenjson,
@@ -505,8 +559,8 @@ class DoubleElePt_CaloIdL_MW_UnseededLeg:
                 filter=f"passHltDoubleEle{trigger_pt}CaloIdLMWUnsLeg",
                 for_trigger=True,
                 trigger_pt=trigger_pt,
-                tags_pt_cut=35,
-                probes_pt_cut=trigger_pt - 3,
+                tags_pt_cut=tags_pt_cut,
+                probes_pt_cut=probes_pt_cut,
                 tags_abseta_cut=2.5,
                 filterbit=16,
                 cutbased_id=4,

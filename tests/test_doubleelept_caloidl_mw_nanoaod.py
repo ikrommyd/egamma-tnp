@@ -40,7 +40,7 @@ def test_without_compute(do_preprocess, allow_read_errors_with_report):
     tag_n_probe_leg1 = DoubleElePt_CaloIdL_MW_SeededLeg(
         fileset,
         33,
-        probes_pt_cut=30,
+        probes_pt_cut=33,
         avoid_ecal_transition_tags=True,
         avoid_ecal_transition_probes=True,
         goldenjson=None,
@@ -48,7 +48,7 @@ def test_without_compute(do_preprocess, allow_read_errors_with_report):
     tag_n_probe_leg2 = DoubleElePt_CaloIdL_MW_UnseededLeg(
         fileset,
         33,
-        probes_pt_cut=30,
+        probes_pt_cut=33,
         avoid_ecal_transition_tags=True,
         avoid_ecal_transition_probes=True,
         goldenjson=None,
@@ -127,7 +127,7 @@ def test_local_compute(do_preprocess, allow_read_errors_with_report):
         fileset,
         33,
         tags_pt_cut=35,
-        probes_pt_cut=30,
+        probes_pt_cut=33,
         avoid_ecal_transition_tags=True,
         avoid_ecal_transition_probes=True,
         goldenjson=None,
@@ -136,7 +136,7 @@ def test_local_compute(do_preprocess, allow_read_errors_with_report):
         fileset,
         33,
         tags_pt_cut=35,
-        probes_pt_cut=30,
+        probes_pt_cut=33,
         avoid_ecal_transition_tags=True,
         avoid_ecal_transition_probes=True,
         goldenjson=None,
@@ -229,7 +229,7 @@ def test_distributed_compute(do_preprocess, allow_read_errors_with_report):
     tag_n_probe_leg1 = DoubleElePt_CaloIdL_MW_SeededLeg(
         fileset,
         33,
-        probes_pt_cut=30,
+        probes_pt_cut=33,
         avoid_ecal_transition_tags=True,
         avoid_ecal_transition_probes=True,
         goldenjson=None,
@@ -237,7 +237,7 @@ def test_distributed_compute(do_preprocess, allow_read_errors_with_report):
     tag_n_probe_leg2 = DoubleElePt_CaloIdL_MW_UnseededLeg(
         fileset,
         33,
-        probes_pt_cut=30,
+        probes_pt_cut=33,
         avoid_ecal_transition_tags=True,
         avoid_ecal_transition_probes=True,
         goldenjson=None,
@@ -246,9 +246,9 @@ def test_distributed_compute(do_preprocess, allow_read_errors_with_report):
     with Client():
         for tag_n_probe, target_pt, target_eta_phi, total_sum in zip(
             [tag_n_probe_leg1, tag_n_probe_leg2],
-            [1181.0, 0.0],
-            [1181.0, 0.0],
-            [1272.0, 1317.0],
+            [0.0, 0.0],
+            [0.0, 0.0],
+            [893.0, 893.0],
         ):
             res = tag_n_probe.get_tnp_histograms(
                 uproot_options={

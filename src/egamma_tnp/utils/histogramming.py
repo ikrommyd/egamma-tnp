@@ -42,7 +42,7 @@ def get_ratio_histogram(
     return ratio, yerr
 
 
-def fill_cutncount_histograms(
+def fill_1d_cutncount_histograms(
     passing_probes,
     failing_probes,
     plateau_cut=None,
@@ -55,6 +55,10 @@ def fill_cutncount_histograms(
 
     Parameters
     ----------
+        passing_probes : awkward.Array or dask_awkward.Array
+            An array with fields `pt`, `eta`, and `phi` of the passing probes.
+        failing_probes : awkward.Array or dask_awkward.Array
+            An array with fields `pt`, `eta`, and `phi` of the failing probes.
         plateau_cut : int or float, optional
             The Pt threshold to use to ensure that we are on the efficiency plateau for eta and phi histograms.
             The default None, meaning that no extra cut is applied and the activation region is included in those histograms.
@@ -183,7 +187,7 @@ def fill_cutncount_histograms(
     return histograms
 
 
-def fill_mll_histograms(
+def fill_2d_mll_histograms(
     passing_probes,
     failing_probes,
     plateau_cut=None,
@@ -196,6 +200,10 @@ def fill_mll_histograms(
 
     Parameters
     ----------
+        passing_probes : awkward.Array or dask_awkward.Array
+            An array with fields `pt`, `eta`, and `phi` of the passing probes.
+        failing_probes : awkward.Array or dask_awkward.Array
+            An array with fields `pt`, `eta`, and `phi` of the failing probes.
         plateau_cut : int or float, optional
             The Pt threshold to use to ensure that we are on the efficiency plateau for eta and phi histograms.
             The default None, meaning that no extra cut is applied and the activation region is included in those histograms.
@@ -334,6 +342,130 @@ def fill_mll_histograms(
         histograms["phi"][name_phi] = {"passing": hphi_pass, "failing": hphi_fail}
 
     return histograms
+
+
+def fill_3d_cutncount_histograms(
+    passing_probes,
+    failing_probes,
+    delayed=True,
+):
+    """Get the 3D (Pt, Eta, Phi) histogram of the passing and failing probes.
+
+    Parameters
+    ----------
+        passing_probes : awkward.Array or dask_awkward.Array
+            An array with fields `pt`, `eta`, and `phi` of the passing probes.
+        failing_probes : awkward.Array or dask_awkward.Array
+            An array with fields `pt`, `eta`, and `phi` of the failing probes.
+        delayed : bool, optional
+            Whether the probes arrays are delayed (dask-awkward) or not.
+            The default is True.
+
+    Returns
+    -------
+        hpass : hist.Hist or hist.dask.Hist
+            A 3D histogram with axes (Pt, Eta, Phi) of the passing probes.
+        hfail : hist.Hist
+            A 3D histogram with axes (Pt, Eta, Phi) of the failing probes.
+    """
+
+    import hist
+
+    if delayed:
+        from hist.dask import Hist
+    else:
+        from hist import Hist
+
+    import egamma_tnp
+
+    ptbins = egamma_tnp.config.get("ptbins")
+    etabins = egamma_tnp.config.get("etabins")
+    phibins = egamma_tnp.config.get("phibins")
+
+    hpass = Hist(
+        hist.axis.Variable(ptbins, name="pt", label="Pt [GeV]"),
+        hist.axis.Variable(etabins, name="eta", label="eta"),
+        hist.axis.Variable(phibins, name="phi", label="phi"),
+    )
+
+    hfail = Hist(
+        hist.axis.Variable(ptbins, name="pt", label="Pt [GeV]"),
+        hist.axis.Variable(etabins, name="eta", label="eta"),
+        hist.axis.Variable(phibins, name="phi", label="phi"),
+    )
+
+    hpass.fill(passing_probes.pt, passing_probes.eta, passing_probes.phi)
+    hfail.fill(failing_probes.pt, failing_probes.eta, failing_probes.phi)
+
+    return hpass, hfail
+
+
+def fill_4d_mll_histograms(
+    passing_probes,
+    failing_probes,
+    delayed=True,
+):
+    """Get the 4D (Pt, Eta, Phi, mll) histogram of the passing and failing probes.
+
+    Parameters
+    ----------
+        passing_probes : awkward.Array or dask_awkward.Array
+            An array with fields `pt`, `eta`, `phi` and `pair_mass` of the passing probes.
+        failing_probes : awkward.Array or dask_awkward.Array
+            An array with fields `pt`, `eta`, `phi` and `pair_mass` of the failing probes.
+        delayed : bool, optional
+            Whether the probes arrays are delayed (dask-awkward) or not.
+            The default is True.
+
+    Returns
+    -------
+        hpass : hist.Hist or hist.dask.Hist
+            A 4D histogram with axes (Pt, Eta, Phi, mll) of the passing probes.
+        hfail : hist.Hist
+            A 4D histogram with axes (Pt, Eta, Phi, mll) of the failing probes.
+    """
+    import hist
+
+    if delayed:
+        from hist.dask import Hist
+    else:
+        from hist import Hist
+
+    import egamma_tnp
+
+    ptbins = egamma_tnp.config.get("ptbins")
+    etabins = egamma_tnp.config.get("etabins")
+    phibins = egamma_tnp.config.get("phibins")
+    mllbins = egamma_tnp.config.get("mllbins")
+
+    hpass = Hist(
+        hist.axis.Variable(ptbins, name="pt", label="Pt [GeV]"),
+        hist.axis.Variable(etabins, name="eta", label="eta"),
+        hist.axis.Variable(phibins, name="phi", label="phi"),
+        hist.axis.Variable(mllbins, name="mll", label="mll [GeV]"),
+    )
+
+    hfail = Hist(
+        hist.axis.Variable(ptbins, name="pt", label="Pt [GeV]"),
+        hist.axis.Variable(etabins, name="eta", label="eta"),
+        hist.axis.Variable(phibins, name="phi", label="phi"),
+        hist.axis.Variable(mllbins, name="mll", label="mll [GeV]"),
+    )
+
+    hpass.fill(
+        passing_probes.pt,
+        passing_probes.eta,
+        passing_probes.phi,
+        passing_probes.pair_mass,
+    )
+    hfail.fill(
+        failing_probes.pt,
+        failing_probes.eta,
+        failing_probes.phi,
+        failing_probes.pair_mass,
+    )
+
+    return hpass, hfail
 
 
 def save_hists(path, res):

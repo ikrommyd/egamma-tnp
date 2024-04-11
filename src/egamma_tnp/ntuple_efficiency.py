@@ -361,10 +361,10 @@ class TagNProbeFromNTuples:
         eta_regions_eta,
         eta_regions_phi,
     ):
-        from egamma_tnp.utils import fill_cutncount_histograms
+        from egamma_tnp.utils import fill_1d_cutncount_histograms
 
         passing_probes, failing_probes = self._find_probes(events, cut_and_count=True)
-        return fill_cutncount_histograms(
+        return fill_1d_cutncount_histograms(
             passing_probes,
             failing_probes,
             plateau_cut=plateau_cut,
@@ -381,10 +381,10 @@ class TagNProbeFromNTuples:
         eta_regions_eta,
         eta_regions_phi,
     ):
-        from egamma_tnp.utils import fill_mll_histograms
+        from egamma_tnp.utils import fill_2d_mll_histograms
 
         passing_probes, failing_probes = self._find_probes(events, cut_and_count=False)
-        return fill_mll_histograms(
+        return fill_2d_mll_histograms(
             passing_probes,
             failing_probes,
             plateau_cut=plateau_cut,

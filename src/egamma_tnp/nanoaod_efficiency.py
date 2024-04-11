@@ -147,7 +147,7 @@ class TagNProbeFromNanoAOD:
         WARNING: Not recommended to be used for large datasets as the arrays can be very large.
 
         Parameters
-        ----------
+        ----------nan
             cut_and_count: bool, optional
                 Whether to use the cut and count method to find the probes coming from a Z boson.
                 If False, invariant mass histograms of the tag-probe pairs will be filled to be fit by a Signal+Background model.
@@ -440,10 +440,10 @@ class TagNProbeFromNanoAOD:
         eta_regions_eta,
         eta_regions_phi,
     ):
-        from egamma_tnp.utils import fill_cutncount_histograms
+        from egamma_tnp.utils import fill_1d_cutncount_histograms
 
         passing_probes, failing_probes = self._find_probes(events, cut_and_count=True)
-        return fill_cutncount_histograms(
+        return fill_1d_cutncount_histograms(
             passing_probes,
             failing_probes,
             plateau_cut=plateau_cut,
@@ -460,10 +460,10 @@ class TagNProbeFromNanoAOD:
         eta_regions_eta,
         eta_regions_phi,
     ):
-        from egamma_tnp.utils import fill_mll_histograms
+        from egamma_tnp.utils import fill_2d_mll_histograms
 
         passing_probes, failing_probes = self._find_probes(events, cut_and_count=False)
-        return fill_mll_histograms(
+        return fill_2d_mll_histograms(
             passing_probes,
             failing_probes,
             plateau_cut=plateau_cut,

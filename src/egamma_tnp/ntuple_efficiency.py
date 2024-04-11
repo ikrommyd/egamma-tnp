@@ -165,6 +165,7 @@ class TagNProbeFromNTuples:
     def get_tnp_histograms(
         self,
         cut_and_count=True,
+        dimension="1D",
         plateau_cut=None,
         eta_regions_pt=None,
         eta_regions_eta=None,
@@ -183,6 +184,8 @@ class TagNProbeFromNTuples:
                 Whether to use the cut and count method to find the probes coming from a Z boson.
                 If False, invariant mass histograms of the tag-probe pairs will be filled to be fit by a Signal+Background model.
                 The default is True.
+            dimension: str, optional
+                The dimension of the histograms to fill. Can be either "1D" or "3D" for cut and count method or "2D" or "4D" for invariant mass method.
             plateau_cut : int or float, optional
                 The Pt threshold to use to ensure that we are on the efficiency plateau for eta and phi histograms.
                 The default None, meaning that no extra cut is applied and the activation region is included in those histograms.
@@ -232,6 +235,7 @@ class TagNProbeFromNTuples:
         if cut_and_count:
             data_manipulation = partial(
                 self._make_cutncount_histograms,
+                dimension=dimension,
                 plateau_cut=plateau_cut,
                 eta_regions_pt=eta_regions_pt,
                 eta_regions_eta=eta_regions_eta,
@@ -240,6 +244,7 @@ class TagNProbeFromNTuples:
         else:
             data_manipulation = partial(
                 self._make_mll_histograms,
+                dimension=dimension,
                 plateau_cut=plateau_cut,
                 eta_regions_pt=eta_regions_pt,
                 eta_regions_eta=eta_regions_eta,
@@ -356,39 +361,70 @@ class TagNProbeFromNTuples:
     def _make_cutncount_histograms(
         self,
         events,
+        dimension,
         plateau_cut,
         eta_regions_pt,
         eta_regions_eta,
         eta_regions_phi,
     ):
-        from egamma_tnp.utils import fill_1d_cutncount_histograms
+        from egamma_tnp.utils import (
+            fill_1d_cutncount_histograms,
+            fill_3d_cutncount_histograms,
+        )
 
         passing_probes, failing_probes = self._find_probes(events, cut_and_count=True)
-        return fill_1d_cutncount_histograms(
-            passing_probes,
-            failing_probes,
-            plateau_cut=plateau_cut,
-            eta_regions_pt=eta_regions_pt,
-            eta_regions_eta=eta_regions_eta,
-            eta_regions_phi=eta_regions_phi,
-        )
+
+        if dimension == "1D":
+            return fill_1d_cutncount_histograms(
+                passing_probes,
+                failing_probes,
+                plateau_cut=plateau_cut,
+                eta_regions_pt=eta_regions_pt,
+                eta_regions_eta=eta_regions_eta,
+                eta_regions_phi=eta_regions_phi,
+            )
+        elif dimension == "3D":
+            return fill_3d_cutncount_histograms(
+                passing_probes,
+                failing_probes,
+                plateau_cut=plateau_cut,
+                eta_regions_pt=eta_regions_pt,
+                eta_regions_eta=eta_regions_eta,
+                eta_regions_phi=eta_regions_phi,
+            )
+        else:
+            raise ValueError("Dimension must be either '1D' or '3D'.")
 
     def _make_mll_histograms(
         self,
         events,
+        dimension,
         plateau_cut,
         eta_regions_pt,
         eta_regions_eta,
         eta_regions_phi,
     ):
-        from egamma_tnp.utils import fill_2d_mll_histograms
+        from egamma_tnp.utils import fill_2d_mll_histograms, fill_4d_mll_histograms
 
         passing_probes, failing_probes = self._find_probes(events, cut_and_count=False)
-        return fill_2d_mll_histograms(
-            passing_probes,
-            failing_probes,
-            plateau_cut=plateau_cut,
-            eta_regions_pt=eta_regions_pt,
-            eta_regions_eta=eta_regions_eta,
-            eta_regions_phi=eta_regions_phi,
-        )
+
+        if dimension == "2D":
+            return fill_2d_mll_histograms(
+                passing_probes,
+                failing_probes,
+                plateau_cut=plateau_cut,
+                eta_regions_pt=eta_regions_pt,
+                eta_regions_eta=eta_regions_eta,
+                eta_regions_phi=eta_regions_phi,
+            )
+        elif dimension == "4D":
+            return fill_4d_mll_histograms(
+                passing_probes,
+                failing_probes,
+                plateau_cut=plateau_cut,
+                eta_regions_pt=eta_regions_pt,
+                eta_regions_eta=eta_regions_eta,
+                eta_regions_phi=eta_regions_phi,
+            )
+        else:
+            raise ValueError("Dimension must be either '2D' or '4D'.")

@@ -363,6 +363,8 @@ def fill_3d_cutncount_histograms(
 
     Returns
     -------
+        histograms: dict
+        A dict of the form {"passing": hpass, "failing": hfail} where
         hpass : hist.Hist or hist.dask.Hist
             A 3D histogram with axes (Pt, Eta, Phi) of the passing probes.
         hfail : hist.Hist
@@ -397,7 +399,7 @@ def fill_3d_cutncount_histograms(
     hpass.fill(passing_probes.pt, passing_probes.eta, passing_probes.phi)
     hfail.fill(failing_probes.pt, failing_probes.eta, failing_probes.phi)
 
-    return hpass, hfail
+    return {"passing": hpass, "failing": hfail}
 
 
 def fill_4d_mll_histograms(
@@ -419,6 +421,8 @@ def fill_4d_mll_histograms(
 
     Returns
     -------
+        histograms: dict
+        A dict of the form {"passing": hpass, "failing": hfail} where
         hpass : hist.Hist or hist.dask.Hist
             A 4D histogram with axes (Pt, Eta, Phi, mll) of the passing probes.
         hfail : hist.Hist
@@ -465,7 +469,7 @@ def fill_4d_mll_histograms(
         failing_probes.pair_mass,
     )
 
-    return hpass, hfail
+    return {"passing": hpass, "failing": hfail}
 
 
 def save_hists(path, res):

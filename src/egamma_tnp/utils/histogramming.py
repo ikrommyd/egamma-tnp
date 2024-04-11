@@ -440,20 +440,19 @@ def fill_4d_mll_histograms(
     ptbins = egamma_tnp.config.get("ptbins")
     etabins = egamma_tnp.config.get("etabins")
     phibins = egamma_tnp.config.get("phibins")
-    mllbins = egamma_tnp.config.get("mllbins")
 
     hpass = Hist(
         hist.axis.Variable(ptbins, name="pt", label="Pt [GeV]"),
         hist.axis.Variable(etabins, name="eta", label="eta"),
         hist.axis.Variable(phibins, name="phi", label="phi"),
-        hist.axis.Variable(mllbins, name="mll", label="mll [GeV]"),
+        hist.axis.Regular(80, 50, 130, name="mll", label="mll [GeV]"),
     )
 
     hfail = Hist(
         hist.axis.Variable(ptbins, name="pt", label="Pt [GeV]"),
         hist.axis.Variable(etabins, name="eta", label="eta"),
         hist.axis.Variable(phibins, name="phi", label="phi"),
-        hist.axis.Variable(mllbins, name="mll", label="mll [GeV]"),
+        hist.axis.Regular(80, 50, 130, name="mll", label="mll [GeV]"),
     )
 
     hpass.fill(

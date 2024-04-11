@@ -3,16 +3,22 @@ import uproot
 from hist import intervals
 
 
-def get_ratio_histogram(passing_probes, failing_probes):
-    """Get the ratio (efficiency) of the passing and all probes histograms.
+def get_ratio_histogram(
+    passing_probes, failing_or_all_probes, denominator_type="failing"
+):
+    """Get the ratio (efficiency) of the passing over passing + failing probes.
     NaN values are replaced with 0.
 
     Parameters
     ----------
         passing_probes : hist.Hist
             The histogram of the passing probes.
-        failing_probes : hist.Hist
-            The histogram of failing probes.
+        failing_or_all_probes : hist.Hist
+            The histogram of the failing or passing + failing probes.
+        denominator_type : str, optional
+            The type of the denominator histogram.
+            Can be either "failing" or "all".
+            The default is "failing".
 
     Returns
     -------
@@ -21,7 +27,12 @@ def get_ratio_histogram(passing_probes, failing_probes):
         yerr : numpy.ndarray
             The y error of the ratio histogram.
     """
-    all_probes = passing_probes + failing_probes
+    if denominator_type == "failing":
+        all_probes = passing_probes + failing_or_all_probes
+    elif denominator_type == "all":
+        all_probes = failing_or_all_probes
+    else:
+        raise ValueError("Invalid denominator type. Must be either 'failing' or 'all'.")
     ratio = passing_probes / all_probes
     ratio[:] = np.nan_to_num(ratio.values())
     yerr = intervals.ratio_uncertainty(

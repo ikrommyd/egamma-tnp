@@ -23,15 +23,21 @@ def _save_and_close(fig, path, close_figure):
         plt.close(fig)
 
 
-def plot_efficiency(passing_probes, all_probes, **kwargs):
-    """Plot the efficiency using the ratio of passing probes to all probes.
+def plot_efficiency(
+    passing_probes, failing_or_all_probes, denominator_type="failing", **kwargs
+):
+    """Plot the efficiency using the ratio of passing to passing + failing probes.
 
     Parameters
     ----------
         passing_probes : hist.Hist
             The histogram of the passing probes.
-        all_probes : hist.Hist
-            The histogram of all probes.
+        failing_or_all_probes : hist.Hist
+            The histogram of the failing or passing + failing probes.
+        denominator_type : str, optional
+            The type of the denominator histogram.
+            Can be either "failing" or "all".
+            The default is "failing".
         **kwargs
             Keyword arguments to pass to hist.Hist.plot1d.
 
@@ -40,7 +46,9 @@ def plot_efficiency(passing_probes, all_probes, **kwargs):
         List[Hist1DArtists]
 
     """
-    ratio_hist, yerr = get_ratio_histogram(passing_probes, all_probes)
+    ratio_hist, yerr = get_ratio_histogram(
+        passing_probes, failing_or_all_probes, denominator_type
+    )
 
     return ratio_hist.plot1d(
         histtype="errorbar", yerr=yerr, xerr=True, flow="none", **kwargs
@@ -49,11 +57,12 @@ def plot_efficiency(passing_probes, all_probes, **kwargs):
 
 def plot_ratio(
     passing_probes1,
-    all_probes1,
+    failing_or_all_probes1,
     passing_probes2,
-    all_probes2,
+    failing_or_all_probes2,
     label1,
     label2,
+    denominator_type="failing",
     *,
     plottype="pt_low_threshold",
     figure_path=None,
@@ -72,12 +81,12 @@ def plot_ratio(
     ----------
         passing_probes1 : hist.Hist
             The histogram of the passing probes for the first efficiency.
-        all_probes1 : hist.Hist
-            The histogram of all probes for the first efficiency.
+        failing_or_all_probes1 : hist.Hist
+            The histogram of the failing or passing + failing probes for the first efficiency.
         passing_probes2 : hist.Hist
             The histogram of the passing probes for the second efficiency.
-        all_probes2 : hist.Hist
-            The histogram of all probes for the second efficiency.
+        failing_or_all_probes2 : hist.Hist
+            The histogram of the failing or passing + failing probes for the second efficiency.
         label1 : str
             The label for the first efficiency.
         label2 : str
@@ -154,11 +163,16 @@ def plot_ratio(
     ax1 = fig.add_subplot(gs[0])
     ax2 = fig.add_subplot(gs[1])
 
-    eff1, efferr1 = get_ratio_histogram(passing_probes1, all_probes1)
-    eff2, efferr2 = get_ratio_histogram(passing_probes2, all_probes2)
+    eff1, efferr1 = get_ratio_histogram(
+        passing_probes1, failing_or_all_probes1, denominator_type
+    )
+    eff2, efferr2 = get_ratio_histogram(
+        passing_probes2, failing_or_all_probes2, denominator_type
+    )
     plot_efficiency(
         passing_probes1,
-        all_probes1,
+        failing_or_all_probes1,
+        denominator_type,
         label=label1,
         ax=ax1,
         x_axes_label=None,
@@ -166,7 +180,8 @@ def plot_ratio(
     )
     plot_efficiency(
         passing_probes2,
-        all_probes2,
+        failing_or_all_probes2,
+        denominator_type,
         label=label2,
         ax=ax1,
         x_axes_label=None,

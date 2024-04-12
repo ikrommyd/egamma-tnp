@@ -525,26 +525,24 @@ def _convert_4d_mll_hist_to_1d_hists(h4d, axes):
         cut_parts = []
         title_parts = []
 
-        # Reverse the axes for constructing details
-        reversed_axes = list(reversed(axes))
-
-        # Construct details using the reversed order
-        for ax, idx in zip(reversed_axes, reversed(idx_combination)):
+        # Construct details using the given order
+        for ax, idx in zip(axes, idx_combination):
             min_edge = h.axes[ax].edges[idx]
             max_edge = h.axes[ax].edges[idx + 1]
             vars_details[ax] = {"min": min_edge, "max": max_edge}
             cut_parts.append(f"{ax} >= {min_edge:.6f} && {ax} < {max_edge:.6f}")
             title_parts.append(f"{min_edge:.3f} < {ax} < {max_edge:.3f}")
 
-        # Key should be constructed in reversed order using the original format_edge for key consistency
+        # Key should be constructed in the order given using the _format_edge for key consistency
         key = "_".join(
             f"{ax}_{_format_edge(vars_details[ax]['min'])}To{_format_edge(vars_details[ax]['max'])}"
-            for ax in reversed_axes
+            for ax in axes
         )
 
         # Correcting slice indices using original axis ordering
-        slice_indices = [idx_combination[axes.index(ax)] for ax in axes] + [slice(None)]
-        histograms[key] = h[tuple(slice_indices)]
+        slice_indices = {ax: idx_combination[axes.index(ax)] for ax in axes}
+        slice_indices["mll"] = slice(None)
+        histograms[key] = h[slice_indices]
 
         # Create the dictionary for this bin
         bin_name = f"bin{str(counter).zfill(zfill_length)}_{key}"
@@ -556,7 +554,7 @@ def _convert_4d_mll_hist_to_1d_hists(h4d, axes):
         bin_info_list.append(bin_details)
         counter += 1
 
-    bining = {"bins": bin_info_list, "vars": reversed_axes}
+    bining = {"bins": bin_info_list, "vars": axes}
 
     return histograms, bining
 

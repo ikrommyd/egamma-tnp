@@ -191,8 +191,9 @@ def plot_ratio(
     num = eff1.values()
     denom = eff2.values()
     denom[denom == 0.0] = 1
-    ratio = num / denom
-    ratioyerr = np.sqrt((efferr1 / num) ** 2 + (efferr2 / denom) ** 2) * ratio
+    with np.errstate(divide="ignore", invalid="ignore"):
+        ratio = num / denom
+        ratioyerr = np.sqrt((efferr1 / num) ** 2 + (efferr2 / denom) ** 2) * ratio
     ratioxerr = passing_probes1.axes.widths[0] / 2
     ax2.errorbar(centers, ratio, ratioyerr, ratioxerr, **effratio_kwargs)
     ax2.axhline(1, color="k", linestyle="--", linewidth=1)

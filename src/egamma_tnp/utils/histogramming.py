@@ -33,7 +33,8 @@ def get_ratio_histogram(
         all_probes = failing_or_all_probes
     else:
         raise ValueError("Invalid denominator type. Must be either 'failing' or 'all'.")
-    ratio = passing_probes / all_probes
+    with np.errstate(divide="ignore", invalid="ignore"):
+        ratio = passing_probes / all_probes
     ratio[:] = np.nan_to_num(ratio.values())
     yerr = intervals.ratio_uncertainty(
         passing_probes.values(), all_probes.values(), uncertainty_type="efficiency"

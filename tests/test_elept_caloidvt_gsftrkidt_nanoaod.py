@@ -59,12 +59,18 @@ def test_without_compute(do_preprocess, allow_read_errors_with_report):
     heta_pass, heta_fail = histograms["eta"]["entire"].values()
     hphi_pass, hphi_fail = histograms["phi"]["entire"].values()
 
-    assert hpt_pass_barrel.sum(flow=True) + hpt_pass_endcap.sum(flow=True) == 0.0
-    assert hpt_fail_barrel.sum(flow=True) + hpt_fail_endcap.sum(flow=True) == 0.0
-    assert heta_pass.sum(flow=True) == 0.0
-    assert heta_fail.sum(flow=True) == 0.0
-    assert hphi_pass.sum(flow=True) == 0.0
-    assert hphi_fail.sum(flow=True) == 0.0
+    assert (
+        hpt_pass_barrel.sum(flow=True).value + hpt_pass_endcap.sum(flow=True).value
+        == 0.0
+    )
+    assert (
+        hpt_fail_barrel.sum(flow=True).value + hpt_fail_endcap.sum(flow=True).value
+        == 0.0
+    )
+    assert heta_pass.sum(flow=True).value == 0.0
+    assert heta_fail.sum(flow=True).value == 0.0
+    assert hphi_pass.sum(flow=True).value == 0.0
+    assert hphi_fail.sum(flow=True).value == 0.0
 
     assert (
         hpt_pass_barrel.values(flow=True)[0] + hpt_pass_endcap.values(flow=True)[0]
@@ -136,12 +142,18 @@ def test_local_compute(do_preprocess, allow_read_errors_with_report):
     heta_pass, heta_fail = histograms["eta"]["entire"].values()
     hphi_pass, hphi_fail = histograms["phi"]["entire"].values()
 
-    assert hpt_pass_barrel.sum(flow=True) + hpt_pass_endcap.sum(flow=True) == 3.0
-    assert hpt_fail_barrel.sum(flow=True) + hpt_fail_endcap.sum(flow=True) == 3.0 - 3.0
-    assert heta_pass.sum(flow=True) == 3.0
-    assert heta_fail.sum(flow=True) == 3.0 - 3.0
-    assert hphi_pass.sum(flow=True) == 3.0
-    assert hphi_fail.sum(flow=True) == 3.0 - 3.0
+    assert (
+        hpt_pass_barrel.sum(flow=True).value + hpt_pass_endcap.sum(flow=True).value
+        == 3.0
+    )
+    assert (
+        hpt_fail_barrel.sum(flow=True).value + hpt_fail_endcap.sum(flow=True).value
+        == 3.0 - 3.0
+    )
+    assert heta_pass.sum(flow=True).value == 3.0
+    assert heta_fail.sum(flow=True).value == 3.0 - 3.0
+    assert hphi_pass.sum(flow=True).value == 3.0
+    assert hphi_fail.sum(flow=True).value == 3.0 - 3.0
 
     assert (
         hpt_pass_barrel.values(flow=True)[0] + hpt_pass_endcap.values(flow=True)[0]
@@ -218,14 +230,18 @@ def test_distributed_compute(do_preprocess, allow_read_errors_with_report):
         heta_pass, heta_fail = histograms["eta"]["entire"].values()
         hphi_pass, hphi_fail = histograms["phi"]["entire"].values()
 
-        assert hpt_pass_barrel.sum(flow=True) + hpt_pass_endcap.sum(flow=True) == 3.0
         assert (
-            hpt_fail_barrel.sum(flow=True) + hpt_fail_endcap.sum(flow=True) == 3.0 - 3.0
+            hpt_pass_barrel.sum(flow=True).value + hpt_pass_endcap.sum(flow=True).value
+            == 3.0
         )
-        assert heta_pass.sum(flow=True) == 3.0
-        assert heta_fail.sum(flow=True) == 3.0 - 3.0
-        assert hphi_pass.sum(flow=True) == 3.0
-        assert hphi_fail.sum(flow=True) == 3.0 - 3.0
+        assert (
+            hpt_fail_barrel.sum(flow=True).value + hpt_fail_endcap.sum(flow=True).value
+            == 3.0 - 3.0
+        )
+        assert heta_pass.sum(flow=True).value == 3.0
+        assert heta_fail.sum(flow=True).value == 3.0 - 3.0
+        assert hphi_pass.sum(flow=True).value == 3.0
+        assert hphi_fail.sum(flow=True).value == 3.0 - 3.0
 
         assert (
             hpt_pass_barrel.values(flow=True)[0] + hpt_pass_endcap.values(flow=True)[0]

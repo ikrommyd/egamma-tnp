@@ -138,10 +138,12 @@ def fill_1d_cutncount_histograms(
             abs(eta_fail) < region_pt[1]
         )
         hpt_pass = Hist(
-            hist.axis.Variable(ptbins, name=f"hpt_{name_pt}", label="Pt [GeV]")
+            hist.axis.Variable(ptbins, name=f"hpt_{name_pt}", label="Pt [GeV]"),
+            storage=hist.storage.Weight(),
         )
         hpt_fail = Hist(
-            hist.axis.Variable(ptbins, name=f"hpt_{name_pt}", label="Pt [GeV]")
+            hist.axis.Variable(ptbins, name=f"hpt_{name_pt}", label="Pt [GeV]"),
+            storage=hist.storage.Weight(),
         )
         hpt_pass.fill(pt_pass[eta_mask_pt_pass])
         hpt_fail.fill(pt_fail[eta_mask_pt_fail])
@@ -156,10 +158,12 @@ def fill_1d_cutncount_histograms(
             abs(eta_fail) < region_eta[1]
         )
         heta_pass = Hist(
-            hist.axis.Variable(etabins, name=f"heta_{name_eta}", label="eta")
+            hist.axis.Variable(etabins, name=f"heta_{name_eta}", label="eta"),
+            storage=hist.storage.Weight(),
         )
         heta_fail = Hist(
-            hist.axis.Variable(etabins, name=f"heta_{name_eta}", label="eta")
+            hist.axis.Variable(etabins, name=f"heta_{name_eta}", label="eta"),
+            storage=hist.storage.Weight(),
         )
         heta_pass.fill(eta_pass[plateau_mask_pass & eta_mask_eta_pass])
         heta_fail.fill(eta_fail[plateau_mask_fail & eta_mask_eta_fail])
@@ -174,10 +178,12 @@ def fill_1d_cutncount_histograms(
             abs(eta_fail) < region_phi[1]
         )
         hphi_pass = Hist(
-            hist.axis.Variable(phibins, name=f"hphi_{name_phi}", label="phi")
+            hist.axis.Variable(phibins, name=f"hphi_{name_phi}", label="phi"),
+            storage=hist.storage.Weight(),
         )
         hphi_fail = Hist(
-            hist.axis.Variable(phibins, name=f"hphi_{name_phi}", label="phi")
+            hist.axis.Variable(phibins, name=f"hphi_{name_phi}", label="phi"),
+            storage=hist.storage.Weight(),
         )
         hphi_pass.fill(phi_pass[plateau_mask_pass & eta_mask_phi_pass])
         hphi_fail.fill(phi_fail[plateau_mask_fail & eta_mask_phi_fail])
@@ -287,10 +293,12 @@ def fill_2d_mll_histograms(
         hpt_pass = Hist(
             hist.axis.Variable(ptbins, name=f"hpt_{name_pt}", label="Pt [GeV]"),
             hist.axis.Regular(80, 50, 130, name="mll", label="mll [GeV]"),
+            storage=hist.storage.Weight(),
         )
         hpt_fail = Hist(
             hist.axis.Variable(ptbins, name=f"hpt_{name_pt}", label="Pt [GeV]"),
             hist.axis.Regular(80, 50, 130, name="mll", label="mll [GeV]"),
+            storage=hist.storage.Weight(),
         )
         hpt_pass.fill(pt_pass[eta_mask_pt_pass], mll_pass[eta_mask_pt_pass])
         hpt_fail.fill(pt_fail[eta_mask_pt_fail], mll_fail[eta_mask_pt_fail])
@@ -307,10 +315,12 @@ def fill_2d_mll_histograms(
         heta_pass = Hist(
             hist.axis.Variable(etabins, name=f"heta_{name_eta}", label="eta"),
             hist.axis.Regular(80, 50, 130, name="mll", label="mll [GeV]"),
+            storage=hist.storage.Weight(),
         )
         heta_fail = Hist(
             hist.axis.Variable(etabins, name=f"heta_{name_eta}", label="eta"),
             hist.axis.Regular(80, 50, 130, name="mll", label="mll [GeV]"),
+            storage=hist.storage.Weight(),
         )
         eta_mask_pass = plateau_mask_pass & eta_mask_eta_pass
         eta_mask_fail = plateau_mask_fail & eta_mask_eta_fail
@@ -329,10 +339,12 @@ def fill_2d_mll_histograms(
         hphi_pass = Hist(
             hist.axis.Variable(phibins, name=f"hphi_{name_phi}", label="phi"),
             hist.axis.Regular(80, 50, 130, name="mll", label="mll [GeV]"),
+            storage=hist.storage.Weight(),
         )
         hphi_fail = Hist(
             hist.axis.Variable(phibins, name=f"hphi_{name_phi}", label="phi"),
             hist.axis.Regular(80, 50, 130, name="mll", label="mll [GeV]"),
+            storage=hist.storage.Weight(),
         )
         phi_mask_pass = plateau_mask_pass & eta_mask_phi_pass
         phi_mask_fail = plateau_mask_fail & eta_mask_phi_fail
@@ -388,12 +400,14 @@ def fill_3d_cutncount_histograms(
         hist.axis.Variable(ptbins, name="pt", label="Pt [GeV]"),
         hist.axis.Variable(etabins, name="eta", label="eta"),
         hist.axis.Variable(phibins, name="phi", label="phi"),
+        storage=hist.storage.Weight(),
     )
 
     hfail = Hist(
         hist.axis.Variable(ptbins, name="pt", label="Pt [GeV]"),
         hist.axis.Variable(etabins, name="eta", label="eta"),
         hist.axis.Variable(phibins, name="phi", label="phi"),
+        storage=hist.storage.Weight(),
     )
 
     hpass.fill(passing_probes.pt, passing_probes.eta, passing_probes.phi)
@@ -446,6 +460,7 @@ def fill_4d_mll_histograms(
         hist.axis.Variable(etabins, name="eta", label="eta"),
         hist.axis.Variable(phibins, name="phi", label="phi"),
         hist.axis.Regular(80, 50, 130, name="mll", label="mll [GeV]"),
+        storage=hist.storage.Weight(),
     )
 
     hfail = Hist(
@@ -453,6 +468,7 @@ def fill_4d_mll_histograms(
         hist.axis.Variable(etabins, name="eta", label="eta"),
         hist.axis.Variable(phibins, name="phi", label="phi"),
         hist.axis.Regular(80, 50, 130, name="mll", label="mll [GeV]"),
+        storage=hist.storage.Weight(),
     )
 
     hpass.fill(
@@ -469,6 +485,161 @@ def fill_4d_mll_histograms(
     )
 
     return {"passing": hpass, "failing": hfail}
+
+
+# Function to convert edge value to string format for keys
+def _format_edge(value):
+    prefix = "m" if value < 0 else ""
+    formatted = f"{prefix}{abs(value):.2f}".replace(".", "p")
+    return formatted
+
+
+def _convert_4d_mll_hist_to_1d_hists(h4d, axes):
+    import itertools
+
+    import hist
+
+    # Initialize the slicer to keep specified axes and sum over the others except 'mll'
+    s = hist.tag.Slicer()
+    slice_dict = {
+        ax.name: s[:] if ax.name in axes or ax.name == "mll" else s[sum]
+        for ax in h4d.axes
+    }
+
+    # Apply slicing to obtain the relevant projection while keeping 'mll' intact
+    h = h4d[slice_dict]
+
+    # Dictionary to hold all 1D histograms
+    histograms = {}
+    # List to hold all dictionaries for each bin
+    bin_info_list = []
+
+    # Generate all combinations of specified axes except 'mll'
+    total_bins = np.prod([h.axes[ax].size for ax in axes])
+    zfill_length = len(str(total_bins))
+    counter = 0
+    for idx_combination in itertools.product(*(range(h.axes[ax].size) for ax in axes)):
+        bin_details = {}
+        vars_details = {}
+        cut_parts = []
+        title_parts = []
+
+        # Reverse the axes for constructing details
+        reversed_axes = list(reversed(axes))
+
+        # Construct details using the reversed order
+        for ax, idx in zip(reversed_axes, reversed(idx_combination)):
+            min_edge = h.axes[ax].edges[idx]
+            max_edge = h.axes[ax].edges[idx + 1]
+            vars_details[ax] = {"min": min_edge, "max": max_edge}
+            cut_parts.append(f"{ax} >= {min_edge:.6f} && {ax} < {max_edge:.6f}")
+            title_parts.append(f"{min_edge:.3f} < {ax} < {max_edge:.3f}")
+
+        # Key should be constructed in reversed order using the original format_edge for key consistency
+        key = "_".join(
+            f"{ax}_{_format_edge(vars_details[ax]['min'])}To{_format_edge(vars_details[ax]['max'])}"
+            for ax in reversed_axes
+        )
+
+        # Correcting slice indices using original axis ordering
+        slice_indices = [idx_combination[axes.index(ax)] for ax in axes] + [slice(None)]
+        histograms[key] = h[tuple(slice_indices)]
+
+        # Create the dictionary for this bin
+        bin_name = f"bin{str(counter).zfill(zfill_length)}_{key}"
+        bin_details["cut"] = " && ".join(cut_parts)
+        bin_details["name"] = bin_name
+        bin_details["vars"] = vars_details
+        bin_details["title"] = "; " + "; ".join(title_parts)
+
+        bin_info_list.append(bin_details)
+        counter += 1
+
+    bining = {"bins": bin_info_list, "vars": reversed_axes}
+
+    return histograms, bining
+
+
+def convert_4d_mll_hists_to_1d_hists(hists, axes=None):
+    """Convert 4D (Pt, Eta, Phi, mll) histograms to 1D histograms.
+    This will create a 1D histogram for each pair of bins in the specified axes.
+    If you have `npt` bins in Pt, `neta` bins in Eta, and `nphi` bins in Phi,
+    then you will get `npt x neta x nphi` 1D histograms.
+    If a variable is not specified in the axes, then it will be summed over.
+    For instance if you specify only `pt` and `eta`, then the 1D histograms will be
+    created for each pair of Pt and Eta bins, summed over all Phi bins, so `npt x neta` histograms.
+
+    Parameters
+    ----------
+        hists : dict
+            A dictionary of the form {"passing": hpass, "failing": hfail}
+            where hpass and hfail are 4D histograms with axes (Pt, Eta, Phi, mll).
+        axes : list, optional
+            A list of the axes to keep in the 1D histograms.
+            The default is ["pt", "eta"].
+
+    Returns
+    -------
+        histograms : dict
+            A dictionary of the form {"passing": hpass, "failing": hfail}
+            where hpass and hfail are dictionaries of 1D histograms.
+            The keys are the bin combinations of the specified axes
+            and the values are the 1D histograms for each bin combination.
+        bining : dict
+            A dictionary with the binning information.
+    """
+    if axes is None:
+        axes = ["pt", "eta"]
+    histograms = {}
+    for key, h4d in hists.items():
+        hists, binning = _convert_4d_mll_hist_to_1d_hists(h4d, axes=axes)
+        histograms[key] = hists
+
+    return histograms, binning
+
+
+def create_hists_root_file_for_fitter(hists, root_path, bining_path, axes=None):
+    """Create a ROOT file with 1D histograms of passing and failing probes.
+    To be used as input to the fitter.
+
+    Parameters
+    ----------
+        path : str
+            The path to the ROOT file.
+        hists : dict
+            A dictionary of the form {"passing": hpass, "failing": hfail}
+            where hpass and hfail are 4D histograms with axes (Pt, Eta, Phi, mll).
+        axes : list, optional
+            A list of the axes to keep in the 1D histograms.
+            The default is ["pt", "eta"].
+    """
+    import pickle
+
+    import uproot
+
+    if axes is None:
+        axes = ["pt", "eta"]
+
+    histograms, bining = convert_4d_mll_hists_to_1d_hists(hists, axes=axes)
+    passing_hists = histograms["passing"]
+    failing_hists = histograms["failing"]
+
+    if passing_hists.keys() != failing_hists.keys():
+        raise ValueError("Passing and failing histograms must have the same binning.")
+
+    names = list(passing_hists.keys())
+    max_number = len(str(len(names)))
+
+    with uproot.recreate(root_path) as f:
+        counter = 0
+        for name in names:
+            counter_str = str(counter).zfill(max_number)
+            f[f"bin{counter_str}_{name}_Pass"] = passing_hists[name]
+            f[f"bin{counter_str}_{name}_Fail"] = failing_hists[name]
+            counter += 1
+
+    with open(bining_path, "wb") as f:
+        pickle.dump(bining, f)
 
 
 def save_hists(path, res):

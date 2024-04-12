@@ -604,11 +604,13 @@ def create_hists_root_file_for_fitter(hists, root_path, bining_path, axes=None):
 
     Parameters
     ----------
-        path : str
-            The path to the ROOT file.
         hists : dict
             A dictionary of the form {"passing": hpass, "failing": hfail}
             where hpass and hfail are 4D histograms with axes (Pt, Eta, Phi, mll).
+        root_path : str
+            The path to the ROOT file.
+        bining_path : str
+            The path to the pickle file with the binning information.
         axes : list, optional
             A list of the axes to keep in the 1D histograms.
             The default is ["pt", "eta"].

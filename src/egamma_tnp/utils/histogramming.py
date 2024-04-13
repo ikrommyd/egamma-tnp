@@ -139,11 +139,11 @@ def fill_1d_cutncount_histograms(
             abs(eta_fail) < region_pt[1]
         )
         hpt_pass = Hist(
-            hist.axis.Variable(ptbins, name=f"hpt_{name_pt}", label="Pt [GeV]"),
+            hist.axis.Variable(ptbins, name="pt", label="Pt [GeV]"),
             storage=hist.storage.Weight(),
         )
         hpt_fail = Hist(
-            hist.axis.Variable(ptbins, name=f"hpt_{name_pt}", label="Pt [GeV]"),
+            hist.axis.Variable(ptbins, name="pt", label="Pt [GeV]"),
             storage=hist.storage.Weight(),
         )
         hpt_pass.fill(pt_pass[eta_mask_pt_pass])
@@ -159,11 +159,11 @@ def fill_1d_cutncount_histograms(
             abs(eta_fail) < region_eta[1]
         )
         heta_pass = Hist(
-            hist.axis.Variable(etabins, name=f"heta_{name_eta}", label="eta"),
+            hist.axis.Variable(etabins, name="eta", label="eta"),
             storage=hist.storage.Weight(),
         )
         heta_fail = Hist(
-            hist.axis.Variable(etabins, name=f"heta_{name_eta}", label="eta"),
+            hist.axis.Variable(etabins, name="eta", label="eta"),
             storage=hist.storage.Weight(),
         )
         heta_pass.fill(eta_pass[plateau_mask_pass & eta_mask_eta_pass])
@@ -179,11 +179,11 @@ def fill_1d_cutncount_histograms(
             abs(eta_fail) < region_phi[1]
         )
         hphi_pass = Hist(
-            hist.axis.Variable(phibins, name=f"hphi_{name_phi}", label="phi"),
+            hist.axis.Variable(phibins, name="phi", label="phi"),
             storage=hist.storage.Weight(),
         )
         hphi_fail = Hist(
-            hist.axis.Variable(phibins, name=f"hphi_{name_phi}", label="phi"),
+            hist.axis.Variable(phibins, name="phi", label="phi"),
             storage=hist.storage.Weight(),
         )
         hphi_pass.fill(phi_pass[plateau_mask_pass & eta_mask_phi_pass])
@@ -292,12 +292,12 @@ def fill_2d_mll_histograms(
             abs(eta_fail) < region_pt[1]
         )
         hpt_pass = Hist(
-            hist.axis.Variable(ptbins, name=f"hpt_{name_pt}", label="Pt [GeV]"),
+            hist.axis.Variable(ptbins, name="pt", label="Pt [GeV]"),
             hist.axis.Regular(80, 50, 130, name="mll", label="mll [GeV]"),
             storage=hist.storage.Weight(),
         )
         hpt_fail = Hist(
-            hist.axis.Variable(ptbins, name=f"hpt_{name_pt}", label="Pt [GeV]"),
+            hist.axis.Variable(ptbins, name="pt", label="Pt [GeV]"),
             hist.axis.Regular(80, 50, 130, name="mll", label="mll [GeV]"),
             storage=hist.storage.Weight(),
         )
@@ -314,12 +314,12 @@ def fill_2d_mll_histograms(
             abs(eta_fail) < region_eta[1]
         )
         heta_pass = Hist(
-            hist.axis.Variable(etabins, name=f"heta_{name_eta}", label="eta"),
+            hist.axis.Variable(etabins, name="eta", label="eta"),
             hist.axis.Regular(80, 50, 130, name="mll", label="mll [GeV]"),
             storage=hist.storage.Weight(),
         )
         heta_fail = Hist(
-            hist.axis.Variable(etabins, name=f"heta_{name_eta}", label="eta"),
+            hist.axis.Variable(etabins, name="eta", label="eta"),
             hist.axis.Regular(80, 50, 130, name="mll", label="mll [GeV]"),
             storage=hist.storage.Weight(),
         )
@@ -338,12 +338,12 @@ def fill_2d_mll_histograms(
             abs(eta_fail) < region_phi[1]
         )
         hphi_pass = Hist(
-            hist.axis.Variable(phibins, name=f"hphi_{name_phi}", label="phi"),
+            hist.axis.Variable(phibins, name="phi", label="phi"),
             hist.axis.Regular(80, 50, 130, name="mll", label="mll [GeV]"),
             storage=hist.storage.Weight(),
         )
         hphi_fail = Hist(
-            hist.axis.Variable(phibins, name=f"hphi_{name_phi}", label="phi"),
+            hist.axis.Variable(phibins, name="phi", label="phi"),
             hist.axis.Regular(80, 50, 130, name="mll", label="mll [GeV]"),
             storage=hist.storage.Weight(),
         )
@@ -495,6 +495,34 @@ def _format_edge(value):
     return formatted
 
 
+# We could have used the function right below to convert 2D histograms to 1D histograms
+# with just using axes=[the name of the x axis] but I prefer this easier approach for now.
+# It makes debugging easier and it is more explicit
+def _convert_2d_mll_hist_to_1d_hists(h2d):
+    histograms = {}
+    bin_info_list = []
+    ax = h2d.axes.name[0]
+
+    for idx in range(h2d.axes[0].size):
+        min_edge = h2d.axes[0].edges[idx]
+        max_edge = h2d.axes[0].edges[idx + 1]
+        key = f"{ax}_{_format_edge(min_edge)}To{_format_edge(max_edge)}"
+        histograms[key] = h2d[{ax: idx}]
+        bin_name = f"bin{idx}_{key}"
+        bin_info_list.append(
+            {
+                "cut": f"{ax} >= {min_edge:.6f} && {ax} < {max_edge:.6f}",
+                "name": bin_name,
+                "vars": {ax: {"min": min_edge, "max": max_edge}},
+                "title": f"; {min_edge:.3f} < {ax} < {max_edge:.3f}",
+            }
+        )
+
+    bining = {"bins": bin_info_list, "vars": [ax]}
+
+    return histograms, bining
+
+
 def _convert_4d_mll_hist_to_1d_hists(h4d, axes):
     import itertools
 
@@ -559,6 +587,36 @@ def _convert_4d_mll_hist_to_1d_hists(h4d, axes):
     return histograms, bining
 
 
+def convert_2d_mll_hists_to_1d_hists(hist_dict):
+    """Convert 2D (var, mll) histogram dict to 1D histograms.
+    This will create a 1D histogram for each bin in the x-axis of the 2D histograms.
+
+    Parameters
+    ----------
+        hist_dict : dict
+            A dictionary of the form {"var": {"region": {"passing": hist.Hist, "failing": hist.Hist}, ...}, ...}
+            where each hist.Hist is a 2D histogram with axes (var, mll).
+    Returns
+    -------
+        histograms : dict
+            A dictionary of the form {"var": {"region": {"passing": {bin_name: hist.Hist, ...}, "failing": {bin_name: hist.Hist, ...}, "bining": bining}, ...}, ...}
+    """
+    histograms = {}  # Create a new dictionary instead of modifying the original
+    for var, region_dict in hist_dict.items():
+        histograms[var] = {}  # Initialize var dictionary
+        for region_name, hists in region_dict.items():
+            histograms[var][region_name] = {}  # Initialize region dictionary
+            for histname, h in hists.items():
+                hs, bining = _convert_2d_mll_hist_to_1d_hists(h)
+                histograms[var][region_name][histname] = (
+                    hs  # Populate with new histograms
+                )
+                histograms[var][region_name]["bining"] = (
+                    bining  # Set bining for this region
+                )
+    return histograms
+
+
 def convert_4d_mll_hists_to_1d_hists(hists, axes=None):
     """Convert 4D (Pt, Eta, Phi, mll) histograms to 1D histograms.
     This will create a 1D histogram for each pair of bins in the specified axes.
@@ -589,6 +647,9 @@ def convert_4d_mll_hists_to_1d_hists(hists, axes=None):
     """
     if axes is None:
         axes = ["pt", "eta"]
+    if len(set(axes)) != len(axes):
+        raise ValueError("All axes must be unique.")
+
     histograms = {}
     for key, h4d in hists.items():
         hists, binning = _convert_4d_mll_hist_to_1d_hists(h4d, axes=axes)
@@ -604,7 +665,8 @@ def create_hists_root_file_for_fitter(hists, root_path, bining_path, axes=None):
     Parameters
     ----------
         hists : dict
-            A dictionary of the form {"passing": hpass, "failing": hfail}
+            Either a dictionary of 2D histograms of the form {"var": {"region": {"passing": hist.Hist, "failing": hist.Hist}, ...}, ...}
+            or a dictionary of 4D histograms of the form {"passing": hpass, "failing": hfail}.
             where hpass and hfail are 4D histograms with axes (Pt, Eta, Phi, mll).
         root_path : str
             The path to the ROOT file.
@@ -613,6 +675,12 @@ def create_hists_root_file_for_fitter(hists, root_path, bining_path, axes=None):
         axes : list, optional
             A list of the axes to keep in the 1D histograms.
             The default is ["pt", "eta"].
+
+        Notes
+        -----
+            If the input is a dictionary of 2D histograms, then multiple ROOT files and binning files will be created,
+            one for each variable and region present in the input.
+            For each variable and region present, a trailing `_<var>_<region>.root` and `_<var>_<region>.pkl` will be added to the root_path and bining_path respectively.
     """
     import pickle
 
@@ -620,27 +688,55 @@ def create_hists_root_file_for_fitter(hists, root_path, bining_path, axes=None):
 
     if axes is None:
         axes = ["pt", "eta"]
+    if len(set(axes)) != len(axes):
+        raise ValueError("All axes must be unique.")
 
-    histograms, bining = convert_4d_mll_hists_to_1d_hists(hists, axes=axes)
-    passing_hists = histograms["passing"]
-    failing_hists = histograms["failing"]
+    if isinstance(hists, dict) and "passing" in hists and "failing" in hists:
+        histograms, bining = convert_4d_mll_hists_to_1d_hists(hists, axes=axes)
+        passing_hists = histograms["passing"]
+        failing_hists = histograms["failing"]
 
-    if passing_hists.keys() != failing_hists.keys():
-        raise ValueError("Passing and failing histograms must have the same binning.")
+        if passing_hists.keys() != failing_hists.keys():
+            raise ValueError(
+                "Passing and failing histograms must have the same binning."
+            )
 
-    names = list(passing_hists.keys())
-    max_number = len(str(len(names)))
+        names = list(passing_hists.keys())
+        max_number = len(str(len(names)))
 
-    with uproot.recreate(root_path) as f:
-        counter = 0
-        for name in names:
-            counter_str = str(counter).zfill(max_number)
-            f[f"bin{counter_str}_{name}_Pass"] = passing_hists[name]
-            f[f"bin{counter_str}_{name}_Fail"] = failing_hists[name]
-            counter += 1
+        with uproot.recreate(root_path) as f:
+            counter = 0
+            for name in names:
+                counter_str = str(counter).zfill(max_number)
+                f[f"bin{counter_str}_{name}_Pass"] = passing_hists[name]
+                f[f"bin{counter_str}_{name}_Fail"] = failing_hists[name]
+                counter += 1
 
-    with open(bining_path, "wb") as f:
-        pickle.dump(bining, f)
+        with open(bining_path, "wb") as f:
+            pickle.dump(bining, f)
+
+    else:
+        histograms = convert_2d_mll_hists_to_1d_hists(hists)
+        for var, region_dict in histograms.items():
+            for region_name, hists in region_dict.items():
+                new_path = root_path.replace(".root", f"_{var}_{region_name}.root")
+                new_bining_path = bining_path.replace(
+                    ".pkl", f"_{var}_{region_name}.pkl"
+                )
+                with uproot.recreate(new_path) as f:
+                    passing_hists = hists["passing"]
+                    failing_hists = hists["failing"]
+                    names = list(passing_hists.keys())
+                    max_number = len(str(len(names)))
+                    counter = 0
+                    for name in names:
+                        counter_str = str(counter).zfill(max_number)
+                        f[f"bin{counter_str}_{name}_Pass"] = passing_hists[name]
+                        f[f"bin{counter_str}_{name}_Fail"] = failing_hists[name]
+                        counter += 1
+
+                with open(new_bining_path, "wb") as f:
+                    pickle.dump(hists["bining"], f)
 
 
 def save_hists(path, res):

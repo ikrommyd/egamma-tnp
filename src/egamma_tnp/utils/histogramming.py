@@ -547,7 +547,11 @@ def _convert_4d_mll_hist_to_1d_hists(h4d, axes):
     total_bins = np.prod([h.axes[ax].size for ax in axes])
     zfill_length = len(str(total_bins))
     counter = 0
-    for idx_combination in itertools.product(*(range(h.axes[ax].size) for ax in axes)):
+    axes_reversed = axes[::-1]
+    for reversed_idx_combination in itertools.product(
+        *(range(h.axes[ax].size) for ax in axes_reversed)
+    ):
+        idx_combination = reversed_idx_combination[::-1]
         bin_details = {}
         vars_details = {}
         cut_parts = []

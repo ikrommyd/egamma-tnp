@@ -43,7 +43,7 @@ def get_ratio_histogram(
     return ratio, yerr
 
 
-def fill_1d_cutncount_histograms(
+def fill_pt_eta_phi_cutncount_histograms(
     passing_probes,
     failing_probes,
     plateau_cut=None,
@@ -194,7 +194,7 @@ def fill_1d_cutncount_histograms(
     return histograms
 
 
-def fill_2d_mll_histograms(
+def fill_pt_eta_phi_mll_histograms(
     passing_probes,
     failing_probes,
     plateau_cut=None,
@@ -357,32 +357,40 @@ def fill_2d_mll_histograms(
     return histograms
 
 
-def fill_3d_cutncount_histograms(
+def fill_nd_cutncount_histograms(
     passing_probes,
     failing_probes,
+    vars=None,
     delayed=True,
 ):
-    """Get the 3D (Pt, Eta, Phi) histogram of the passing and failing probes.
+    """
+    Get the N-dimensional histogram of the passing and failing probes.
+    The histogram will have axes for each variable specified in `vars`.
 
     Parameters
     ----------
         passing_probes : awkward.Array or dask_awkward.Array
-            An array with fields `pt`, `eta`, and `phi` of the passing probes.
+            An array with the fields specified in `vars` of the passing probes.
         failing_probes : awkward.Array or dask_awkward.Array
-            An array with fields `pt`, `eta`, and `phi` of the failing probes.
+            An array with the fields specified in `vars` of the failing probes.
+        vars : list, optional
+            A list of the fields to use as axes in the histogram.
+            The default is ["pt", "eta", "phi"].
         delayed : bool, optional
             Whether the probes arrays are delayed (dask-awkward) or not.
             The default is True.
 
     Returns
     -------
-        histograms: dict
-        A dict of the form {"passing": hpass, "failing": hfail} where
+        histograms : dict
+        A dictionary of the form {"passing": hpass, "failing": hfail} where
         hpass : hist.Hist or hist.dask.Hist
-            A 3D histogram with axes (Pt, Eta, Phi) of the passing probes.
+            An N-dimensional histogram of the passing probes.
         hfail : hist.Hist
-            A 3D histogram with axes (Pt, Eta, Phi) of the failing probes.
+            An N-dimensional histogram of the failing probes.
     """
+    if vars is None:
+        vars = ["pt", "eta", "phi"]
 
     import hist
 
@@ -393,56 +401,66 @@ def fill_3d_cutncount_histograms(
 
     import egamma_tnp
 
-    ptbins = egamma_tnp.config.get("ptbins")
-    etabins = egamma_tnp.config.get("etabins")
-    phibins = egamma_tnp.config.get("phibins")
+    if any(egamma_tnp.config.get(f"{var}bins") is None for var in vars):
+        raise ValueError(
+            """
+            One or more variables do not have binning information.
+            Please define the bining information using `egamma_tnp.config.set`.
+            The variable names in the configuration json should be in the form of `"{var}bins"`.
+            """
+        )
 
-    hpass = Hist(
-        hist.axis.Variable(ptbins, name="pt", label="Pt [GeV]"),
-        hist.axis.Variable(etabins, name="eta", label="eta"),
-        hist.axis.Variable(phibins, name="phi", label="phi"),
-        storage=hist.storage.Weight(),
-    )
+    axes = [
+        hist.axis.Variable(
+            egamma_tnp.config.get(f"{var}bins"), name=var, label=f"{var.capitalize()}"
+        )
+        for var in vars
+    ]
 
-    hfail = Hist(
-        hist.axis.Variable(ptbins, name="pt", label="Pt [GeV]"),
-        hist.axis.Variable(etabins, name="eta", label="eta"),
-        hist.axis.Variable(phibins, name="phi", label="phi"),
-        storage=hist.storage.Weight(),
-    )
+    hpass = Hist(*axes, storage=hist.storage.Weight())
+    hfail = Hist(*axes, storage=hist.storage.Weight())
 
-    hpass.fill(passing_probes.pt, passing_probes.eta, passing_probes.phi)
-    hfail.fill(failing_probes.pt, failing_probes.eta, failing_probes.phi)
+    hpass.fill(*[passing_probes[var] for var in vars])
+    hfail.fill(*[failing_probes[var] for var in vars])
 
     return {"passing": hpass, "failing": hfail}
 
 
-def fill_4d_mll_histograms(
+def fill_nd_mll_histograms(
     passing_probes,
     failing_probes,
+    vars=None,
     delayed=True,
 ):
-    """Get the 4D (Pt, Eta, Phi, mll) histogram of the passing and failing probes.
+    """
+    Get the N+1-dimensional histogram of the passing and failing probes.
+    The histogram will have axes for each variable specified in `vars` and an invariant mass axis.
 
     Parameters
     ----------
         passing_probes : awkward.Array or dask_awkward.Array
-            An array with fields `pt`, `eta`, `phi` and `pair_mass` of the passing probes.
+            An array with the fields specified in `vars` of the passing probes.
         failing_probes : awkward.Array or dask_awkward.Array
-            An array with fields `pt`, `eta`, `phi` and `pair_mass` of the failing probes.
+            An array with the fields specified in `vars` of the failing probes.
+        vars : list, optional
+            A list of the fields to use as axes in the histogram.
+            The default is ["pt", "eta", "phi"].
         delayed : bool, optional
             Whether the probes arrays are delayed (dask-awkward) or not.
             The default is True.
 
     Returns
     -------
-        histograms: dict
-        A dict of the form {"passing": hpass, "failing": hfail} where
+        histograms : dict
+        A dictionary of the form {"passing": hpass, "failing": hfail} where
         hpass : hist.Hist or hist.dask.Hist
-            A 4D histogram with axes (Pt, Eta, Phi, mll) of the passing probes.
+            An N+1-dimensional histogram of the passing probes.
         hfail : hist.Hist
-            A 4D histogram with axes (Pt, Eta, Phi, mll) of the failing probes.
+            An N+1-dimensional histogram of the failing probes.
     """
+    if vars is None:
+        vars = ["pt", "eta", "phi"]
+
     import hist
 
     if delayed:
@@ -452,38 +470,28 @@ def fill_4d_mll_histograms(
 
     import egamma_tnp
 
-    ptbins = egamma_tnp.config.get("ptbins")
-    etabins = egamma_tnp.config.get("etabins")
-    phibins = egamma_tnp.config.get("phibins")
+    if any(egamma_tnp.config.get(f"{var}bins") is None for var in vars):
+        raise ValueError(
+            """
+            One or more variables do not have binning information.
+            Please define the bining information using `egamma_tnp.config.set`.
+            The variable names in the configuration json should be in the form of `"{var}bins"`.
+            """
+        )
 
-    hpass = Hist(
-        hist.axis.Variable(ptbins, name="pt", label="Pt [GeV]"),
-        hist.axis.Variable(etabins, name="eta", label="eta"),
-        hist.axis.Variable(phibins, name="phi", label="phi"),
-        hist.axis.Regular(80, 50, 130, name="mll", label="mll [GeV]"),
-        storage=hist.storage.Weight(),
-    )
+    axes = [
+        hist.axis.Variable(
+            egamma_tnp.config.get(f"{var}bins"), name=var, label=f"{var.capitalize()}"
+        )
+        for var in vars
+    ]
+    axes.append(hist.axis.Regular(80, 50, 130, name="mll", label="mll [GeV]"))
 
-    hfail = Hist(
-        hist.axis.Variable(ptbins, name="pt", label="Pt [GeV]"),
-        hist.axis.Variable(etabins, name="eta", label="eta"),
-        hist.axis.Variable(phibins, name="phi", label="phi"),
-        hist.axis.Regular(80, 50, 130, name="mll", label="mll [GeV]"),
-        storage=hist.storage.Weight(),
-    )
+    hpass = Hist(*axes, storage=hist.storage.Weight())
+    hfail = Hist(*axes, storage=hist.storage.Weight())
 
-    hpass.fill(
-        passing_probes.pt,
-        passing_probes.eta,
-        passing_probes.phi,
-        passing_probes.pair_mass,
-    )
-    hfail.fill(
-        failing_probes.pt,
-        failing_probes.eta,
-        failing_probes.phi,
-        failing_probes.pair_mass,
-    )
+    hpass.fill(*[passing_probes[var] for var in vars], passing_probes.pair_mass)
+    hfail.fill(*[failing_probes[var] for var in vars], failing_probes.pair_mass)
 
     return {"passing": hpass, "failing": hfail}
 

@@ -211,7 +211,8 @@ class TagNProbeFromNanoAOD:
     def get_tnp_histograms(
         self,
         cut_and_count=True,
-        dimension="1D",
+        pt_eta_phi_1d=True,
+        vars=None,
         plateau_cut=None,
         eta_regions_pt=None,
         eta_regions_eta=None,
@@ -230,22 +231,29 @@ class TagNProbeFromNanoAOD:
                 Whether to use the cut and count method to find the probes coming from a Z boson.
                 If False, invariant mass histograms of the tag-probe pairs will be filled to be fit by a Signal+Background model.
                 The default is True.
-            dimension: str, optional
-                The dimension of the histograms to fill. Can be either "1D" or "3D" for cut and count method or "2D" or "4D" for invariant mass method.
+            pt_eta_phi_1d: bool, optional
+                Whether to fill 1D Pt, Eta and Phi histograms or N-dimensional histograms. The default is True.
+            vars: list, optional
+                The list of variables to fill the N-dimensional histograms with.
+                The default is ["pt", "eta", "phi"].
             plateau_cut : int or float, optional
+                Only used if `pt_eta_phi_1d` is True.
                 The Pt threshold to use to ensure that we are on the efficiency plateau for eta and phi histograms.
                 The default None, meaning that no extra cut is applied and the activation region is included in those histograms.
             eta_regions_pt : dict, optional
+                Only used if `pt_eta_phi_1d` is True.
                 A dictionary of the form `{"name": [etamin, etamax], ...}`
                 where name is the name of the region and etamin and etamax are the absolute eta bounds.
                 The Pt histograms will be split into those eta regions.
                 The default is to avoid the ECAL transition region meaning |eta| < 1.4442 or 1.566 < |eta| < 2.5.
             eta_regions_eta : dict, optional
+                Only used if `pt_eta_phi_1d` is True.
                 A dictionary of the form `{"name": [etamin, etamax], ...}`
                 where name is the name of the region and etamin and etamax are the absolute eta bounds.
                 The Eta histograms will be split into those eta regions.
                 The default is to use the entire |eta| < 2.5 region.
             eta_regions_phi : dict, optional
+                Only used if `pt_eta_phi_1d` is True.
                 A dictionary of the form `{"name": [etamin, etamax], ...}`
                 where name is the name of the region and etamin and etamax are the absolute eta bounds.
                 The Phi histograms will be split into those eta regions.
@@ -281,7 +289,8 @@ class TagNProbeFromNanoAOD:
         if cut_and_count:
             data_manipulation = partial(
                 self._make_cutncount_histograms,
-                dimension=dimension,
+                pt_eta_phi_1d=pt_eta_phi_1d,
+                vars=vars,
                 plateau_cut=plateau_cut,
                 eta_regions_pt=eta_regions_pt,
                 eta_regions_eta=eta_regions_eta,
@@ -290,7 +299,8 @@ class TagNProbeFromNanoAOD:
         else:
             data_manipulation = partial(
                 self._make_mll_histograms,
-                dimension=dimension,
+                pt_eta_phi_1d=pt_eta_phi_1d,
+                vars=vars,
                 plateau_cut=plateau_cut,
                 eta_regions_pt=eta_regions_pt,
                 eta_regions_eta=eta_regions_eta,
@@ -440,30 +450,22 @@ class TagNProbeFromNanoAOD:
     def _make_cutncount_histograms(
         self,
         events,
-        dimension,
+        pt_eta_phi_1d,
+        vars,
         plateau_cut,
         eta_regions_pt,
         eta_regions_eta,
         eta_regions_phi,
     ):
         from egamma_tnp.utils import (
-            fill_1d_cutncount_histograms,
-            fill_3d_cutncount_histograms,
+            fill_nd_cutncount_histograms,
+            fill_pt_eta_phi_cutncount_histograms,
         )
 
         passing_probes, failing_probes = self._find_probes(events, cut_and_count=True)
 
-        if dimension == "1D":
-            return fill_1d_cutncount_histograms(
-                passing_probes,
-                failing_probes,
-                plateau_cut=plateau_cut,
-                eta_regions_pt=eta_regions_pt,
-                eta_regions_eta=eta_regions_eta,
-                eta_regions_phi=eta_regions_phi,
-            )
-        elif dimension == "3D":
-            return fill_3d_cutncount_histograms(
+        if pt_eta_phi_1d:
+            return fill_pt_eta_phi_cutncount_histograms(
                 passing_probes,
                 failing_probes,
                 plateau_cut=plateau_cut,
@@ -472,32 +474,31 @@ class TagNProbeFromNanoAOD:
                 eta_regions_phi=eta_regions_phi,
             )
         else:
-            raise ValueError("Dimension must be either '1D' or '3D'.")
+            return fill_nd_cutncount_histograms(
+                passing_probes,
+                failing_probes,
+                vars=vars,
+            )
 
     def _make_mll_histograms(
         self,
         events,
-        dimension,
+        pt_eta_phi_1d,
+        vars,
         plateau_cut,
         eta_regions_pt,
         eta_regions_eta,
         eta_regions_phi,
     ):
-        from egamma_tnp.utils import fill_2d_mll_histograms, fill_4d_mll_histograms
+        from egamma_tnp.utils import (
+            fill_nd_mll_histograms,
+            fill_pt_eta_phi_mll_histograms,
+        )
 
         passing_probes, failing_probes = self._find_probes(events, cut_and_count=False)
 
-        if dimension == "2D":
-            return fill_2d_mll_histograms(
-                passing_probes,
-                failing_probes,
-                plateau_cut=plateau_cut,
-                eta_regions_pt=eta_regions_pt,
-                eta_regions_eta=eta_regions_eta,
-                eta_regions_phi=eta_regions_phi,
-            )
-        elif dimension == "4D":
-            return fill_4d_mll_histograms(
+        if pt_eta_phi_1d:
+            return fill_pt_eta_phi_mll_histograms(
                 passing_probes,
                 failing_probes,
                 plateau_cut=plateau_cut,
@@ -506,7 +507,11 @@ class TagNProbeFromNanoAOD:
                 eta_regions_phi=eta_regions_phi,
             )
         else:
-            raise ValueError("Dimension must be either '2D' or '4D'.")
+            return fill_nd_mll_histograms(
+                passing_probes,
+                failing_probes,
+                vars=vars,
+            )
 
 
 def _filter_events(events, cutbased_id):

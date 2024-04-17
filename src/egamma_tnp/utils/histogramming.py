@@ -391,6 +391,8 @@ def fill_nd_cutncount_histograms(
     """
     if vars is None:
         vars = ["pt", "eta", "phi"]
+    if isinstance(vars, str):
+        raise ValueError("Please provide a list of variables and not a single string.")
 
     import hist
 
@@ -460,6 +462,8 @@ def fill_nd_mll_histograms(
     """
     if vars is None:
         vars = ["pt", "eta", "phi"]
+    if isinstance(vars, str):
+        raise ValueError("Please provide a list of variables and not a single string.")
 
     import hist
 

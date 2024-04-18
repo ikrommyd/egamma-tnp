@@ -91,6 +91,7 @@ class TagNProbeFromNTuples:
     def get_tnp_arrays(
         self,
         cut_and_count=True,
+        vars=None,
         schemaclass=BaseSchema,
         uproot_options=None,
         compute=False,
@@ -106,6 +107,8 @@ class TagNProbeFromNTuples:
                 Whether to use the cut and count method to find the probes coming from a Z boson.
                 If False, invariant mass histograms of the tag-probe pairs will be filled to be fit by a Signal+Background model.
                 The default is True.
+            vars: list, optional
+                The list of variables of the probes to return. The default is ["pt", "eta", "phi"].
             schemaclass: BaseSchema, default BaseSchema
                 The nanoevents schema to interpret the input dataset with.
             uproot_options : dict, optional
@@ -137,7 +140,9 @@ class TagNProbeFromNTuples:
         if uproot_options is None:
             uproot_options = {}
 
-        data_manipulation = partial(self._find_probes, cut_and_count=cut_and_count)
+        data_manipulation = partial(
+            self._find_probes, cut_and_count=cut_and_count, vars=vars
+        )
 
         to_compute = apply_to_fileset(
             data_manipulation=data_manipulation,
@@ -301,7 +306,9 @@ class TagNProbeFromNTuples:
 
         return passing_probe_events, failing_probe_events
 
-    def _find_probes(self, events, cut_and_count):
+    def _find_probes(self, events, cut_and_count, vars):
+        if vars is None:
+            vars = ["pt", "eta", "phi"]
         if self.extra_filter is not None:
             events = self.extra_filter(events, **self.extra_filter_args)
         if self.goldenjson is not None:
@@ -335,36 +342,18 @@ class TagNProbeFromNTuples:
 
         if cut_and_count:
             passing_probes = dak.zip(
-                {
-                    "pt": passing_probe_events.el_pt,
-                    "eta": passing_probe_events.el_eta,
-                    "phi": passing_probe_events.el_phi,
-                }
+                {f"{var}": passing_probe_events[f"el_{var}"] for var in vars}
             )
             failing_probes = dak.zip(
-                {
-                    "pt": failing_probe_events.el_pt,
-                    "eta": failing_probe_events.el_eta,
-                    "phi": failing_probe_events.el_phi,
-                }
+                {f"{var}": failing_probe_events[f"el_{var}"] for var in vars}
             )
         else:
-            passing_probes = dak.zip(
-                {
-                    "pt": passing_probe_events.el_pt,
-                    "eta": passing_probe_events.el_eta,
-                    "phi": passing_probe_events.el_phi,
-                    "pair_mass": passing_probe_events.pair_mass,
-                }
-            )
-            failing_probes = dak.zip(
-                {
-                    "pt": failing_probe_events.el_pt,
-                    "eta": failing_probe_events.el_eta,
-                    "phi": failing_probe_events.el_phi,
-                    "pair_mass": failing_probe_events.pair_mass,
-                }
-            )
+            p_arrays = {f"{var}": passing_probe_events[f"el_{var}"] for var in vars}
+            p_arrays["pair_mass"] = passing_probe_events["pair_mass"]
+            f_arrays = {f"{var}": failing_probe_events[f"el_{var}"] for var in vars}
+            f_arrays["pair_mass"] = failing_probe_events["pair_mass"]
+            passing_probes = dak.zip(p_arrays)
+            failing_probes = dak.zip(f_arrays)
 
         return passing_probes, failing_probes
 
@@ -383,7 +372,9 @@ class TagNProbeFromNTuples:
             fill_pt_eta_phi_cutncount_histograms,
         )
 
-        passing_probes, failing_probes = self._find_probes(events, cut_and_count=True)
+        passing_probes, failing_probes = self._find_probes(
+            events, cut_and_count=True, vars=vars
+        )
 
         if pt_eta_phi_1d:
             return fill_pt_eta_phi_cutncount_histograms(
@@ -416,7 +407,9 @@ class TagNProbeFromNTuples:
             fill_pt_eta_phi_mll_histograms,
         )
 
-        passing_probes, failing_probes = self._find_probes(events, cut_and_count=False)
+        passing_probes, failing_probes = self._find_probes(
+            events, cut_and_count=False, vars=vars
+        )
 
         if pt_eta_phi_1d:
             return fill_pt_eta_phi_mll_histograms(

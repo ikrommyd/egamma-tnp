@@ -3,9 +3,7 @@ import uproot
 from hist import intervals
 
 
-def get_ratio_histogram(
-    passing_probes, failing_or_all_probes, denominator_type="failing"
-):
+def get_ratio_histogram(passing_probes, failing_or_all_probes, denominator_type="failing"):
     """Get the ratio (efficiency) of the passing over passing + failing probes.
     NaN values are replaced with 0.
 
@@ -36,9 +34,7 @@ def get_ratio_histogram(
     with np.errstate(divide="ignore", invalid="ignore"):
         ratio = passing_probes / all_probes
     ratio[:] = np.nan_to_num(ratio.values())
-    yerr = intervals.ratio_uncertainty(
-        passing_probes.values(), all_probes.values(), uncertainty_type="efficiency"
-    )
+    yerr = intervals.ratio_uncertainty(passing_probes.values(), all_probes.values(), uncertainty_type="efficiency")
 
     return ratio, yerr
 
@@ -132,12 +128,8 @@ def fill_pt_eta_phi_cutncount_histograms(
     plateau_mask_fail = pt_fail > plateau_cut
 
     for name_pt, region_pt in eta_regions_pt.items():
-        eta_mask_pt_pass = (abs(eta_pass) > region_pt[0]) & (
-            abs(eta_pass) < region_pt[1]
-        )
-        eta_mask_pt_fail = (abs(eta_fail) > region_pt[0]) & (
-            abs(eta_fail) < region_pt[1]
-        )
+        eta_mask_pt_pass = (abs(eta_pass) > region_pt[0]) & (abs(eta_pass) < region_pt[1])
+        eta_mask_pt_fail = (abs(eta_fail) > region_pt[0]) & (abs(eta_fail) < region_pt[1])
         hpt_pass = Hist(
             hist.axis.Variable(ptbins, name="pt", label="Pt [GeV]"),
             storage=hist.storage.Weight(),
@@ -152,12 +144,8 @@ def fill_pt_eta_phi_cutncount_histograms(
         histograms["pt"][name_pt] = {"passing": hpt_pass, "failing": hpt_fail}
 
     for name_eta, region_eta in eta_regions_eta.items():
-        eta_mask_eta_pass = (abs(eta_pass) > region_eta[0]) & (
-            abs(eta_pass) < region_eta[1]
-        )
-        eta_mask_eta_fail = (abs(eta_fail) > region_eta[0]) & (
-            abs(eta_fail) < region_eta[1]
-        )
+        eta_mask_eta_pass = (abs(eta_pass) > region_eta[0]) & (abs(eta_pass) < region_eta[1])
+        eta_mask_eta_fail = (abs(eta_fail) > region_eta[0]) & (abs(eta_fail) < region_eta[1])
         heta_pass = Hist(
             hist.axis.Variable(etabins, name="eta", label="eta"),
             storage=hist.storage.Weight(),
@@ -172,12 +160,8 @@ def fill_pt_eta_phi_cutncount_histograms(
         histograms["eta"][name_eta] = {"passing": heta_pass, "failing": heta_fail}
 
     for name_phi, region_phi in eta_regions_phi.items():
-        eta_mask_phi_pass = (abs(eta_pass) > region_phi[0]) & (
-            abs(eta_pass) < region_phi[1]
-        )
-        eta_mask_phi_fail = (abs(eta_fail) > region_phi[0]) & (
-            abs(eta_fail) < region_phi[1]
-        )
+        eta_mask_phi_pass = (abs(eta_pass) > region_phi[0]) & (abs(eta_pass) < region_phi[1])
+        eta_mask_phi_fail = (abs(eta_fail) > region_phi[0]) & (abs(eta_fail) < region_phi[1])
         hphi_pass = Hist(
             hist.axis.Variable(phibins, name="phi", label="phi"),
             storage=hist.storage.Weight(),
@@ -285,12 +269,8 @@ def fill_pt_eta_phi_mll_histograms(
     plateau_mask_fail = pt_fail > plateau_cut
 
     for name_pt, region_pt in eta_regions_pt.items():
-        eta_mask_pt_pass = (abs(eta_pass) > region_pt[0]) & (
-            abs(eta_pass) < region_pt[1]
-        )
-        eta_mask_pt_fail = (abs(eta_fail) > region_pt[0]) & (
-            abs(eta_fail) < region_pt[1]
-        )
+        eta_mask_pt_pass = (abs(eta_pass) > region_pt[0]) & (abs(eta_pass) < region_pt[1])
+        eta_mask_pt_fail = (abs(eta_fail) > region_pt[0]) & (abs(eta_fail) < region_pt[1])
         hpt_pass = Hist(
             hist.axis.Variable(ptbins, name="pt", label="Pt [GeV]"),
             hist.axis.Regular(80, 50, 130, name="mll", label="mll [GeV]"),
@@ -307,12 +287,8 @@ def fill_pt_eta_phi_mll_histograms(
         histograms["pt"][name_pt] = {"passing": hpt_pass, "failing": hpt_fail}
 
     for name_eta, region_eta in eta_regions_eta.items():
-        eta_mask_eta_pass = (abs(eta_pass) > region_eta[0]) & (
-            abs(eta_pass) < region_eta[1]
-        )
-        eta_mask_eta_fail = (abs(eta_fail) > region_eta[0]) & (
-            abs(eta_fail) < region_eta[1]
-        )
+        eta_mask_eta_pass = (abs(eta_pass) > region_eta[0]) & (abs(eta_pass) < region_eta[1])
+        eta_mask_eta_fail = (abs(eta_fail) > region_eta[0]) & (abs(eta_fail) < region_eta[1])
         heta_pass = Hist(
             hist.axis.Variable(etabins, name="eta", label="eta"),
             hist.axis.Regular(80, 50, 130, name="mll", label="mll [GeV]"),
@@ -331,12 +307,8 @@ def fill_pt_eta_phi_mll_histograms(
         histograms["eta"][name_eta] = {"passing": heta_pass, "failing": heta_fail}
 
     for name_phi, region_phi in eta_regions_phi.items():
-        eta_mask_phi_pass = (abs(eta_pass) > region_phi[0]) & (
-            abs(eta_pass) < region_phi[1]
-        )
-        eta_mask_phi_fail = (abs(eta_fail) > region_phi[0]) & (
-            abs(eta_fail) < region_phi[1]
-        )
+        eta_mask_phi_pass = (abs(eta_pass) > region_phi[0]) & (abs(eta_pass) < region_phi[1])
+        eta_mask_phi_fail = (abs(eta_fail) > region_phi[0]) & (abs(eta_fail) < region_phi[1])
         hphi_pass = Hist(
             hist.axis.Variable(phibins, name="phi", label="phi"),
             hist.axis.Regular(80, 50, 130, name="mll", label="mll [GeV]"),
@@ -410,12 +382,7 @@ def fill_nd_cutncount_histograms(
             The variable names in the configuration json should be in the form of `"{var}bins"`."""
         )
 
-    axes = [
-        hist.axis.Variable(
-            egamma_tnp.config.get(f"{var}bins"), name=var, label=f"{var.capitalize()}"
-        )
-        for var in vars
-    ]
+    axes = [hist.axis.Variable(egamma_tnp.config.get(f"{var}bins"), name=var, label=f"{var.capitalize()}") for var in vars]
 
     hpass = Hist(*axes, storage=hist.storage.Weight())
     hfail = Hist(*axes, storage=hist.storage.Weight())
@@ -479,12 +446,7 @@ def fill_nd_mll_histograms(
             The variable names in the configuration json should be in the form of `"{var}bins"`. """
         )
 
-    axes = [
-        hist.axis.Variable(
-            egamma_tnp.config.get(f"{var}bins"), name=var, label=f"{var.capitalize()}"
-        )
-        for var in vars
-    ]
+    axes = [hist.axis.Variable(egamma_tnp.config.get(f"{var}bins"), name=var, label=f"{var.capitalize()}") for var in vars]
     axes.append(hist.axis.Regular(80, 50, 130, name="mll", label="mll [GeV]"))
 
     hpass = Hist(*axes, storage=hist.storage.Weight())
@@ -538,10 +500,7 @@ def _convert_nd_mll_hist_to_1d_hists(h4d, axes):
 
     # Initialize the slicer to keep specified axes and sum over the others except 'mll'
     s = hist.tag.Slicer()
-    slice_dict = {
-        ax.name: s[:] if ax.name in axes or ax.name == "mll" else s[sum]
-        for ax in h4d.axes
-    }
+    slice_dict = {ax.name: s[:] if ax.name in axes or ax.name == "mll" else s[sum] for ax in h4d.axes}
 
     # Apply slicing to obtain the relevant projection while keeping 'mll' intact
     h = h4d[slice_dict]
@@ -556,9 +515,7 @@ def _convert_nd_mll_hist_to_1d_hists(h4d, axes):
     zfill_length = len(str(total_bins))
     counter = 0
     axes_reversed = axes[::-1]
-    for reversed_idx_combination in itertools.product(
-        *(range(h.axes[ax].size) for ax in axes_reversed)
-    ):
+    for reversed_idx_combination in itertools.product(*(range(h.axes[ax].size) for ax in axes_reversed)):
         idx_combination = reversed_idx_combination[::-1]
         bin_details = {}
         vars_details = {}
@@ -574,10 +531,7 @@ def _convert_nd_mll_hist_to_1d_hists(h4d, axes):
             title_parts.append(f"{min_edge:.3f} < {ax} < {max_edge:.3f}")
 
         # Key should be constructed in the order given using the _format_edge for key consistency
-        key = "_".join(
-            f"{ax}_{_format_edge(vars_details[ax]['min'])}To{_format_edge(vars_details[ax]['max'])}"
-            for ax in axes
-        )
+        key = "_".join(f"{ax}_{_format_edge(vars_details[ax]['min'])}To{_format_edge(vars_details[ax]['max'])}" for ax in axes)
 
         # Correcting slice indices using original axis ordering
         slice_indices = {ax: idx_combination[axes.index(ax)] for ax in axes}
@@ -620,12 +574,8 @@ def convert_2d_mll_hists_to_1d_hists(hist_dict):
             histograms[var][region_name] = {}  # Initialize region dictionary
             for histname, h in hists.items():
                 hs, bining = _convert_2d_mll_hist_to_1d_hists(h)
-                histograms[var][region_name][histname] = (
-                    hs  # Populate with new histograms
-                )
-                histograms[var][region_name]["bining"] = (
-                    bining  # Set bining for this region
-                )
+                histograms[var][region_name][histname] = hs  # Populate with new histograms
+                histograms[var][region_name]["bining"] = bining  # Set bining for this region
     return histograms
 
 
@@ -709,9 +659,7 @@ def create_hists_root_file_for_fitter(hists, root_path, bining_path, axes=None):
         failing_hists = histograms["failing"]
 
         if passing_hists.keys() != failing_hists.keys():
-            raise ValueError(
-                "Passing and failing histograms must have the same binning."
-            )
+            raise ValueError("Passing and failing histograms must have the same binning.")
 
         names = list(passing_hists.keys())
         max_number = len(str(len(names)))
@@ -732,9 +680,7 @@ def create_hists_root_file_for_fitter(hists, root_path, bining_path, axes=None):
         for var, region_dict in histograms.items():
             for region_name, hists in region_dict.items():
                 new_path = root_path.replace(".root", f"_{var}_{region_name}.root")
-                new_bining_path = bining_path.replace(
-                    ".pkl", f"_{var}_{region_name}.pkl"
-                )
+                new_bining_path = bining_path.replace(".pkl", f"_{var}_{region_name}.pkl")
                 with uproot.recreate(new_path) as f:
                     passing_hists = hists["passing"]
                     failing_hists = hists["failing"]

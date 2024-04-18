@@ -140,9 +140,7 @@ class TagNProbeFromNTuples:
         if uproot_options is None:
             uproot_options = {}
 
-        data_manipulation = partial(
-            self._find_probes, cut_and_count=cut_and_count, vars=vars
-        )
+        data_manipulation = partial(self._find_probes, cut_and_count=cut_and_count, vars=vars)
 
         to_compute = apply_to_fileset(
             data_manipulation=data_manipulation,
@@ -321,14 +319,10 @@ class TagNProbeFromNTuples:
             events["el_phi"] = events.el_sc_phi
 
         if self.avoid_ecal_transition_tags:
-            pass_eta_ebeegap_tags = (abs(events.tag_Ele_eta) < 1.4442) | (
-                abs(events.tag_Ele_eta) > 1.566
-            )
+            pass_eta_ebeegap_tags = (abs(events.tag_Ele_eta) < 1.4442) | (abs(events.tag_Ele_eta) > 1.566)
             events = events[pass_eta_ebeegap_tags]
         if self.avoid_ecal_transition_probes:
-            pass_eta_ebeegap_probes = (abs(events.el_eta) < 1.4442) | (
-                abs(events.el_eta) > 1.566
-            )
+            pass_eta_ebeegap_probes = (abs(events.el_eta) < 1.4442) | (abs(events.el_eta) > 1.566)
             events = events[pass_eta_ebeegap_probes]
 
         pass_pt_tags = events.tag_Ele_pt > self.tags_pt_cut
@@ -336,17 +330,11 @@ class TagNProbeFromNTuples:
         opposite_charge = events.tag_Ele_q * events.el_q == -1
         events = events[pass_pt_tags & pass_abseta_tags & opposite_charge]
 
-        passing_probe_events, failing_probe_events = self._find_probe_events(
-            events, cut_and_count=cut_and_count
-        )
+        passing_probe_events, failing_probe_events = self._find_probe_events(events, cut_and_count=cut_and_count)
 
         if cut_and_count:
-            passing_probes = dak.zip(
-                {f"{var}": passing_probe_events[f"el_{var}"] for var in vars}
-            )
-            failing_probes = dak.zip(
-                {f"{var}": failing_probe_events[f"el_{var}"] for var in vars}
-            )
+            passing_probes = dak.zip({f"{var}": passing_probe_events[f"el_{var}"] for var in vars})
+            failing_probes = dak.zip({f"{var}": failing_probe_events[f"el_{var}"] for var in vars})
         else:
             p_arrays = {f"{var}": passing_probe_events[f"el_{var}"] for var in vars}
             p_arrays["pair_mass"] = passing_probe_events["pair_mass"]
@@ -372,9 +360,7 @@ class TagNProbeFromNTuples:
             fill_pt_eta_phi_cutncount_histograms,
         )
 
-        passing_probes, failing_probes = self._find_probes(
-            events, cut_and_count=True, vars=vars
-        )
+        passing_probes, failing_probes = self._find_probes(events, cut_and_count=True, vars=vars)
 
         if pt_eta_phi_1d:
             return fill_pt_eta_phi_cutncount_histograms(
@@ -407,9 +393,7 @@ class TagNProbeFromNTuples:
             fill_pt_eta_phi_mll_histograms,
         )
 
-        passing_probes, failing_probes = self._find_probes(
-            events, cut_and_count=False, vars=vars
-        )
+        passing_probes, failing_probes = self._find_probes(events, cut_and_count=False, vars=vars)
 
         if pt_eta_phi_1d:
             return fill_pt_eta_phi_mll_histograms(

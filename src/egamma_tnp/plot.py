@@ -23,9 +23,7 @@ def _save_and_close(fig, path, close_figure):
         plt.close(fig)
 
 
-def plot_efficiency(
-    passing_probes, failing_or_all_probes, denominator_type="failing", **kwargs
-):
+def plot_efficiency(passing_probes, failing_or_all_probes, denominator_type="failing", **kwargs):
     """Plot the efficiency using the ratio of passing to passing + failing probes.
 
     Parameters
@@ -46,13 +44,9 @@ def plot_efficiency(
         List[Hist1DArtists]
 
     """
-    ratio_hist, yerr = get_ratio_histogram(
-        passing_probes, failing_or_all_probes, denominator_type
-    )
+    ratio_hist, yerr = get_ratio_histogram(passing_probes, failing_or_all_probes, denominator_type)
 
-    return ratio_hist.plot1d(
-        histtype="errorbar", yerr=yerr, xerr=True, flow="none", **kwargs
-    )
+    return ratio_hist.plot1d(histtype="errorbar", yerr=yerr, xerr=True, flow="none", **kwargs)
 
 
 def plot_ratio(
@@ -163,12 +157,8 @@ def plot_ratio(
     ax1 = fig.add_subplot(gs[0])
     ax2 = fig.add_subplot(gs[1])
 
-    eff1, efferr1 = get_ratio_histogram(
-        passing_probes1, failing_or_all_probes1, denominator_type
-    )
-    eff2, efferr2 = get_ratio_histogram(
-        passing_probes2, failing_or_all_probes2, denominator_type
-    )
+    eff1, efferr1 = get_ratio_histogram(passing_probes1, failing_or_all_probes1, denominator_type)
+    eff2, efferr2 = get_ratio_histogram(passing_probes2, failing_or_all_probes2, denominator_type)
     plot_efficiency(
         passing_probes1,
         failing_or_all_probes1,

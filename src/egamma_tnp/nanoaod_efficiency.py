@@ -79,19 +79,13 @@ class TagNProbeFromNanoAOD:
             If None, no such requirement is applied. The default is None.
         """
         if for_trigger is False:
-            raise NotImplementedError(
-                "Only trigger efficiencies are supported at the moment."
-            )
+            raise NotImplementedError("Only trigger efficiencies are supported at the moment.")
         if use_sc_phi:
             raise NotImplementedError("Supercluster Phi is not supported yet.")
         if for_trigger and filterbit is None:
-            raise ValueError(
-                "TrigObj filerbit must be provided for trigger efficiencies."
-            )
+            raise ValueError("TrigObj filerbit must be provided for trigger efficiencies.")
         if filter == "None" and trigger_pt is None and for_trigger:
-            raise ValueError(
-                "An HLT filter name or a trigger Pt threshold must be provided for trigger efficiencies."
-            )
+            raise ValueError("An HLT filter name or a trigger Pt threshold must be provided for trigger efficiencies.")
         if extra_filter_args is None:
             extra_filter_args = {}
         if probes_pt_cut is None:
@@ -186,9 +180,7 @@ class TagNProbeFromNanoAOD:
         if uproot_options is None:
             uproot_options = {}
 
-        data_manipulation = partial(
-            self._find_probes, cut_and_count=cut_and_count, vars=vars
-        )
+        data_manipulation = partial(self._find_probes, cut_and_count=cut_and_count, vars=vars)
 
         to_compute = apply_to_fileset(
             data_manipulation=data_manipulation,
@@ -353,15 +345,11 @@ class TagNProbeFromNanoAOD:
 
         if self.avoid_ecal_transition_tags:
             tags1 = zcands1.tag
-            pass_eta_ebeegap_tags1 = (abs(tags1.eta) < 1.4442) | (
-                abs(tags1.eta) > 1.566
-            )
+            pass_eta_ebeegap_tags1 = (abs(tags1.eta) < 1.4442) | (abs(tags1.eta) > 1.566)
             zcands1 = zcands1[pass_eta_ebeegap_tags1]
         if self.avoid_ecal_transition_probes:
             probes1 = zcands1.probe
-            pass_eta_ebeegap_probes1 = (abs(probes1.eta) < 1.4442) | (
-                abs(probes1.eta) > 1.566
-            )
+            pass_eta_ebeegap_probes1 = (abs(probes1.eta) < 1.4442) | (abs(probes1.eta) > 1.566)
             zcands1 = zcands1[pass_eta_ebeegap_probes1]
 
         p1, f1 = _process_zcands(
@@ -382,15 +370,11 @@ class TagNProbeFromNanoAOD:
 
             if self.avoid_ecal_transition_tags:
                 tags2 = zcands2.tag
-                pass_eta_ebeegap_tags2 = (abs(tags2.eta) < 1.4442) | (
-                    abs(tags2.eta) > 1.566
-                )
+                pass_eta_ebeegap_tags2 = (abs(tags2.eta) < 1.4442) | (abs(tags2.eta) > 1.566)
                 zcands2 = zcands2[pass_eta_ebeegap_tags2]
             if self.avoid_ecal_transition_probes:
                 probes2 = zcands2.probe
-                pass_eta_ebeegap_probes2 = (abs(probes2.eta) < 1.4442) | (
-                    abs(probes2.eta) > 1.566
-                )
+                pass_eta_ebeegap_probes2 = (abs(probes2.eta) < 1.4442) | (abs(probes2.eta) > 1.566)
                 zcands2 = zcands2[pass_eta_ebeegap_probes2]
 
             p2, f2 = _process_zcands(
@@ -439,9 +423,7 @@ class TagNProbeFromNanoAOD:
             fill_pt_eta_phi_cutncount_histograms,
         )
 
-        passing_probes, failing_probes = self._find_probes(
-            events, cut_and_count=True, vars=vars
-        )
+        passing_probes, failing_probes = self._find_probes(events, cut_and_count=True, vars=vars)
 
         if pt_eta_phi_1d:
             return fill_pt_eta_phi_cutncount_histograms(
@@ -474,9 +456,7 @@ class TagNProbeFromNanoAOD:
             fill_pt_eta_phi_mll_histograms,
         )
 
-        passing_probes, failing_probes = self._find_probes(
-            events, cut_and_count=False, vars=vars
-        )
+        passing_probes, failing_probes = self._find_probes(events, cut_and_count=False, vars=vars)
 
         if pt_eta_phi_1d:
             return fill_pt_eta_phi_mll_histograms(
@@ -556,20 +536,11 @@ def _process_zcands(
     all_probes = probes[isZ & dr_condition]
     pair_mass = mass[isZ & dr_condition]
     all_probes["pair_mass"] = pair_mass
-    trig_matched_probe = _trigger_match(
-        all_probes, trigobjs, trigger_pt, filterbit, use_sc_eta
-    )
+    trig_matched_probe = _trigger_match(all_probes, trigobjs, trigger_pt, filterbit, use_sc_eta)
     if hlt_filter is None:
         passing_probes = all_probes[trig_matched_probe]
         failing_probes = all_probes[~trig_matched_probe]
     else:
-        passing_probes = all_probes[
-            trig_matched_probe & getattr(good_events[events_with_tags].HLT, hlt_filter)
-        ]
-        failing_probes = all_probes[
-            ~(
-                trig_matched_probe
-                & getattr(good_events[events_with_tags].HLT, hlt_filter)
-            )
-        ]
+        passing_probes = all_probes[trig_matched_probe & getattr(good_events[events_with_tags].HLT, hlt_filter)]
+        failing_probes = all_probes[~(trig_matched_probe & getattr(good_events[events_with_tags].HLT, hlt_filter))]
     return passing_probes, failing_probes

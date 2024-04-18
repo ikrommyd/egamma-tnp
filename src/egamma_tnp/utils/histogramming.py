@@ -675,7 +675,7 @@ def create_hists_root_file_for_fitter(hists, root_path, bining_path, axes=None):
         with open(bining_path, "wb") as f:
             pickle.dump(bining, f)
 
-    else:
+    elif isinstance(hists, dict) and "pt" in hists and "eta" in hists and "phi" in hists:
         histograms = convert_2d_mll_hists_to_1d_hists(hists)
         for var, region_dict in histograms.items():
             for region_name, hists in region_dict.items():
@@ -695,6 +695,9 @@ def create_hists_root_file_for_fitter(hists, root_path, bining_path, axes=None):
 
                 with open(new_bining_path, "wb") as f:
                     pickle.dump(hists["bining"], f)
+
+    else:
+        raise ValueError("Invalid `hists` format")
 
 
 def save_hists(path, res):

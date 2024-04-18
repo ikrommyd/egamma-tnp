@@ -1,7 +1,7 @@
 from egamma_tnp.utils.dataset import redirect_files
 from egamma_tnp.utils.histogramming import (
     convert_2d_mll_hists_to_1d_hists,
-    convert_4d_mll_hists_to_1d_hists,
+    convert_nd_mll_hists_to_1d_hists,
     create_hists_root_file_for_fitter,
     fill_nd_cutncount_histograms,
     fill_nd_mll_histograms,
@@ -18,7 +18,7 @@ __all__ = (
     "fill_nd_cutncount_histograms",
     "fill_nd_mll_histograms",
     "convert_2d_mll_hists_to_1d_hists",
-    "convert_4d_mll_hists_to_1d_hists",
+    "convert_nd_mll_hists_to_1d_hists",
     "create_hists_root_file_for_fitter",
     "get_ratio_histogram",
     "delta_r_SC",

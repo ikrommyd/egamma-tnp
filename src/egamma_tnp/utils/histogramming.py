@@ -535,7 +535,7 @@ def _convert_2d_mll_hist_to_1d_hists(h2d):
     return histograms, bining
 
 
-def _convert_4d_mll_hist_to_1d_hists(h4d, axes):
+def _convert_nd_mll_hist_to_1d_hists(h4d, axes):
     import itertools
 
     import hist
@@ -633,10 +633,10 @@ def convert_2d_mll_hists_to_1d_hists(hist_dict):
     return histograms
 
 
-def convert_4d_mll_hists_to_1d_hists(hists, axes=None):
-    """Convert 4D (Pt, Eta, Phi, mll) histograms to 1D histograms.
-    This will create a 1D histogram for each pair of bins in the specified axes.
-    If you have `npt` bins in Pt, `neta` bins in Eta, and `nphi` bins in Phi,
+def convert_nd_mll_hists_to_1d_hists(hists, axes=None):
+    """Convert N+1 dimensional (axes, mll) histograms to 1D histograms.
+    This will create a 1D histogram for each combination of bins in the specified axes.
+    For instance, if axes are ["pt, "eta", "phi"] and if you have `npt` bins in Pt, `neta` bins in Eta, and `nphi` bins in Phi,
     then you will get `npt x neta x nphi` 1D histograms.
     If a variable is not specified in the axes, then it will be summed over.
     For instance if you specify only `pt` and `eta`, then the 1D histograms will be
@@ -668,7 +668,7 @@ def convert_4d_mll_hists_to_1d_hists(hists, axes=None):
 
     histograms = {}
     for key, h4d in hists.items():
-        hists, binning = _convert_4d_mll_hist_to_1d_hists(h4d, axes=axes)
+        hists, binning = _convert_nd_mll_hist_to_1d_hists(h4d, axes=axes)
         histograms[key] = hists
 
     return histograms, binning
@@ -708,7 +708,7 @@ def create_hists_root_file_for_fitter(hists, root_path, bining_path, axes=None):
         raise ValueError("All axes must be unique.")
 
     if isinstance(hists, dict) and "passing" in hists and "failing" in hists:
-        histograms, bining = convert_4d_mll_hists_to_1d_hists(hists, axes=axes)
+        histograms, bining = convert_nd_mll_hists_to_1d_hists(hists, axes=axes)
         passing_hists = histograms["passing"]
         failing_hists = histograms["failing"]
 

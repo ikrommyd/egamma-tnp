@@ -405,11 +405,9 @@ def fill_nd_cutncount_histograms(
 
     if any(egamma_tnp.config.get(f"{var}bins") is None for var in vars):
         raise ValueError(
-            """
-            One or more variables do not have binning information.
+            """One or more variables do not have binning information.
             Please define the bining information using `egamma_tnp.config.set`.
-            The variable names in the configuration json should be in the form of `"{var}bins"`.
-            """
+            The variable names in the configuration json should be in the form of `"{var}bins"`."""
         )
 
     axes = [
@@ -476,11 +474,9 @@ def fill_nd_mll_histograms(
 
     if any(egamma_tnp.config.get(f"{var}bins") is None for var in vars):
         raise ValueError(
-            """
-            One or more variables do not have binning information.
+            """One or more variables do not have binning information.
             Please define the bining information using `egamma_tnp.config.set`.
-            The variable names in the configuration json should be in the form of `"{var}bins"`.
-            """
+            The variable names in the configuration json should be in the form of `"{var}bins"`. """
         )
 
     axes = [

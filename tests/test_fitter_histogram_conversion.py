@@ -179,7 +179,7 @@ def test_fitter_histogram_conversion_3d():
     assert_histograms_equal(res3d["failing"]["eta_0p00To2p50_pt_200p00To500p00"], hmll3d["failing"][200j:500j:sum, 0j:2.5j:sum, sum, :], flow=False)
 
 
-def test_fitter_histogram_conversion_saving_1d():
+def test_fitter_histogram_saving_1d():
     import pickle
 
     import egamma_tnp
@@ -276,7 +276,7 @@ def test_fitter_histogram_conversion_saving_1d():
     os.remove("1d_bining_phi_entire.pkl")
 
 
-def test_fitter_histogram_conversion_saving_3d():
+def test_fitter_histogram_saving_3d():
     import pickle
 
     import egamma_tnp
@@ -329,6 +329,78 @@ def test_fitter_histogram_conversion_saving_3d():
 
             assert_histograms_equal(saved_passing_hist, hmll3d["passing"][min_pt:max_pt:sum, min_eta:max_eta:sum, sum, :], flow=False)
             assert_histograms_equal(saved_failing_hist, hmll3d["failing"][min_pt:max_pt:sum, min_eta:max_eta:sum, sum, :], flow=False)
+
+    os.remove("3d_hists.root")
+    os.remove("3d_bining.pkl")
+
+
+def test_fitter_histogram_saving_against_reference():
+    import pickle
+
+    import egamma_tnp
+
+    events = uproot.dask({os.path.abspath("tests/samples/TnPNTuples.root"): "fitter_tree"})
+
+    passing_probe_evens = events[events.passHltEle30WPTightGsf == 1]
+    failing_probe_evens = events[events.passHltEle30WPTightGsf == 0]
+
+    passing_probes = dak.zip(
+        {
+            "el_pt": passing_probe_evens.el_pt,
+            "el_sc_eta": passing_probe_evens.el_sc_eta,
+            "pair_mass": passing_probe_evens.pair_mass,
+        }
+    ).compute()
+    failing_probes = dak.zip(
+        {
+            "el_pt": failing_probe_evens.el_pt,
+            "el_sc_eta": failing_probe_evens.el_sc_eta,
+            "pair_mass": failing_probe_evens.pair_mass,
+        }
+    ).compute()
+
+    egamma_tnp.config.set("el_ptbins", [10, 20, 35, 50, 100, 200, 500])
+    egamma_tnp.config.set("el_sc_etabins", [-2.5, -2.0, -1.566, -1.4442, -0.8, 0.0, 0.8, 1.4442, 1.566, 2.0, 2.5])
+
+    hmll3d = fill_nd_mll_histograms(
+        passing_probes,
+        failing_probes,
+        vars=["el_sc_eta", "el_pt"],
+        delayed=False,
+    )
+
+    create_hists_root_file_for_fitter(hmll3d, "3d_hists.root", "3d_bining.pkl", axes=["el_sc_eta", "el_pt"])
+
+    bining = pickle.load(open("3d_bining.pkl", "rb"))
+    modified_bining = bining.copy()
+
+    for bin in modified_bining["bins"]:
+        current_cut = bin["cut"]
+        new_cut = "tag_Ele_pt > 35 && abs(tag_sc_eta) < 2.17 && el_q*tag_Ele_q < 0 && " + current_cut + " && tag_Ele_trigMVA > 0.92  "
+        new_cut = "tag_Ele_pt > 35 && abs(tag_sc_eta) < 2.17 && el_q*tag_Ele_q < 0 && " + current_cut
+        bin["cut"] = new_cut
+
+    for bin in modified_bining["bins"][:10]:
+        current_cut = bin["cut"]
+        new_cut = current_cut + " && tag_Ele_trigMVA > 0.92  "
+        bin["cut"] = new_cut
+
+    egm_tnp_analysis_bining = pickle.load(open(os.path.abspath("tests/samples/fitter_bining.pkl"), "rb"))
+    assert modified_bining == egm_tnp_analysis_bining
+
+    with uproot.open("3d_hists.root") as f:
+        for bin in bining["bins"]:
+            name = bin["name"]
+            min_eta = bin["vars"]["el_sc_eta"]["min"] * 1j
+            max_eta = bin["vars"]["el_sc_eta"]["max"] * 1j
+            min_pt = bin["vars"]["el_pt"]["min"] * 1j
+            max_pt = bin["vars"]["el_pt"]["max"] * 1j
+
+            saved_passing_hist = f[f"{name}_Pass"].to_hist()
+            saved_failing_hist = f[f"{name}_Fail"].to_hist()
+
+            assert_histograms_equal(saved_passing_hist, hmll3d["passing"][min_eta:max_eta:sum, min_pt:max_pt:sum, :], flow=False)
+            assert_histograms_equal(saved_failing_hist, hmll3d["failing"][min_eta:max_eta:sum, min_pt:max_pt:sum, :], flow=False)
 
     os.remove("3d_hists.root")
     os.remove("3d_bining.pkl")

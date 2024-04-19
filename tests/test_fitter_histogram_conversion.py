@@ -112,6 +112,10 @@ def test_fitter_histogram_conversion_1d():
     assert_histograms_equal(res1d["phi"]["entire"]["passing"]["phi_m3p32To3p32"], hmll1d["phi"]["entire"]["passing"][-3.32j:3.32j:sum, :], flow=False)
     assert_histograms_equal(res1d["phi"]["entire"]["failing"]["phi_m3p32To3p32"], hmll1d["phi"]["entire"]["failing"][-3.32j:3.32j:sum, :], flow=False)
 
+    egamma_tnp.config.reset("ptbins")
+    egamma_tnp.config.reset("etabins")
+    egamma_tnp.config.reset("phibins")
+
 
 def test_fitter_histogram_conversion_3d():
     import egamma_tnp
@@ -177,6 +181,10 @@ def test_fitter_histogram_conversion_3d():
     assert_histograms_equal(res3d["failing"]["eta_m2p50To0p00_pt_200p00To500p00"], hmll3d["failing"][200j:500j:sum, -2.5j:0j:sum, sum, :], flow=False)
     assert_histograms_equal(res3d["passing"]["eta_0p00To2p50_pt_200p00To500p00"], hmll3d["passing"][200j:500j:sum, 0j:2.5j:sum, sum, :], flow=False)
     assert_histograms_equal(res3d["failing"]["eta_0p00To2p50_pt_200p00To500p00"], hmll3d["failing"][200j:500j:sum, 0j:2.5j:sum, sum, :], flow=False)
+
+    egamma_tnp.config.reset("ptbins")
+    egamma_tnp.config.reset("etabins")
+    egamma_tnp.config.reset("phibins")
 
 
 def test_fitter_histogram_saving_1d():
@@ -275,6 +283,10 @@ def test_fitter_histogram_saving_1d():
     os.remove("1d_bining_eta_entire.pkl")
     os.remove("1d_bining_phi_entire.pkl")
 
+    egamma_tnp.config.reset("ptbins")
+    egamma_tnp.config.reset("etabins")
+    egamma_tnp.config.reset("phibins")
+
 
 def test_fitter_histogram_saving_3d():
     import pickle
@@ -332,6 +344,10 @@ def test_fitter_histogram_saving_3d():
 
     os.remove("3d_hists.root")
     os.remove("3d_bining.pkl")
+
+    egamma_tnp.config.reset("ptbins")
+    egamma_tnp.config.reset("etabins")
+    egamma_tnp.config.reset("phibins")
 
 
 def test_fitter_histogram_saving_against_reference():
@@ -405,6 +421,10 @@ def test_fitter_histogram_saving_against_reference():
     os.remove("3d_hists.root")
     os.remove("3d_bining.pkl")
 
+    egamma_tnp.config.reset("ptbins")
+    egamma_tnp.config.reset("etabins")
+    egamma_tnp.config.reset("phibins")
+
 
 def test_fitter_histogram_conversion_bining():
     import pickle
@@ -468,3 +488,7 @@ def test_fitter_histogram_conversion_bining():
 
         assert_histograms_equal(res3d["passing"][name], hmll3d["passing"][min_eta:max_eta:sum, min_pt:max_pt:sum, :], flow=False)
         assert_histograms_equal(res3d["failing"][name], hmll3d["failing"][min_eta:max_eta:sum, min_pt:max_pt:sum, :], flow=False)
+
+    egamma_tnp.config.reset("ptbins")
+    egamma_tnp.config.reset("etabins")
+    egamma_tnp.config.reset("phibins")

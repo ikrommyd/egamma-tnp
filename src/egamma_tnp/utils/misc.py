@@ -37,9 +37,7 @@ def delta_r(eta1, phi1, eta2, phi2):
 
 def delta_r_SC(electron, other):
     """Distance in (eta,phi) plane between electron and another object using the electron's SC eta."""
-    return delta_r(
-        electron.eta + electron.deltaEtaSC, electron.phi, other.eta, other.phi
-    )
+    return delta_r(electron.eta + electron.deltaEtaSC, electron.phi, other.eta, other.phi)
 
 
 def merge_goldenjsons(files, outfile):

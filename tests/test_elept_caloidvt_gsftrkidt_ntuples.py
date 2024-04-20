@@ -3,7 +3,7 @@ import os
 import pytest
 from coffea.dataset_tools import preprocess
 
-from egamma_tnp.triggers import TagNProbeFromNTuples
+from egamma_tnp.triggers import ElePt_CaloIdVT_GsfTrkIdT
 
 
 @pytest.mark.parametrize("do_preprocess", [True, False])
@@ -19,28 +19,23 @@ def test_without_compute(do_preprocess, allow_read_errors_with_report):
             }
         }
     else:
-        fileset = {
-            "sample": {
-                "files": {
-                    os.path.abspath("tests/samples/TnPNTuples.root"): "fitter_tree"
-                }
-            }
-        }
+        fileset = {"sample": {"files": {os.path.abspath("tests/samples/TnPNTuples.root"): "fitter_tree"}}}
 
     if do_preprocess:
         if allow_read_errors_with_report:
             with pytest.raises(FileNotFoundError):
                 preprocess(fileset)
-            fileset_available, fileset_updated = preprocess(
-                fileset, skip_bad_files=True
-            )
+            fileset_available, fileset_updated = preprocess(fileset, skip_bad_files=True)
             fileset = fileset_available
 
-    tag_n_probe = TagNProbeFromNTuples(
+    tag_n_probe = ElePt_CaloIdVT_GsfTrkIdT(
         fileset,
-        "passHltEle115CaloIdVTGsfTrkIdTGsf",
-        trigger_pt=5,
-        goldenjson=None,
+        trigger_pt=115,
+        from_ntuples=True,
+        tags_pt_cut=35,
+        probes_pt_cut=5,
+        use_sc_eta=False,
+        avoid_ecal_transition_tags=False,
     )
 
     res = tag_n_probe.get_tnp_histograms(
@@ -60,20 +55,15 @@ def test_without_compute(do_preprocess, allow_read_errors_with_report):
     heta_pass, heta_all = histograms["eta"]["entire"].values()
     hphi_pass, hphi_all = histograms["phi"]["entire"].values()
 
-    assert hpt_pass_barrel.sum(flow=True) + hpt_pass_endcap.sum(flow=True) == 0.0
-    assert hpt_all_barrel.sum(flow=True) + hpt_all_endcap.sum(flow=True) == 0.0
-    assert heta_pass.sum(flow=True) == 0.0
-    assert heta_all.sum(flow=True) == 0.0
-    assert hphi_pass.sum(flow=True) == 0.0
-    assert hphi_all.sum(flow=True) == 0.0
+    assert hpt_pass_barrel.sum(flow=True).value + hpt_pass_endcap.sum(flow=True).value == 0.0
+    assert hpt_all_barrel.sum(flow=True).value + hpt_all_endcap.sum(flow=True).value == 0.0
+    assert heta_pass.sum(flow=True).value == 0.0
+    assert heta_all.sum(flow=True).value == 0.0
+    assert hphi_pass.sum(flow=True).value == 0.0
+    assert hphi_all.sum(flow=True).value == 0.0
 
-    assert (
-        hpt_pass_barrel.values(flow=True)[0] + hpt_pass_endcap.values(flow=True)[0]
-        == 0.0
-    )
-    assert (
-        hpt_all_barrel.values(flow=True)[0] + hpt_all_endcap.values(flow=True)[0] == 0.0
-    )
+    assert hpt_pass_barrel.values(flow=True)[0] + hpt_pass_endcap.values(flow=True)[0] == 0.0
+    assert hpt_all_barrel.values(flow=True)[0] + hpt_all_endcap.values(flow=True)[0] == 0.0
     assert heta_pass.values(flow=True)[0] == 0.0
     assert heta_all.values(flow=True)[0] == 0.0
     assert hphi_pass.values(flow=True)[0] == 0.0
@@ -93,28 +83,23 @@ def test_local_compute(do_preprocess, allow_read_errors_with_report):
             }
         }
     else:
-        fileset = {
-            "sample": {
-                "files": {
-                    os.path.abspath("tests/samples/TnPNTuples.root"): "fitter_tree"
-                }
-            }
-        }
+        fileset = {"sample": {"files": {os.path.abspath("tests/samples/TnPNTuples.root"): "fitter_tree"}}}
 
     if do_preprocess:
         if allow_read_errors_with_report:
             with pytest.raises(FileNotFoundError):
                 preprocess(fileset)
-            fileset_available, fileset_updated = preprocess(
-                fileset, skip_bad_files=True
-            )
+            fileset_available, fileset_updated = preprocess(fileset, skip_bad_files=True)
             fileset = fileset_available
 
-    tag_n_probe = TagNProbeFromNTuples(
+    tag_n_probe = ElePt_CaloIdVT_GsfTrkIdT(
         fileset,
-        "passHltEle115CaloIdVTGsfTrkIdTGsf",
-        trigger_pt=5,
-        goldenjson=None,
+        trigger_pt=115,
+        from_ntuples=True,
+        tags_pt_cut=35,
+        probes_pt_cut=5,
+        use_sc_eta=False,
+        avoid_ecal_transition_tags=False,
     )
 
     res = tag_n_probe.get_tnp_histograms(
@@ -137,20 +122,15 @@ def test_local_compute(do_preprocess, allow_read_errors_with_report):
     heta_pass, heta_all = histograms["eta"]["entire"].values()
     hphi_pass, hphi_all = histograms["phi"]["entire"].values()
 
-    assert hpt_pass_barrel.sum(flow=True) + hpt_pass_endcap.sum(flow=True) == 2.0
-    assert hpt_all_barrel.sum(flow=True) + hpt_all_endcap.sum(flow=True) == 490.0
-    assert heta_pass.sum(flow=True) == 2.0
-    assert heta_all.sum(flow=True) == 505.0
-    assert hphi_pass.sum(flow=True) == 2.0
-    assert hphi_all.sum(flow=True) == 505.0
+    assert hpt_pass_barrel.sum(flow=True).value + hpt_pass_endcap.sum(flow=True).value == 2.0
+    assert hpt_all_barrel.sum(flow=True).value + hpt_all_endcap.sum(flow=True).value == 490.0 - 2.0
+    assert heta_pass.sum(flow=True).value == 2.0
+    assert heta_all.sum(flow=True).value == 505.0 - 2.0
+    assert hphi_pass.sum(flow=True).value == 2.0
+    assert hphi_all.sum(flow=True).value == 505.0 - 2.0
 
-    assert (
-        hpt_pass_barrel.values(flow=True)[0] + hpt_pass_endcap.values(flow=True)[0]
-        == 0.0
-    )
-    assert (
-        hpt_all_barrel.values(flow=True)[0] + hpt_all_endcap.values(flow=True)[0] == 0.0
-    )
+    assert hpt_pass_barrel.values(flow=True)[0] + hpt_pass_endcap.values(flow=True)[0] == 0.0
+    assert hpt_all_barrel.values(flow=True)[0] + hpt_all_endcap.values(flow=True)[0] == 0.0
     assert heta_pass.values(flow=True)[0] == 0.0
     assert heta_all.values(flow=True)[0] == 0.0
     assert hphi_pass.values(flow=True)[0] == 0.0
@@ -172,35 +152,28 @@ def test_distributed_compute(do_preprocess, allow_read_errors_with_report):
             }
         }
     else:
-        fileset = {
-            "sample": {
-                "files": {
-                    os.path.abspath("tests/samples/TnPNTuples.root"): "fitter_tree"
-                }
-            }
-        }
+        fileset = {"sample": {"files": {os.path.abspath("tests/samples/TnPNTuples.root"): "fitter_tree"}}}
 
     if do_preprocess:
         if allow_read_errors_with_report:
             with pytest.raises(FileNotFoundError):
                 preprocess(fileset)
-            fileset_available, fileset_updated = preprocess(
-                fileset, skip_bad_files=True
-            )
+            fileset_available, fileset_updated = preprocess(fileset, skip_bad_files=True)
             fileset = fileset_available
 
-    tag_n_probe = TagNProbeFromNTuples(
+    tag_n_probe = ElePt_CaloIdVT_GsfTrkIdT(
         fileset,
-        "passHltEle115CaloIdVTGsfTrkIdTGsf",
-        trigger_pt=5,
-        goldenjson=None,
+        trigger_pt=115,
+        from_ntuples=True,
+        tags_pt_cut=35,
+        probes_pt_cut=5,
+        use_sc_eta=False,
+        avoid_ecal_transition_tags=False,
     )
 
     with Client():
         res = tag_n_probe.get_tnp_histograms(
-            uproot_options={
-                "allow_read_errors_with_report": allow_read_errors_with_report
-            },
+            uproot_options={"allow_read_errors_with_report": allow_read_errors_with_report},
             compute=True,
             scheduler=None,
             progress=True,
@@ -219,21 +192,15 @@ def test_distributed_compute(do_preprocess, allow_read_errors_with_report):
         heta_pass, heta_all = histograms["eta"]["entire"].values()
         hphi_pass, hphi_all = histograms["phi"]["entire"].values()
 
-        assert hpt_pass_barrel.sum(flow=True) + hpt_pass_endcap.sum(flow=True) == 2.0
-        assert hpt_all_barrel.sum(flow=True) + hpt_all_endcap.sum(flow=True) == 490.0
-        assert heta_pass.sum(flow=True) == 2.0
-        assert heta_all.sum(flow=True) == 505.0
-        assert hphi_pass.sum(flow=True) == 2.0
-        assert hphi_all.sum(flow=True) == 505.0
+        assert hpt_pass_barrel.sum(flow=True).value + hpt_pass_endcap.sum(flow=True).value == 2.0
+        assert hpt_all_barrel.sum(flow=True).value + hpt_all_endcap.sum(flow=True).value == 490.0 - 2.0
+        assert heta_pass.sum(flow=True).value == 2.0
+        assert heta_all.sum(flow=True).value == 505.0 - 2.0
+        assert hphi_pass.sum(flow=True).value == 2.0
+        assert hphi_all.sum(flow=True).value == 505.0 - 2.0
 
-        assert (
-            hpt_pass_barrel.values(flow=True)[0] + hpt_pass_endcap.values(flow=True)[0]
-            == 0.0
-        )
-        assert (
-            hpt_all_barrel.values(flow=True)[0] + hpt_all_endcap.values(flow=True)[0]
-            == 0.0
-        )
+        assert hpt_pass_barrel.values(flow=True)[0] + hpt_pass_endcap.values(flow=True)[0] == 0.0
+        assert hpt_all_barrel.values(flow=True)[0] + hpt_all_endcap.values(flow=True)[0] == 0.0
         assert heta_pass.values(flow=True)[0] == 0.0
         assert heta_all.values(flow=True)[0] == 0.0
         assert hphi_pass.values(flow=True)[0] == 0.0

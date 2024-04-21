@@ -334,7 +334,7 @@ class TagNProbeFromNanoAOD:
             events = self.extra_filter(events, **self.extra_filter_args)
         if self.goldenjson is not None:
             lumimask = LumiMask(self.goldenjson)
-            mask = lumimask(events.run, events.lumi)
+            mask = lumimask(events.run, events.luminosityBlock)
             events = events[mask]
 
         good_events, good_locations = _filter_events(events, self.cutbased_id)

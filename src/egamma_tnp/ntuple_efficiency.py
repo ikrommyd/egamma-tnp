@@ -140,7 +140,9 @@ class TagNProbeFromNTuples:
         if uproot_options is None:
             uproot_options = {}
 
-        data_manipulation = partial(self._find_probes, cut_and_count=cut_and_count, vars=vars)
+        def data_manipulation(events):
+            passing_probes, failing_probes = self._find_probes(events, cut_and_count=cut_and_count, vars=vars)
+            return {"passing": passing_probes, "failing": failing_probes}
 
         to_compute = apply_to_fileset(
             data_manipulation=data_manipulation,

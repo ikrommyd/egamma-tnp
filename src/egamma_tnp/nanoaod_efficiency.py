@@ -6,8 +6,6 @@ from coffea.dataset_tools import apply_to_fileset
 from coffea.lumi_tools import LumiMask
 from coffea.nanoevents import NanoAODSchema
 
-from egamma_tnp.utils import delta_r_SC
-
 
 class TagNProbeFromNanoAOD:
     def __init__(
@@ -330,6 +328,8 @@ class TagNProbeFromNanoAOD:
     def _find_probes(self, events, cut_and_count, vars):
         if vars is None:
             vars = ["pt", "eta", "phi"]
+        if self.use_sc_eta:
+            events["Electron", "eta"] = events.Electron.eta + events.Electron.deltaEtaSC
         if self.extra_filter is not None:
             events = self.extra_filter(events, **self.extra_filter_args)
         if self.goldenjson is not None:
@@ -339,8 +339,6 @@ class TagNProbeFromNanoAOD:
 
         good_events, good_locations = _filter_events(events, self.cutbased_id)
         ele_for_tnp = good_events.Electron[good_locations]
-        if self.use_sc_eta:
-            ele_for_tnp["sc_eta"] = ele_for_tnp.deltaEtaSC + ele_for_tnp.eta
         zcands1 = dak.combinations(ele_for_tnp, 2, fields=["tag", "probe"])
 
         if self.avoid_ecal_transition_tags:
@@ -361,7 +359,6 @@ class TagNProbeFromNanoAOD:
             abseta_tags=self.tags_abseta_cut,
             filterbit=self.filterbit,
             cut_and_count=cut_and_count,
-            use_sc_eta=self.use_sc_eta,
             hlt_filter=self.hlt_filter,
         )
 
@@ -386,7 +383,6 @@ class TagNProbeFromNanoAOD:
                 abseta_tags=self.tags_abseta_cut,
                 filterbit=self.filterbit,
                 cut_and_count=cut_and_count,
-                use_sc_eta=self.use_sc_eta,
                 hlt_filter=self.hlt_filter,
             )
 
@@ -488,13 +484,12 @@ def _filter_events(events, cutbased_id):
     return good_events, good_locations
 
 
-def _trigger_match(electrons, trigobjs, pt, filterbit, use_sc_eta):
+def _trigger_match(electrons, trigobjs, pt, filterbit):
     pass_pt = trigobjs.pt > pt
     pass_id = abs(trigobjs.id) == 11
     pass_filterbit = trigobjs.filterBits & (0x1 << filterbit) > 0
     trigger_cands = trigobjs[pass_pt & pass_id & pass_filterbit]
-    metric = delta_r_SC if use_sc_eta else lambda a, b: a.delta_r(b)
-    delta_r = electrons.metric_table(trigger_cands, metric=metric)
+    delta_r = electrons.metric_table(trigger_cands)
     pass_delta_r = delta_r < 0.1
     n_of_trigger_matches = dak.sum(pass_delta_r, axis=2)
     trig_matched_locs = n_of_trigger_matches >= 1
@@ -510,14 +505,13 @@ def _process_zcands(
     abseta_tags,
     filterbit,
     cut_and_count,
-    use_sc_eta,
     hlt_filter,
 ):
     trigobjs = good_events.TrigObj
     pt_cond_tags = zcands.tag.pt > pt_tags
     eta_cond_tags = abs(zcands.tag.eta) < abseta_tags
     pt_cond_probes = zcands.probe.pt > pt_probes
-    trig_matched_tag = _trigger_match(zcands.tag, trigobjs, 30, 1, use_sc_eta)
+    trig_matched_tag = _trigger_match(zcands.tag, trigobjs, 30, 1)
     zcands = zcands[trig_matched_tag & pt_cond_tags & pt_cond_probes & eta_cond_tags]
     events_with_tags = dak.num(zcands.tag, axis=1) >= 1
     zcands = zcands[events_with_tags]
@@ -536,7 +530,7 @@ def _process_zcands(
     all_probes = probes[isZ & dr_condition]
     pair_mass = mass[isZ & dr_condition]
     all_probes["pair_mass"] = pair_mass
-    trig_matched_probe = _trigger_match(all_probes, trigobjs, trigger_pt, filterbit, use_sc_eta)
+    trig_matched_probe = _trigger_match(all_probes, trigobjs, trigger_pt, filterbit)
     if hlt_filter is None:
         passing_probes = all_probes[trig_matched_probe]
         failing_probes = all_probes[~trig_matched_probe]

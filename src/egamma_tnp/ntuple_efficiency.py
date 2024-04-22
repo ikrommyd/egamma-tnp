@@ -307,16 +307,16 @@ class TagNProbeFromNTuples:
     def _find_probes(self, events, cut_and_count, vars):
         if vars is None:
             vars = ["pt", "eta", "phi"]
+        if self.use_sc_eta:
+            events["el_eta"] = events.el_sc_eta
+        if self.use_sc_phi:
+            events["el_phi"] = events.el_sc_phi
         if self.extra_filter is not None:
             events = self.extra_filter(events, **self.extra_filter_args)
         if self.goldenjson is not None:
             lumimask = LumiMask(self.goldenjson)
             mask = lumimask(events.run, events.lumi)
             events = events[mask]
-        if self.use_sc_eta:
-            events["el_eta"] = events.el_sc_eta
-        if self.use_sc_phi:
-            events["el_phi"] = events.el_sc_phi
 
         if self.avoid_ecal_transition_tags:
             pass_eta_ebeegap_tags = (abs(events.tag_Ele_eta) < 1.4442) | (abs(events.tag_Ele_eta) > 1.566)

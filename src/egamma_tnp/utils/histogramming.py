@@ -25,6 +25,10 @@ def get_ratio_histogram(passing_probes, failing_or_all_probes, denominator_type=
         yerr : numpy.ndarray
             The y error of the ratio histogram.
     """
+    import hist
+
+    if passing_probes.axes != failing_or_all_probes.axes:
+        raise ValueError("The axes of the histograms must be the same.")
     if denominator_type == "failing":
         all_probes = passing_probes + failing_or_all_probes
     elif denominator_type == "all":
@@ -32,8 +36,9 @@ def get_ratio_histogram(passing_probes, failing_or_all_probes, denominator_type=
     else:
         raise ValueError("Invalid denominator type. Must be either 'failing' or 'all'.")
     with np.errstate(divide="ignore", invalid="ignore"):
-        ratio = passing_probes / all_probes
-    ratio[:] = np.nan_to_num(ratio.values())
+        ratio_values = passing_probes.values(flow=True) / all_probes.values(flow=True)
+    ratio = hist.Hist(hist.Hist(*passing_probes.axes))
+    ratio[:] = np.nan_to_num(ratio_values)
     yerr = intervals.ratio_uncertainty(passing_probes.values(), all_probes.values(), uncertainty_type="efficiency")
 
     return ratio, yerr

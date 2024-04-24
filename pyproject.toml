@@ -102,3 +102,6 @@ unfixable = [
     "T20",  # Removes print statements
     "F841", # Removes unused variables
 ]
+
+[tool.ruff.lint.per-file-ignores]
+"*.ipynb" = ["T20"]

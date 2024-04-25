@@ -205,11 +205,9 @@ class TagNProbeFromNanoAOD:
 
         return to_compute
 
-    def get_tnp_histograms(
+    def get_1d_pt_eta_phi_tnp_histograms(
         self,
         cut_and_count=True,
-        pt_eta_phi_1d=True,
-        vars=None,
         plateau_cut=None,
         eta_regions_pt=None,
         eta_regions_eta=None,
@@ -228,34 +226,25 @@ class TagNProbeFromNanoAOD:
                 Whether to use the cut and count method to find the probes coming from a Z boson.
                 If False, invariant mass histograms of the tag-probe pairs will be filled to be fit by a Signal+Background model.
                 The default is True.
-            pt_eta_phi_1d: bool, optional
-                Whether to fill 1D Pt, Eta and Phi histograms or N-dimensional histograms. The default is True.
-            vars: list, optional
-                The list of variables to fill the N-dimensional histograms with.
-                The default is ["pt", "eta", "phi"].
             plateau_cut : int or float, optional
-                Only used if `pt_eta_phi_1d` is True.
                 The Pt threshold to use to ensure that we are on the efficiency plateau for eta and phi histograms.
                 The default None, meaning that no extra cut is applied and the activation region is included in those histograms.
             eta_regions_pt : dict, optional
                 Only used if `pt_eta_phi_1d` is True.
-                A dictionary of the form `{"name": [etamin, etamax], ...}`
                 where name is the name of the region and etamin and etamax are the absolute eta bounds.
                 The Pt histograms will be split into those eta regions.
                 The default is to avoid the ECAL transition region meaning |eta| < 1.4442 or 1.566 < |eta| < 2.5.
             eta_regions_eta : dict, optional
-                Only used if `pt_eta_phi_1d` is True.
                 A dictionary of the form `{"name": [etamin, etamax], ...}`
                 where name is the name of the region and etamin and etamax are the absolute eta bounds.
                 The Eta histograms will be split into those eta regions.
                 The default is to use the entire |eta| < 2.5 region.
             eta_regions_phi : dict, optional
-                Only used if `pt_eta_phi_1d` is True.
                 A dictionary of the form `{"name": [etamin, etamax], ...}`
                 where name is the name of the region and etamin and etamax are the absolute eta bounds.
                 The Phi histograms will be split into those eta regions.
                 The default is to use the entire |eta| < 2.5 region.
-            schemaclass: BaseSchema, default BaseSchema
+            schemaclass: NanoAODSchema, default NanoAODSchema
                  The nanoevents schema to interpret the input dataset with.
             uproot_options : dict, optional
                 Options to pass to uproot. Pass at least {"allow_read_errors_with_report": True} to turn on file access reports.
@@ -286,8 +275,8 @@ class TagNProbeFromNanoAOD:
         if cut_and_count:
             data_manipulation = partial(
                 self._make_cutncount_histograms,
-                pt_eta_phi_1d=pt_eta_phi_1d,
-                vars=vars,
+                pt_eta_phi_1d=True,
+                vars=None,
                 plateau_cut=plateau_cut,
                 eta_regions_pt=eta_regions_pt,
                 eta_regions_eta=eta_regions_eta,
@@ -296,12 +285,104 @@ class TagNProbeFromNanoAOD:
         else:
             data_manipulation = partial(
                 self._make_mll_histograms,
-                pt_eta_phi_1d=pt_eta_phi_1d,
-                vars=vars,
+                pt_eta_phi_1d=True,
+                vars=None,
                 plateau_cut=plateau_cut,
                 eta_regions_pt=eta_regions_pt,
                 eta_regions_eta=eta_regions_eta,
                 eta_regions_phi=eta_regions_phi,
+            )
+
+        to_compute = apply_to_fileset(
+            data_manipulation=data_manipulation,
+            fileset=self.fileset,
+            schemaclass=schemaclass,
+            uproot_options=uproot_options,
+        )
+        if compute:
+            import dask
+            from dask.diagnostics import ProgressBar
+
+            if progress:
+                pbar = ProgressBar()
+                pbar.register()
+
+            computed = dask.compute(to_compute, scheduler=scheduler)
+
+            if progress:
+                pbar.unregister()
+
+            return computed[0]
+
+        return to_compute
+
+    def get_nd_tnp_histograms(
+        self,
+        cut_and_count=True,
+        vars=None,
+        schemaclass=NanoAODSchema,
+        uproot_options=None,
+        compute=False,
+        scheduler=None,
+        progress=False,
+    ):
+        """Get the N-dimensional histograms of the passing and failing probes.
+
+        Parameters
+        ----------
+            cut_and_count: bool, optional
+                Whether to use the cut and count method to find the probes coming from a Z boson.
+                If False, invariant mass histograms of the tag-probe pairs will be filled to be fit by a Signal+Background model.
+                The default is True.
+            vars: list, optional
+                The variables to use to fill the N-dimensional histograms. The default is ["pt", "eta", "phi"].
+                These vars will be used to fill the N-dimensional histograms.
+                If cut_and_count is False, one more invariant mass axis will be added to the histograms.
+            schemaclass: NanoAODSchema, default NanoAODSchema
+                 The nanoevents schema to interpret the input dataset with.
+            uproot_options : dict, optional
+                Options to pass to uproot. Pass at least {"allow_read_errors_with_report": True} to turn on file access reports.
+            compute : bool, optional
+                Whether to return the computed hist.Hist histograms or the delayed hist.dask.Hist histograms.
+                The default is False.
+            scheduler : str, optional
+                The dask scheduler to use. The default is None.
+                Only used if compute is True.
+            progress : bool, optional
+                Whether to show a progress bar if `compute` is True. The default is False.
+                Only meaningful if compute is True and no distributed Client is used.
+
+        Returns
+        -------
+            A tuple of the form (histograms, report) if `allow_read_errors_with_report` is True, otherwise just histograms.
+            histograms: a dictionary of the form {"passing": passing_probes, "failing": failing_probes}
+            where passing_probes and failing_probes are hist.Hist or hist.dask.Hist objects.
+            These are the N-dimensional histograms of the passing and failing probes respectively.
+            report: dict of awkward arrays of the same form as fileset.
+                For each dataset an awkward array that contains information about the file access is present.
+        """
+        if uproot_options is None:
+            uproot_options = {}
+
+        if cut_and_count:
+            data_manipulation = partial(
+                self._make_cutncount_histograms,
+                pt_eta_phi_1d=False,
+                vars=vars,
+                plateau_cut=None,
+                eta_regions_pt=None,
+                eta_regions_eta=None,
+                eta_regions_phi=None,
+            )
+        else:
+            data_manipulation = partial(
+                self._make_mll_histograms,
+                pt_eta_phi_1d=False,
+                vars=vars,
+                plateau_cut=None,
+                eta_regions_pt=None,
+                eta_regions_eta=None,
+                eta_regions_phi=None,
             )
 
         to_compute = apply_to_fileset(

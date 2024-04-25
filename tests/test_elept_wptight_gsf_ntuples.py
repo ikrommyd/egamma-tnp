@@ -38,7 +38,7 @@ def test_without_compute(do_preprocess, allow_read_errors_with_report):
         avoid_ecal_transition_tags=False,
     )
 
-    res = tag_n_probe.get_tnp_histograms(
+    res = tag_n_probe.get_1d_pt_eta_phi_tnp_histograms(
         uproot_options={"allow_read_errors_with_report": allow_read_errors_with_report},
         compute=False,
         scheduler=None,
@@ -102,7 +102,7 @@ def test_local_compute(do_preprocess, allow_read_errors_with_report):
         avoid_ecal_transition_tags=False,
     )
 
-    res = tag_n_probe.get_tnp_histograms(
+    res = tag_n_probe.get_1d_pt_eta_phi_tnp_histograms(
         uproot_options={"allow_read_errors_with_report": allow_read_errors_with_report},
         compute=True,
         scheduler=None,
@@ -172,7 +172,7 @@ def test_distributed_compute(do_preprocess, allow_read_errors_with_report):
     )
 
     with Client():
-        res = tag_n_probe.get_tnp_histograms(
+        res = tag_n_probe.get_1d_pt_eta_phi_tnp_histograms(
             uproot_options={"allow_read_errors_with_report": allow_read_errors_with_report},
             compute=True,
             scheduler=None,

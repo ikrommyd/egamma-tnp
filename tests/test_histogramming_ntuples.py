@@ -107,9 +107,8 @@ def test_histogramming_default_vars():
         tags_pt_cut=30,
     )
 
-    hcnc1d = tag_n_probe.get_tnp_histograms(
+    hcnc1d = tag_n_probe.get_1d_pt_eta_phi_tnp_histograms(
         cut_and_count=True,
-        pt_eta_phi_1d=True,
         eta_regions_pt={
             "barrel": [0.0, 1.4442],
             "endcap_loweta": [1.566, 2.0],
@@ -118,9 +117,8 @@ def test_histogramming_default_vars():
         plateau_cut=35,
         compute=True,
     )["sample"]
-    hmll1d = tag_n_probe.get_tnp_histograms(
+    hmll1d = tag_n_probe.get_1d_pt_eta_phi_tnp_histograms(
         cut_and_count=False,
-        pt_eta_phi_1d=True,
         eta_regions_pt={
             "barrel": [0.0, 1.4442],
             "endcap_loweta": [1.566, 2.0],
@@ -129,14 +127,12 @@ def test_histogramming_default_vars():
         plateau_cut=35,
         compute=True,
     )["sample"]
-    hcnc3d = tag_n_probe.get_tnp_histograms(
+    hcnc3d = tag_n_probe.get_nd_tnp_histograms(
         cut_and_count=True,
-        pt_eta_phi_1d=False,
         compute=True,
     )["sample"]
-    hmll3d = tag_n_probe.get_tnp_histograms(
+    hmll3d = tag_n_probe.get_nd_tnp_histograms(
         cut_and_count=False,
-        pt_eta_phi_1d=False,
         compute=True,
     )["sample"]
 
@@ -192,9 +188,8 @@ def test_histogramming_custom_vars():
 
     egamma_tnp.config.set("r9bins", np.linspace(0.1, 1.05, 100).tolist())
 
-    hmll1d = tag_n_probe.get_tnp_histograms(
+    hmll1d = tag_n_probe.get_1d_pt_eta_phi_tnp_histograms(
         cut_and_count=False,
-        pt_eta_phi_1d=True,
         eta_regions_pt={
             "barrel": [0.0, 1.4442],
             "endcap_loweta": [1.566, 2.0],
@@ -204,10 +199,9 @@ def test_histogramming_custom_vars():
         compute=True,
     )["sample"]
 
-    hmll3d = tag_n_probe.get_tnp_histograms(
+    hmll3d = tag_n_probe.get_nd_tnp_histograms(
         cut_and_count=False,
         vars=["eta", "r9"],
-        pt_eta_phi_1d=False,
         compute=True,
     )["sample"]
 

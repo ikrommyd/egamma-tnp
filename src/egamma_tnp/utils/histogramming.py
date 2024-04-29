@@ -118,7 +118,7 @@ def fill_pt_eta_phi_cutncount_histograms(
     if eta_regions_phi is None:
         eta_regions_phi = {"entire": [0.0, 2.5]}
     if vars is None:
-        vars = ["pt", "eta", "phi"]
+        vars = ["el_pt", "el_eta", "el_phi"]
 
     ptbins = egamma_tnp.config.get("pt_bins")
     etabins = egamma_tnp.config.get("eta_bins")
@@ -264,7 +264,7 @@ def fill_pt_eta_phi_mll_histograms(
     if eta_regions_phi is None:
         eta_regions_phi = {"entire": [0.0, 2.5]}
     if vars is None:
-        vars = ["pt", "eta", "phi"]
+        vars = ["el_pt", "el_eta", "el_phi"]
 
     ptbins = egamma_tnp.config.get("pt_bins")
     etabins = egamma_tnp.config.get("eta_bins")
@@ -381,7 +381,7 @@ def fill_nd_cutncount_histograms(
             An N-dimensional histogram of the failing probes.
     """
     if vars is None:
-        vars = ["pt", "eta", "phi"]
+        vars = ["el_pt", "el_eta", "el_phi"]
     if isinstance(vars, str):
         raise ValueError("Please provide a list of variables and not a single string.")
 
@@ -445,7 +445,7 @@ def fill_nd_mll_histograms(
             An N+1-dimensional histogram of the failing probes.
     """
     if vars is None:
-        vars = ["pt", "eta", "phi"]
+        vars = ["el_pt", "el_eta", "el_phi"]
     if isinstance(vars, str):
         raise ValueError("Please provide a list of variables and not a single string.")
 

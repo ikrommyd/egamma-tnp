@@ -59,6 +59,7 @@ def test_fitter_histogram_conversion_1d():
             "endcap_higheta": [2.0, 2.5],
         },
         plateau_cut=35,
+        vars=["pt", "eta", "phi"],
         delayed=False,
     )
 
@@ -147,6 +148,7 @@ def test_fitter_histogram_conversion_3d():
     hmll3d = fill_nd_mll_histograms(
         passing_probes,
         failing_probes,
+        vars=["pt", "eta", "phi"],
         delayed=False,
     )
 
@@ -223,6 +225,7 @@ def test_fitter_histogram_saving_1d():
             "endcap_higheta": [2.0, 2.5],
         },
         plateau_cut=35,
+        vars=["pt", "eta", "phi"],
         delayed=False,
     )
 
@@ -316,6 +319,7 @@ def test_fitter_histogram_saving_3d():
     hmll3d = fill_nd_mll_histograms(
         passing_probes,
         failing_probes,
+        vars=["pt", "eta", "phi"],
         delayed=False,
     )
 

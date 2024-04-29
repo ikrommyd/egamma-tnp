@@ -59,11 +59,13 @@ def test_histogramming_funcs_custom_vars():
             "endcap_higheta": [2.0, 2.5],
         },
         plateau_cut=0,
+        vars=["pt", "eta", "phi"],
         delayed=False,
     )
     hmll1d = fill_pt_eta_phi_mll_histograms(
         passing_probes,
         failing_probes,
+        vars=["pt", "eta", "phi"],
         delayed=False,
     )
     hcnc3d = fill_nd_cutncount_histograms(
@@ -115,7 +117,6 @@ def test_histogramming_default_vars():
             "endcap_higheta": [2.0, 2.5],
         },
         plateau_cut=35,
-        vars=["el_pt", "el_eta", "el_phi"],
         compute=True,
     )["sample"]
     hmll1d = tag_n_probe.get_1d_pt_eta_phi_tnp_histograms(
@@ -126,17 +127,14 @@ def test_histogramming_default_vars():
             "endcap_higheta": [2.0, 2.5],
         },
         plateau_cut=35,
-        vars=["el_pt", "el_eta", "el_phi"],
         compute=True,
     )["sample"]
     hcnc3d = tag_n_probe.get_nd_tnp_histograms(
         cut_and_count=True,
-        vars=["el_pt", "el_eta", "el_phi"],
         compute=True,
     )["sample"]
     hmll3d = tag_n_probe.get_nd_tnp_histograms(
         cut_and_count=False,
-        vars=["el_pt", "el_eta", "el_phi"],
         compute=True,
     )["sample"]
 
@@ -200,7 +198,6 @@ def test_histogramming_custom_vars():
             "endcap_higheta": [2.0, 2.5],
         },
         plateau_cut=0,
-        vars=["el_pt", "el_eta", "el_phi"],
         compute=True,
     )["sample"]
 

@@ -46,9 +46,9 @@ def test_fitter_histogram_conversion_1d():
         }
     ).compute()
 
-    egamma_tnp.config.set("ptbins", [5, 50, 200, 500])
-    egamma_tnp.config.set("etabins", [-2.5, 0, 2.5])
-    egamma_tnp.config.set("phibins", [-3.32, 3.32])
+    egamma_tnp.config.set("pt_bins", [5, 50, 200, 500])
+    egamma_tnp.config.set("eta_bins", [-2.5, 0, 2.5])
+    egamma_tnp.config.set("phi_bins", [-3.32, 3.32])
 
     hmll1d = fill_pt_eta_phi_mll_histograms(
         passing_probes,
@@ -112,9 +112,7 @@ def test_fitter_histogram_conversion_1d():
     assert_histograms_equal(res1d["phi"]["entire"]["passing"]["phi_m3p32To3p32"], hmll1d["phi"]["entire"]["passing"][-3.32j:3.32j:sum, :], flow=False)
     assert_histograms_equal(res1d["phi"]["entire"]["failing"]["phi_m3p32To3p32"], hmll1d["phi"]["entire"]["failing"][-3.32j:3.32j:sum, :], flow=False)
 
-    egamma_tnp.config.reset("ptbins")
-    egamma_tnp.config.reset("etabins")
-    egamma_tnp.config.reset("phibins")
+    egamma_tnp.config.reset_all()
 
 
 def test_fitter_histogram_conversion_3d():
@@ -142,9 +140,9 @@ def test_fitter_histogram_conversion_3d():
         }
     ).compute()
 
-    egamma_tnp.config.set("ptbins", [5, 50, 200, 500])
-    egamma_tnp.config.set("etabins", [-2.5, 0, 2.5])
-    egamma_tnp.config.set("phibins", [-3.32, 3.32])
+    egamma_tnp.config.set("pt_bins", [5, 50, 200, 500])
+    egamma_tnp.config.set("eta_bins", [-2.5, 0, 2.5])
+    egamma_tnp.config.set("phi_bins", [-3.32, 3.32])
 
     hmll3d = fill_nd_mll_histograms(
         passing_probes,
@@ -182,9 +180,7 @@ def test_fitter_histogram_conversion_3d():
     assert_histograms_equal(res3d["passing"]["eta_0p00To2p50_pt_200p00To500p00"], hmll3d["passing"][200j:500j:sum, 0j:2.5j:sum, sum, :], flow=False)
     assert_histograms_equal(res3d["failing"]["eta_0p00To2p50_pt_200p00To500p00"], hmll3d["failing"][200j:500j:sum, 0j:2.5j:sum, sum, :], flow=False)
 
-    egamma_tnp.config.reset("ptbins")
-    egamma_tnp.config.reset("etabins")
-    egamma_tnp.config.reset("phibins")
+    egamma_tnp.config.reset_all()
 
 
 def test_fitter_histogram_saving_1d():
@@ -214,9 +210,9 @@ def test_fitter_histogram_saving_1d():
         }
     ).compute()
 
-    egamma_tnp.config.set("ptbins", [5, 50, 200, 500])
-    egamma_tnp.config.set("etabins", [-2.5, 0, 2.5])
-    egamma_tnp.config.set("phibins", [-3.32, 3.32])
+    egamma_tnp.config.set("pt_bins", [5, 50, 200, 500])
+    egamma_tnp.config.set("eta_bins", [-2.5, 0, 2.5])
+    egamma_tnp.config.set("phi_bins", [-3.32, 3.32])
 
     hmll1d = fill_pt_eta_phi_mll_histograms(
         passing_probes,
@@ -283,9 +279,7 @@ def test_fitter_histogram_saving_1d():
     os.remove("1d_bining_eta_entire.pkl")
     os.remove("1d_bining_phi_entire.pkl")
 
-    egamma_tnp.config.reset("ptbins")
-    egamma_tnp.config.reset("etabins")
-    egamma_tnp.config.reset("phibins")
+    egamma_tnp.config.reset_all()
 
 
 def test_fitter_histogram_saving_3d():
@@ -315,9 +309,9 @@ def test_fitter_histogram_saving_3d():
         }
     ).compute()
 
-    egamma_tnp.config.set("ptbins", [5, 50, 200, 500])
-    egamma_tnp.config.set("etabins", [-2.5, 0, 2.5])
-    egamma_tnp.config.set("phibins", [-3.32, 3.32])
+    egamma_tnp.config.set("pt_bins", [5, 50, 200, 500])
+    egamma_tnp.config.set("eta_bins", [-2.5, 0, 2.5])
+    egamma_tnp.config.set("phi_bins", [-3.32, 3.32])
 
     hmll3d = fill_nd_mll_histograms(
         passing_probes,
@@ -345,9 +339,7 @@ def test_fitter_histogram_saving_3d():
     os.remove("3d_hists.root")
     os.remove("3d_bining.pkl")
 
-    egamma_tnp.config.reset("ptbins")
-    egamma_tnp.config.reset("etabins")
-    egamma_tnp.config.reset("phibins")
+    egamma_tnp.config.reset_all()
 
 
 def test_fitter_histogram_saving_against_reference():
@@ -375,8 +367,8 @@ def test_fitter_histogram_saving_against_reference():
         }
     ).compute()
 
-    egamma_tnp.config.set("el_ptbins", [10, 20, 35, 50, 100, 200, 500])
-    egamma_tnp.config.set("el_sc_etabins", [-2.5, -2.0, -1.566, -1.4442, -0.8, 0.0, 0.8, 1.4442, 1.566, 2.0, 2.5])
+    egamma_tnp.config.set("el_pt_bins", [10, 20, 35, 50, 100, 200, 500])
+    egamma_tnp.config.set("el_sc_eta_bins", [-2.5, -2.0, -1.566, -1.4442, -0.8, 0.0, 0.8, 1.4442, 1.566, 2.0, 2.5])
 
     hmll3d = fill_nd_mll_histograms(
         passing_probes,
@@ -421,9 +413,7 @@ def test_fitter_histogram_saving_against_reference():
     os.remove("3d_hists.root")
     os.remove("3d_bining.pkl")
 
-    egamma_tnp.config.reset("ptbins")
-    egamma_tnp.config.reset("etabins")
-    egamma_tnp.config.reset("phibins")
+    egamma_tnp.config.reset_all()
 
 
 def test_fitter_histogram_conversion_bining():
@@ -451,8 +441,8 @@ def test_fitter_histogram_conversion_bining():
         }
     ).compute()
 
-    egamma_tnp.config.set("el_ptbins", [10, 20, 35, 50, 100, 200, 500])
-    egamma_tnp.config.set("el_sc_etabins", [-2.5, -2.0, -1.566, -1.4442, -0.8, 0.0, 0.8, 1.4442, 1.566, 2.0, 2.5])
+    egamma_tnp.config.set("el_pt_bins", [10, 20, 35, 50, 100, 200, 500])
+    egamma_tnp.config.set("el_sc_eta_bins", [-2.5, -2.0, -1.566, -1.4442, -0.8, 0.0, 0.8, 1.4442, 1.566, 2.0, 2.5])
 
     hmll3d = fill_nd_mll_histograms(
         passing_probes,
@@ -489,6 +479,4 @@ def test_fitter_histogram_conversion_bining():
         assert_histograms_equal(res3d["passing"][name], hmll3d["passing"][min_eta:max_eta:sum, min_pt:max_pt:sum, :], flow=False)
         assert_histograms_equal(res3d["failing"][name], hmll3d["failing"][min_eta:max_eta:sum, min_pt:max_pt:sum, :], flow=False)
 
-    egamma_tnp.config.reset("ptbins")
-    egamma_tnp.config.reset("etabins")
-    egamma_tnp.config.reset("phibins")
+    egamma_tnp.config.reset_all()

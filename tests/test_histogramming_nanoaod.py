@@ -108,7 +108,7 @@ def test_histogramming_custom_vars():
         trigger_pt=30,
     )
 
-    egamma_tnp.config.set("r9bins", np.linspace(0.1, 1.05, 100).tolist())
+    egamma_tnp.config.set("r9_bins", np.linspace(0.1, 1.05, 100).tolist())
 
     hmll1d = tag_n_probe.get_1d_pt_eta_phi_tnp_histograms(
         cut_and_count=False,

@@ -35,3 +35,8 @@ class Config:
     def get(self, key):
         # Retrieve from the user configuration
         return self.runtime_config.get(key, None)
+
+    def reset_all(self):
+        # Only updates the user configuration
+        self.runtime_config = self.load_config(self.default_filename)
+        self.save_user_config()

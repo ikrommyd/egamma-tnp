@@ -194,7 +194,7 @@ def test_histogramming_funcs_custom_vars():
         }
     ).compute()
 
-    egamma_tnp.config.set("r9bins", np.linspace(0.1, 1.05, 100).tolist())
+    egamma_tnp.config.set("r9_bins", np.linspace(0.1, 1.05, 100).tolist())
 
     hcnc1d = fill_pt_eta_phi_cutncount_histograms(
         passing_probes,

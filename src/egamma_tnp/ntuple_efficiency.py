@@ -101,7 +101,7 @@ class TagNProbeFromNTuples(BaseTagNProbe):
 
     def _find_probes(self, events, cut_and_count, vars):
         if vars is None:
-            vars = ["pt", "eta", "phi"]
+            vars = ["el_pt", "el_eta", "el_phi"]
         if self.use_sc_eta:
             events["el_eta"] = events.el_sc_eta
         if self.use_sc_phi:
@@ -128,12 +128,12 @@ class TagNProbeFromNTuples(BaseTagNProbe):
         passing_probe_events, failing_probe_events = self._find_probe_events(events, cut_and_count=cut_and_count)
 
         if cut_and_count:
-            passing_probes = dak.zip({f"{var}": passing_probe_events[f"el_{var}"] for var in vars})
-            failing_probes = dak.zip({f"{var}": failing_probe_events[f"el_{var}"] for var in vars})
+            passing_probes = dak.zip({var: passing_probe_events[var] for var in vars})
+            failing_probes = dak.zip({var: failing_probe_events[var] for var in vars})
         else:
-            p_arrays = {f"{var}": passing_probe_events[f"el_{var}"] for var in vars}
+            p_arrays = {var: passing_probe_events[var] for var in vars}
             p_arrays["pair_mass"] = passing_probe_events["pair_mass"]
-            f_arrays = {f"{var}": failing_probe_events[f"el_{var}"] for var in vars}
+            f_arrays = {var: failing_probe_events[var] for var in vars}
             f_arrays["pair_mass"] = failing_probe_events["pair_mass"]
             passing_probes = dak.zip(p_arrays)
             failing_probes = dak.zip(f_arrays)

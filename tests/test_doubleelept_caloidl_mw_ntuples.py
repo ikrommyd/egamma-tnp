@@ -51,7 +51,7 @@ def test_without_compute(do_preprocess, allow_read_errors_with_report):
     )
 
     for tag_n_probe in [tag_n_probe_leg1, tag_n_probe_leg2]:
-        res = tag_n_probe.get_tnp_histograms(
+        res = tag_n_probe.get_1d_pt_eta_phi_tnp_histograms(
             uproot_options={"allow_read_errors_with_report": allow_read_errors_with_report},
             compute=False,
             scheduler=None,
@@ -125,7 +125,7 @@ def test_local_compute(do_preprocess, allow_read_errors_with_report):
     )
 
     for tag_n_probe, target_pt, target_eta_phi in zip([tag_n_probe_leg1, tag_n_probe_leg2], [361.0, 367.0], [372.0, 378.0]):
-        res = tag_n_probe.get_tnp_histograms(
+        res = tag_n_probe.get_1d_pt_eta_phi_tnp_histograms(
             uproot_options={"allow_read_errors_with_report": allow_read_errors_with_report},
             compute=True,
             scheduler=None,
@@ -205,7 +205,7 @@ def test_distributed_compute(do_preprocess, allow_read_errors_with_report):
 
     with Client():
         for tag_n_probe, target_pt, target_eta_phi in zip([tag_n_probe_leg1, tag_n_probe_leg2], [361.0, 367.0], [372.0, 378.0]):
-            res = tag_n_probe.get_tnp_histograms(
+            res = tag_n_probe.get_1d_pt_eta_phi_tnp_histograms(
                 uproot_options={"allow_read_errors_with_report": allow_read_errors_with_report},
                 compute=True,
                 scheduler=None,

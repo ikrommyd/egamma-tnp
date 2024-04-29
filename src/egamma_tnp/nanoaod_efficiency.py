@@ -1,17 +1,16 @@
-import os
-from functools import partial
-
 import dask_awkward as dak
-from coffea.dataset_tools import apply_to_fileset
 from coffea.lumi_tools import LumiMask
 from coffea.nanoevents import NanoAODSchema
 
+from egamma_tnp._base_tagnprobe import BaseTagNProbe
 
-class TagNProbeFromNanoAOD:
+
+class TagNProbeFromNanoAOD(BaseTagNProbe):
     def __init__(
         self,
         fileset,
         for_trigger,
+        egm_nano=False,
         *,
         filter="None",
         trigger_pt=None,
@@ -38,6 +37,8 @@ class TagNProbeFromNanoAOD:
             The fileset to calculate the trigger efficiencies for.
         for_trigger: bool
             Whether the filter is a trigger or not.
+        egm_nano: bool, optional
+            Whether the input fileset is EGamma NanoAOD or NanoAOD. The default is False.
         filter: str
             The name of the filter to calculate the efficiencies for.
         trigger_pt: int or float, optional
@@ -78,47 +79,38 @@ class TagNProbeFromNanoAOD:
         """
         if for_trigger is False:
             raise NotImplementedError("Only trigger efficiencies are supported at the moment.")
-        if use_sc_phi:
-            raise NotImplementedError("Supercluster Phi is not supported yet.")
+        if use_sc_phi and not egm_nano:
+            raise NotImplementedError("Supercluster Phi is only available for EGamma NanoAOD.")
         if for_trigger and filterbit is None:
             raise ValueError("TrigObj filerbit must be provided for trigger efficiencies.")
         if filter == "None" and trigger_pt is None and for_trigger:
             raise ValueError("An HLT filter name or a trigger Pt threshold must be provided for trigger efficiencies.")
-        if extra_filter_args is None:
-            extra_filter_args = {}
-        if probes_pt_cut is None:
-            from egamma_tnp.utils.misc import find_pt_threshold
-
-            self.probes_pt_cut = find_pt_threshold(filter) - 3
-        else:
-            self.probes_pt_cut = probes_pt_cut
         if trigger_pt is None:
             from egamma_tnp.utils.misc import find_pt_threshold
 
             self.trigger_pt = find_pt_threshold(filter)
         else:
             self.trigger_pt = trigger_pt
-        if cutbased_id is None:
-            cutbased_id = 4
-
-        self.fileset = fileset
-        self.filter = filter
+        super().__init__(
+            fileset=fileset,
+            filter=filter,
+            tags_pt_cut=tags_pt_cut,
+            probes_pt_cut=probes_pt_cut,
+            tags_abseta_cut=tags_abseta_cut,
+            cutbased_id=cutbased_id,
+            goldenjson=goldenjson,
+            extra_filter=extra_filter,
+            extra_filter_args=extra_filter_args,
+            use_sc_eta=use_sc_eta,
+            use_sc_phi=use_sc_phi,
+            avoid_ecal_transition_tags=avoid_ecal_transition_tags,
+            avoid_ecal_transition_probes=avoid_ecal_transition_probes,
+            schemaclass=NanoAODSchema,
+        )
         self.for_trigger = for_trigger
-        self.tags_pt_cut = tags_pt_cut
-        self.tags_abseta_cut = tags_abseta_cut
+        self.egm_nano = egm_nano
         self.filterbit = filterbit
-        self.cutbased_id = cutbased_id
-        self.goldenjson = goldenjson
-        self.extra_filter = extra_filter
-        self.extra_filter_args = extra_filter_args
-        self.use_sc_eta = use_sc_eta
-        self.use_sc_phi = use_sc_phi
-        self.avoid_ecal_transition_tags = avoid_ecal_transition_tags
-        self.avoid_ecal_transition_probes = avoid_ecal_transition_probes
         self.hlt_filter = hlt_filter
-
-        if goldenjson is not None and not os.path.exists(goldenjson):
-            raise FileNotFoundError(f"Golden JSON {goldenjson} does not exist.")
 
     def __repr__(self):
         n_of_files = 0
@@ -126,212 +118,16 @@ class TagNProbeFromNanoAOD:
             n_of_files += len(dataset["files"])
         return f"TagNProbeFromNanoAOD({self.filter}, Number of files: {n_of_files}, Golden JSON: {self.goldenjson})"
 
-    def get_tnp_arrays(
-        self,
-        cut_and_count=True,
-        vars=None,
-        schemaclass=NanoAODSchema,
-        uproot_options=None,
-        compute=False,
-        scheduler=None,
-        progress=False,
-    ):
-        """Get the Pt, Eta and Phi arrays of the passing and failing probes.
-        WARNING: Not recommended to be used for large datasets as the arrays can be very large.
-
-        Parameters
-        ----------nan
-            cut_and_count: bool, optional
-                Whether to use the cut and count method to find the probes coming from a Z boson.
-                If False, invariant mass histograms of the tag-probe pairs will be filled to be fit by a Signal+Background model.
-                The default is True.
-            vars: list, optional
-                The list of variables of the probes to return. The default is ["pt", "eta", "phi"].
-            schemaclass: BaseSchema, default BaseSchema
-                The nanoevents schema to interpret the input dataset with.
-            uproot_options : dict, optional
-                Options to pass to uproot. Pass at least {"allow_read_errors_with_report": True} to turn on file access reports.
-            compute : bool, optional
-                Whether to return the computed arrays or the delayed arrays.
-                The default is False.
-            scheduler : str, optional
-                The dask scheduler to use. The default is None.
-                Only used if compute is True.
-            progress : bool, optional
-                Whether to show a progress bar if `compute` is True. The default is False.
-                Only meaningful if compute is True and no distributed Client is used.
-
-        Returns
-        -------
-            A tuple of the form (arrays, report) if `allow_read_errors_with_report` is True, otherwise just arrays.
-            arrays :a tuple of dask awkward zip items of the form (passing_probes, failing_probes).
-                Each of the zip items has the following fields:
-                    pt: dask_awkward.Array
-                        The Pt array of the probes.
-                    eta: dask_awkward.array
-                        The Eta array of the probes.
-                    phi: dask_awkward.array
-                        The Phi array of the probes.
-            report: dict of awkward arrays of the same form as fileset.
-                For each dataset an awkward array that contains information about the file access is present.
-        """
-        if uproot_options is None:
-            uproot_options = {}
-
-        def data_manipulation(events):
-            passing_probes, failing_probes = self._find_probes(events, cut_and_count=cut_and_count, vars=vars)
-            return {"passing": passing_probes, "failing": failing_probes}
-
-        to_compute = apply_to_fileset(
-            data_manipulation=data_manipulation,
-            fileset=self.fileset,
-            schemaclass=schemaclass,
-            uproot_options=uproot_options,
-        )
-        if compute:
-            import dask
-            from dask.diagnostics import ProgressBar
-
-            if progress:
-                pbar = ProgressBar()
-                pbar.register()
-
-            computed = dask.compute(to_compute, scheduler=scheduler)
-
-            if progress:
-                pbar.unregister()
-
-            return computed[0]
-
-        return to_compute
-
-    def get_tnp_histograms(
-        self,
-        cut_and_count=True,
-        pt_eta_phi_1d=True,
-        vars=None,
-        plateau_cut=None,
-        eta_regions_pt=None,
-        eta_regions_eta=None,
-        eta_regions_phi=None,
-        schemaclass=NanoAODSchema,
-        uproot_options=None,
-        compute=False,
-        scheduler=None,
-        progress=False,
-    ):
-        """Get the Pt, Eta and Phi histograms of the passing and failing probes.
-
-        Parameters
-        ----------
-            cut_and_count: bool, optional
-                Whether to use the cut and count method to find the probes coming from a Z boson.
-                If False, invariant mass histograms of the tag-probe pairs will be filled to be fit by a Signal+Background model.
-                The default is True.
-            pt_eta_phi_1d: bool, optional
-                Whether to fill 1D Pt, Eta and Phi histograms or N-dimensional histograms. The default is True.
-            vars: list, optional
-                The list of variables to fill the N-dimensional histograms with.
-                The default is ["pt", "eta", "phi"].
-            plateau_cut : int or float, optional
-                Only used if `pt_eta_phi_1d` is True.
-                The Pt threshold to use to ensure that we are on the efficiency plateau for eta and phi histograms.
-                The default None, meaning that no extra cut is applied and the activation region is included in those histograms.
-            eta_regions_pt : dict, optional
-                Only used if `pt_eta_phi_1d` is True.
-                A dictionary of the form `{"name": [etamin, etamax], ...}`
-                where name is the name of the region and etamin and etamax are the absolute eta bounds.
-                The Pt histograms will be split into those eta regions.
-                The default is to avoid the ECAL transition region meaning |eta| < 1.4442 or 1.566 < |eta| < 2.5.
-            eta_regions_eta : dict, optional
-                Only used if `pt_eta_phi_1d` is True.
-                A dictionary of the form `{"name": [etamin, etamax], ...}`
-                where name is the name of the region and etamin and etamax are the absolute eta bounds.
-                The Eta histograms will be split into those eta regions.
-                The default is to use the entire |eta| < 2.5 region.
-            eta_regions_phi : dict, optional
-                Only used if `pt_eta_phi_1d` is True.
-                A dictionary of the form `{"name": [etamin, etamax], ...}`
-                where name is the name of the region and etamin and etamax are the absolute eta bounds.
-                The Phi histograms will be split into those eta regions.
-                The default is to use the entire |eta| < 2.5 region.
-            schemaclass: BaseSchema, default BaseSchema
-                 The nanoevents schema to interpret the input dataset with.
-            uproot_options : dict, optional
-                Options to pass to uproot. Pass at least {"allow_read_errors_with_report": True} to turn on file access reports.
-            compute : bool, optional
-                Whether to return the computed hist.Hist histograms or the delayed hist.dask.Hist histograms.
-                The default is False.
-            scheduler : str, optional
-                The dask scheduler to use. The default is None.
-                Only used if compute is True.
-            progress : bool, optional
-                Whether to show a progress bar if `compute` is True. The default is False.
-                Only meaningful if compute is True and no distributed Client is used.
-
-        Returns
-        -------
-            A tuple of the form (histograms, report) if `allow_read_errors_with_report` is True, otherwise just histograms.
-            histograms : dict of dicts of the same form as fileset where for each dataset the following dictionary is present:
-                A dictionary of the form `{"var": {"name": {"passing": passing_probes, "failing": failing_probes}, ...}, ...}`
-                where `"var"` can be `"pt"`, `"eta"`, or `"phi"`.
-                Each `"name"` is the name of eta region specified by the user and `passing_probes` and `failing_probes` are `hist.dask.Hist` objects.
-                These are the histograms of the passing and failing probes respectively.
-            report: dict of awkward arrays of the same form as fileset.
-                For each dataset an awkward array that contains information about the file access is present.
-        """
-        if uproot_options is None:
-            uproot_options = {}
-
-        if cut_and_count:
-            data_manipulation = partial(
-                self._make_cutncount_histograms,
-                pt_eta_phi_1d=pt_eta_phi_1d,
-                vars=vars,
-                plateau_cut=plateau_cut,
-                eta_regions_pt=eta_regions_pt,
-                eta_regions_eta=eta_regions_eta,
-                eta_regions_phi=eta_regions_phi,
-            )
-        else:
-            data_manipulation = partial(
-                self._make_mll_histograms,
-                pt_eta_phi_1d=pt_eta_phi_1d,
-                vars=vars,
-                plateau_cut=plateau_cut,
-                eta_regions_pt=eta_regions_pt,
-                eta_regions_eta=eta_regions_eta,
-                eta_regions_phi=eta_regions_phi,
-            )
-
-        to_compute = apply_to_fileset(
-            data_manipulation=data_manipulation,
-            fileset=self.fileset,
-            schemaclass=schemaclass,
-            uproot_options=uproot_options,
-        )
-        if compute:
-            import dask
-            from dask.diagnostics import ProgressBar
-
-            if progress:
-                pbar = ProgressBar()
-                pbar.register()
-
-            computed = dask.compute(to_compute, scheduler=scheduler)
-
-            if progress:
-                pbar.unregister()
-
-            return computed[0]
-
-        return to_compute
-
     def _find_probes(self, events, cut_and_count, vars):
         if vars is None:
             vars = ["pt", "eta", "phi"]
         if self.use_sc_eta:
-            events["Electron", "eta"] = events.Electron.eta + events.Electron.deltaEtaSC
+            if self.egm_nano:
+                events["Electron", "eta"] = events.Electron.superclusterEta
+            else:
+                events["Electron", "eta"] = events.Electron.eta + events.Electron.deltaEtaSC
+        if self.use_sc_phi:
+            events["Electron", "phi"] = events.Electron.superclusterPhi
         if self.extra_filter is not None:
             events = self.extra_filter(events, **self.extra_filter_args)
         if self.goldenjson is not None:
@@ -406,78 +202,15 @@ class TagNProbeFromNanoAOD:
 
         return passing_probes, failing_probes
 
-    def _make_cutncount_histograms(
-        self,
-        events,
-        pt_eta_phi_1d,
-        vars,
-        plateau_cut,
-        eta_regions_pt,
-        eta_regions_eta,
-        eta_regions_phi,
-    ):
-        from egamma_tnp.utils import (
-            fill_nd_cutncount_histograms,
-            fill_pt_eta_phi_cutncount_histograms,
-        )
-
-        passing_probes, failing_probes = self._find_probes(events, cut_and_count=True, vars=vars)
-
-        if pt_eta_phi_1d:
-            return fill_pt_eta_phi_cutncount_histograms(
-                passing_probes,
-                failing_probes,
-                plateau_cut=plateau_cut,
-                eta_regions_pt=eta_regions_pt,
-                eta_regions_eta=eta_regions_eta,
-                eta_regions_phi=eta_regions_phi,
-            )
-        else:
-            return fill_nd_cutncount_histograms(
-                passing_probes,
-                failing_probes,
-                vars=vars,
-            )
-
-    def _make_mll_histograms(
-        self,
-        events,
-        pt_eta_phi_1d,
-        vars,
-        plateau_cut,
-        eta_regions_pt,
-        eta_regions_eta,
-        eta_regions_phi,
-    ):
-        from egamma_tnp.utils import (
-            fill_nd_mll_histograms,
-            fill_pt_eta_phi_mll_histograms,
-        )
-
-        passing_probes, failing_probes = self._find_probes(events, cut_and_count=False, vars=vars)
-
-        if pt_eta_phi_1d:
-            return fill_pt_eta_phi_mll_histograms(
-                passing_probes,
-                failing_probes,
-                plateau_cut=plateau_cut,
-                eta_regions_pt=eta_regions_pt,
-                eta_regions_eta=eta_regions_eta,
-                eta_regions_phi=eta_regions_phi,
-            )
-        else:
-            return fill_nd_mll_histograms(
-                passing_probes,
-                failing_probes,
-                vars=vars,
-            )
-
 
 def _filter_events(events, cutbased_id):
     pass_hlt = events.HLT.Ele30_WPTight_Gsf
     two_electrons = dak.num(events.Electron) == 2
     abs_eta = abs(events.Electron.eta)
-    pass_tight_id = events.Electron.cutBased == cutbased_id
+    if cutbased_id:
+        pass_tight_id = events.Electron.cutBased == cutbased_id
+    else:
+        pass_tight_id = True
     pass_eta = abs_eta <= 2.5
     pass_selection = pass_hlt & two_electrons & pass_eta & pass_tight_id
     n_of_tags = dak.sum(pass_selection, axis=1)

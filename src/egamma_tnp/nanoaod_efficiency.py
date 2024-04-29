@@ -283,13 +283,14 @@ def _process_zcands(
     dr_condition = dr > 0.0
     all_probes = probes[isZ & dr_condition]
     trig_matched_probe = _trigger_match(all_probes, trigobjs, trigger_pt, filterbit)
-    trig_matched_probe = dak.sum(trig_matched_probe, axis=1) >= 1
+    has_passing_probe = dak.fill_none(dak.firsts(trig_matched_probe), False)
+    has_failing_probe = dak.fill_none(dak.firsts(~trig_matched_probe), False)
     good_events = good_events[events_with_tags]
     if hlt_filter is None:
-        passing_probe_events = good_events[trig_matched_probe]
-        failing_probe_events = good_events[~trig_matched_probe]
+        passing_probe_events = good_events[has_passing_probe]
+        failing_probe_events = good_events[has_failing_probe]
     else:
-        passing_probe_events = good_events[trig_matched_probe & getattr(good_events.HLT, hlt_filter)]
-        failing_probe_events = good_events[~(trig_matched_probe & getattr(good_events.HLT, hlt_filter))]
+        passing_probe_events = good_events[has_passing_probe & getattr(good_events.HLT, hlt_filter)]
+        failing_probe_events = good_events[has_failing_probe & ~getattr(good_events.HLT, hlt_filter)]
 
     return passing_probe_events, failing_probe_events

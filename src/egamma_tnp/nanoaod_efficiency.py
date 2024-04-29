@@ -207,7 +207,10 @@ def _filter_events(events, cutbased_id):
     pass_hlt = events.HLT.Ele30_WPTight_Gsf
     two_electrons = dak.num(events.Electron) == 2
     abs_eta = abs(events.Electron.eta)
-    pass_tight_id = events.Electron.cutBased == cutbased_id
+    if cutbased_id:
+        pass_tight_id = events.Electron.cutBased == cutbased_id
+    else:
+        pass_tight_id = True
     pass_eta = abs_eta <= 2.5
     pass_selection = pass_hlt & two_electrons & pass_eta & pass_tight_id
     n_of_tags = dak.sum(pass_selection, axis=1)

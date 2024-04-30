@@ -206,18 +206,25 @@ class TagNProbeFromNanoAOD(BaseTagNProbe):
         passing_probe_dict = {}
         failing_probe_dict = {}
         for var in vars:
-            split = var.rsplit("_", 1)
-            if len(split) == 2:
-                passing_probe_dict[var] = passing_probe_events[split[0], split[1]]
-                failing_probe_dict[var] = failing_probe_events[split[0], split[1]]
+            if var.startswith("el_"):
+                passing_probe_dict[var] = passing_probe_events["el", var.removeprefix("el_")]
+                failing_probe_dict[var] = failing_probe_events["el", var.removeprefix("el_")]
+            elif var.startswith("tag_Ele_"):
+                passing_probe_dict[var] = passing_probe_events["tag_Ele", var.removeprefix("tag_Ele_")]
+                failing_probe_dict[var] = failing_probe_events["tag_Ele", var.removeprefix("tag_Ele_")]
             else:
-                passing_probe_dict[var] = passing_probe_events[var]
-                failing_probe_dict[var] = failing_probe_events[var]
+                split = var.split("_", 1)
+                if len(split) == 2:
+                    passing_probe_dict[var] = passing_probe_events[split[0], split[1]]
+                    failing_probe_dict[var] = failing_probe_events[split[0], split[1]]
+                else:
+                    passing_probe_dict[var] = passing_probe_events[var]
+                    failing_probe_dict[var] = failing_probe_events[var]
         if not cut_and_count:
             passing_probe_dict["pair_mass"] = passing_probe_events.pair_mass
             failing_probe_dict["pair_mass"] = failing_probe_events.pair_mass
-        passing_probes = dak.flatten(dak.zip(passing_probe_dict), axis=-1)
-        failing_probes = dak.flatten(dak.zip(failing_probe_dict), axis=-1)
+        passing_probes = dak.zip(passing_probe_dict, depth_limit=1)
+        failing_probes = dak.zip(failing_probe_dict, depth_limit=1)
 
         return passing_probes, failing_probes
 

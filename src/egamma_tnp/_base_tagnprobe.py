@@ -72,7 +72,7 @@ class BaseTagNProbe:
                 If False, invariant mass histograms of the tag-probe pairs will be filled to be fit by a Signal+Background model.
                 The default is True.
             vars: list, optional
-                The list of variables of the probes to return. The default is ["pt", "eta", "phi"].
+                The list of variables of the probes to return. The default is ["el_pt", "el_eta", "el_phi"].
             uproot_options : dict, optional
                 Options to pass to uproot. Pass at least {"allow_read_errors_with_report": True} to turn on file access reports.
             compute : bool, optional
@@ -172,7 +172,7 @@ class BaseTagNProbe:
             vars : list, optional
                 A list of the fields that refer to the Pt, Eta, and Phi of the probes.
                 Must be in the order of Pt, Eta, and Phi.
-                The default is ["pt", "eta", "phi"].
+                The default is ["el_pt", "el_eta", "el_phi"].
             uproot_options : dict, optional
                 Options to pass to uproot. Pass at least {"allow_read_errors_with_report": True} to turn on file access reports.
             compute : bool, optional
@@ -261,7 +261,7 @@ class BaseTagNProbe:
                 If False, invariant mass histograms of the tag-probe pairs will be filled to be fit by a Signal+Background model.
                 The default is True.
             vars: list, optional
-                The variables to use to fill the N-dimensional histograms. The default is ["pt", "eta", "phi"].
+                The variables to use to fill the N-dimensional histograms. The default is ["el_pt", "el_eta", "el_phi"].
                 These vars will be used to fill the N-dimensional histograms.
                 If cut_and_count is False, one more invariant mass axis will be added to the histograms.
             uproot_options : dict, optional

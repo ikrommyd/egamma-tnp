@@ -323,7 +323,7 @@ def test_fitter_histogram_saving_3d():
         delayed=False,
     )
 
-    create_hists_root_file_for_fitter(hmll3d, "3d_hists.root", "3d_bining.pkl")
+    create_hists_root_file_for_fitter(hmll3d, "3d_hists.root", "3d_bining.pkl", axes=["pt", "eta"])
 
     with uproot.open("3d_hists.root") as f:
         bining = pickle.load(open("3d_bining.pkl", "rb"))

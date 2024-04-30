@@ -83,7 +83,7 @@ def fill_pt_eta_phi_cutncount_histograms(
         vars : list, optional
             A list of the fields that refer to the Pt, Eta, and Phi of the probes.
             Must be in the order of Pt, Eta, and Phi.
-            The default is ["pt", "eta", "phi"].
+            The default is ["el_pt", "el_eta", "el_phi"].
         delayed : bool, optional
             Whether the probes arrays are delayed (dask-awkward) or not.
             The default is True.
@@ -229,7 +229,7 @@ def fill_pt_eta_phi_mll_histograms(
         vars : list, optional
             A list of the fields that refer to the Pt, Eta, and Phi of the probes.
             Must be in the order of Pt, Eta, and Phi.
-            The default is ["pt", "eta", "phi"].
+            The default is ["el_pt", "el_eta", "el_phi"].
         delayed : bool, optional
             Whether the probes arrays are delayed (dask-awkward) or not.
             The default is True.
@@ -366,7 +366,7 @@ def fill_nd_cutncount_histograms(
             An array with the fields specified in `vars` of the failing probes.
         vars : list, optional
             A list of the fields to use as axes in the histogram.
-            The default is ["pt", "eta", "phi"].
+            The default is ["el_pt", "el_eta", "el_phi"].
         delayed : bool, optional
             Whether the probes arrays are delayed (dask-awkward) or not.
             The default is True.
@@ -430,7 +430,7 @@ def fill_nd_mll_histograms(
             An array with the fields specified in `vars` of the failing probes.
         vars : list, optional
             A list of the fields to use as axes in the histogram.
-            The default is ["pt", "eta", "phi"].
+            The default is ["el_pt", "el_eta", "el_phi"].
         delayed : bool, optional
             Whether the probes arrays are delayed (dask-awkward) or not.
             The default is True.
@@ -614,7 +614,7 @@ def convert_nd_mll_hists_to_1d_hists(hists, axes=None):
             where hpass and hfail are 4D histograms with axes (Pt, Eta, Phi, mll).
         axes : list, optional
             A list of the axes to keep in the 1D histograms.
-            The default is ["pt", "eta"].
+            The default is ["el_pt", "el_eta"].
 
     Returns
     -------
@@ -627,7 +627,7 @@ def convert_nd_mll_hists_to_1d_hists(hists, axes=None):
             A dictionary with the binning information.
     """
     if axes is None:
-        axes = ["pt", "eta"]
+        axes = ["el_pt", "el_eta"]
     if len(set(axes)) != len(axes):
         raise ValueError("All axes must be unique.")
 
@@ -655,7 +655,7 @@ def create_hists_root_file_for_fitter(hists, root_path, bining_path, axes=None):
             The path to the pickle file with the binning information.
         axes : list, optional
             A list of the axes to keep in the 1D histograms.
-            The default is ["pt", "eta"].
+            The default is ["el_pt", "el_eta"].
 
         Notes
         -----
@@ -668,7 +668,7 @@ def create_hists_root_file_for_fitter(hists, root_path, bining_path, axes=None):
     import uproot
 
     if axes is None:
-        axes = ["pt", "eta"]
+        axes = ["el_pt", "el_eta"]
     if len(set(axes)) != len(axes):
         raise ValueError("All axes must be unique.")
 

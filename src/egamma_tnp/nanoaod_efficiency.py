@@ -216,8 +216,8 @@ class TagNProbeFromNanoAOD(BaseTagNProbe):
         if not cut_and_count:
             passing_probe_dict["pair_mass"] = passing_probe_events.pair_mass
             failing_probe_dict["pair_mass"] = failing_probe_events.pair_mass
-        passing_probes = dak.zip(passing_probe_dict)
-        failing_probes = dak.zip(failing_probe_dict)
+        passing_probes = dak.flatten(dak.zip(passing_probe_dict), axis=-1)
+        failing_probes = dak.flatten(dak.zip(failing_probe_dict), axis=-1)
 
         return passing_probes, failing_probes
 

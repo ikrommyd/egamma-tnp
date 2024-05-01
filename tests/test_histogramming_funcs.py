@@ -52,6 +52,7 @@ def test_histogramming_funcs_default_vars():
             "endcap_higheta": [2.0, 2.5],
         },
         plateau_cut=35,
+        vars=["pt", "eta", "phi"],
         delayed=False,
     )
     hmll1d = fill_pt_eta_phi_mll_histograms(
@@ -63,16 +64,19 @@ def test_histogramming_funcs_default_vars():
             "endcap_higheta": [2.0, 2.5],
         },
         plateau_cut=35,
+        vars=["pt", "eta", "phi"],
         delayed=False,
     )
     hcnc3d = fill_nd_cutncount_histograms(
         passing_probes,
         failing_probes,
+        vars=["pt", "eta", "phi"],
         delayed=False,
     )
     hmll3d = fill_nd_mll_histograms(
         passing_probes,
         failing_probes,
+        vars=["pt", "eta", "phi"],
         delayed=False,
     )
 
@@ -194,7 +198,7 @@ def test_histogramming_funcs_custom_vars():
         }
     ).compute()
 
-    egamma_tnp.config.set("r9bins", np.linspace(0.1, 1.05, 100).tolist())
+    egamma_tnp.config.set("r9_bins", np.linspace(0.1, 1.05, 100).tolist())
 
     hcnc1d = fill_pt_eta_phi_cutncount_histograms(
         passing_probes,
@@ -205,11 +209,13 @@ def test_histogramming_funcs_custom_vars():
             "endcap_higheta": [2.0, 2.5],
         },
         plateau_cut=0,
+        vars=["pt", "eta", "phi"],
         delayed=False,
     )
     hmll1d = fill_pt_eta_phi_mll_histograms(
         passing_probes,
         failing_probes,
+        vars=["pt", "eta", "phi"],
         delayed=False,
     )
     hcnc3d = fill_nd_cutncount_histograms(
@@ -242,3 +248,5 @@ def test_histogramming_funcs_custom_vars():
 
     assert_histograms_equal(hcnc3d["passing"], hmll3d["passing"][..., sum], flow=False)
     assert_histograms_equal(hcnc3d["failing"], hmll3d["failing"][..., sum], flow=False)
+
+    egamma_tnp.config.reset_all()

@@ -72,7 +72,7 @@ class BaseTagNProbe:
                 If False, invariant mass histograms of the tag-probe pairs will be filled to be fit by a Signal+Background model.
                 The default is True.
             vars: list, optional
-                The list of variables of the probes to return. The default is ["pt", "eta", "phi"].
+                The list of variables of the probes to return. The default is ["el_pt", "el_eta", "el_phi"].
             uproot_options : dict, optional
                 Options to pass to uproot. Pass at least {"allow_read_errors_with_report": True} to turn on file access reports.
             compute : bool, optional
@@ -137,6 +137,7 @@ class BaseTagNProbe:
         eta_regions_pt=None,
         eta_regions_eta=None,
         eta_regions_phi=None,
+        vars=None,
         uproot_options=None,
         compute=False,
         scheduler=None,
@@ -168,6 +169,10 @@ class BaseTagNProbe:
                 where name is the name of the region and etamin and etamax are the absolute eta bounds.
                 The Phi histograms will be split into those eta regions.
                 The default is to use the entire |eta| < 2.5 region.
+            vars : list, optional
+                A list of the fields that refer to the Pt, Eta, and Phi of the probes.
+                Must be in the order of Pt, Eta, and Phi.
+                The default is ["el_pt", "el_eta", "el_phi"].
             uproot_options : dict, optional
                 Options to pass to uproot. Pass at least {"allow_read_errors_with_report": True} to turn on file access reports.
             compute : bool, optional
@@ -198,7 +203,7 @@ class BaseTagNProbe:
             data_manipulation = partial(
                 self._make_cutncount_histograms,
                 pt_eta_phi_1d=True,
-                vars=None,
+                vars=vars,
                 plateau_cut=plateau_cut,
                 eta_regions_pt=eta_regions_pt,
                 eta_regions_eta=eta_regions_eta,
@@ -208,7 +213,7 @@ class BaseTagNProbe:
             data_manipulation = partial(
                 self._make_mll_histograms,
                 pt_eta_phi_1d=True,
-                vars=None,
+                vars=vars,
                 plateau_cut=plateau_cut,
                 eta_regions_pt=eta_regions_pt,
                 eta_regions_eta=eta_regions_eta,
@@ -256,7 +261,7 @@ class BaseTagNProbe:
                 If False, invariant mass histograms of the tag-probe pairs will be filled to be fit by a Signal+Background model.
                 The default is True.
             vars: list, optional
-                The variables to use to fill the N-dimensional histograms. The default is ["pt", "eta", "phi"].
+                The variables to use to fill the N-dimensional histograms. The default is ["el_pt", "el_eta", "el_phi"].
                 These vars will be used to fill the N-dimensional histograms.
                 If cut_and_count is False, one more invariant mass axis will be added to the histograms.
             uproot_options : dict, optional
@@ -352,6 +357,7 @@ class BaseTagNProbe:
                 eta_regions_pt=eta_regions_pt,
                 eta_regions_eta=eta_regions_eta,
                 eta_regions_phi=eta_regions_phi,
+                vars=vars,
             )
         else:
             return fill_nd_cutncount_histograms(
@@ -385,6 +391,7 @@ class BaseTagNProbe:
                 eta_regions_pt=eta_regions_pt,
                 eta_regions_eta=eta_regions_eta,
                 eta_regions_phi=eta_regions_phi,
+                vars=vars,
             )
         else:
             return fill_nd_mll_histograms(

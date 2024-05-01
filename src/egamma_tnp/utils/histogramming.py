@@ -51,6 +51,7 @@ def fill_pt_eta_phi_cutncount_histograms(
     eta_regions_pt=None,
     eta_regions_eta=None,
     eta_regions_phi=None,
+    vars=None,
     delayed=True,
 ):
     """Get the Pt, Eta and Phi histograms of the passing and failing probes.
@@ -79,6 +80,10 @@ def fill_pt_eta_phi_cutncount_histograms(
             where name is the name of the region and etamin and etamax are the absolute eta bounds.
             The Phi histograms will be split into those eta regions.
             The default is to use the entire |eta| < 2.5 region.
+        vars : list, optional
+            A list of the fields that refer to the Pt, Eta, and Phi of the probes.
+            Must be in the order of Pt, Eta, and Phi.
+            The default is ["el_pt", "el_eta", "el_phi"].
         delayed : bool, optional
             Whether the probes arrays are delayed (dask-awkward) or not.
             The default is True.
@@ -112,17 +117,19 @@ def fill_pt_eta_phi_cutncount_histograms(
         eta_regions_eta = {"entire": [0.0, 2.5]}
     if eta_regions_phi is None:
         eta_regions_phi = {"entire": [0.0, 2.5]}
+    if vars is None:
+        vars = ["el_pt", "el_eta", "el_phi"]
 
-    ptbins = egamma_tnp.config.get("ptbins")
-    etabins = egamma_tnp.config.get("etabins")
-    phibins = egamma_tnp.config.get("phibins")
+    ptbins = egamma_tnp.config.get("pt_bins")
+    etabins = egamma_tnp.config.get("eta_bins")
+    phibins = egamma_tnp.config.get("phi_bins")
 
-    pt_pass = passing_probes.pt
-    pt_fail = failing_probes.pt
-    eta_pass = passing_probes.eta
-    eta_fail = failing_probes.eta
-    phi_pass = passing_probes.phi
-    phi_fail = failing_probes.phi
+    pt_pass = passing_probes[vars[0]]
+    pt_fail = failing_probes[vars[0]]
+    eta_pass = passing_probes[vars[1]]
+    eta_fail = failing_probes[vars[1]]
+    phi_pass = passing_probes[vars[2]]
+    phi_fail = failing_probes[vars[2]]
 
     histograms = {}
     histograms["pt"] = {}
@@ -190,6 +197,7 @@ def fill_pt_eta_phi_mll_histograms(
     eta_regions_pt=None,
     eta_regions_eta=None,
     eta_regions_phi=None,
+    vars=None,
     delayed=True,
 ):
     """Get the 2D histograms of Pt, Eta and Phi vs mll of the passing and failing probes.
@@ -218,6 +226,10 @@ def fill_pt_eta_phi_mll_histograms(
             where name is the name of the region and etamin and etamax are the absolute eta bounds.
             The Phi histograms will be split into those eta regions.
             The default is to use the entire |eta| < 2.5 region.
+        vars : list, optional
+            A list of the fields that refer to the Pt, Eta, and Phi of the probes.
+            Must be in the order of Pt, Eta, and Phi.
+            The default is ["el_pt", "el_eta", "el_phi"].
         delayed : bool, optional
             Whether the probes arrays are delayed (dask-awkward) or not.
             The default is True.
@@ -251,17 +263,19 @@ def fill_pt_eta_phi_mll_histograms(
         eta_regions_eta = {"entire": [0.0, 2.5]}
     if eta_regions_phi is None:
         eta_regions_phi = {"entire": [0.0, 2.5]}
+    if vars is None:
+        vars = ["el_pt", "el_eta", "el_phi"]
 
-    ptbins = egamma_tnp.config.get("ptbins")
-    etabins = egamma_tnp.config.get("etabins")
-    phibins = egamma_tnp.config.get("phibins")
+    ptbins = egamma_tnp.config.get("pt_bins")
+    etabins = egamma_tnp.config.get("eta_bins")
+    phibins = egamma_tnp.config.get("phi_bins")
 
-    pt_pass = passing_probes.pt
-    pt_fail = failing_probes.pt
-    eta_pass = passing_probes.eta
-    eta_fail = failing_probes.eta
-    phi_pass = passing_probes.phi
-    phi_fail = failing_probes.phi
+    pt_pass = passing_probes[vars[0]]
+    pt_fail = failing_probes[vars[0]]
+    eta_pass = passing_probes[vars[1]]
+    eta_fail = failing_probes[vars[1]]
+    phi_pass = passing_probes[vars[2]]
+    phi_fail = failing_probes[vars[2]]
     mll_pass = passing_probes.pair_mass
     mll_fail = failing_probes.pair_mass
 
@@ -352,7 +366,7 @@ def fill_nd_cutncount_histograms(
             An array with the fields specified in `vars` of the failing probes.
         vars : list, optional
             A list of the fields to use as axes in the histogram.
-            The default is ["pt", "eta", "phi"].
+            The default is ["el_pt", "el_eta", "el_phi"].
         delayed : bool, optional
             Whether the probes arrays are delayed (dask-awkward) or not.
             The default is True.
@@ -367,7 +381,7 @@ def fill_nd_cutncount_histograms(
             An N-dimensional histogram of the failing probes.
     """
     if vars is None:
-        vars = ["pt", "eta", "phi"]
+        vars = ["el_pt", "el_eta", "el_phi"]
     if isinstance(vars, str):
         raise ValueError("Please provide a list of variables and not a single string.")
 
@@ -380,14 +394,14 @@ def fill_nd_cutncount_histograms(
 
     import egamma_tnp
 
-    if any(egamma_tnp.config.get(f"{var}bins") is None for var in vars):
+    if any(egamma_tnp.config.get(f"{var}_bins") is None for var in vars):
         raise ValueError(
             """One or more variables do not have binning information.
             Please define the bining information using `egamma_tnp.config.set`.
-            The variable names in the configuration json should be in the form of `"{var}bins"`."""
+            The variable names in the configuration json should be in the form of `"{var}_bins"`."""
         )
 
-    axes = [hist.axis.Variable(egamma_tnp.config.get(f"{var}bins"), name=var, label=f"{var.capitalize()}") for var in vars]
+    axes = [hist.axis.Variable(egamma_tnp.config.get(f"{var}_bins"), name=var, label=f"{var.capitalize()}") for var in vars]
 
     hpass = Hist(*axes, storage=hist.storage.Weight())
     hfail = Hist(*axes, storage=hist.storage.Weight())
@@ -416,7 +430,7 @@ def fill_nd_mll_histograms(
             An array with the fields specified in `vars` of the failing probes.
         vars : list, optional
             A list of the fields to use as axes in the histogram.
-            The default is ["pt", "eta", "phi"].
+            The default is ["el_pt", "el_eta", "el_phi"].
         delayed : bool, optional
             Whether the probes arrays are delayed (dask-awkward) or not.
             The default is True.
@@ -431,7 +445,7 @@ def fill_nd_mll_histograms(
             An N+1-dimensional histogram of the failing probes.
     """
     if vars is None:
-        vars = ["pt", "eta", "phi"]
+        vars = ["el_pt", "el_eta", "el_phi"]
     if isinstance(vars, str):
         raise ValueError("Please provide a list of variables and not a single string.")
 
@@ -444,14 +458,14 @@ def fill_nd_mll_histograms(
 
     import egamma_tnp
 
-    if any(egamma_tnp.config.get(f"{var}bins") is None for var in vars):
+    if any(egamma_tnp.config.get(f"{var}_bins") is None for var in vars):
         raise ValueError(
             """One or more variables do not have binning information.
             Please define the bining information using `egamma_tnp.config.set`.
-            The variable names in the configuration json should be in the form of `"{var}bins"`. """
+            The variable names in the configuration json should be in the form of `"{var}_bins"`. """
         )
 
-    axes = [hist.axis.Variable(egamma_tnp.config.get(f"{var}bins"), name=var, label=f"{var.capitalize()}") for var in vars]
+    axes = [hist.axis.Variable(egamma_tnp.config.get(f"{var}_bins"), name=var, label=f"{var.capitalize()}") for var in vars]
     axes.append(hist.axis.Regular(80, 50, 130, name="mll", label="mll [GeV]"))
 
     hpass = Hist(*axes, storage=hist.storage.Weight())
@@ -600,7 +614,7 @@ def convert_nd_mll_hists_to_1d_hists(hists, axes=None):
             where hpass and hfail are 4D histograms with axes (Pt, Eta, Phi, mll).
         axes : list, optional
             A list of the axes to keep in the 1D histograms.
-            The default is ["pt", "eta"].
+            The default is ["el_pt", "el_eta"].
 
     Returns
     -------
@@ -613,7 +627,7 @@ def convert_nd_mll_hists_to_1d_hists(hists, axes=None):
             A dictionary with the binning information.
     """
     if axes is None:
-        axes = ["pt", "eta"]
+        axes = ["el_pt", "el_eta"]
     if len(set(axes)) != len(axes):
         raise ValueError("All axes must be unique.")
 
@@ -641,7 +655,7 @@ def create_hists_root_file_for_fitter(hists, root_path, bining_path, axes=None):
             The path to the pickle file with the binning information.
         axes : list, optional
             A list of the axes to keep in the 1D histograms.
-            The default is ["pt", "eta"].
+            The default is ["el_pt", "el_eta"].
 
         Notes
         -----
@@ -654,7 +668,7 @@ def create_hists_root_file_for_fitter(hists, root_path, bining_path, axes=None):
     import uproot
 
     if axes is None:
-        axes = ["pt", "eta"]
+        axes = ["el_pt", "el_eta"]
     if len(set(axes)) != len(axes):
         raise ValueError("All axes must be unique.")
 

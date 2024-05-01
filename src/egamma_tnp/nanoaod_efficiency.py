@@ -120,14 +120,18 @@ class TagNProbeFromNanoAOD(BaseTagNProbe):
 
     def _find_probes(self, events, cut_and_count, vars):
         if vars is None:
-            vars = ["pt", "eta", "phi"]
+            vars = ["el_pt", "el_eta", "el_phi"]
         if self.use_sc_eta:
             if self.egm_nano:
-                events["Electron", "eta"] = events.Electron.superclusterEta
+                events["Electron", "eta_to_use"] = events.Electron.superclusterEta
             else:
-                events["Electron", "eta"] = events.Electron.eta + events.Electron.deltaEtaSC
+                events["Electron", "eta_to_use"] = events.Electron.eta + events.Electron.deltaEtaSC
+        else:
+            events["Electron", "eta_to_use"] = events.Electron.eta
         if self.use_sc_phi:
-            events["Electron", "phi"] = events.Electron.superclusterPhi
+            events["Electron", "phi_to_use"] = events.Electron.superclusterPhi
+        else:
+            events["Electron", "phi_to_use"] = events.Electron.phi
         if self.extra_filter is not None:
             events = self.extra_filter(events, **self.extra_filter_args)
         if self.goldenjson is not None:
@@ -141,11 +145,11 @@ class TagNProbeFromNanoAOD(BaseTagNProbe):
 
         if self.avoid_ecal_transition_tags:
             tags1 = zcands1.tag
-            pass_eta_ebeegap_tags1 = (abs(tags1.eta) < 1.4442) | (abs(tags1.eta) > 1.566)
+            pass_eta_ebeegap_tags1 = (abs(tags1.eta_to_use) < 1.4442) | (abs(tags1.eta_to_use) > 1.566)
             zcands1 = zcands1[pass_eta_ebeegap_tags1]
         if self.avoid_ecal_transition_probes:
             probes1 = zcands1.probe
-            pass_eta_ebeegap_probes1 = (abs(probes1.eta) < 1.4442) | (abs(probes1.eta) > 1.566)
+            pass_eta_ebeegap_probes1 = (abs(probes1.eta_to_use) < 1.4442) | (abs(probes1.eta_to_use) > 1.566)
             zcands1 = zcands1[pass_eta_ebeegap_probes1]
 
         p1, f1 = _process_zcands(
@@ -160,16 +164,23 @@ class TagNProbeFromNanoAOD(BaseTagNProbe):
             hlt_filter=self.hlt_filter,
         )
 
+        p1["el"] = p1.Electron[:, 1]
+        f1["el"] = f1.Electron[:, 1]
+        p1["tag_Ele"] = p1.Electron[:, 0]
+        f1["tag_Ele"] = f1.Electron[:, 0]
+        p1["pair_mass"] = (p1["el"] + p1["tag_Ele"]).mass
+        f1["pair_mass"] = (f1["el"] + f1["tag_Ele"]).mass
+
         if cut_and_count:
             zcands2 = dak.combinations(ele_for_tnp, 2, fields=["probe", "tag"])
 
             if self.avoid_ecal_transition_tags:
                 tags2 = zcands2.tag
-                pass_eta_ebeegap_tags2 = (abs(tags2.eta) < 1.4442) | (abs(tags2.eta) > 1.566)
+                pass_eta_ebeegap_tags2 = (abs(tags2.eta_to_use) < 1.4442) | (abs(tags2.eta_to_use) > 1.566)
                 zcands2 = zcands2[pass_eta_ebeegap_tags2]
             if self.avoid_ecal_transition_probes:
                 probes2 = zcands2.probe
-                pass_eta_ebeegap_probes2 = (abs(probes2.eta) < 1.4442) | (abs(probes2.eta) > 1.566)
+                pass_eta_ebeegap_probes2 = (abs(probes2.eta_to_use) < 1.4442) | (abs(probes2.eta_to_use) > 1.566)
                 zcands2 = zcands2[pass_eta_ebeegap_probes2]
 
             p2, f2 = _process_zcands(
@@ -184,21 +195,40 @@ class TagNProbeFromNanoAOD(BaseTagNProbe):
                 hlt_filter=self.hlt_filter,
             )
 
-            p, f = dak.concatenate([p1, p2]), dak.concatenate([f1, f2])
+            p2["el"] = p2.Electron[:, 0]
+            f2["el"] = f2.Electron[:, 0]
+            p2["tag_Ele"] = p2.Electron[:, 1]
+            f2["tag_Ele"] = f2.Electron[:, 1]
+            p2["pair_mass"] = (p2["el"] + p2["tag_Ele"]).mass
+            f2["pair_mass"] = (f2["el"] + f2["tag_Ele"]).mass
+
+            passing_probe_events, failing_probe_events = dak.concatenate([p1, p2]), dak.concatenate([f1, f2])
 
         else:
-            p, f = p1, f1
+            passing_probe_events, failing_probe_events = p1, f1
 
-        if cut_and_count:
-            passing_probes = dak.flatten(dak.zip({var: p[var] for var in vars}))
-            failing_probes = dak.flatten(dak.zip({var: f[var] for var in vars}))
-        else:
-            p_arrays = {var: p[var] for var in vars}
-            p_arrays["pair_mass"] = p["pair_mass"]
-            f_arrays = {var: f[var] for var in vars}
-            f_arrays["pair_mass"] = f["pair_mass"]
-            passing_probes = dak.flatten(dak.zip(p_arrays))
-            failing_probes = dak.flatten(dak.zip(f_arrays))
+        passing_probe_dict = {}
+        failing_probe_dict = {}
+        for var in vars:
+            if var.startswith("el_"):
+                passing_probe_dict[var] = passing_probe_events["el", var.removeprefix("el_")]
+                failing_probe_dict[var] = failing_probe_events["el", var.removeprefix("el_")]
+            elif var.startswith("tag_Ele_"):
+                passing_probe_dict[var] = passing_probe_events["tag_Ele", var.removeprefix("tag_Ele_")]
+                failing_probe_dict[var] = failing_probe_events["tag_Ele", var.removeprefix("tag_Ele_")]
+            else:
+                split = var.split("_", 1)
+                if len(split) == 2:
+                    passing_probe_dict[var] = passing_probe_events[split[0], split[1]]
+                    failing_probe_dict[var] = failing_probe_events[split[0], split[1]]
+                else:
+                    passing_probe_dict[var] = passing_probe_events[var]
+                    failing_probe_dict[var] = failing_probe_events[var]
+        if not cut_and_count:
+            passing_probe_dict["pair_mass"] = passing_probe_events.pair_mass
+            failing_probe_dict["pair_mass"] = failing_probe_events.pair_mass
+        passing_probes = dak.zip(passing_probe_dict, depth_limit=1)
+        failing_probes = dak.zip(failing_probe_dict, depth_limit=1)
 
         return passing_probes, failing_probes
 
@@ -206,7 +236,7 @@ class TagNProbeFromNanoAOD(BaseTagNProbe):
 def _filter_events(events, cutbased_id):
     pass_hlt = events.HLT.Ele30_WPTight_Gsf
     two_electrons = dak.num(events.Electron) == 2
-    abs_eta = abs(events.Electron.eta)
+    abs_eta = abs(events.Electron.eta_to_use)
     if cutbased_id:
         pass_tight_id = events.Electron.cutBased == cutbased_id
     else:
@@ -244,7 +274,7 @@ def _process_zcands(
 ):
     trigobjs = good_events.TrigObj
     pt_cond_tags = zcands.tag.pt > pt_tags
-    eta_cond_tags = abs(zcands.tag.eta) < abseta_tags
+    eta_cond_tags = abs(zcands.tag.eta_to_use) < abseta_tags
     pt_cond_probes = zcands.probe.pt > pt_probes
     trig_matched_tag = _trigger_match(zcands.tag, trigobjs, 30, 1)
     zcands = zcands[trig_matched_tag & pt_cond_tags & pt_cond_probes & eta_cond_tags]
@@ -263,13 +293,14 @@ def _process_zcands(
     isZ = in_mass_window & opposite_charge
     dr_condition = dr > 0.0
     all_probes = probes[isZ & dr_condition]
-    pair_mass = mass[isZ & dr_condition]
-    all_probes["pair_mass"] = pair_mass
     trig_matched_probe = _trigger_match(all_probes, trigobjs, trigger_pt, filterbit)
+    good_events = good_events[events_with_tags]
     if hlt_filter is None:
-        passing_probes = all_probes[trig_matched_probe]
-        failing_probes = all_probes[~trig_matched_probe]
+        has_passing_probe = dak.fill_none(dak.firsts(trig_matched_probe), False)
+        has_failing_probe = dak.fill_none(dak.firsts(~trig_matched_probe), False)
     else:
-        passing_probes = all_probes[trig_matched_probe & getattr(good_events[events_with_tags].HLT, hlt_filter)]
-        failing_probes = all_probes[~(trig_matched_probe & getattr(good_events[events_with_tags].HLT, hlt_filter))]
-    return passing_probes, failing_probes
+        has_passing_probe = dak.fill_none(dak.firsts(trig_matched_probe & getattr(good_events.HLT, hlt_filter)), False)
+        has_failing_probe = dak.fill_none(dak.firsts(~(trig_matched_probe & getattr(good_events.HLT, hlt_filter))), False)
+    passing_probe_events = good_events[has_passing_probe]
+    failing_probe_events = good_events[has_failing_probe]
+    return passing_probe_events, failing_probe_events

@@ -120,8 +120,8 @@ def test_histogramming_custom_vars():
         compute=True,
     )["sample"]
 
-    assert_histograms_equal(hmll1d["eta"]["entire"]["passing"], hmll3d["passing"][-2.5j:2.5j, sum, :], flow=True)
-    assert_histograms_equal(hmll1d["eta"]["entire"]["failing"], hmll3d["failing"][-2.5j:2.5j, sum, :], flow=True)
+    assert_histograms_equal(hmll1d["eta"]["entire"]["passing"], hmll3d["passing"][-2.5j:2.5j, sum, :], flow=False)
+    assert_histograms_equal(hmll1d["eta"]["entire"]["failing"], hmll3d["failing"][-2.5j:2.5j, sum, :], flow=False)
 
     egamma_tnp.config.reset_all()
 
@@ -158,5 +158,7 @@ def test_histogramming_non_probe_vars():
         compute=True,
     )["sample"]
 
-    assert_histograms_equal(hmll1d["eta"]["entire"]["passing"], hmll3d["passing"][-2.5j:2.5j, -2.5j:2.5j:sum, sum, :], flow=True)
-    assert_histograms_equal(hmll1d["eta"]["entire"]["failing"], hmll3d["failing"][-2.5j:2.5j, -2.5j:2.5j:sum, sum, :], flow=True)
+    assert_histograms_equal(hmll1d["eta"]["entire"]["passing"], hmll3d["passing"][-2.5j:2.5j, -2.5j:2.5j:sum, sum, :], flow=False)
+    assert_histograms_equal(hmll1d["eta"]["entire"]["failing"], hmll3d["failing"][-2.5j:2.5j, -2.5j:2.5j:sum, sum, :], flow=False)
+
+    egamma_tnp.config.reset_all()

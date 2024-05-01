@@ -123,11 +123,15 @@ class TagNProbeFromNanoAOD(BaseTagNProbe):
             vars = ["el_pt", "el_eta", "el_phi"]
         if self.use_sc_eta:
             if self.egm_nano:
-                events["Electron", "eta"] = events.Electron.superclusterEta
+                events["Electron", "eta_to_use"] = events.Electron.superclusterEta
             else:
-                events["Electron", "eta"] = events.Electron.eta + events.Electron.deltaEtaSC
+                events["Electron", "eta_to_use"] = events.Electron.eta + events.Electron.deltaEtaSC
+        else:
+            events["Electron", "eta_to_use"] = events.Electron.eta
         if self.use_sc_phi:
-            events["Electron", "phi"] = events.Electron.superclusterPhi
+            events["Electron", "phi_to_use"] = events.Electron.superclusterPhi
+        else:
+            events["Electron", "phi_to_use"] = events.Electron.phi
         if self.extra_filter is not None:
             events = self.extra_filter(events, **self.extra_filter_args)
         if self.goldenjson is not None:
@@ -141,11 +145,11 @@ class TagNProbeFromNanoAOD(BaseTagNProbe):
 
         if self.avoid_ecal_transition_tags:
             tags1 = zcands1.tag
-            pass_eta_ebeegap_tags1 = (abs(tags1.eta) < 1.4442) | (abs(tags1.eta) > 1.566)
+            pass_eta_ebeegap_tags1 = (abs(tags1.eta_to_use) < 1.4442) | (abs(tags1.eta_to_use) > 1.566)
             zcands1 = zcands1[pass_eta_ebeegap_tags1]
         if self.avoid_ecal_transition_probes:
             probes1 = zcands1.probe
-            pass_eta_ebeegap_probes1 = (abs(probes1.eta) < 1.4442) | (abs(probes1.eta) > 1.566)
+            pass_eta_ebeegap_probes1 = (abs(probes1.eta_to_use) < 1.4442) | (abs(probes1.eta_to_use) > 1.566)
             zcands1 = zcands1[pass_eta_ebeegap_probes1]
 
         p1, f1 = _process_zcands(
@@ -172,11 +176,11 @@ class TagNProbeFromNanoAOD(BaseTagNProbe):
 
             if self.avoid_ecal_transition_tags:
                 tags2 = zcands2.tag
-                pass_eta_ebeegap_tags2 = (abs(tags2.eta) < 1.4442) | (abs(tags2.eta) > 1.566)
+                pass_eta_ebeegap_tags2 = (abs(tags2.eta_to_use) < 1.4442) | (abs(tags2.eta_to_use) > 1.566)
                 zcands2 = zcands2[pass_eta_ebeegap_tags2]
             if self.avoid_ecal_transition_probes:
                 probes2 = zcands2.probe
-                pass_eta_ebeegap_probes2 = (abs(probes2.eta) < 1.4442) | (abs(probes2.eta) > 1.566)
+                pass_eta_ebeegap_probes2 = (abs(probes2.eta_to_use) < 1.4442) | (abs(probes2.eta_to_use) > 1.566)
                 zcands2 = zcands2[pass_eta_ebeegap_probes2]
 
             p2, f2 = _process_zcands(
@@ -232,7 +236,7 @@ class TagNProbeFromNanoAOD(BaseTagNProbe):
 def _filter_events(events, cutbased_id):
     pass_hlt = events.HLT.Ele30_WPTight_Gsf
     two_electrons = dak.num(events.Electron) == 2
-    abs_eta = abs(events.Electron.eta)
+    abs_eta = abs(events.Electron.eta_to_use)
     if cutbased_id:
         pass_tight_id = events.Electron.cutBased == cutbased_id
     else:
@@ -270,7 +274,7 @@ def _process_zcands(
 ):
     trigobjs = good_events.TrigObj
     pt_cond_tags = zcands.tag.pt > pt_tags
-    eta_cond_tags = abs(zcands.tag.eta) < abseta_tags
+    eta_cond_tags = abs(zcands.tag.eta_to_use) < abseta_tags
     pt_cond_probes = zcands.probe.pt > pt_probes
     trig_matched_tag = _trigger_match(zcands.tag, trigobjs, 30, 1)
     zcands = zcands[trig_matched_tag & pt_cond_tags & pt_cond_probes & eta_cond_tags]

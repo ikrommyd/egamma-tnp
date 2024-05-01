@@ -103,10 +103,15 @@ class TagNProbeFromNTuples(BaseTagNProbe):
         if vars is None:
             vars = ["el_pt", "el_eta", "el_phi"]
         if self.use_sc_eta:
-            events["el_eta"] = events.el_sc_eta
-            events["tag_Ele_eta"] = events.tag_sc_eta
+            events["el_eta_to_use"] = events.el_sc_eta
+            events["tag_Ele_eta_to_use"] = events.tag_sc_eta
+        else:
+            events["el_eta_to_use"] = events.el_eta
+            events["tag_Ele_eta_to_use"] = events.tag_Ele_eta
         if self.use_sc_phi:
-            events["el_phi"] = events.el_sc_phi
+            events["el_phi_to_use"] = events.el_sc_phi
+        else:
+            events["el_phi_to_use"] = events.el_phi
         if self.extra_filter is not None:
             events = self.extra_filter(events, **self.extra_filter_args)
         if self.goldenjson is not None:
@@ -115,14 +120,14 @@ class TagNProbeFromNTuples(BaseTagNProbe):
             events = events[mask]
 
         if self.avoid_ecal_transition_tags:
-            pass_eta_ebeegap_tags = (abs(events.tag_Ele_eta) < 1.4442) | (abs(events.tag_Ele_eta) > 1.566)
+            pass_eta_ebeegap_tags = (abs(events.tag_Ele_eta_to_use) < 1.4442) | (abs(events.tag_Ele_eta_to_use) > 1.566)
             events = events[pass_eta_ebeegap_tags]
         if self.avoid_ecal_transition_probes:
-            pass_eta_ebeegap_probes = (abs(events.el_eta) < 1.4442) | (abs(events.el_eta) > 1.566)
+            pass_eta_ebeegap_probes = (abs(events.el_eta_to_use) < 1.4442) | (abs(events.el_eta_to_use) > 1.566)
             events = events[pass_eta_ebeegap_probes]
 
         pass_pt_tags = events.tag_Ele_pt > self.tags_pt_cut
-        pass_abseta_tags = abs(events.tag_Ele_eta) < self.tags_abseta_cut
+        pass_abseta_tags = abs(events.tag_Ele_eta_to_use) < self.tags_abseta_cut
         opposite_charge = events.tag_Ele_q * events.el_q == -1
         events = events[pass_pt_tags & pass_abseta_tags & opposite_charge]
 

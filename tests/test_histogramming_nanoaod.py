@@ -129,3 +129,43 @@ def test_histogramming_custom_vars():
 
     assert_histograms_equal(hmll1d["eta"]["entire"]["passing"], hmll3d["passing"][-2.5j:2.5j, sum, :], flow=True)
     assert_histograms_equal(hmll1d["eta"]["entire"]["failing"], hmll3d["failing"][-2.5j:2.5j, sum, :], flow=True)
+
+
+def test_histogramming_non_probe_vars():
+    import egamma_tnp
+
+    tag_n_probe = TagNProbeFromNanoAOD(
+        fileset,
+        True,
+        filter="Ele30",
+        filterbit=1,
+        tags_pt_cut=30,
+        use_sc_eta=True,
+        tags_abseta_cut=2.50,
+        probes_pt_cut=27,
+        trigger_pt=30,
+    )
+
+    egamma_tnp.config.set("MET_pt_bins", np.linspace(0, 200, 10).tolist())
+    egamma_tnp.config.set("luminosityBlock_bins", np.linspace(0, 1000, 11).tolist())
+    egamma_tnp.config.set("tag_Ele_pt_bins", egamma_tnp.config.get("pt_bins"))
+
+    hmll1d = tag_n_probe.get_1d_pt_eta_phi_tnp_histograms(
+        cut_and_count=False,
+        eta_regions_pt={
+            "barrel": [0.0, 1.4442],
+            "endcap_loweta": [1.566, 2.0],
+            "endcap_higheta": [2.0, 2.5],
+        },
+        plateau_cut=0,
+        compute=True,
+    )["sample"]
+
+    hmll3d = tag_n_probe.get_nd_tnp_histograms(
+        cut_and_count=False,
+        vars=["el_eta", "tag_Ele_pt", "MET_pt", "luminosityBlock"],
+        compute=True,
+    )["sample"]
+
+    assert_histograms_equal(hmll1d["eta"]["entire"]["passing"], hmll3d["passing"][-2.5j:2.5j, sum, sum, sum, :], flow=True)
+    assert_histograms_equal(hmll1d["eta"]["entire"]["failing"], hmll3d["failing"][-2.5j:2.5j, sum, sum, sum, :], flow=True)

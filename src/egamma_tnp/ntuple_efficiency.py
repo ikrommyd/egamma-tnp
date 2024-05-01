@@ -104,6 +104,7 @@ class TagNProbeFromNTuples(BaseTagNProbe):
             vars = ["el_pt", "el_eta", "el_phi"]
         if self.use_sc_eta:
             events["el_eta"] = events.el_sc_eta
+            events["tag_Ele_eta"] = events.tag_sc_eta
         if self.use_sc_phi:
             events["el_phi"] = events.el_sc_phi
         if self.extra_filter is not None:

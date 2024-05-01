@@ -248,3 +248,5 @@ def test_histogramming_funcs_custom_vars():
 
     assert_histograms_equal(hcnc3d["passing"], hmll3d["passing"][..., sum], flow=False)
     assert_histograms_equal(hcnc3d["failing"], hmll3d["failing"][..., sum], flow=False)
+
+    egamma_tnp.config.reset_all()

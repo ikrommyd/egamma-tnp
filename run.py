@@ -56,9 +56,7 @@ mc124x_preEE = {
 }
 
 mc126x_preEE = {
-    "MC126x_preEE": [
-        "/DYJetsToLL_M-50_TuneCP5_13p6TeV-madgraphMLM-pythia8/Run3Summer22EENanoAODv11-forPOG_126X_mcRun3_2022_realistic_postEE_v1-v1/NANOAODSIM"
-    ]
+    "MC126x_preEE": ["/DYJetsToLL_M-50_TuneCP5_13p6TeV-madgraphMLM-pythia8/Run3Summer22EENanoAODv11-forPOG_126X_mcRun3_2022_realistic_postEE_v1-v1/NANOAODSIM"]
 }
 
 mc126x_mll_50to120_preEE = {
@@ -158,21 +156,13 @@ if __name__ == "__main__":
             for dataset_dict in dataset_dicts:
                 for name, samples in dataset_dict.items():
                     if "2023" in name:
-                        goldenjson = (
-                            "json/Cert_Collisions2023_366442_370790_Golden.json"
-                        )
+                        goldenjson = "json/Cert_Collisions2023_366442_370790_Golden.json"
                     elif "2022" in name:
-                        goldenjson = (
-                            "json/Cert_Collisions2022_355100_362760_Golden.json"
-                        )
+                        goldenjson = "json/Cert_Collisions2022_355100_362760_Golden.json"
                     else:
                         goldenjson = None
 
-                    redirector = (
-                        "root://cmsio2.rc.ufl.edu/"
-                        if "MC126x_MLL_50to120" in name
-                        else None
-                    )
+                    redirector = "root://cmsio2.rc.ufl.edu/" if "MC126x_MLL_50to120" in name else None
 
                     tag_n_probe = trigger(
                         samples,
@@ -204,9 +194,7 @@ if __name__ == "__main__":
                         for var, region_dict in res.items():
                             for region_name, hists in region_dict.items():
                                 for i, (histname, h) in enumerate(hists.items()):
-                                    print(
-                                        f"Run{name}_Ele{pt}_{var}/{region_name}/{histname} sum : {h.sum(flow=True)}"
-                                    )
+                                    print(f"Run{name}_Ele{pt}_{var}/{region_name}/{histname} sum : {h.sum(flow=True)}")
                                     f[f"{var}/{region_name}/{histname}"] = h
 
                     print(f"\nFinished running Run{name}_Ele{pt}\n")

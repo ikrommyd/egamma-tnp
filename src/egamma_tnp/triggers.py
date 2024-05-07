@@ -457,7 +457,7 @@ class DoubleElePt_CaloIdL_MW_SeededLeg:
 
             nanoaod_version = egamma_tnp.config.get("NanoAODv")
             if nanoaod_version < 13:
-                raise ValueError("Measuring the efficiency of the HLTD_DoubleElePt_CaloIdL_MW trigger is only supported for NanoAODv13 and above.")
+                raise ValueError("Measuring the efficiency of the HLT_DoubleElePt_CaloIdL_MW trigger is only supported for NanoAODv13 and above.")
             instance = ElectronTagNProbeFromNanoAOD(
                 fileset=fileset,
                 filter=f"passHltDoubleEle{trigger_pt}CaloIdLMWSeedLegL1match",
@@ -553,7 +553,7 @@ class DoubleElePt_CaloIdL_MW_UnseededLeg:
 
             nanoaod_version = egamma_tnp.config.get("NanoAODv")
             if nanoaod_version < 13:
-                raise ValueError("Measuring the efficiency of the HLTD_DoubleElePt_CaloIdL_MW trigger is only supported for NanoAODv13 and above.")
+                raise ValueError("Measuring the efficiency of the HLT_DoubleElePt_CaloIdL_MW trigger is only supported for NanoAODv13 and above.")
             instance = ElectronTagNProbeFromNanoAOD(
                 fileset=fileset,
                 filter=f"passHltDoubleEle{trigger_pt}CaloIdLMWUnsLeg",

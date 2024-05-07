@@ -160,6 +160,13 @@ class ElePt_CaloIdVT_GsfTrkIdT:
                 avoid_ecal_transition_probes=avoid_ecal_transition_probes,
             )
         else:
+            import egamma_tnp
+
+            nanoaod_version = egamma_tnp.config.get("NanoAODv")
+            if nanoaod_version >= 13:
+                filterbit = 12
+            else:
+                filterbit = 11
             instance = ElectronTagNProbeFromNanoAOD(
                 fileset=fileset,
                 filter=f"passHltEle{trigger_pt}CaloIdVTGsfTrkIdTGsf",
@@ -168,7 +175,7 @@ class ElePt_CaloIdVT_GsfTrkIdT:
                 tags_pt_cut=tags_pt_cut,
                 probes_pt_cut=probes_pt_cut,
                 tags_abseta_cut=2.5,
-                filterbit=11,
+                filterbit=filterbit,
                 cutbased_id=4,
                 goldenjson=goldenjson,
                 extra_filter=extra_filter,
@@ -348,6 +355,13 @@ class ElePt1_ElePt2_CaloIdL_TrackIdL_IsoVL_Leg2:
                 avoid_ecal_transition_probes=avoid_ecal_transition_probes,
             )
         else:
+            import egamma_tnp
+
+            nanoaod_version = egamma_tnp.config.get("NanoAODv")
+            if nanoaod_version < 13:
+                raise ValueError(
+                    "Measuring the efficiency of the low-Pt leg of the HLT_ElePt1_ElePt2_CaloIdL_TrackIdL_IsoVL trigger is only supported for NanoAODv13 and above."
+                )
             instance = ElectronTagNProbeFromNanoAOD(
                 fileset=fileset,
                 filter=f"passHltEle{trigger_pt1}Ele{trigger_pt2}CaloIdLTrackIdLIsoVLLeg2",
@@ -439,6 +453,11 @@ class DoubleElePt_CaloIdL_MW_SeededLeg:
                 avoid_ecal_transition_probes=avoid_ecal_transition_probes,
             )
         else:
+            import egamma_tnp
+
+            nanoaod_version = egamma_tnp.config.get("NanoAODv")
+            if nanoaod_version < 13:
+                raise ValueError("Measuring the efficiency of the HLTD_DoubleElePt_CaloIdL_MW trigger is only supported for NanoAODv13 and above.")
             instance = ElectronTagNProbeFromNanoAOD(
                 fileset=fileset,
                 filter=f"passHltDoubleEle{trigger_pt}CaloIdLMWSeedLegL1match",
@@ -530,6 +549,11 @@ class DoubleElePt_CaloIdL_MW_UnseededLeg:
                 avoid_ecal_transition_probes=avoid_ecal_transition_probes,
             )
         else:
+            import egamma_tnp
+
+            nanoaod_version = egamma_tnp.config.get("NanoAODv")
+            if nanoaod_version < 13:
+                raise ValueError("Measuring the efficiency of the HLTD_DoubleElePt_CaloIdL_MW trigger is only supported for NanoAODv13 and above.")
             instance = ElectronTagNProbeFromNanoAOD(
                 fileset=fileset,
                 filter=f"passHltDoubleEle{trigger_pt}CaloIdLMWUnsLeg",

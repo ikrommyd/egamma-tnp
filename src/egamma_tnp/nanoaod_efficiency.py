@@ -28,7 +28,7 @@ class ElectronTagNProbeFromNanoAOD(BaseTagNProbe):
         avoid_ecal_transition_probes=False,
         hlt_filter=None,
     ):
-        """Tag and Probe efficiency from NanoAOD and EGamma NanoAOD.
+        """Electron Tag and Probe efficiency from NanoAOD and EGamma NanoAOD.
         Can only perform trigger efficiencies at the moment.
 
         Parameters
@@ -139,7 +139,7 @@ class ElectronTagNProbeFromNanoAOD(BaseTagNProbe):
             mask = lumimask(events.run, events.luminosityBlock)
             events = events[mask]
 
-        good_events, good_locations = _filter_events(events, self.cutbased_id)
+        good_events, good_locations = ElectronTagNProbeFromNanoAOD._filter_events(events, self.cutbased_id)
         ele_for_tnp = good_events.Electron[good_locations]
         zcands1 = dak.combinations(ele_for_tnp, 2, fields=["tag", "probe"])
 
@@ -152,7 +152,7 @@ class ElectronTagNProbeFromNanoAOD(BaseTagNProbe):
             pass_eta_ebeegap_probes1 = (abs(probes1.eta_to_use) < 1.4442) | (abs(probes1.eta_to_use) > 1.566)
             zcands1 = zcands1[pass_eta_ebeegap_probes1]
 
-        p1, f1 = _process_zcands(
+        p1, f1 = ElectronTagNProbeFromNanoAOD._process_zcands(
             zcands=zcands1,
             good_events=good_events,
             trigger_pt=self.trigger_pt,
@@ -183,7 +183,7 @@ class ElectronTagNProbeFromNanoAOD(BaseTagNProbe):
                 pass_eta_ebeegap_probes2 = (abs(probes2.eta_to_use) < 1.4442) | (abs(probes2.eta_to_use) > 1.566)
                 zcands2 = zcands2[pass_eta_ebeegap_probes2]
 
-            p2, f2 = _process_zcands(
+            p2, f2 = ElectronTagNProbeFromNanoAOD._process_zcands(
                 zcands=zcands2,
                 good_events=good_events,
                 trigger_pt=self.trigger_pt,
@@ -232,81 +232,81 @@ class ElectronTagNProbeFromNanoAOD(BaseTagNProbe):
 
         return passing_probes, failing_probes
 
+    @staticmethod
+    def _filter_events(events, cutbased_id):
+        pass_hlt = events.HLT.Ele30_WPTight_Gsf
+        two_electrons = dak.num(events.Electron) == 2
+        abs_eta = abs(events.Electron.eta_to_use)
+        if cutbased_id:
+            pass_tight_id = events.Electron.cutBased == cutbased_id
+        else:
+            pass_tight_id = True
+        pass_eta = abs_eta <= 2.5
+        pass_selection = pass_hlt & two_electrons & pass_eta & pass_tight_id
+        n_of_tags = dak.sum(pass_selection, axis=1)
+        good_events = events[n_of_tags == 2]
+        good_locations = pass_selection[n_of_tags == 2]
+        return good_events, good_locations
 
-def _filter_events(events, cutbased_id):
-    pass_hlt = events.HLT.Ele30_WPTight_Gsf
-    two_electrons = dak.num(events.Electron) == 2
-    abs_eta = abs(events.Electron.eta_to_use)
-    if cutbased_id:
-        pass_tight_id = events.Electron.cutBased == cutbased_id
-    else:
-        pass_tight_id = True
-    pass_eta = abs_eta <= 2.5
-    pass_selection = pass_hlt & two_electrons & pass_eta & pass_tight_id
-    n_of_tags = dak.sum(pass_selection, axis=1)
-    good_events = events[n_of_tags == 2]
-    good_locations = pass_selection[n_of_tags == 2]
-    return good_events, good_locations
+    @staticmethod
+    def _trigger_match(electrons, trigobjs, pt, filterbit):
+        pass_pt = trigobjs.pt > pt
+        pass_id = abs(trigobjs.id) == 11
+        pass_filterbit = trigobjs.filterBits & (0x1 << filterbit) > 0
+        trigger_cands = trigobjs[pass_pt & pass_id & pass_filterbit]
+        delta_r = electrons.metric_table(trigger_cands)
+        pass_delta_r = delta_r < 0.1
+        n_of_trigger_matches = dak.sum(pass_delta_r, axis=2)
+        trig_matched_locs = n_of_trigger_matches >= 1
+        return trig_matched_locs
 
-
-def _trigger_match(electrons, trigobjs, pt, filterbit):
-    pass_pt = trigobjs.pt > pt
-    pass_id = abs(trigobjs.id) == 11
-    pass_filterbit = trigobjs.filterBits & (0x1 << filterbit) > 0
-    trigger_cands = trigobjs[pass_pt & pass_id & pass_filterbit]
-    delta_r = electrons.metric_table(trigger_cands)
-    pass_delta_r = delta_r < 0.1
-    n_of_trigger_matches = dak.sum(pass_delta_r, axis=2)
-    trig_matched_locs = n_of_trigger_matches >= 1
-    return trig_matched_locs
-
-
-def _process_zcands(
-    zcands,
-    good_events,
-    trigger_pt,
-    pt_tags,
-    pt_probes,
-    abseta_tags,
-    filterbit,
-    cut_and_count,
-    hlt_filter,
-):
-    trigobjs = good_events.TrigObj
-    pt_cond_tags = zcands.tag.pt > pt_tags
-    eta_cond_tags = abs(zcands.tag.eta_to_use) < abseta_tags
-    pt_cond_probes = zcands.probe.pt > pt_probes
-    trig_matched_tag = _trigger_match(zcands.tag, trigobjs, 30, 1)
-    zcands = zcands[trig_matched_tag & pt_cond_tags & pt_cond_probes & eta_cond_tags]
-    events_with_tags = dak.num(zcands.tag, axis=1) >= 1
-    zcands = zcands[events_with_tags]
-    trigobjs = trigobjs[events_with_tags]
-    tags = zcands.tag
-    probes = zcands.probe
-    dr = tags.delta_r(probes)
-    mass = (tags + probes).mass
-    if cut_and_count:
-        in_mass_window = abs(mass - 91.1876) < 30
-    else:
-        in_mass_window = (mass > 50) & (mass < 130)
-    opposite_charge = tags.charge * probes.charge == -1
-    isZ = in_mass_window & opposite_charge
-    dr_condition = dr > 0.0
-    all_probes = probes[isZ & dr_condition]
-    trig_matched_probe = _trigger_match(all_probes, trigobjs, trigger_pt, filterbit)
-    good_events = good_events[events_with_tags]
-    if hlt_filter is None:
-        has_passing_probe = dak.fill_none(dak.firsts(trig_matched_probe), False)
-        has_failing_probe = dak.fill_none(dak.firsts(~trig_matched_probe), False)
-    else:
-        has_passing_probe = dak.fill_none(dak.firsts(trig_matched_probe & getattr(good_events.HLT, hlt_filter)), False)
-        has_failing_probe = dak.fill_none(
-            dak.firsts(~(trig_matched_probe & getattr(good_events.HLT, hlt_filter))),
-            False,
-        )
-    passing_probe_events = good_events[has_passing_probe]
-    failing_probe_events = good_events[has_failing_probe]
-    return passing_probe_events, failing_probe_events
+    @staticmethod
+    def _process_zcands(
+        zcands,
+        good_events,
+        trigger_pt,
+        pt_tags,
+        pt_probes,
+        abseta_tags,
+        filterbit,
+        cut_and_count,
+        hlt_filter,
+    ):
+        trigobjs = good_events.TrigObj
+        pt_cond_tags = zcands.tag.pt > pt_tags
+        eta_cond_tags = abs(zcands.tag.eta_to_use) < abseta_tags
+        pt_cond_probes = zcands.probe.pt > pt_probes
+        trig_matched_tag = ElectronTagNProbeFromNanoAOD._trigger_match(zcands.tag, trigobjs, 30, 1)
+        zcands = zcands[trig_matched_tag & pt_cond_tags & pt_cond_probes & eta_cond_tags]
+        events_with_tags = dak.num(zcands.tag, axis=1) >= 1
+        zcands = zcands[events_with_tags]
+        trigobjs = trigobjs[events_with_tags]
+        tags = zcands.tag
+        probes = zcands.probe
+        dr = tags.delta_r(probes)
+        mass = (tags + probes).mass
+        if cut_and_count:
+            in_mass_window = abs(mass - 91.1876) < 30
+        else:
+            in_mass_window = (mass > 50) & (mass < 130)
+        opposite_charge = tags.charge * probes.charge == -1
+        isZ = in_mass_window & opposite_charge
+        dr_condition = dr > 0.0
+        all_probes = probes[isZ & dr_condition]
+        trig_matched_probe = ElectronTagNProbeFromNanoAOD._trigger_match(all_probes, trigobjs, trigger_pt, filterbit)
+        good_events = good_events[events_with_tags]
+        if hlt_filter is None:
+            has_passing_probe = dak.fill_none(dak.firsts(trig_matched_probe), False)
+            has_failing_probe = dak.fill_none(dak.firsts(~trig_matched_probe), False)
+        else:
+            has_passing_probe = dak.fill_none(dak.firsts(trig_matched_probe & getattr(good_events.HLT, hlt_filter)), False)
+            has_failing_probe = dak.fill_none(
+                dak.firsts(~(trig_matched_probe & getattr(good_events.HLT, hlt_filter))),
+                False,
+            )
+        passing_probe_events = good_events[has_passing_probe]
+        failing_probe_events = good_events[has_failing_probe]
+        return passing_probe_events, failing_probe_events
 
 
 class PhotonTagNProbeFromNanoAOD(BaseTagNProbe):
@@ -332,7 +332,7 @@ class PhotonTagNProbeFromNanoAOD(BaseTagNProbe):
         avoid_ecal_transition_probes=False,
         hlt_filter=None,
     ):
-        """Tag and Probe efficiency from NanoAOD and EGamma NanoAOD.
+        """Photon Tag and Probe efficiency from NanoAOD and EGamma NanoAOD.
         Can only perform trigger efficiencies at the moment.
 
         Parameters
@@ -420,7 +420,7 @@ class PhotonTagNProbeFromNanoAOD(BaseTagNProbe):
         n_of_files = 0
         for dataset in self.fileset.values():
             n_of_files += len(dataset["files"])
-        return f"ElectronTagNProbeFromNanoAOD({self.filter}, Number of files: {n_of_files}, Golden JSON: {self.goldenjson})"
+        return f"PhotonTagNProbeFromNanoAOD({self.filter}, Number of files: {n_of_files}, Golden JSON: {self.goldenjson})"
 
     def _find_probes(self, events, cut_and_count, vars):
         if vars is None:
@@ -443,7 +443,7 @@ class PhotonTagNProbeFromNanoAOD(BaseTagNProbe):
             mask = lumimask(events.run, events.luminosityBlock)
             events = events[mask]
 
-        good_events, good_locations = _filter_events(events, self.cutbased_id)
+        good_events, good_locations = PhotonTagNProbeFromNanoAOD._filter_events(events, self.cutbased_id)
         ele_for_tnp = good_events.Electron[good_locations]
         zcands1 = dak.combinations(ele_for_tnp, 2, fields=["tag", "probe"])
 
@@ -456,7 +456,7 @@ class PhotonTagNProbeFromNanoAOD(BaseTagNProbe):
             pass_eta_ebeegap_probes1 = (abs(probes1.eta_to_use) < 1.4442) | (abs(probes1.eta_to_use) > 1.566)
             zcands1 = zcands1[pass_eta_ebeegap_probes1]
 
-        p1, f1 = _process_zcands(
+        p1, f1 = PhotonTagNProbeFromNanoAOD._process_zcands(
             zcands=zcands1,
             good_events=good_events,
             trigger_pt=self.trigger_pt,
@@ -487,7 +487,7 @@ class PhotonTagNProbeFromNanoAOD(BaseTagNProbe):
                 pass_eta_ebeegap_probes2 = (abs(probes2.eta_to_use) < 1.4442) | (abs(probes2.eta_to_use) > 1.566)
                 zcands2 = zcands2[pass_eta_ebeegap_probes2]
 
-            p2, f2 = _process_zcands(
+            p2, f2 = PhotonTagNProbeFromNanoAOD._process_zcands(
                 zcands=zcands2,
                 good_events=good_events,
                 trigger_pt=self.trigger_pt,
@@ -536,78 +536,78 @@ class PhotonTagNProbeFromNanoAOD(BaseTagNProbe):
 
         return passing_probes, failing_probes
 
+    @staticmethod
+    def _filter_events(events, cutbased_id):
+        pass_hlt = events.HLT.Ele30_WPTight_Gsf
+        two_electrons = dak.num(events.Electron) == 2
+        abs_eta = abs(events.Electron.eta_to_use)
+        if cutbased_id:
+            pass_tight_id = events.Electron.cutBased == cutbased_id
+        else:
+            pass_tight_id = True
+        pass_eta = abs_eta <= 2.5
+        pass_selection = pass_hlt & two_electrons & pass_eta & pass_tight_id
+        n_of_tags = dak.sum(pass_selection, axis=1)
+        good_events = events[n_of_tags == 2]
+        good_locations = pass_selection[n_of_tags == 2]
+        return good_events, good_locations
 
-def _filter_events(events, cutbased_id):
-    pass_hlt = events.HLT.Ele30_WPTight_Gsf
-    two_electrons = dak.num(events.Electron) == 2
-    abs_eta = abs(events.Electron.eta_to_use)
-    if cutbased_id:
-        pass_tight_id = events.Electron.cutBased == cutbased_id
-    else:
-        pass_tight_id = True
-    pass_eta = abs_eta <= 2.5
-    pass_selection = pass_hlt & two_electrons & pass_eta & pass_tight_id
-    n_of_tags = dak.sum(pass_selection, axis=1)
-    good_events = events[n_of_tags == 2]
-    good_locations = pass_selection[n_of_tags == 2]
-    return good_events, good_locations
+    @staticmethod
+    def _trigger_match(electrons, trigobjs, pt, filterbit):
+        pass_pt = trigobjs.pt > pt
+        pass_id = abs(trigobjs.id) == 11
+        pass_filterbit = trigobjs.filterBits & (0x1 << filterbit) > 0
+        trigger_cands = trigobjs[pass_pt & pass_id & pass_filterbit]
+        delta_r = electrons.metric_table(trigger_cands)
+        pass_delta_r = delta_r < 0.1
+        n_of_trigger_matches = dak.sum(pass_delta_r, axis=2)
+        trig_matched_locs = n_of_trigger_matches >= 1
+        return trig_matched_locs
 
-
-def _trigger_match(electrons, trigobjs, pt, filterbit):
-    pass_pt = trigobjs.pt > pt
-    pass_id = abs(trigobjs.id) == 11
-    pass_filterbit = trigobjs.filterBits & (0x1 << filterbit) > 0
-    trigger_cands = trigobjs[pass_pt & pass_id & pass_filterbit]
-    delta_r = electrons.metric_table(trigger_cands)
-    pass_delta_r = delta_r < 0.1
-    n_of_trigger_matches = dak.sum(pass_delta_r, axis=2)
-    trig_matched_locs = n_of_trigger_matches >= 1
-    return trig_matched_locs
-
-
-def _process_zcands(
-    zcands,
-    good_events,
-    trigger_pt,
-    pt_tags,
-    pt_probes,
-    abseta_tags,
-    filterbit,
-    cut_and_count,
-    hlt_filter,
-):
-    trigobjs = good_events.TrigObj
-    pt_cond_tags = zcands.tag.pt > pt_tags
-    eta_cond_tags = abs(zcands.tag.eta_to_use) < abseta_tags
-    pt_cond_probes = zcands.probe.pt > pt_probes
-    trig_matched_tag = _trigger_match(zcands.tag, trigobjs, 30, 1)
-    zcands = zcands[trig_matched_tag & pt_cond_tags & pt_cond_probes & eta_cond_tags]
-    events_with_tags = dak.num(zcands.tag, axis=1) >= 1
-    zcands = zcands[events_with_tags]
-    trigobjs = trigobjs[events_with_tags]
-    tags = zcands.tag
-    probes = zcands.probe
-    dr = tags.delta_r(probes)
-    mass = (tags + probes).mass
-    if cut_and_count:
-        in_mass_window = abs(mass - 91.1876) < 30
-    else:
-        in_mass_window = (mass > 50) & (mass < 130)
-    opposite_charge = tags.charge * probes.charge == -1
-    isZ = in_mass_window & opposite_charge
-    dr_condition = dr > 0.0
-    all_probes = probes[isZ & dr_condition]
-    trig_matched_probe = _trigger_match(all_probes, trigobjs, trigger_pt, filterbit)
-    good_events = good_events[events_with_tags]
-    if hlt_filter is None:
-        has_passing_probe = dak.fill_none(dak.firsts(trig_matched_probe), False)
-        has_failing_probe = dak.fill_none(dak.firsts(~trig_matched_probe), False)
-    else:
-        has_passing_probe = dak.fill_none(dak.firsts(trig_matched_probe & getattr(good_events.HLT, hlt_filter)), False)
-        has_failing_probe = dak.fill_none(
-            dak.firsts(~(trig_matched_probe & getattr(good_events.HLT, hlt_filter))),
-            False,
-        )
-    passing_probe_events = good_events[has_passing_probe]
-    failing_probe_events = good_events[has_failing_probe]
-    return passing_probe_events, failing_probe_events
+    @staticmethod
+    def _process_zcands(
+        zcands,
+        good_events,
+        trigger_pt,
+        pt_tags,
+        pt_probes,
+        abseta_tags,
+        filterbit,
+        cut_and_count,
+        hlt_filter,
+    ):
+        trigobjs = good_events.TrigObj
+        pt_cond_tags = zcands.tag.pt > pt_tags
+        eta_cond_tags = abs(zcands.tag.eta_to_use) < abseta_tags
+        pt_cond_probes = zcands.probe.pt > pt_probes
+        trig_matched_tag = PhotonTagNProbeFromNanoAOD._trigger_match(zcands.tag, trigobjs, 30, 1)
+        zcands = zcands[trig_matched_tag & pt_cond_tags & pt_cond_probes & eta_cond_tags]
+        events_with_tags = dak.num(zcands.tag, axis=1) >= 1
+        zcands = zcands[events_with_tags]
+        trigobjs = trigobjs[events_with_tags]
+        tags = zcands.tag
+        probes = zcands.probe
+        dr = tags.delta_r(probes)
+        mass = (tags + probes).mass
+        if cut_and_count:
+            in_mass_window = abs(mass - 91.1876) < 30
+        else:
+            in_mass_window = (mass > 50) & (mass < 130)
+        opposite_charge = tags.charge * probes.charge == -1
+        isZ = in_mass_window & opposite_charge
+        dr_condition = dr > 0.0
+        all_probes = probes[isZ & dr_condition]
+        trig_matched_probe = PhotonTagNProbeFromNanoAOD._trigger_match(all_probes, trigobjs, trigger_pt, filterbit)
+        good_events = good_events[events_with_tags]
+        if hlt_filter is None:
+            has_passing_probe = dak.fill_none(dak.firsts(trig_matched_probe), False)
+            has_failing_probe = dak.fill_none(dak.firsts(~trig_matched_probe), False)
+        else:
+            has_passing_probe = dak.fill_none(dak.firsts(trig_matched_probe & getattr(good_events.HLT, hlt_filter)), False)
+            has_failing_probe = dak.fill_none(
+                dak.firsts(~(trig_matched_probe & getattr(good_events.HLT, hlt_filter))),
+                False,
+            )
+        passing_probe_events = good_events[has_passing_probe]
+        failing_probe_events = good_events[has_failing_probe]
+        return passing_probe_events, failing_probe_events

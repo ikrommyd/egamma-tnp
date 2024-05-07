@@ -23,7 +23,7 @@ class ElectronTagNProbeFromNTuples(BaseTagNProbe):
         avoid_ecal_transition_tags=True,
         avoid_ecal_transition_probes=False,
     ):
-        """Tag and Probe efficiency from E/Gamma NTuples
+        """Electron Tag and Probe efficiency from E/Gamma NTuples
 
         Parameters
         ----------
@@ -165,7 +165,7 @@ class PhotonTagNProbeFromNTuples(BaseTagNProbe):
         avoid_ecal_transition_tags=True,
         avoid_ecal_transition_probes=False,
     ):
-        """Tag and Probe efficiency from E/Gamma NTuples
+        """Photon Tag and Probe efficiency from E/Gamma NTuples
 
         Parameters
         ----------

@@ -5,7 +5,7 @@ from coffea.nanoevents import NanoAODSchema
 from egamma_tnp._base_tagnprobe import BaseTagNProbe
 
 
-class TagNProbeFromNanoAOD(BaseTagNProbe):
+class ElectronTagNProbeFromNanoAOD(BaseTagNProbe):
     def __init__(
         self,
         fileset,
@@ -116,7 +116,7 @@ class TagNProbeFromNanoAOD(BaseTagNProbe):
         n_of_files = 0
         for dataset in self.fileset.values():
             n_of_files += len(dataset["files"])
-        return f"TagNProbeFromNanoAOD({self.filter}, Number of files: {n_of_files}, Golden JSON: {self.goldenjson})"
+        return f"ElectronTagNProbeFromNanoAOD({self.filter}, Number of files: {n_of_files}, Golden JSON: {self.goldenjson})"
 
     def _find_probes(self, events, cut_and_count, vars):
         if vars is None:
@@ -300,7 +300,10 @@ def _process_zcands(
         has_failing_probe = dak.fill_none(dak.firsts(~trig_matched_probe), False)
     else:
         has_passing_probe = dak.fill_none(dak.firsts(trig_matched_probe & getattr(good_events.HLT, hlt_filter)), False)
-        has_failing_probe = dak.fill_none(dak.firsts(~(trig_matched_probe & getattr(good_events.HLT, hlt_filter))), False)
+        has_failing_probe = dak.fill_none(
+            dak.firsts(~(trig_matched_probe & getattr(good_events.HLT, hlt_filter))),
+            False,
+        )
     passing_probe_events = good_events[has_passing_probe]
     failing_probe_events = good_events[has_failing_probe]
     return passing_probe_events, failing_probe_events

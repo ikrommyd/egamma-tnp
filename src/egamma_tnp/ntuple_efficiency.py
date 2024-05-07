@@ -5,7 +5,7 @@ from coffea.nanoevents import BaseSchema
 from egamma_tnp._base_tagnprobe import BaseTagNProbe
 
 
-class TagNProbeFromNTuples(BaseTagNProbe):
+class ElectronTagNProbeFromNTuples(BaseTagNProbe):
     def __init__(
         self,
         fileset,
@@ -80,7 +80,7 @@ class TagNProbeFromNTuples(BaseTagNProbe):
         n_of_files = 0
         for dataset in self.fileset.values():
             n_of_files += len(dataset["files"])
-        return f"TagNProbeFromNTuples({self.filter}, Number of files: {n_of_files}, Golden JSON: {self.goldenjson})"
+        return f"ElectronTagNProbeFromNTuples({self.filter}, Number of files: {n_of_files}, Golden JSON: {self.goldenjson})"
 
     def _find_probe_events(self, events, cut_and_count):
         pass_pt_probes = events.el_pt > self.probes_pt_cut

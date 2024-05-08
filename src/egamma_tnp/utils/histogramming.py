@@ -692,7 +692,7 @@ def create_hists_root_file_for_fitter(hists, root_path, bining_path, axes=None):
                 counter += 1
 
         with open(bining_path, "wb") as f:
-            pickle.dump(bining, f)
+            pickle.dump(bining, f, protocol=2)
 
     elif isinstance(hists, dict) and "pt" in hists and "eta" in hists and "phi" in hists:
         histograms = convert_2d_mll_hists_to_1d_hists(hists)
@@ -713,7 +713,7 @@ def create_hists_root_file_for_fitter(hists, root_path, bining_path, axes=None):
                         counter += 1
 
                 with open(new_bining_path, "wb") as f:
-                    pickle.dump(hists["bining"], f)
+                    pickle.dump(hists["bining"], f, protocol=2)
 
     else:
         raise ValueError("Invalid `hists` format")

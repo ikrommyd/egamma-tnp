@@ -74,6 +74,7 @@ class ElectronTagNProbeFromNTuples(BaseTagNProbe):
             avoid_ecal_transition_tags=avoid_ecal_transition_tags,
             avoid_ecal_transition_probes=avoid_ecal_transition_probes,
             schemaclass=BaseSchema,
+            default_vars=["el_pt", "el_eta", "el_phi"],
         )
 
     def __repr__(self):
@@ -100,8 +101,6 @@ class ElectronTagNProbeFromNTuples(BaseTagNProbe):
         return passing_probe_events, failing_probe_events
 
     def _find_probes(self, events, cut_and_count, vars):
-        if vars is None:
-            vars = ["el_pt", "el_eta", "el_phi"]
         if self.use_sc_eta:
             events["el_eta_to_use"] = events.el_sc_eta
             events["tag_Ele_eta_to_use"] = events.tag_sc_eta
@@ -174,14 +173,14 @@ class PhotonTagNProbeFromNTuples(BaseTagNProbe):
             filter: str
                 The name of the filter to calculate the efficiencies for.
             tags_pt_cut: int or float, optional
-                The Pt cut to apply to the tag electrons. The default is 35.
+                The Pt cut to apply to the tag photons. The default is 35.
             probes_pt_cut: int or float, optional
-                The Pt threshold of the probe electron to calculate efficiencies over that threshold. The default is None.
+                The Pt threshold of the probe photon to calculate efficiencies over that threshold. The default is None.
                 Should be very slightly below the Pt threshold of the filter.
                 If it is None, it will attempt to infer it from the filter name.
                 If it fails to do so, it will set it to 0.
             tags_abseta_cut: int or float, optional
-                The absolute Eta cut to apply to the tag electrons. The default is 2.5.
+                The absolute Eta cut to apply to the tag photons. The default is 2.5.
             cutbased_id: str, optional
                 The name of the cutbased ID to apply to the probes.
                 If None, no cutbased ID is applied. The default is None.
@@ -216,16 +215,17 @@ class PhotonTagNProbeFromNTuples(BaseTagNProbe):
             avoid_ecal_transition_tags=avoid_ecal_transition_tags,
             avoid_ecal_transition_probes=avoid_ecal_transition_probes,
             schemaclass=BaseSchema,
+            default_vars=["ph_et", "ph_eta", "ph_phi"],
         )
 
     def __repr__(self):
         n_of_files = 0
         for dataset in self.fileset.values():
             n_of_files += len(dataset["files"])
-        return f"ElectronTagNProbeFromNTuples({self.filter}, Number of files: {n_of_files}, Golden JSON: {self.goldenjson})"
+        return f"PhotonTagNProbeFromNTuples({self.filter}, Number of files: {n_of_files}, Golden JSON: {self.goldenjson})"
 
     def _find_probe_events(self, events, cut_and_count):
-        pass_pt_probes = events.el_pt > self.probes_pt_cut
+        pass_pt_probes = events.ph_et > self.probes_pt_cut
         if self.cutbased_id:
             pass_cutbased_id = events[self.cutbased_id] == 1
         else:
@@ -242,18 +242,16 @@ class PhotonTagNProbeFromNTuples(BaseTagNProbe):
         return passing_probe_events, failing_probe_events
 
     def _find_probes(self, events, cut_and_count, vars):
-        if vars is None:
-            vars = ["el_pt", "el_eta", "el_phi"]
         if self.use_sc_eta:
-            events["el_eta_to_use"] = events.el_sc_eta
+            events["ph_eta_to_use"] = events.ph_sc_eta
             events["tag_Ele_eta_to_use"] = events.tag_sc_eta
         else:
-            events["el_eta_to_use"] = events.el_eta
+            events["ph_eta_to_use"] = events.ph_eta
             events["tag_Ele_eta_to_use"] = events.tag_Ele_eta
         if self.use_sc_phi:
-            events["el_phi_to_use"] = events.el_sc_phi
+            events["ph_phi_to_use"] = events.ph_sc_phi
         else:
-            events["el_phi_to_use"] = events.el_phi
+            events["ph_phi_to_use"] = events.ph_phi
         if self.extra_filter is not None:
             events = self.extra_filter(events, **self.extra_filter_args)
         if self.goldenjson is not None:
@@ -265,13 +263,12 @@ class PhotonTagNProbeFromNTuples(BaseTagNProbe):
             pass_eta_ebeegap_tags = (abs(events.tag_Ele_eta_to_use) < 1.4442) | (abs(events.tag_Ele_eta_to_use) > 1.566)
             events = events[pass_eta_ebeegap_tags]
         if self.avoid_ecal_transition_probes:
-            pass_eta_ebeegap_probes = (abs(events.el_eta_to_use) < 1.4442) | (abs(events.el_eta_to_use) > 1.566)
+            pass_eta_ebeegap_probes = (abs(events.ph_eta_to_use) < 1.4442) | (abs(events.ph_eta_to_use) > 1.566)
             events = events[pass_eta_ebeegap_probes]
 
         pass_pt_tags = events.tag_Ele_pt > self.tags_pt_cut
         pass_abseta_tags = abs(events.tag_Ele_eta_to_use) < self.tags_abseta_cut
-        opposite_charge = events.tag_Ele_q * events.el_q == -1
-        events = events[pass_pt_tags & pass_abseta_tags & opposite_charge]
+        events = events[pass_pt_tags & pass_abseta_tags]
 
         passing_probe_events, failing_probe_events = self._find_probe_events(events, cut_and_count=cut_and_count)
 

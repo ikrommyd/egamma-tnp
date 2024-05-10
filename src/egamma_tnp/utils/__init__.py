@@ -9,7 +9,7 @@ from egamma_tnp.utils.histogramming import (
     fill_pt_eta_phi_mll_histograms,
     get_ratio_histogram,
 )
-from egamma_tnp.utils.misc import delta_r_SC
+from egamma_tnp.utils.misc import custom_delta_r, delta_r_SC
 
 __all__ = (
     "redirect_files",
@@ -22,6 +22,7 @@ __all__ = (
     "create_hists_root_file_for_fitter",
     "get_ratio_histogram",
     "delta_r_SC",
+    "custom_delta_r",
 )
 
 

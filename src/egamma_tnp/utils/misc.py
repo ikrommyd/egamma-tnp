@@ -35,6 +35,11 @@ def delta_r(eta1, phi1, eta2, phi2):
     return np.hypot(deta, dphi)
 
 
+def custom_delta_r(probe, other):
+    """Distance in (eta,phi) plane between probe and another object using `eta_to_use` and `phi_to_use`."""
+    return delta_r(probe.eta_to_use, probe.phi_to_use, other.eta, other.phi)
+
+
 def delta_r_SC(electron, other):
     """Distance in (eta,phi) plane between electron and another object using the electron's SC eta."""
     return delta_r(electron.eta + electron.deltaEtaSC, electron.phi, other.eta, other.phi)

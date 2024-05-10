@@ -23,6 +23,7 @@ class BaseTagNProbe:
         avoid_ecal_transition_tags,
         avoid_ecal_transition_probes,
         schemaclass,
+        default_vars,
     ):
         if extra_filter_args is None:
             extra_filter_args = {}
@@ -46,12 +47,13 @@ class BaseTagNProbe:
         self.avoid_ecal_transition_tags = avoid_ecal_transition_tags
         self.avoid_ecal_transition_probes = avoid_ecal_transition_probes
         self.schemaclass = schemaclass
+        self.default_vars = default_vars
 
         if goldenjson is not None and not os.path.exists(goldenjson):
             raise FileNotFoundError(f"Golden JSON {goldenjson} does not exist.")
 
-    def find_probes(self, events, cut_and_count, vars):
-        raise NotImplementedError("find_probes method must be implemented.")
+    def _find_probes(self, events, cut_and_count, vars):
+        raise NotImplementedError("_find_probes method must be implemented.")
 
     def get_tnp_arrays(
         self,
@@ -102,6 +104,8 @@ class BaseTagNProbe:
         """
         if uproot_options is None:
             uproot_options = {}
+        if vars is None:
+            vars = self.default_vars
 
         def data_manipulation(events):
             passing_probes, failing_probes = self._find_probes(events, cut_and_count=cut_and_count, vars=vars)
@@ -198,6 +202,8 @@ class BaseTagNProbe:
         """
         if uproot_options is None:
             uproot_options = {}
+        if vars is None:
+            vars = self.default_vars
 
         if cut_and_count:
             data_manipulation = partial(
@@ -287,6 +293,8 @@ class BaseTagNProbe:
         """
         if uproot_options is None:
             uproot_options = {}
+        if vars is None:
+            vars = self.default_vars
 
         if cut_and_count:
             data_manipulation = partial(

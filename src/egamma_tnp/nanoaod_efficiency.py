@@ -3,6 +3,7 @@ from coffea.lumi_tools import LumiMask
 from coffea.nanoevents import NanoAODSchema
 
 from egamma_tnp._base_tagnprobe import BaseTagNProbe
+from egamma_tnp.utils import custom_delta_r
 
 
 class ElectronTagNProbeFromNanoAOD(BaseTagNProbe):
@@ -106,6 +107,7 @@ class ElectronTagNProbeFromNanoAOD(BaseTagNProbe):
             avoid_ecal_transition_tags=avoid_ecal_transition_tags,
             avoid_ecal_transition_probes=avoid_ecal_transition_probes,
             schemaclass=NanoAODSchema,
+            default_vars=["el_pt", "el_eta", "el_phi"],
         )
         self.for_trigger = for_trigger
         self.egm_nano = egm_nano
@@ -119,8 +121,6 @@ class ElectronTagNProbeFromNanoAOD(BaseTagNProbe):
         return f"ElectronTagNProbeFromNanoAOD({self.filter}, Number of files: {n_of_files}, Golden JSON: {self.goldenjson})"
 
     def _find_probes(self, events, cut_and_count, vars):
-        if vars is None:
-            vars = ["el_pt", "el_eta", "el_phi"]
         if self.use_sc_eta:
             if self.egm_nano:
                 events["Electron", "eta_to_use"] = events.Electron.superclusterEta
@@ -254,7 +254,7 @@ class ElectronTagNProbeFromNanoAOD(BaseTagNProbe):
         pass_id = abs(trigobjs.id) == 11
         pass_filterbit = trigobjs.filterBits & (0x1 << filterbit) > 0
         trigger_cands = trigobjs[pass_pt & pass_id & pass_filterbit]
-        delta_r = electrons.metric_table(trigger_cands)
+        delta_r = electrons.metric_table(trigger_cands, metric=custom_delta_r)
         pass_delta_r = delta_r < 0.1
         n_of_trigger_matches = dak.sum(pass_delta_r, axis=2)
         trig_matched_locs = n_of_trigger_matches >= 1
@@ -410,6 +410,7 @@ class PhotonTagNProbeFromNanoAOD(BaseTagNProbe):
             avoid_ecal_transition_tags=avoid_ecal_transition_tags,
             avoid_ecal_transition_probes=avoid_ecal_transition_probes,
             schemaclass=NanoAODSchema,
+            default_vars=["ph_pt", "ph_eta", "ph_phi"],
         )
         self.for_trigger = for_trigger
         self.egm_nano = egm_nano
@@ -423,8 +424,6 @@ class PhotonTagNProbeFromNanoAOD(BaseTagNProbe):
         return f"PhotonTagNProbeFromNanoAOD({self.filter}, Number of files: {n_of_files}, Golden JSON: {self.goldenjson})"
 
     def _find_probes(self, events, cut_and_count, vars):
-        if vars is None:
-            vars = ["el_pt", "el_eta", "el_phi"]
         if self.use_sc_eta:
             if self.egm_nano:
                 events["Electron", "eta_to_use"] = events.Electron.superclusterEta
@@ -558,7 +557,7 @@ class PhotonTagNProbeFromNanoAOD(BaseTagNProbe):
         pass_id = abs(trigobjs.id) == 11
         pass_filterbit = trigobjs.filterBits & (0x1 << filterbit) > 0
         trigger_cands = trigobjs[pass_pt & pass_id & pass_filterbit]
-        delta_r = electrons.metric_table(trigger_cands)
+        delta_r = electrons.metric_table(trigger_cands, metric=custom_delta_r)
         pass_delta_r = delta_r < 0.1
         n_of_trigger_matches = dak.sum(pass_delta_r, axis=2)
         trig_matched_locs = n_of_trigger_matches >= 1

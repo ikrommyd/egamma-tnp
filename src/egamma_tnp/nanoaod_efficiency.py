@@ -171,41 +171,37 @@ class ElectronTagNProbeFromNanoAOD(BaseTagNProbe):
         p1["pair_mass"] = (p1["el"] + p1["tag_Ele"]).mass
         f1["pair_mass"] = (f1["el"] + f1["tag_Ele"]).mass
 
-        if cut_and_count:
-            zcands2 = dak.combinations(ele_for_tnp, 2, fields=["probe", "tag"])
+        zcands2 = dak.combinations(ele_for_tnp, 2, fields=["probe", "tag"])
 
-            if self.avoid_ecal_transition_tags:
-                tags2 = zcands2.tag
-                pass_eta_ebeegap_tags2 = (abs(tags2.eta_to_use) < 1.4442) | (abs(tags2.eta_to_use) > 1.566)
-                zcands2 = zcands2[pass_eta_ebeegap_tags2]
-            if self.avoid_ecal_transition_probes:
-                probes2 = zcands2.probe
-                pass_eta_ebeegap_probes2 = (abs(probes2.eta_to_use) < 1.4442) | (abs(probes2.eta_to_use) > 1.566)
-                zcands2 = zcands2[pass_eta_ebeegap_probes2]
+        if self.avoid_ecal_transition_tags:
+            tags2 = zcands2.tag
+            pass_eta_ebeegap_tags2 = (abs(tags2.eta_to_use) < 1.4442) | (abs(tags2.eta_to_use) > 1.566)
+            zcands2 = zcands2[pass_eta_ebeegap_tags2]
+        if self.avoid_ecal_transition_probes:
+            probes2 = zcands2.probe
+            pass_eta_ebeegap_probes2 = (abs(probes2.eta_to_use) < 1.4442) | (abs(probes2.eta_to_use) > 1.566)
+            zcands2 = zcands2[pass_eta_ebeegap_probes2]
 
-            p2, f2 = ElectronTagNProbeFromNanoAOD._process_zcands(
-                zcands=zcands2,
-                good_events=good_events,
-                trigger_pt=self.trigger_pt,
-                pt_tags=self.tags_pt_cut,
-                pt_probes=self.probes_pt_cut,
-                abseta_tags=self.tags_abseta_cut,
-                filterbit=self.filterbit,
-                cut_and_count=cut_and_count,
-                hlt_filter=self.hlt_filter,
-            )
+        p2, f2 = ElectronTagNProbeFromNanoAOD._process_zcands(
+            zcands=zcands2,
+            good_events=good_events,
+            trigger_pt=self.trigger_pt,
+            pt_tags=self.tags_pt_cut,
+            pt_probes=self.probes_pt_cut,
+            abseta_tags=self.tags_abseta_cut,
+            filterbit=self.filterbit,
+            cut_and_count=cut_and_count,
+            hlt_filter=self.hlt_filter,
+        )
 
-            p2["el"] = p2.Electron[:, 0]
-            f2["el"] = f2.Electron[:, 0]
-            p2["tag_Ele"] = p2.Electron[:, 1]
-            f2["tag_Ele"] = f2.Electron[:, 1]
-            p2["pair_mass"] = (p2["el"] + p2["tag_Ele"]).mass
-            f2["pair_mass"] = (f2["el"] + f2["tag_Ele"]).mass
+        p2["el"] = p2.Electron[:, 0]
+        f2["el"] = f2.Electron[:, 0]
+        p2["tag_Ele"] = p2.Electron[:, 1]
+        f2["tag_Ele"] = f2.Electron[:, 1]
+        p2["pair_mass"] = (p2["el"] + p2["tag_Ele"]).mass
+        f2["pair_mass"] = (f2["el"] + f2["tag_Ele"]).mass
 
-            passing_probe_events, failing_probe_events = dak.concatenate([p1, p2]), dak.concatenate([f1, f2])
-
-        else:
-            passing_probe_events, failing_probe_events = p1, f1
+        passing_probe_events, failing_probe_events = dak.concatenate([p1, p2]), dak.concatenate([f1, f2])
 
         passing_probe_dict = {}
         failing_probe_dict = {}
@@ -474,41 +470,37 @@ class PhotonTagNProbeFromNanoAOD(BaseTagNProbe):
         p1["pair_mass"] = (p1["el"] + p1["tag_Ele"]).mass
         f1["pair_mass"] = (f1["el"] + f1["tag_Ele"]).mass
 
-        if cut_and_count:
-            zcands2 = dak.combinations(ele_for_tnp, 2, fields=["probe", "tag"])
+        zcands2 = dak.combinations(ele_for_tnp, 2, fields=["probe", "tag"])
 
-            if self.avoid_ecal_transition_tags:
-                tags2 = zcands2.tag
-                pass_eta_ebeegap_tags2 = (abs(tags2.eta_to_use) < 1.4442) | (abs(tags2.eta_to_use) > 1.566)
-                zcands2 = zcands2[pass_eta_ebeegap_tags2]
-            if self.avoid_ecal_transition_probes:
-                probes2 = zcands2.probe
-                pass_eta_ebeegap_probes2 = (abs(probes2.eta_to_use) < 1.4442) | (abs(probes2.eta_to_use) > 1.566)
-                zcands2 = zcands2[pass_eta_ebeegap_probes2]
+        if self.avoid_ecal_transition_tags:
+            tags2 = zcands2.tag
+            pass_eta_ebeegap_tags2 = (abs(tags2.eta_to_use) < 1.4442) | (abs(tags2.eta_to_use) > 1.566)
+            zcands2 = zcands2[pass_eta_ebeegap_tags2]
+        if self.avoid_ecal_transition_probes:
+            probes2 = zcands2.probe
+            pass_eta_ebeegap_probes2 = (abs(probes2.eta_to_use) < 1.4442) | (abs(probes2.eta_to_use) > 1.566)
+            zcands2 = zcands2[pass_eta_ebeegap_probes2]
 
-            p2, f2 = PhotonTagNProbeFromNanoAOD._process_zcands(
-                zcands=zcands2,
-                good_events=good_events,
-                trigger_pt=self.trigger_pt,
-                pt_tags=self.tags_pt_cut,
-                pt_probes=self.probes_pt_cut,
-                abseta_tags=self.tags_abseta_cut,
-                filterbit=self.filterbit,
-                cut_and_count=cut_and_count,
-                hlt_filter=self.hlt_filter,
-            )
+        p2, f2 = PhotonTagNProbeFromNanoAOD._process_zcands(
+            zcands=zcands2,
+            good_events=good_events,
+            trigger_pt=self.trigger_pt,
+            pt_tags=self.tags_pt_cut,
+            pt_probes=self.probes_pt_cut,
+            abseta_tags=self.tags_abseta_cut,
+            filterbit=self.filterbit,
+            cut_and_count=cut_and_count,
+            hlt_filter=self.hlt_filter,
+        )
 
-            p2["el"] = p2.Electron[:, 0]
-            f2["el"] = f2.Electron[:, 0]
-            p2["tag_Ele"] = p2.Electron[:, 1]
-            f2["tag_Ele"] = f2.Electron[:, 1]
-            p2["pair_mass"] = (p2["el"] + p2["tag_Ele"]).mass
-            f2["pair_mass"] = (f2["el"] + f2["tag_Ele"]).mass
+        p2["el"] = p2.Electron[:, 0]
+        f2["el"] = f2.Electron[:, 0]
+        p2["tag_Ele"] = p2.Electron[:, 1]
+        f2["tag_Ele"] = f2.Electron[:, 1]
+        p2["pair_mass"] = (p2["el"] + p2["tag_Ele"]).mass
+        f2["pair_mass"] = (f2["el"] + f2["tag_Ele"]).mass
 
-            passing_probe_events, failing_probe_events = dak.concatenate([p1, p2]), dak.concatenate([f1, f2])
-
-        else:
-            passing_probe_events, failing_probe_events = p1, f1
+        passing_probe_events, failing_probe_events = dak.concatenate([p1, p2]), dak.concatenate([f1, f2])
 
         passing_probe_dict = {}
         failing_probe_dict = {}

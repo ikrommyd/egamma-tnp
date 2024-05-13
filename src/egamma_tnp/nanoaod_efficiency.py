@@ -1,4 +1,5 @@
 import dask_awkward as dak
+import numpy as np
 from coffea.lumi_tools import LumiMask
 from coffea.nanoevents import NanoAODSchema
 
@@ -318,16 +319,16 @@ class PhotonTagNProbeFromNanoAOD(BaseTagNProbe):
             If it fails to do so, it will set it to 0.
             The default is None.
         tags_pt_cut: int or float, optional
-            The Pt cut to apply to the tag electrons. The default is 35.
+            The Pt cut to apply to the tag photons. The default is 35.
         probes_pt_cut: int or float, optional
-            The Pt threshold of the probe electron to calculate efficiencies over that threshold. The default is None.
+            The Pt threshold of the probe photon to calculate efficiencies over that threshold. The default is None.
             Should be very slightly below the Pt threshold of the filter.
             If it is None, it will attempt to infer it from the filter name.
             If it fails to do so, it will set it to 0.
         tags_abseta_cut: int or float, optional
-            The absolute Eta cut to apply to the tag electrons. The default is 2.5.
+            The absolute Eta cut to apply to the tag photons. The default is 2.5.
         cutbased_id: int, optional
-            The number of the cutbased ID to apply to the electrons.
+            The number of the cutbased ID to apply to the photons.
             If None, no cutbased ID is applied. The default is None.
         goldenjson: str, optional
             The golden json to use for luminosity masking. The default is None.
@@ -351,7 +352,7 @@ class PhotonTagNProbeFromNanoAOD(BaseTagNProbe):
         if for_trigger is False:
             raise NotImplementedError("Only trigger efficiencies are supported at the moment.")
         if use_sc_phi and not egm_nano:
-            raise NotImplementedError("Supercluster Phi is only available for EGamma NanoAOD.")
+            raise NotImplementedError("Supercluster Phi is not yet available in NanoAOD.")
         if for_trigger and filterbit is None:
             raise ValueError("TrigObj filerbit must be provided for trigger efficiencies.")
         if filter == "None" and trigger_pt is None and for_trigger:
@@ -392,16 +393,13 @@ class PhotonTagNProbeFromNanoAOD(BaseTagNProbe):
 
     def _find_probes(self, events, cut_and_count, vars):
         if self.use_sc_eta:
-            if self.egm_nano:
-                events["Electron", "eta_to_use"] = events.Electron.superclusterEta
-            else:
-                events["Electron", "eta_to_use"] = events.Electron.eta + events.Electron.deltaEtaSC
+            events["Photon", "eta_to_use"] = events.Photon.superclusterEta
         else:
-            events["Electron", "eta_to_use"] = events.Electron.eta
+            events["Photon", "eta_to_use"] = events.Photon.eta
         if self.use_sc_phi:
-            events["Electron", "phi_to_use"] = events.Electron.superclusterPhi
+            events["Photon", "phi_to_use"] = events.Photon.superclusterPhi
         else:
-            events["Electron", "phi_to_use"] = events.Electron.phi
+            events["Photon", "phi_to_use"] = events.Photon.phi
         if self.extra_filter is not None:
             events = self.extra_filter(events, **self.extra_filter_args)
         if self.goldenjson is not None:
@@ -410,9 +408,9 @@ class PhotonTagNProbeFromNanoAOD(BaseTagNProbe):
             events = events[mask]
 
         good_events, good_locations = PhotonTagNProbeFromNanoAOD._filter_events(events, self.cutbased_id)
-        ele_for_tnp = good_events.Electron[good_locations]
-        tnp = dak.combinations(ele_for_tnp, 2, fields=["tag", "probe"])
-        pnt = dak.combinations(ele_for_tnp, 2, fields=["probe", "tag"])
+        ph_for_tnp = good_events.Photon[good_locations]
+        tnp = dak.combinations(ph_for_tnp, 2, fields=["tag", "probe"])
+        pnt = dak.combinations(ph_for_tnp, 2, fields=["probe", "tag"])
         zcands = dak.concatenate([tnp, pnt])
         good_events = dak.concatenate([good_events, good_events])
 
@@ -437,19 +435,38 @@ class PhotonTagNProbeFromNanoAOD(BaseTagNProbe):
             hlt_filter=self.hlt_filter,
         )
 
-        passing_probe_events["el"] = passing_probe_events.Electron[:, 1]
-        failing_probe_events["el"] = failing_probe_events.Electron[:, 1]
-        passing_probe_events["tag_Ele"] = passing_probe_events.Electron[:, 0]
-        failing_probe_events["tag_Ele"] = failing_probe_events.Electron[:, 0]
-        passing_probe_events["pair_mass"] = (passing_probe_events["el"] + passing_probe_events["tag_Ele"]).mass
-        failing_probe_events["pair_mass"] = (failing_probe_events["el"] + failing_probe_events["tag_Ele"]).mass
+        passing_probe_events["ph"] = passing_probe_events.Photon[:, 1]
+        failing_probe_events["ph"] = failing_probe_events.Photon[:, 1]
+        passing_probe_events["tag_Ele"] = passing_probe_events.Photon[:, 0]
+        failing_probe_events["tag_Ele"] = failing_probe_events.Photon[:, 0]
+        # M^2 = 2 * pt1 * pt2 * (cosh(eta1 - eta2) - cos(phi1 - phi2)) Use until this is fixed in coffea
+        passing_probe_events["pair_mass"] = np.sqrt(
+            2
+            * passing_probe_events["ph"].pt
+            * passing_probe_events["tag_Ele"].pt
+            * (
+                np.cosh(passing_probe_events["ph"].eta - passing_probe_events["tag_Ele"].eta)
+                - np.cos(passing_probe_events["ph"].phi - passing_probe_events["tag_Ele"].phi)
+            )
+        )
+        failing_probe_events["pair_mass"] = np.sqrt(
+            2
+            * failing_probe_events["ph"].pt
+            * failing_probe_events["tag_Ele"].pt
+            * (
+                np.cosh(failing_probe_events["ph"].eta - failing_probe_events["tag_Ele"].eta)
+                - np.cos(failing_probe_events["ph"].phi - failing_probe_events["tag_Ele"].phi)
+            )
+        )
+        # passing_probe_events["pair_mass"] = (passing_probe_events["ph"] + passing_probe_events["tag_Ele"]).mass Uncomment when this is fixed in coffea
+        # failing_probe_events["pair_mass"] = (failing_probe_events["ph"] + failing_probe_events["tag_Ele"]).mass Uncomment when this is fixed in coffea
 
         passing_probe_dict = {}
         failing_probe_dict = {}
         for var in vars:
-            if var.startswith("el_"):
-                passing_probe_dict[var] = passing_probe_events["el", var.removeprefix("el_")]
-                failing_probe_dict[var] = failing_probe_events["el", var.removeprefix("el_")]
+            if var.startswith("ph_"):
+                passing_probe_dict[var] = passing_probe_events["ph", var.removeprefix("ph_")]
+                failing_probe_dict[var] = failing_probe_events["ph", var.removeprefix("ph_")]
             elif var.startswith("tag_Ele_"):
                 passing_probe_dict[var] = passing_probe_events["tag_Ele", var.removeprefix("tag_Ele_")]
                 failing_probe_dict[var] = failing_probe_events["tag_Ele", var.removeprefix("tag_Ele_")]

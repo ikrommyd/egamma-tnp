@@ -1,6 +1,24 @@
+import awkward as ak
 import numpy as np
 import uproot
 from hist import intervals
+
+
+def flatten_probes(probes):
+    """Flatten the probes array.
+
+    Parameters
+    ----------
+        probes : awkward.Array or dask_awkward.Array
+            An array with the probes.
+
+    Returns
+    -------
+        probes : awkward.Array or dask_awkward.Array
+            The flattened probes array.
+    """
+
+    return ak.flatten(ak.zip({var: probes[var] for var in probes.fields}), axis=-1)
 
 
 def get_ratio_histogram(passing_probes, failing_or_all_probes, denominator_type="failing"):
@@ -52,16 +70,15 @@ def fill_pt_eta_phi_cutncount_histograms(
     eta_regions_eta=None,
     eta_regions_phi=None,
     vars=None,
-    delayed=True,
 ):
     """Get the Pt, Eta and Phi histograms of the passing and failing probes.
 
     Parameters
     ----------
         passing_probes : awkward.Array or dask_awkward.Array
-            An array with fields `pt`, `eta`, and `phi` of the passing probes.
+            An array with the fields specified in `vars` of the passing probes.
         failing_probes : awkward.Array or dask_awkward.Array
-            An array with fields `pt`, `eta`, and `phi` of the failing probes.
+            An array with the fields specified in `vars` of the failing probes.
         plateau_cut : int or float, optional
             The Pt threshold to use to ensure that we are on the efficiency plateau for eta and phi histograms.
             The default None, meaning that no extra cut is applied and the activation region is included in those histograms.
@@ -84,9 +101,6 @@ def fill_pt_eta_phi_cutncount_histograms(
             A list of the fields that refer to the Pt, Eta, and Phi of the probes.
             Must be in the order of Pt, Eta, and Phi.
             The default is ["el_pt", "el_eta", "el_phi"].
-        delayed : bool, optional
-            Whether the probes arrays are delayed (dask-awkward) or not.
-            The default is True.
 
     Returns
     -------
@@ -99,12 +113,14 @@ def fill_pt_eta_phi_cutncount_histograms(
     """
     import hist
 
-    if delayed:
-        from hist.dask import Hist
-    else:
+    if isinstance(passing_probes, ak.Array) and isinstance(failing_probes, ak.Array):
         from hist import Hist
+    else:
+        from hist.dask import Hist
 
     import egamma_tnp
+
+    passing_probes, failing_probes = flatten_probes(passing_probes), flatten_probes(failing_probes)
 
     if plateau_cut is None:
         plateau_cut = 0
@@ -198,16 +214,15 @@ def fill_pt_eta_phi_mll_histograms(
     eta_regions_eta=None,
     eta_regions_phi=None,
     vars=None,
-    delayed=True,
 ):
     """Get the 2D histograms of Pt, Eta and Phi vs mll of the passing and failing probes.
 
     Parameters
     ----------
         passing_probes : awkward.Array or dask_awkward.Array
-            An array with fields `pt`, `eta`, and `phi` of the passing probes.
+            An array with the fields specified in `vars` of the passing probes.
         failing_probes : awkward.Array or dask_awkward.Array
-            An array with fields `pt`, `eta`, and `phi` of the failing probes.
+            An array with the fields specified in `vars` of the failing probes.
         plateau_cut : int or float, optional
             The Pt threshold to use to ensure that we are on the efficiency plateau for eta and phi histograms.
             The default None, meaning that no extra cut is applied and the activation region is included in those histograms.
@@ -230,9 +245,6 @@ def fill_pt_eta_phi_mll_histograms(
             A list of the fields that refer to the Pt, Eta, and Phi of the probes.
             Must be in the order of Pt, Eta, and Phi.
             The default is ["el_pt", "el_eta", "el_phi"].
-        delayed : bool, optional
-            Whether the probes arrays are delayed (dask-awkward) or not.
-            The default is True.
 
     Returns
     -------
@@ -245,12 +257,14 @@ def fill_pt_eta_phi_mll_histograms(
     """
     import hist
 
-    if delayed:
-        from hist.dask import Hist
-    else:
+    if isinstance(passing_probes, ak.Array) and isinstance(failing_probes, ak.Array):
         from hist import Hist
+    else:
+        from hist.dask import Hist
 
     import egamma_tnp
+
+    passing_probes, failing_probes = flatten_probes(passing_probes), flatten_probes(failing_probes)
 
     if plateau_cut is None:
         plateau_cut = 0
@@ -352,7 +366,6 @@ def fill_nd_cutncount_histograms(
     passing_probes,
     failing_probes,
     vars=None,
-    delayed=True,
 ):
     """
     Get the N-dimensional histogram of the passing and failing probes.
@@ -367,9 +380,6 @@ def fill_nd_cutncount_histograms(
         vars : list, optional
             A list of the fields to use as axes in the histogram.
             The default is ["el_pt", "el_eta", "el_phi"].
-        delayed : bool, optional
-            Whether the probes arrays are delayed (dask-awkward) or not.
-            The default is True.
 
     Returns
     -------
@@ -387,12 +397,14 @@ def fill_nd_cutncount_histograms(
 
     import hist
 
-    if delayed:
-        from hist.dask import Hist
-    else:
+    if isinstance(passing_probes, ak.Array) and isinstance(failing_probes, ak.Array):
         from hist import Hist
+    else:
+        from hist.dask import Hist
 
     import egamma_tnp
+
+    passing_probes, failing_probes = flatten_probes(passing_probes), flatten_probes(failing_probes)
 
     if any(egamma_tnp.config.get(f"{var}_bins") is None for var in vars):
         raise ValueError(
@@ -416,7 +428,6 @@ def fill_nd_mll_histograms(
     passing_probes,
     failing_probes,
     vars=None,
-    delayed=True,
 ):
     """
     Get the N+1-dimensional histogram of the passing and failing probes.
@@ -431,9 +442,6 @@ def fill_nd_mll_histograms(
         vars : list, optional
             A list of the fields to use as axes in the histogram.
             The default is ["el_pt", "el_eta", "el_phi"].
-        delayed : bool, optional
-            Whether the probes arrays are delayed (dask-awkward) or not.
-            The default is True.
 
     Returns
     -------
@@ -451,12 +459,14 @@ def fill_nd_mll_histograms(
 
     import hist
 
-    if delayed:
-        from hist.dask import Hist
-    else:
+    if isinstance(passing_probes, ak.Array) and isinstance(failing_probes, ak.Array):
         from hist import Hist
+    else:
+        from hist.dask import Hist
 
     import egamma_tnp
+
+    passing_probes, failing_probes = flatten_probes(passing_probes), flatten_probes(failing_probes)
 
     if any(egamma_tnp.config.get(f"{var}_bins") is None for var in vars):
         raise ValueError(

@@ -168,13 +168,6 @@ class ElectronTagNProbeFromNanoAOD(BaseTagNProbe):
             hlt_filter=self.hlt_filter,
         )
 
-        passing_probe_events["el"] = passing_probe_events.Electron[:, 1]
-        failing_probe_events["el"] = failing_probe_events.Electron[:, 1]
-        passing_probe_events["tag_Ele"] = passing_probe_events.Electron[:, 0]
-        failing_probe_events["tag_Ele"] = failing_probe_events.Electron[:, 0]
-        passing_probe_events["pair_mass"] = (passing_probe_events["el"] + passing_probe_events["tag_Ele"]).mass
-        failing_probe_events["pair_mass"] = (failing_probe_events["el"] + failing_probe_events["tag_Ele"]).mass
-
         passing_probe_dict = {}
         failing_probe_dict = {}
         for var in vars:
@@ -203,7 +196,7 @@ class ElectronTagNProbeFromNanoAOD(BaseTagNProbe):
     @staticmethod
     def _filter_events(events, cutbased_id):
         pass_hlt = events.HLT.Ele30_WPTight_Gsf
-        two_electrons = dak.num(events.Electron) == 2
+        two_electrons = dak.num(events.Electron) >= 2
         abs_eta = abs(events.Electron.eta_to_use)
         if cutbased_id:
             pass_tight_id = events.Electron.cutBased >= cutbased_id
@@ -274,6 +267,12 @@ class ElectronTagNProbeFromNanoAOD(BaseTagNProbe):
             )
         passing_probe_events = good_events[has_passing_probe]
         failing_probe_events = good_events[has_failing_probe]
+        passing_probe_events["el"] = all_probes[has_passing_probe]
+        failing_probe_events["el"] = all_probes[has_failing_probe]
+        passing_probe_events["tag_Ele"] = tags[has_passing_probe]
+        failing_probe_events["tag_Ele"] = tags[has_failing_probe]
+        passing_probe_events["pair_mass"] = (passing_probe_events["el"] + passing_probe_events["tag_Ele"]).mass
+        failing_probe_events["pair_mass"] = (failing_probe_events["el"] + failing_probe_events["tag_Ele"]).mass
         return passing_probe_events, failing_probe_events
 
 
@@ -435,32 +434,6 @@ class PhotonTagNProbeFromNanoAOD(BaseTagNProbe):
             hlt_filter=self.hlt_filter,
         )
 
-        passing_probe_events["ph"] = passing_probe_events.Photon[:, 1]
-        failing_probe_events["ph"] = failing_probe_events.Photon[:, 1]
-        passing_probe_events["tag_Ele"] = passing_probe_events.Photon[:, 0]
-        failing_probe_events["tag_Ele"] = failing_probe_events.Photon[:, 0]
-        # M^2 = 2 * pt1 * pt2 * (cosh(eta1 - eta2) - cos(phi1 - phi2)) Use until this is fixed in coffea
-        passing_probe_events["pair_mass"] = np.sqrt(
-            2
-            * passing_probe_events["ph"].pt
-            * passing_probe_events["tag_Ele"].pt
-            * (
-                np.cosh(passing_probe_events["ph"].eta - passing_probe_events["tag_Ele"].eta)
-                - np.cos(passing_probe_events["ph"].phi - passing_probe_events["tag_Ele"].phi)
-            )
-        )
-        failing_probe_events["pair_mass"] = np.sqrt(
-            2
-            * failing_probe_events["ph"].pt
-            * failing_probe_events["tag_Ele"].pt
-            * (
-                np.cosh(failing_probe_events["ph"].eta - failing_probe_events["tag_Ele"].eta)
-                - np.cos(failing_probe_events["ph"].phi - failing_probe_events["tag_Ele"].phi)
-            )
-        )
-        # passing_probe_events["pair_mass"] = (passing_probe_events["ph"] + passing_probe_events["tag_Ele"]).mass Uncomment when this is fixed in coffea
-        # failing_probe_events["pair_mass"] = (failing_probe_events["ph"] + failing_probe_events["tag_Ele"]).mass Uncomment when this is fixed in coffea
-
         passing_probe_dict = {}
         failing_probe_dict = {}
         for var in vars:
@@ -489,7 +462,7 @@ class PhotonTagNProbeFromNanoAOD(BaseTagNProbe):
     @staticmethod
     def _filter_events(events, cutbased_id):
         pass_hlt = events.HLT.Ele30_WPTight_Gsf
-        two_electrons = dak.num(events.Electron) == 2
+        two_electrons = dak.num(events.Electron) >= 2
         abs_eta = abs(events.Electron.eta_to_use)
         if cutbased_id:
             pass_tight_id = events.Electron.cutBased >= cutbased_id
@@ -560,4 +533,29 @@ class PhotonTagNProbeFromNanoAOD(BaseTagNProbe):
             )
         passing_probe_events = good_events[has_passing_probe]
         failing_probe_events = good_events[has_failing_probe]
+        passing_probe_events["ph"] = all_probes[has_passing_probe]
+        failing_probe_events["ph"] = all_probes[has_failing_probe]
+        passing_probe_events["tag_Ele"] = tags[has_passing_probe]
+        failing_probe_events["tag_Ele"] = tags[has_failing_probe]
+        # M^2 = 2 * pt1 * pt2 * (cosh(eta1 - eta2) - cos(phi1 - phi2)) Use until this is fixed in coffea
+        passing_probe_events["pair_mass"] = np.sqrt(
+            2
+            * passing_probe_events["ph"].pt
+            * passing_probe_events["tag_Ele"].pt
+            * (
+                np.cosh(passing_probe_events["ph"].eta - passing_probe_events["tag_Ele"].eta)
+                - np.cos(passing_probe_events["ph"].phi - passing_probe_events["tag_Ele"].phi)
+            )
+        )
+        failing_probe_events["pair_mass"] = np.sqrt(
+            2
+            * failing_probe_events["ph"].pt
+            * failing_probe_events["tag_Ele"].pt
+            * (
+                np.cosh(failing_probe_events["ph"].eta - failing_probe_events["tag_Ele"].eta)
+                - np.cos(failing_probe_events["ph"].phi - failing_probe_events["tag_Ele"].phi)
+            )
+        )
+        # passing_probe_events["pair_mass"] = (passing_probe_events["ph"] + passing_probe_events["tag_Ele"]).mass Uncomment when this is fixed in coffea
+        # failing_probe_events["pair_mass"] = (failing_probe_events["ph"] + failing_probe_events["tag_Ele"]).mass Uncomment when this is fixed in coffea
         return passing_probe_events, failing_probe_events

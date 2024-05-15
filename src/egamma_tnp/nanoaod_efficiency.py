@@ -220,7 +220,7 @@ class ElectronTagNProbeFromNanoAOD(BaseTagNProbe):
     def _trigger_match(electrons, trigobjs, pt, filterbit):
         pass_pt = trigobjs.pt > pt
         pass_id = abs(trigobjs.id) == 11
-        pass_filterbit = trigobjs.filterBits & (0x1 << filterbit) > 0
+        pass_filterbit = (trigobjs.filterBits & (0x1 << filterbit)) != 0
         trigger_cands = trigobjs[pass_pt & pass_id & pass_filterbit]
         delta_r = electrons.metric_table(trigger_cands, metric=custom_delta_r)
         pass_delta_r = delta_r < 0.1
@@ -506,7 +506,7 @@ class PhotonTagNProbeFromNanoAOD(BaseTagNProbe):
     def _trigger_match(electrons, trigobjs, pt, filterbit):
         pass_pt = trigobjs.pt > pt
         pass_id = abs(trigobjs.id) == 11
-        pass_filterbit = trigobjs.filterBits & (0x1 << filterbit) > 0
+        pass_filterbit = (trigobjs.filterBits & (0x1 << filterbit)) != 0
         trigger_cands = trigobjs[pass_pt & pass_id & pass_filterbit]
         delta_r = electrons.metric_table(trigger_cands, metric=custom_delta_r)
         pass_delta_r = delta_r < 0.1

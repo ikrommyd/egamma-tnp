@@ -206,7 +206,7 @@ class ElectronTagNProbeFromNanoAOD(BaseTagNProbe):
         two_electrons = dak.num(events.Electron) == 2
         abs_eta = abs(events.Electron.eta_to_use)
         if cutbased_id:
-            pass_tight_id = events.Electron.cutBased == cutbased_id
+            pass_tight_id = events.Electron.cutBased >= cutbased_id
         else:
             pass_tight_id = True
         pass_eta = abs_eta <= 2.5
@@ -492,7 +492,7 @@ class PhotonTagNProbeFromNanoAOD(BaseTagNProbe):
         two_electrons = dak.num(events.Electron) == 2
         abs_eta = abs(events.Electron.eta_to_use)
         if cutbased_id:
-            pass_tight_id = events.Electron.cutBased == cutbased_id
+            pass_tight_id = events.Electron.cutBased >= cutbased_id
         else:
             pass_tight_id = True
         pass_eta = abs_eta <= 2.5

@@ -121,7 +121,7 @@ class ElectronTagNProbeFromNanoAOD(BaseTagNProbe):
             n_of_files += len(dataset["files"])
         return f"ElectronTagNProbeFromNanoAOD({self.filter}, Number of files: {n_of_files}, Golden JSON: {self.goldenjson})"
 
-    def _find_probes(self, events, cut_and_count, vars):
+    def find_probes(self, events, cut_and_count, vars):
         if self.use_sc_eta:
             if self.egm_nano:
                 events["Electron", "eta_to_use"] = events.Electron.superclusterEta
@@ -390,7 +390,7 @@ class PhotonTagNProbeFromNanoAOD(BaseTagNProbe):
             n_of_files += len(dataset["files"])
         return f"PhotonTagNProbeFromNanoAOD({self.filter}, Number of files: {n_of_files}, Golden JSON: {self.goldenjson})"
 
-    def _find_probes(self, events, cut_and_count, vars):
+    def find_probes(self, events, cut_and_count, vars):
         if self.use_sc_eta:
             events["Photon", "eta_to_use"] = events.Photon.superclusterEta
         else:

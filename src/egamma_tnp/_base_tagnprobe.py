@@ -52,8 +52,8 @@ class BaseTagNProbe:
         if goldenjson is not None and not os.path.exists(goldenjson):
             raise FileNotFoundError(f"Golden JSON {goldenjson} does not exist.")
 
-    def _find_probes(self, events, cut_and_count, vars):
-        raise NotImplementedError("_find_probes method must be implemented.")
+    def find_probes(self, events, cut_and_count, vars):
+        raise NotImplementedError("find_probes method must be implemented.")
 
     def get_tnp_arrays(
         self,
@@ -108,7 +108,7 @@ class BaseTagNProbe:
             vars = self.default_vars
 
         def data_manipulation(events):
-            passing_probes, failing_probes = self._find_probes(events, cut_and_count=cut_and_count, vars=vars)
+            passing_probes, failing_probes = self.find_probes(events, cut_and_count=cut_and_count, vars=vars)
             return {"passing": passing_probes, "failing": failing_probes}
 
         to_compute = apply_to_fileset(
@@ -355,7 +355,7 @@ class BaseTagNProbe:
             fill_pt_eta_phi_cutncount_histograms,
         )
 
-        passing_probes, failing_probes = self._find_probes(events, cut_and_count=True, vars=vars)
+        passing_probes, failing_probes = self.find_probes(events, cut_and_count=True, vars=vars)
 
         if pt_eta_phi_1d:
             return fill_pt_eta_phi_cutncount_histograms(
@@ -389,7 +389,7 @@ class BaseTagNProbe:
             fill_pt_eta_phi_mll_histograms,
         )
 
-        passing_probes, failing_probes = self._find_probes(events, cut_and_count=False, vars=vars)
+        passing_probes, failing_probes = self.find_probes(events, cut_and_count=False, vars=vars)
 
         if pt_eta_phi_1d:
             return fill_pt_eta_phi_mll_histograms(

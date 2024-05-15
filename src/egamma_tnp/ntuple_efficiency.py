@@ -100,7 +100,7 @@ class ElectronTagNProbeFromNTuples(BaseTagNProbe):
 
         return passing_probe_events, failing_probe_events
 
-    def _find_probes(self, events, cut_and_count, vars):
+    def find_probes(self, events, cut_and_count, vars):
         if self.use_sc_eta:
             events["el_eta_to_use"] = events.el_sc_eta
             events["tag_Ele_eta_to_use"] = events.tag_sc_eta
@@ -241,7 +241,7 @@ class PhotonTagNProbeFromNTuples(BaseTagNProbe):
 
         return passing_probe_events, failing_probe_events
 
-    def _find_probes(self, events, cut_and_count, vars):
+    def find_probes(self, events, cut_and_count, vars):
         if self.use_sc_eta:
             events["ph_eta_to_use"] = events.ph_sc_eta
             events["tag_Ele_eta_to_use"] = events.tag_sc_eta

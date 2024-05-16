@@ -259,14 +259,11 @@ class ElectronTagNProbeFromNanoAOD(BaseTagNProbe):
         trig_matched_probe = ElectronTagNProbeFromNanoAOD._trigger_match(all_probes, trigobjs, trigger_pt, filterbit)
         good_events = good_events[events_with_tags]
         if hlt_filter is None:
-            has_passing_probe = dak.fill_none(dak.firsts(trig_matched_probe), False)
-            has_failing_probe = dak.fill_none(dak.firsts(~trig_matched_probe), False)
+            has_passing_probe = dak.any(trig_matched_probe, axis=1)
+            has_failing_probe = dak.any(~trig_matched_probe, axis=1)
         else:
-            has_passing_probe = dak.fill_none(dak.firsts(trig_matched_probe & getattr(good_events.HLT, hlt_filter)), False)
-            has_failing_probe = dak.fill_none(
-                dak.firsts(~(trig_matched_probe & getattr(good_events.HLT, hlt_filter))),
-                False,
-            )
+            has_passing_probe = dak.any(trig_matched_probe & getattr(good_events.HLT, hlt_filter), axis=1)
+            has_failing_probe = dak.any(~(trig_matched_probe & getattr(good_events.HLT, hlt_filter)), axis=1)
         passing_probe_events = good_events[has_passing_probe]
         failing_probe_events = good_events[has_failing_probe]
         passing_probe_events["el"] = all_probes[has_passing_probe]
@@ -525,14 +522,11 @@ class PhotonTagNProbeFromNanoAOD(BaseTagNProbe):
         trig_matched_probe = PhotonTagNProbeFromNanoAOD._trigger_match(all_probes, trigobjs, trigger_pt, filterbit)
         good_events = good_events[events_with_tags]
         if hlt_filter is None:
-            has_passing_probe = dak.fill_none(dak.firsts(trig_matched_probe), False)
-            has_failing_probe = dak.fill_none(dak.firsts(~trig_matched_probe), False)
+            has_passing_probe = dak.any(trig_matched_probe, axis=1)
+            has_failing_probe = dak.any(~trig_matched_probe, axis=1)
         else:
-            has_passing_probe = dak.fill_none(dak.firsts(trig_matched_probe & getattr(good_events.HLT, hlt_filter)), False)
-            has_failing_probe = dak.fill_none(
-                dak.firsts(~(trig_matched_probe & getattr(good_events.HLT, hlt_filter))),
-                False,
-            )
+            has_passing_probe = dak.any(trig_matched_probe & getattr(good_events.HLT, hlt_filter), axis=1)
+            has_failing_probe = dak.any(~(trig_matched_probe & getattr(good_events.HLT, hlt_filter)), axis=1)
         passing_probe_events = good_events[has_passing_probe]
         failing_probe_events = good_events[has_failing_probe]
         passing_probe_events["ph"] = all_probes[has_passing_probe]

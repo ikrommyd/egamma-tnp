@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import awkward as ak
 import numpy as np
 import uproot

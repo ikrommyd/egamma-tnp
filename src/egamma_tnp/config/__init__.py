@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from egamma_tnp.config.manager import Config
 
 config = Config()

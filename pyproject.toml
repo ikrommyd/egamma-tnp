@@ -102,6 +102,7 @@ unfixable = [
     "T20",  # Removes print statements
     "F841", # Removes unused variables
 ]
+isort.required-imports = ["from __future__ import annotations"]
 
 [tool.ruff.lint.per-file-ignores]
-"*.ipynb" = ["T20"]
+"**.ipynb" = ["B008", "T20", "I002", "E402", "E703", "B018"]

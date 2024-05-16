@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import dask_awkward as dak
 import numpy as np
 from coffea.lumi_tools import LumiMask

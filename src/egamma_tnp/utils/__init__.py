@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from egamma_tnp.utils.dataset import redirect_files
 from egamma_tnp.utils.histogramming import (
     convert_2d_mll_hists_to_1d_hists,

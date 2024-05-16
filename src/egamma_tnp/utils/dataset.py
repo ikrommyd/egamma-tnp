@@ -1,3 +1,6 @@
+from __future__ import annotations
+
+
 def redirect_files(files, *, redirector="root://cmsxrootd.fnal.gov/", isrucio=False):
     """Add an xrootd redirector to a list of files
 

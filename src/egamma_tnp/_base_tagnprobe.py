@@ -55,6 +55,29 @@ class BaseTagNProbe:
             raise FileNotFoundError(f"Golden JSON {goldenjson} does not exist.")
 
     def find_probes(self, events, cut_and_count, vars):
+        """Find the passing and failing probes given some events.
+
+        This method will perform the Tag and Probe method given some events and return the passing and failing probe events
+        with the fields specified in `vars`. Probe variables can be accessed using `el_*` and tag variables using `tag_Ele_*`.
+        Also other event-level variables and other object variables are available. For instance to get the electron Pt of all electrons
+        in NanoAOD, you would have to request `Electron_pt` in `vars`.
+
+        Parameters
+        ----------
+            events : awkward.Array or dask_awarkward.Array
+                events read using coffea.nanoevents.NanoEventsFactory.from_root
+            cut_and_count : bool
+                Whether to consider all tag-probe pairs 30 GeV away from the Z boson mass as Z bosons
+                or to compute the invariant mass of all tag-probe pairs between 50 and 130 GeV
+                and add it to the returned probes as a `pair_mass` field.
+            vars : list
+                The list of variables of the probes to return.
+
+        Returns
+        _______
+            A tuple of the form (passing_probes, failing_probes) where passing_probes and failing_probes are awkward zip items.
+            Each of the zip items has the fields specified in `vars`.
+        """
         raise NotImplementedError("find_probes method must be implemented.")
 
     def get_tnp_arrays(
@@ -93,14 +116,8 @@ class BaseTagNProbe:
         -------
             A tuple of the form (arrays, report) if `allow_read_errors_with_report` is True, otherwise just arrays.
             arrays: a dictionary of the form {"passing": passing_probes, "failing": failing_probes}
-            where passing_probes and failing_probes are awkward zip items.
-                Each of the zip items has the following fields:
-                    pt: dask_awkward.Array
-                        The Pt array of the probes.
-                    eta: dask_awkward.array
-                        The Eta array of the probes.
-                    phi: dask_awkward.array
-                        The Phi array of the probes.
+                where passing_probes and failing_probes are awkward zip items.
+                Each of the zip items has the fields specified in `vars`.
             report: dict of awkward arrays of the same form as fileset.
                 For each dataset an awkward array that contains information about the file access is present.
         """

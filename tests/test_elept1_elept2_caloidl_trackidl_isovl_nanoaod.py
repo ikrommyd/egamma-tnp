@@ -152,12 +152,13 @@ def test_local_compute(do_preprocess, allow_read_errors_with_report):
         heta_pass, heta_fail = histograms["eta"]["entire"].values()
         hphi_pass, hphi_fail = histograms["phi"]["entire"].values()
 
+        subtract_value = 3.0 if tag_n_probe == tag_n_probe_leg1 else 0.0
         assert hpt_pass_barrel.sum(flow=True).value + hpt_pass_endcap.sum(flow=True).value == target_pt
-        assert hpt_fail_barrel.sum(flow=True).value + hpt_fail_endcap.sum(flow=True).value == total_sum - target_pt
+        assert hpt_fail_barrel.sum(flow=True).value + hpt_fail_endcap.sum(flow=True).value == total_sum - target_pt - subtract_value
         assert heta_pass.sum(flow=True).value == target_eta_phi
-        assert heta_fail.sum(flow=True).value == total_sum - target_eta_phi
+        assert heta_fail.sum(flow=True).value == total_sum - target_eta_phi - subtract_value
         assert hphi_pass.sum(flow=True).value == target_eta_phi
-        assert hphi_fail.sum(flow=True).value == total_sum - target_eta_phi
+        assert hphi_fail.sum(flow=True).value == total_sum - target_eta_phi - subtract_value
 
         assert hpt_pass_barrel.values(flow=True)[0] + hpt_pass_endcap.values(flow=True)[0] == 0.0
         assert hpt_fail_barrel.values(flow=True)[0] + hpt_fail_endcap.values(flow=True)[0] == 0.0
@@ -237,12 +238,13 @@ def test_distributed_compute(do_preprocess, allow_read_errors_with_report):
             heta_pass, heta_fail = histograms["eta"]["entire"].values()
             hphi_pass, hphi_fail = histograms["phi"]["entire"].values()
 
+            subtract_value = 3.0 if tag_n_probe == tag_n_probe_leg1 else 0.0
             assert hpt_pass_barrel.sum(flow=True).value + hpt_pass_endcap.sum(flow=True).value == target_pt
-            assert hpt_fail_barrel.sum(flow=True).value + hpt_fail_endcap.sum(flow=True).value == total_sum - target_pt
+            assert hpt_fail_barrel.sum(flow=True).value + hpt_fail_endcap.sum(flow=True).value == total_sum - target_pt - subtract_value
             assert heta_pass.sum(flow=True).value == target_eta_phi
-            assert heta_fail.sum(flow=True).value == total_sum - target_eta_phi
+            assert heta_fail.sum(flow=True).value == total_sum - target_eta_phi - subtract_value
             assert hphi_pass.sum(flow=True).value == target_eta_phi
-            assert hphi_fail.sum(flow=True).value == total_sum - target_eta_phi
+            assert hphi_fail.sum(flow=True).value == total_sum - target_eta_phi - subtract_value
 
             assert hpt_pass_barrel.values(flow=True)[0] + hpt_pass_endcap.values(flow=True)[0] == 0.0
             assert hpt_fail_barrel.values(flow=True)[0] + hpt_fail_endcap.values(flow=True)[0] == 0.0

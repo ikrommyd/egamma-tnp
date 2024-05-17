@@ -142,10 +142,9 @@ class ElectronTagNProbeFromNanoAOD(BaseTagNProbe):
             mask = lumimask(events.run, events.luminosityBlock)
             events = events[mask]
 
-        good_events, good_locations = ElectronTagNProbeFromNanoAOD._filter_events(events, self.cutbased_id)
-        ele_for_tnp = good_events.Electron[good_locations]
-        tnp = dak.combinations(ele_for_tnp, 2, fields=["tag", "probe"])
-        pnt = dak.combinations(ele_for_tnp, 2, fields=["probe", "tag"])
+        good_events = ElectronTagNProbeFromNanoAOD._filter_events(events, self.cutbased_id)
+        tnp = dak.combinations(good_events.Electron, 2, fields=["tag", "probe"])
+        pnt = dak.combinations(good_events.Electron, 2, fields=["probe", "tag"])
         zcands = dak.concatenate([tnp, pnt])
         good_events = dak.concatenate([good_events, good_events])
 
@@ -198,7 +197,7 @@ class ElectronTagNProbeFromNanoAOD(BaseTagNProbe):
     @staticmethod
     def _filter_events(events, cutbased_id):
         pass_hlt = events.HLT.Ele30_WPTight_Gsf
-        two_electrons = dak.num(events.Electron) >= 2
+        two_electrons = dak.num(events.Electron) == 2
         abs_eta = abs(events.Electron.eta_to_use)
         if cutbased_id:
             pass_tight_id = events.Electron.cutBased >= cutbased_id
@@ -206,10 +205,11 @@ class ElectronTagNProbeFromNanoAOD(BaseTagNProbe):
             pass_tight_id = True
         pass_eta = abs_eta <= 2.5
         pass_selection = pass_hlt & two_electrons & pass_eta & pass_tight_id
-        n_of_tags = dak.sum(pass_selection, axis=1)
-        good_events = events[n_of_tags == 2]
-        good_locations = pass_selection[n_of_tags == 2]
-        return good_events, good_locations
+        n_of_good_electrons = dak.sum(pass_selection, axis=1)
+        events["Electron"] = events.Electron[pass_selection]
+        good_events = events[n_of_good_electrons >= 2]
+
+        return good_events
 
     @staticmethod
     def _trigger_match(electrons, trigobjs, pt, filterbit):
@@ -221,6 +221,7 @@ class ElectronTagNProbeFromNanoAOD(BaseTagNProbe):
         pass_delta_r = delta_r < 0.1
         n_of_trigger_matches = dak.sum(pass_delta_r, axis=2)
         trig_matched_locs = n_of_trigger_matches >= 1
+
         return trig_matched_locs
 
     @staticmethod
@@ -255,8 +256,8 @@ class ElectronTagNProbeFromNanoAOD(BaseTagNProbe):
         opposite_charge = tags.charge * probes.charge == -1
         isZ = in_mass_window & opposite_charge
         dr_condition = dr > 0.0
-        all_probes = probes[isZ & dr_condition]
-        trig_matched_probe = ElectronTagNProbeFromNanoAOD._trigger_match(all_probes, trigobjs, trigger_pt, filterbit)
+        all_tag_probe_pairs = zcands[isZ & dr_condition]
+        trig_matched_probe = ElectronTagNProbeFromNanoAOD._trigger_match(all_tag_probe_pairs.probe, trigobjs, trigger_pt, filterbit)
         good_events = good_events[events_with_tags]
         if hlt_filter is None:
             has_passing_probe = dak.any(trig_matched_probe, axis=1)
@@ -266,12 +267,15 @@ class ElectronTagNProbeFromNanoAOD(BaseTagNProbe):
             has_failing_probe = dak.any(~(trig_matched_probe & getattr(good_events.HLT, hlt_filter)), axis=1)
         passing_probe_events = good_events[has_passing_probe]
         failing_probe_events = good_events[has_failing_probe]
-        passing_probe_events["el"] = all_probes[has_passing_probe]
-        failing_probe_events["el"] = all_probes[has_failing_probe]
-        passing_probe_events["tag_Ele"] = tags[has_passing_probe]
-        failing_probe_events["tag_Ele"] = tags[has_failing_probe]
+        passing_pairs = all_tag_probe_pairs[trig_matched_probe][has_passing_probe]
+        failing_pairs = all_tag_probe_pairs[~trig_matched_probe][has_failing_probe]
+        passing_probe_events["el"] = passing_pairs.probe
+        failing_probe_events["el"] = failing_pairs.probe
+        passing_probe_events["tag_Ele"] = passing_pairs.tag
+        failing_probe_events["tag_Ele"] = failing_pairs.tag
         passing_probe_events["pair_mass"] = (passing_probe_events["el"] + passing_probe_events["tag_Ele"]).mass
         failing_probe_events["pair_mass"] = (failing_probe_events["el"] + failing_probe_events["tag_Ele"]).mass
+
         return passing_probe_events, failing_probe_events
 
 
@@ -405,10 +409,9 @@ class PhotonTagNProbeFromNanoAOD(BaseTagNProbe):
             mask = lumimask(events.run, events.luminosityBlock)
             events = events[mask]
 
-        good_events, good_locations = PhotonTagNProbeFromNanoAOD._filter_events(events, self.cutbased_id)
-        ph_for_tnp = good_events.Photon[good_locations]
-        tnp = dak.combinations(ph_for_tnp, 2, fields=["tag", "probe"])
-        pnt = dak.combinations(ph_for_tnp, 2, fields=["probe", "tag"])
+        good_events = PhotonTagNProbeFromNanoAOD._filter_events(events, self.cutbased_id)
+        tnp = dak.combinations(good_events.Photon, 2, fields=["tag", "probe"])
+        pnt = dak.combinations(good_events.Photon, 2, fields=["probe", "tag"])
         zcands = dak.concatenate([tnp, pnt])
         good_events = dak.concatenate([good_events, good_events])
 
@@ -469,10 +472,11 @@ class PhotonTagNProbeFromNanoAOD(BaseTagNProbe):
             pass_tight_id = True
         pass_eta = abs_eta <= 2.5
         pass_selection = pass_hlt & two_electrons & pass_eta & pass_tight_id
-        n_of_tags = dak.sum(pass_selection, axis=1)
-        good_events = events[n_of_tags == 2]
-        good_locations = pass_selection[n_of_tags == 2]
-        return good_events, good_locations
+        n_of_good_electrons = dak.sum(pass_selection, axis=1)
+        events["Electron"] = events.Electron[pass_selection]
+        good_events = events[n_of_good_electrons >= 2]
+
+        return good_events
 
     @staticmethod
     def _trigger_match(electrons, trigobjs, pt, filterbit):
@@ -518,8 +522,8 @@ class PhotonTagNProbeFromNanoAOD(BaseTagNProbe):
         opposite_charge = tags.charge * probes.charge == -1
         isZ = in_mass_window & opposite_charge
         dr_condition = dr > 0.0
-        all_probes = probes[isZ & dr_condition]
-        trig_matched_probe = PhotonTagNProbeFromNanoAOD._trigger_match(all_probes, trigobjs, trigger_pt, filterbit)
+        all_tag_probe_pairs = zcands[isZ & dr_condition]
+        trig_matched_probe = PhotonTagNProbeFromNanoAOD._trigger_match(all_tag_probe_pairs.probe, trigobjs, trigger_pt, filterbit)
         good_events = good_events[events_with_tags]
         if hlt_filter is None:
             has_passing_probe = dak.any(trig_matched_probe, axis=1)
@@ -529,10 +533,12 @@ class PhotonTagNProbeFromNanoAOD(BaseTagNProbe):
             has_failing_probe = dak.any(~(trig_matched_probe & getattr(good_events.HLT, hlt_filter)), axis=1)
         passing_probe_events = good_events[has_passing_probe]
         failing_probe_events = good_events[has_failing_probe]
-        passing_probe_events["ph"] = all_probes[has_passing_probe]
-        failing_probe_events["ph"] = all_probes[has_failing_probe]
-        passing_probe_events["tag_Ele"] = tags[has_passing_probe]
-        failing_probe_events["tag_Ele"] = tags[has_failing_probe]
+        passing_pairs = all_tag_probe_pairs[trig_matched_probe][has_passing_probe]
+        failing_pairs = all_tag_probe_pairs[~trig_matched_probe][has_failing_probe]
+        passing_probe_events["ph"] = passing_pairs.probe
+        failing_probe_events["ph"] = failing_pairs.probe
+        passing_probe_events["tag_Ele"] = passing_pairs.tag
+        failing_probe_events["tag_Ele"] = failing_pairs.tag
         # M^2 = 2 * pt1 * pt2 * (cosh(eta1 - eta2) - cos(phi1 - phi2)) Use until this is fixed in coffea
         passing_probe_events["pair_mass"] = np.sqrt(
             2
@@ -554,4 +560,5 @@ class PhotonTagNProbeFromNanoAOD(BaseTagNProbe):
         )
         # passing_probe_events["pair_mass"] = (passing_probe_events["ph"] + passing_probe_events["tag_Ele"]).mass Uncomment when this is fixed in coffea
         # failing_probe_events["pair_mass"] = (failing_probe_events["ph"] + failing_probe_events["tag_Ele"]).mass Uncomment when this is fixed in coffea
+
         return passing_probe_events, failing_probe_events

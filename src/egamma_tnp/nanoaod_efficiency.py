@@ -262,13 +262,11 @@ class ElectronTagNProbeFromNanoAOD(BaseTagNProbe):
         if hlt_filter is None:
             passing_pairs = zcands[trig_matched_probe]
             failing_pairs = zcands[~trig_matched_probe]
-            has_passing_probe = dak.num(passing_pairs) >= 1
-            has_failing_probe = dak.num(failing_pairs) >= 1
         else:
             passing_pairs = zcands[trig_matched_probe & getattr(good_events.HLT, hlt_filter)]
             failing_pairs = zcands[~(trig_matched_probe & getattr(good_events.HLT, hlt_filter))]
-            has_passing_probe = dak.num(passing_pairs) >= 1
-            has_failing_probe = dak.num(failing_pairs) >= 1
+        has_passing_probe = dak.num(passing_pairs) >= 1
+        has_failing_probe = dak.num(failing_pairs) >= 1
         passing_pairs = passing_pairs[has_passing_probe]
         failing_pairs = failing_pairs[has_failing_probe]
         passing_probe_events = good_events[has_passing_probe]
@@ -530,15 +528,17 @@ class PhotonTagNProbeFromNanoAOD(BaseTagNProbe):
         trig_matched_probe = PhotonTagNProbeFromNanoAOD._trigger_match(zcands.probe, trigobjs, trigger_pt, filterbit)
         good_events = good_events[events_with_tags]
         if hlt_filter is None:
-            has_passing_probe = dak.any(trig_matched_probe, axis=1)
-            has_failing_probe = dak.any(~trig_matched_probe, axis=1)
+            passing_pairs = zcands[trig_matched_probe]
+            failing_pairs = zcands[~trig_matched_probe]
         else:
-            has_passing_probe = dak.any(trig_matched_probe & getattr(good_events.HLT, hlt_filter), axis=1)
-            has_failing_probe = dak.any(~(trig_matched_probe & getattr(good_events.HLT, hlt_filter)), axis=1)
+            passing_pairs = zcands[trig_matched_probe & getattr(good_events.HLT, hlt_filter)]
+            failing_pairs = zcands[~(trig_matched_probe & getattr(good_events.HLT, hlt_filter))]
+        has_passing_probe = dak.num(passing_pairs) >= 1
+        has_failing_probe = dak.num(failing_pairs) >= 1
+        passing_pairs = passing_pairs[has_passing_probe]
+        failing_pairs = failing_pairs[has_failing_probe]
         passing_probe_events = good_events[has_passing_probe]
         failing_probe_events = good_events[has_failing_probe]
-        passing_pairs = zcands[trig_matched_probe][has_passing_probe]
-        failing_pairs = zcands[~trig_matched_probe][has_failing_probe]
         passing_probe_events["ph"] = passing_pairs.probe
         failing_probe_events["ph"] = failing_pairs.probe
         passing_probe_events["tag_Ele"] = passing_pairs.tag

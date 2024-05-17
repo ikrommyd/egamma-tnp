@@ -256,8 +256,8 @@ class ElectronTagNProbeFromNanoAOD(BaseTagNProbe):
         opposite_charge = tags.charge * probes.charge == -1
         isZ = in_mass_window & opposite_charge
         dr_condition = dr > 0.0
-        all_tag_probe_pairs = zcands[isZ & dr_condition]
-        trig_matched_probe = ElectronTagNProbeFromNanoAOD._trigger_match(all_tag_probe_pairs.probe, trigobjs, trigger_pt, filterbit)
+        zcands = zcands[isZ & dr_condition]
+        trig_matched_probe = ElectronTagNProbeFromNanoAOD._trigger_match(zcands.probe, trigobjs, trigger_pt, filterbit)
         good_events = good_events[events_with_tags]
         if hlt_filter is None:
             has_passing_probe = dak.any(trig_matched_probe, axis=1)
@@ -267,8 +267,8 @@ class ElectronTagNProbeFromNanoAOD(BaseTagNProbe):
             has_failing_probe = dak.any(~(trig_matched_probe & getattr(good_events.HLT, hlt_filter)), axis=1)
         passing_probe_events = good_events[has_passing_probe]
         failing_probe_events = good_events[has_failing_probe]
-        passing_pairs = all_tag_probe_pairs[trig_matched_probe][has_passing_probe]
-        failing_pairs = all_tag_probe_pairs[~trig_matched_probe][has_failing_probe]
+        passing_pairs = zcands[trig_matched_probe][has_passing_probe]
+        failing_pairs = zcands[~trig_matched_probe][has_failing_probe]
         passing_probe_events["el"] = passing_pairs.probe
         failing_probe_events["el"] = failing_pairs.probe
         passing_probe_events["tag_Ele"] = passing_pairs.tag
@@ -522,8 +522,8 @@ class PhotonTagNProbeFromNanoAOD(BaseTagNProbe):
         opposite_charge = tags.charge * probes.charge == -1
         isZ = in_mass_window & opposite_charge
         dr_condition = dr > 0.0
-        all_tag_probe_pairs = zcands[isZ & dr_condition]
-        trig_matched_probe = PhotonTagNProbeFromNanoAOD._trigger_match(all_tag_probe_pairs.probe, trigobjs, trigger_pt, filterbit)
+        zcands = zcands[isZ & dr_condition]
+        trig_matched_probe = PhotonTagNProbeFromNanoAOD._trigger_match(zcands.probe, trigobjs, trigger_pt, filterbit)
         good_events = good_events[events_with_tags]
         if hlt_filter is None:
             has_passing_probe = dak.any(trig_matched_probe, axis=1)
@@ -533,8 +533,8 @@ class PhotonTagNProbeFromNanoAOD(BaseTagNProbe):
             has_failing_probe = dak.any(~(trig_matched_probe & getattr(good_events.HLT, hlt_filter)), axis=1)
         passing_probe_events = good_events[has_passing_probe]
         failing_probe_events = good_events[has_failing_probe]
-        passing_pairs = all_tag_probe_pairs[trig_matched_probe][has_passing_probe]
-        failing_pairs = all_tag_probe_pairs[~trig_matched_probe][has_failing_probe]
+        passing_pairs = zcands[trig_matched_probe][has_passing_probe]
+        failing_pairs = zcands[~trig_matched_probe][has_failing_probe]
         passing_probe_events["ph"] = passing_pairs.probe
         failing_probe_events["ph"] = failing_pairs.probe
         passing_probe_events["tag_Ele"] = passing_pairs.tag

@@ -197,7 +197,7 @@ class ElectronTagNProbeFromNanoAOD(BaseTagNProbe):
     @staticmethod
     def _filter_events(events, cutbased_id):
         pass_hlt = events.HLT.Ele30_WPTight_Gsf
-        two_electrons = dak.num(events.Electron) == 2
+        two_electrons = dak.num(events.Electron) >= 2
         abs_eta = abs(events.Electron.eta_to_use)
         if cutbased_id:
             pass_tight_id = events.Electron.cutBased >= cutbased_id

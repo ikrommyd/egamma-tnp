@@ -46,6 +46,6 @@ repos:
     args: ["--skip=*.ipynb","-L hist,Hist,nd,SubJet,subjet,Subjet,PTD,ptd,fPt,fpt,Ser,ser,hda"]
 
 - repo: https://github.com/abravalheri/validate-pyproject
-  rev: v0.17
+  rev: v0.18
   hooks:
     - id: validate-pyproject

@@ -47,116 +47,46 @@ def test_histogramming_default_vars():
         plateau_cut=35,
         compute=True,
     )["sample"]
-    hcnc3d = tag_n_probe.get_nd_tnp_histograms(
-        cut_and_count=True,
-        compute=True,
-    )["sample"]
-    hmll3d = tag_n_probe.get_nd_tnp_histograms(
-        cut_and_count=False,
-        compute=True,
-    )["sample"]
+    hcnc3d = tag_n_probe.get_nd_tnp_histograms(cut_and_count=True, compute=True)["sample"]
+    hmll3d = tag_n_probe.get_nd_tnp_histograms(cut_and_count=False, compute=True)["sample"]
 
+    assert_histograms_equal(hcnc1d["pt"]["barrel"]["passing"], hcnc3d["passing"][:, -1.4442j:1.4442j:sum, sum], flow=False)
+    assert_histograms_equal(hcnc1d["pt"]["barrel"]["failing"], hcnc3d["failing"][:, -1.4442j:1.4442j:sum, sum], flow=False)
     assert_histograms_equal(
-        hcnc1d["pt"]["barrel"]["passing"],
-        hcnc3d["passing"][:, -1.4442j:1.4442j:sum, sum],
-        flow=False,
+        hcnc1d["pt"]["endcap_loweta"]["passing"], hcnc3d["passing"][:, -2j:-1.566j:sum, sum] + hcnc3d["passing"][:, 1.566j:2j:sum, sum], flow=False
     )
     assert_histograms_equal(
-        hcnc1d["pt"]["barrel"]["failing"],
-        hcnc3d["failing"][:, -1.4442j:1.4442j:sum, sum],
-        flow=False,
+        hcnc1d["pt"]["endcap_loweta"]["failing"], hcnc3d["failing"][:, -2j:-1.566j:sum, sum] + hcnc3d["failing"][:, 1.566j:2j:sum, sum], flow=False
     )
     assert_histograms_equal(
-        hcnc1d["pt"]["endcap_loweta"]["passing"],
-        hcnc3d["passing"][:, -2j:-1.566j:sum, sum] + hcnc3d["passing"][:, 1.566j:2j:sum, sum],
-        flow=False,
+        hcnc1d["pt"]["endcap_higheta"]["passing"], hcnc3d["passing"][:, -2.5j:-2j:sum, sum] + hcnc3d["passing"][:, 2j:2.5j:sum, sum], flow=False
     )
     assert_histograms_equal(
-        hcnc1d["pt"]["endcap_loweta"]["failing"],
-        hcnc3d["failing"][:, -2j:-1.566j:sum, sum] + hcnc3d["failing"][:, 1.566j:2j:sum, sum],
-        flow=False,
+        hcnc1d["pt"]["endcap_higheta"]["failing"], hcnc3d["failing"][:, -2.5j:-2j:sum, sum] + hcnc3d["failing"][:, 2j:2.5j:sum, sum], flow=False
     )
-    assert_histograms_equal(
-        hcnc1d["pt"]["endcap_higheta"]["passing"],
-        hcnc3d["passing"][:, -2.5j:-2j:sum, sum] + hcnc3d["passing"][:, 2j:2.5j:sum, sum],
-        flow=False,
-    )
-    assert_histograms_equal(
-        hcnc1d["pt"]["endcap_higheta"]["failing"],
-        hcnc3d["failing"][:, -2.5j:-2j:sum, sum] + hcnc3d["failing"][:, 2j:2.5j:sum, sum],
-        flow=False,
-    )
-    assert_histograms_equal(
-        hcnc1d["eta"]["entire"]["passing"],
-        hcnc3d["passing"][35j::sum, -2.5j:2.5j, sum],
-        flow=False,
-    )
-    assert_histograms_equal(
-        hcnc1d["eta"]["entire"]["failing"],
-        hcnc3d["failing"][35j::sum, -2.5j:2.5j, sum],
-        flow=False,
-    )
-    assert_histograms_equal(
-        hcnc1d["phi"]["entire"]["passing"],
-        hcnc3d["passing"][35j::sum, -2.5j:2.5j:sum, :],
-        flow=False,
-    )
-    assert_histograms_equal(
-        hcnc1d["phi"]["entire"]["failing"],
-        hcnc3d["failing"][35j::sum, -2.5j:2.5j:sum, :],
-        flow=False,
-    )
+    assert_histograms_equal(hcnc1d["eta"]["entire"]["passing"], hcnc3d["passing"][35j::sum, -2.5j:2.5j, sum], flow=False)
+    assert_histograms_equal(hcnc1d["eta"]["entire"]["failing"], hcnc3d["failing"][35j::sum, -2.5j:2.5j, sum], flow=False)
+    assert_histograms_equal(hcnc1d["phi"]["entire"]["passing"], hcnc3d["passing"][35j::sum, -2.5j:2.5j:sum, :], flow=False)
+    assert_histograms_equal(hcnc1d["phi"]["entire"]["failing"], hcnc3d["failing"][35j::sum, -2.5j:2.5j:sum, :], flow=False)
 
+    assert_histograms_equal(hmll1d["pt"]["barrel"]["passing"], hmll3d["passing"][:, -1.4442j:1.4442j:sum, sum, :], flow=False)
+    assert_histograms_equal(hmll1d["pt"]["barrel"]["failing"], hmll3d["failing"][:, -1.4442j:1.4442j:sum, sum, :], flow=False)
     assert_histograms_equal(
-        hmll1d["pt"]["barrel"]["passing"],
-        hmll3d["passing"][:, -1.4442j:1.4442j:sum, sum, :],
-        flow=False,
+        hmll1d["pt"]["endcap_loweta"]["passing"], hmll3d["passing"][:, -2j:-1.566j:sum, sum, :] + hmll3d["passing"][:, 1.566j:2j:sum, sum, :], flow=False
     )
     assert_histograms_equal(
-        hmll1d["pt"]["barrel"]["failing"],
-        hmll3d["failing"][:, -1.4442j:1.4442j:sum, sum, :],
-        flow=False,
+        hmll1d["pt"]["endcap_loweta"]["failing"], hmll3d["failing"][:, -2j:-1.566j:sum, sum, :] + hmll3d["failing"][:, 1.566j:2j:sum, sum, :], flow=False
     )
     assert_histograms_equal(
-        hmll1d["pt"]["endcap_loweta"]["passing"],
-        hmll3d["passing"][:, -2j:-1.566j:sum, sum, :] + hmll3d["passing"][:, 1.566j:2j:sum, sum, :],
-        flow=False,
+        hmll1d["pt"]["endcap_higheta"]["passing"], hmll3d["passing"][:, -2.5j:-2j:sum, sum, :] + hmll3d["passing"][:, 2j:2.5j:sum, sum, :], flow=False
     )
     assert_histograms_equal(
-        hmll1d["pt"]["endcap_loweta"]["failing"],
-        hmll3d["failing"][:, -2j:-1.566j:sum, sum, :] + hmll3d["failing"][:, 1.566j:2j:sum, sum, :],
-        flow=False,
+        hmll1d["pt"]["endcap_higheta"]["failing"], hmll3d["failing"][:, -2.5j:-2j:sum, sum, :] + hmll3d["failing"][:, 2j:2.5j:sum, sum, :], flow=False
     )
-    assert_histograms_equal(
-        hmll1d["pt"]["endcap_higheta"]["passing"],
-        hmll3d["passing"][:, -2.5j:-2j:sum, sum, :] + hmll3d["passing"][:, 2j:2.5j:sum, sum, :],
-        flow=False,
-    )
-    assert_histograms_equal(
-        hmll1d["pt"]["endcap_higheta"]["failing"],
-        hmll3d["failing"][:, -2.5j:-2j:sum, sum, :] + hmll3d["failing"][:, 2j:2.5j:sum, sum, :],
-        flow=False,
-    )
-    assert_histograms_equal(
-        hmll1d["eta"]["entire"]["passing"],
-        hmll3d["passing"][35j::sum, -2.5j:2.5j, sum, :],
-        flow=False,
-    )
-    assert_histograms_equal(
-        hmll1d["eta"]["entire"]["failing"],
-        hmll3d["failing"][35j::sum, -2.5j:2.5j, sum, :],
-        flow=False,
-    )
-    assert_histograms_equal(
-        hmll1d["phi"]["entire"]["passing"],
-        hmll3d["passing"][35j::sum, -2.5j:2.5j:sum, :, :],
-        flow=False,
-    )
-    assert_histograms_equal(
-        hmll1d["phi"]["entire"]["failing"],
-        hmll3d["failing"][35j::sum, -2.5j:2.5j:sum, :, :],
-        flow=False,
-    )
+    assert_histograms_equal(hmll1d["eta"]["entire"]["passing"], hmll3d["passing"][35j::sum, -2.5j:2.5j, sum, :], flow=False)
+    assert_histograms_equal(hmll1d["eta"]["entire"]["failing"], hmll3d["failing"][35j::sum, -2.5j:2.5j, sum, :], flow=False)
+    assert_histograms_equal(hmll1d["phi"]["entire"]["passing"], hmll3d["passing"][35j::sum, -2.5j:2.5j:sum, :, :], flow=False)
+    assert_histograms_equal(hmll1d["phi"]["entire"]["failing"], hmll3d["failing"][35j::sum, -2.5j:2.5j:sum, :, :], flow=False)
 
 
 def test_histogramming_custom_vars():
@@ -187,22 +117,10 @@ def test_histogramming_custom_vars():
         compute=True,
     )["sample"]
 
-    hmll3d = tag_n_probe.get_nd_tnp_histograms(
-        cut_and_count=False,
-        vars=["el_eta", "el_r9"],
-        compute=True,
-    )["sample"]
+    hmll3d = tag_n_probe.get_nd_tnp_histograms(cut_and_count=False, vars=["el_eta", "el_r9"], compute=True)["sample"]
 
-    assert_histograms_equal(
-        hmll1d["eta"]["entire"]["passing"],
-        hmll3d["passing"][-2.5j:2.5j, sum, :],
-        flow=False,
-    )
-    assert_histograms_equal(
-        hmll1d["eta"]["entire"]["failing"],
-        hmll3d["failing"][-2.5j:2.5j, sum, :],
-        flow=False,
-    )
+    assert_histograms_equal(hmll1d["eta"]["entire"]["passing"], hmll3d["passing"][-2.5j:2.5j, sum, :], flow=False)
+    assert_histograms_equal(hmll1d["eta"]["entire"]["failing"], hmll3d["failing"][-2.5j:2.5j, sum, :], flow=False)
 
     egamma_tnp.config.reset_all()
 
@@ -237,21 +155,9 @@ def test_histogramming_non_probe_vars():
         compute=True,
     )["sample"]
 
-    hmll3d = tag_n_probe.get_nd_tnp_histograms(
-        cut_and_count=False,
-        vars=["el_eta", "tag_Ele_pt", "MET_pt", "luminosityBlock"],
-        compute=True,
-    )["sample"]
+    hmll3d = tag_n_probe.get_nd_tnp_histograms(cut_and_count=False, vars=["el_eta", "tag_Ele_pt", "MET_pt", "luminosityBlock"], compute=True)["sample"]
 
-    assert_histograms_equal(
-        hmll1d["eta"]["entire"]["passing"],
-        hmll3d["passing"][-2.5j:2.5j, sum, sum, sum, :],
-        flow=False,
-    )
-    assert_histograms_equal(
-        hmll1d["eta"]["entire"]["failing"],
-        hmll3d["failing"][-2.5j:2.5j, sum, sum, sum, :],
-        flow=False,
-    )
+    assert_histograms_equal(hmll1d["eta"]["entire"]["passing"], hmll3d["passing"][-2.5j:2.5j, sum, sum, sum, :], flow=False)
+    assert_histograms_equal(hmll1d["eta"]["entire"]["failing"], hmll3d["failing"][-2.5j:2.5j, sum, sum, sum, :], flow=False)
 
     egamma_tnp.config.reset_all()

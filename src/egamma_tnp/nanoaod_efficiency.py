@@ -16,6 +16,7 @@ class ElectronTagNProbeFromNanoAOD(BaseTagNProbe):
         egm_nano=False,
         *,
         filter="None",
+        is_photon_filter=False,
         trigger_pt=None,
         tags_pt_cut=35,
         probes_pt_cut=None,
@@ -113,6 +114,7 @@ class ElectronTagNProbeFromNanoAOD(BaseTagNProbe):
         )
         self.for_trigger = for_trigger
         self.egm_nano = egm_nano
+        self.is_photon_filter = is_photon_filter
         self.filterbit = filterbit
         self.hlt_filter = hlt_filter
 
@@ -166,6 +168,7 @@ class ElectronTagNProbeFromNanoAOD(BaseTagNProbe):
             filterbit=self.filterbit,
             cut_and_count=cut_and_count,
             hlt_filter=self.hlt_filter,
+            is_photon_filter=self.is_photon_filter,
         )
 
         passing_probe_dict = {}
@@ -234,6 +237,7 @@ class ElectronTagNProbeFromNanoAOD(BaseTagNProbe):
         filterbit,
         cut_and_count,
         hlt_filter,
+        is_photon_filter,
     ):
         trigobjs = good_events.TrigObj
         pt_cond_tags = zcands.tag.pt > pt_tags
@@ -256,7 +260,11 @@ class ElectronTagNProbeFromNanoAOD(BaseTagNProbe):
         isZ = in_mass_window & opposite_charge
         dr_condition = dr > 0.0
         zcands = zcands[isZ & dr_condition]
-        trig_matched_probe = ElectronTagNProbeFromNanoAOD._trigger_match(zcands.probe, trigobjs, 11, trigger_pt, filterbit)
+        if is_photon_filter:
+            trigobj_pdgid = 22
+        else:
+            trigobj_pdgid = 11
+        trig_matched_probe = ElectronTagNProbeFromNanoAOD._trigger_match(zcands.probe, trigobjs, trigobj_pdgid, trigger_pt, filterbit)
         good_events = good_events[events_with_tags]
         if hlt_filter is None:
             passing_pairs = zcands[trig_matched_probe]
@@ -288,6 +296,7 @@ class PhotonTagNProbeFromNanoAOD(BaseTagNProbe):
         egm_nano=False,
         *,
         filter="None",
+        is_electron_filter=False,
         trigger_pt=None,
         tags_pt_cut=35,
         probes_pt_cut=None,
@@ -385,6 +394,7 @@ class PhotonTagNProbeFromNanoAOD(BaseTagNProbe):
         )
         self.for_trigger = for_trigger
         self.egm_nano = egm_nano
+        self.is_electron_filter = is_electron_filter
         self.filterbit = filterbit
         self.hlt_filter = hlt_filter
 
@@ -445,6 +455,7 @@ class PhotonTagNProbeFromNanoAOD(BaseTagNProbe):
             filterbit=self.filterbit,
             cut_and_count=cut_and_count,
             hlt_filter=self.hlt_filter,
+            is_electron_filter=self.is_electron_filter,
         )
 
         passing_probe_dict = {}
@@ -512,6 +523,7 @@ class PhotonTagNProbeFromNanoAOD(BaseTagNProbe):
         filterbit,
         cut_and_count,
         hlt_filter,
+        is_electron_filter,
     ):
         trigobjs = good_events.TrigObj
         pt_cond_tags = zcands.tag.pt > pt_tags
@@ -537,7 +549,11 @@ class PhotonTagNProbeFromNanoAOD(BaseTagNProbe):
         isZ = in_mass_window & opposite_charge
         dr_condition = dr > 0.0
         zcands = zcands[isZ & dr_condition]
-        trig_matched_probe = PhotonTagNProbeFromNanoAOD._trigger_match(zcands.probe, trigobjs, 11, trigger_pt, filterbit)
+        if is_electron_filter:
+            trigobj_pdgid = 11
+        else:
+            trigobj_pdgid = 22
+        trig_matched_probe = PhotonTagNProbeFromNanoAOD._trigger_match(zcands.probe, trigobjs, trigobj_pdgid, trigger_pt, filterbit)
         good_events = good_events[events_with_tags]
         if hlt_filter is None:
             passing_pairs = zcands[trig_matched_probe]

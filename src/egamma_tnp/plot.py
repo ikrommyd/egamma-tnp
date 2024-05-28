@@ -87,6 +87,10 @@ def plot_ratio(
             The label for the first efficiency.
         label2 : str
             The label for the second efficiency.
+        denominator_type : str, optional
+            The type of the denominator histogram.
+            Can be either "failing" or "all".
+            The default is "failing".
         plottype : str, optional
             The type of plot to make. Can be "pt_low_threshold", "pt_high_threshold", "eta", or "phi".
             Defaults is "pt_low_threshold".
@@ -230,7 +234,8 @@ def plot_ratio(
     ax1.set_ylabel(efficiency_label)
     ax2.set_ylabel(ratio_label)
     ax1.set_xticklabels([])
-    ax1.legend(loc=legend_loc, **legend_kwargs)
+    legend = ax1.legend(loc=legend_loc, **legend_kwargs)
+    legend.get_title().set_multialignment("center")
 
     if figure_path is not None:
         figure_path = pathlib.Path(figure_path)

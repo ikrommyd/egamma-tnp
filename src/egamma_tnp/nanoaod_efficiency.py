@@ -5,7 +5,7 @@ from coffea.lumi_tools import LumiMask
 from coffea.nanoevents import NanoAODSchema
 
 from egamma_tnp._base_tagnprobe import BaseTagNProbe
-from egamma_tnp.utils import custom_delta_r
+from egamma_tnp.utils import custom_delta_r, dask_calculate_photon_SC_eta
 
 
 class ElectronTagNProbeFromNanoAOD(BaseTagNProbe):
@@ -406,6 +406,8 @@ class PhotonTagNProbeFromNanoAOD(BaseTagNProbe):
 
     def find_probes(self, events, cut_and_count, vars):
         if self.use_sc_eta:
+            if "superclusterEta" not in events.Photon.fields:
+                events["Photon", "superclusterEta"] = dak.map_partitions(dask_calculate_photon_SC_eta, events.Photon, events.PV)
             events["Photon", "eta_to_use"] = events.Photon.superclusterEta
             if self.egm_nano:
                 events["Electron", "eta_to_use"] = events.Electron.superclusterEta

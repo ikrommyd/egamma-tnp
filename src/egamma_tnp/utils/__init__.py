@@ -11,7 +11,7 @@ from egamma_tnp.utils.histogramming import (
     fill_pt_eta_phi_mll_histograms,
     get_ratio_histogram,
 )
-from egamma_tnp.utils.misc import custom_delta_r, delta_r_SC
+from egamma_tnp.utils.misc import calculate_photon_SC_eta, custom_delta_r, dask_calculate_photon_SC_eta, delta_r_SC
 
 __all__ = (
     "redirect_files",
@@ -25,6 +25,8 @@ __all__ = (
     "get_ratio_histogram",
     "delta_r_SC",
     "custom_delta_r",
+    "calculate_photon_SC_eta",
+    "dask_calculate_photon_SC_eta",
 )
 
 

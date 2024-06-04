@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-from typing import ClassVar
-
 import dask_awkward as dak
 from coffea.lumi_tools import LumiMask
 from coffea.nanoevents import NanoAODSchema
@@ -11,13 +9,6 @@ from egamma_tnp.utils import calculate_photon_SC_eta, custom_delta_r
 
 
 class ElectronTagNProbeFromNanoAOD(BaseTagNProbe):
-    cutbased_dict: ClassVar[dict] = {
-        "passingCutBasedVeto": 1,
-        "passingCutBasedLoose": 2,
-        "passingCutBasedMedium": 3,
-        "passingCutBasedTight": 4,
-    }
-
     def __init__(
         self,
         fileset,
@@ -71,7 +62,7 @@ class ElectronTagNProbeFromNanoAOD(BaseTagNProbe):
         tags_abseta_cut: int or float, optional
             The absolute Eta cut to apply to the tag electrons. The default is 2.5.
         cutbased_id: str, optional
-            The name of the cutbased ID to apply to the probes.
+            ID expression to apply to the probes. An example is "cutBased >= 2".
             If None, no cutbased ID is applied. The default is None.
         goldenjson: str, optional
             The golden json to use for luminosity masking. The default is None.
@@ -92,8 +83,6 @@ class ElectronTagNProbeFromNanoAOD(BaseTagNProbe):
             The HLT filter to also require an event to have passed to consider a probe belonging to that event as passing.
             If None, no such requirement is applied. The default is None.
         """
-        if cutbased_id is not None and cutbased_id not in self.cutbased_dict:
-            raise ValueError(f"Incorrect cutbased ID: {cutbased_id}. Must be one of {list(self.cutbased_dict.keys())}.")
         if for_trigger is False:
             raise NotImplementedError("Only trigger efficiencies are supported at the moment.")
         if use_sc_phi and not egm_nano:
@@ -156,7 +145,7 @@ class ElectronTagNProbeFromNanoAOD(BaseTagNProbe):
             mask = lumimask(events.run, events.luminosityBlock)
             events = events[mask]
 
-        good_events = ElectronTagNProbeFromNanoAOD._filter_events(events, self.cutbased_dict[self.cutbased_id])
+        good_events = ElectronTagNProbeFromNanoAOD._filter_events(events, self.cutbased_id)
 
         ij = dak.argcartesian([good_events.Electron, good_events.Electron])
         is_not_diag = ij["0"] != ij["1"]
@@ -216,7 +205,7 @@ class ElectronTagNProbeFromNanoAOD(BaseTagNProbe):
         two_electrons = dak.num(events.Electron) >= 2
         abs_eta = abs(events.Electron.eta_to_use)
         if cutbased_id is not None:
-            pass_cutbased_id = events.Electron.cutBased >= cutbased_id
+            pass_cutbased_id = eval(f"events.Electron.{cutbased_id}")
         else:
             pass_cutbased_id = True
         pass_eta = abs_eta <= 2.5
@@ -303,12 +292,6 @@ class ElectronTagNProbeFromNanoAOD(BaseTagNProbe):
 
 
 class PhotonTagNProbeFromNanoAOD(BaseTagNProbe):
-    cutbased_dict: ClassVar[dict] = {
-        "passingCutBasedLoose": 1,
-        "passingCutBasedMedium": 2,
-        "passingCutBasedTight": 3,
-    }
-
     def __init__(
         self,
         fileset,
@@ -368,7 +351,7 @@ class PhotonTagNProbeFromNanoAOD(BaseTagNProbe):
         tags_abseta_cut: int or float, optional
             The absolute Eta cut to apply to the tag photons. The default is 2.5.
         cutbased_id: str, optional
-            The name of the cutbased ID to apply to the probes.
+            ID expression to apply to the probes. An example is "cutBased >= 2".
             If None, no cutbased ID is applied. The default is None.
         goldenjson: str, optional
             The golden json to use for luminosity masking. The default is None.
@@ -389,8 +372,6 @@ class PhotonTagNProbeFromNanoAOD(BaseTagNProbe):
             The HLT filter to also require an event to have passed to consider a probe belonging to that event as passing.
             If None, no such requirement is applied. The default is None.
         """
-        if cutbased_id is not None and cutbased_id not in self.cutbased_dict:
-            raise ValueError(f"Incorrect cutbased ID: {cutbased_id}. Must be one of {list(self.cutbased_dict.keys())}.")
         if for_trigger is False:
             raise NotImplementedError("Only trigger efficiencies are supported at the moment.")
         if use_sc_phi and not egm_nano:
@@ -464,9 +445,9 @@ class PhotonTagNProbeFromNanoAOD(BaseTagNProbe):
         events["Photon", "charge"] = 0.0 * events.Photon.pt
 
         if self.start_from_diphotons:
-            good_events = PhotonTagNProbeFromNanoAOD._filter_events_diphotons(events, self.cutbased_dict[self.cutbased_id])
+            good_events = PhotonTagNProbeFromNanoAOD._filter_events_diphotons(events, self.cutbased_id)
         else:
-            good_events = PhotonTagNProbeFromNanoAOD._filter_events_electron_photon(events, self.cutbased_dict[self.cutbased_id])
+            good_events = PhotonTagNProbeFromNanoAOD._filter_events_electron_photon(events, self.cutbased_id)
 
         if self.start_from_diphotons:
             ij = dak.argcartesian([good_events.Photon, good_events.Photon])
@@ -533,7 +514,7 @@ class PhotonTagNProbeFromNanoAOD(BaseTagNProbe):
         two_photons = dak.num(events.Photon) >= 2
         abs_eta = abs(events.Photon.eta_to_use)
         if cutbased_id is not None:
-            pass_cutbased_id = events.Photon.cutBased >= cutbased_id
+            pass_cutbased_id = eval(f"events.Photon.{cutbased_id}")
         else:
             pass_cutbased_id = True
         pass_eta = abs_eta <= 2.5
@@ -552,8 +533,8 @@ class PhotonTagNProbeFromNanoAOD(BaseTagNProbe):
         abs_eta_electron = abs(events.Electron.eta_to_use)
         abs_eta_photon = abs(events.Photon.eta_to_use)
         if cutbased_id is not None:
-            pass_cutbased_id_electron = events.Electron.cutBased >= cutbased_id + 1
-            pass_cutbased_id_photon = events.Photon.cutBased >= cutbased_id
+            pass_cutbased_id_electron = events.Electron.cutBased >= 4
+            pass_cutbased_id_photon = eval(f"events.Photon.{cutbased_id}")
         else:
             pass_cutbased_id_electron = True
             pass_cutbased_id_photon = True

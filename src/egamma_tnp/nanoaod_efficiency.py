@@ -159,7 +159,10 @@ class ElectronTagNProbeFromNanoAOD(BaseTagNProbe):
         zcands = dak.zip({"tag": good_events.Electron[i], "probe": good_events.Electron[j]})
 
         pass_tight_id_tags = zcands.tag.cutBased >= 4
-        pass_cutbased_id_probes = eval(f"zcands.probe.{self.cutbased_id}")
+        if self.cutbased_id is not None:
+            pass_cutbased_id_probes = eval(f"zcands.probe.{self.cutbased_id}")
+        else:
+            pass_cutbased_id_probes = True
         zcands = zcands[pass_tight_id_tags & pass_cutbased_id_probes]
 
         if self.avoid_ecal_transition_tags:
@@ -459,7 +462,10 @@ class PhotonTagNProbeFromNanoAOD(BaseTagNProbe):
             zcands = tnp[probe_is_not_tag]
             pass_tight_id_tags = zcands.tag.cutBased >= 4
 
-        pass_cutbased_id_probes = eval(f"zcands.probe.{self.cutbased_id}")
+        if self.cutbased_id is not None:
+            pass_cutbased_id_probes = eval(f"zcands.probe.{self.cutbased_id}")
+        else:
+            pass_cutbased_id_probes = True
         zcands = zcands[pass_tight_id_tags & pass_cutbased_id_probes]
 
         if self.avoid_ecal_transition_tags:

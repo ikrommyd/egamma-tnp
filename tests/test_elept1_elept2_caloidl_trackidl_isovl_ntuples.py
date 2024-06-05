@@ -18,13 +18,13 @@ def test_without_compute(do_preprocess, allow_read_errors_with_report):
         fileset = {
             "sample": {
                 "files": {
-                    os.path.abspath("tests/samples/TnPNTuples.root"): "fitter_tree",
+                    os.path.abspath("tests/samples/TnPNTuples_el.root"): "fitter_tree",
                     os.path.abspath("tests/samples/not_a_file.root"): "fitter_tree",
                 }
             }
         }
     else:
-        fileset = {"sample": {"files": {os.path.abspath("tests/samples/TnPNTuples.root"): "fitter_tree"}}}
+        fileset = {"sample": {"files": {os.path.abspath("tests/samples/TnPNTuples_el.root"): "fitter_tree"}}}
 
     if do_preprocess:
         if allow_read_errors_with_report:
@@ -94,13 +94,13 @@ def test_local_compute(do_preprocess, allow_read_errors_with_report):
         fileset = {
             "sample": {
                 "files": {
-                    os.path.abspath("tests/samples/TnPNTuples.root"): "fitter_tree",
+                    os.path.abspath("tests/samples/TnPNTuples_el.root"): "fitter_tree",
                     os.path.abspath("tests/samples/not_a_file.root"): "fitter_tree",
                 }
             }
         }
     else:
-        fileset = {"sample": {"files": {os.path.abspath("tests/samples/TnPNTuples.root"): "fitter_tree"}}}
+        fileset = {"sample": {"files": {os.path.abspath("tests/samples/TnPNTuples_el.root"): "fitter_tree"}}}
 
     if do_preprocess:
         if allow_read_errors_with_report:
@@ -175,13 +175,13 @@ def test_distributed_compute(do_preprocess, allow_read_errors_with_report):
         fileset = {
             "sample": {
                 "files": {
-                    os.path.abspath("tests/samples/TnPNTuples.root"): "fitter_tree",
+                    os.path.abspath("tests/samples/TnPNTuples_el.root"): "fitter_tree",
                     os.path.abspath("tests/samples/not_a_file.root"): "fitter_tree",
                 }
             }
         }
     else:
-        fileset = {"sample": {"files": {os.path.abspath("tests/samples/TnPNTuples.root"): "fitter_tree"}}}
+        fileset = {"sample": {"files": {os.path.abspath("tests/samples/TnPNTuples_el.root"): "fitter_tree"}}}
 
     if do_preprocess:
         if allow_read_errors_with_report:

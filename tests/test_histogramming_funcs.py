@@ -13,7 +13,7 @@ from egamma_tnp.utils import (
     fill_pt_eta_phi_mll_histograms,
 )
 
-fileset = {"sample": {"files": {os.path.abspath("tests/samples/TnPNTuples.root"): "fitter_tree"}}}
+fileset = {"sample": {"files": {os.path.abspath("tests/samples/TnPNTuples_el.root"): "fitter_tree"}}}
 
 
 def assert_histograms_equal(h1, h2, flow):
@@ -23,7 +23,7 @@ def assert_histograms_equal(h1, h2, flow):
 
 
 def test_histogramming_funcs_default_vars():
-    events = uproot.dask({os.path.abspath("tests/samples/TnPNTuples.root"): "fitter_tree"})
+    events = uproot.dask({os.path.abspath("tests/samples/TnPNTuples_el.root"): "fitter_tree"})
 
     passing_probe_evens = events[events.passHltEle30WPTightGsf == 1]
     failing_probe_evens = events[events.passHltEle30WPTightGsf == 0]
@@ -172,7 +172,7 @@ def test_histogramming_funcs_default_vars():
 def test_histogramming_funcs_custom_vars():
     import egamma_tnp
 
-    events = uproot.dask({os.path.abspath("tests/samples/TnPNTuples.root"): "fitter_tree"})
+    events = uproot.dask({os.path.abspath("tests/samples/TnPNTuples_el.root"): "fitter_tree"})
 
     passing_probe_evens = events[events.passHltEle30WPTightGsf == 1]
     failing_probe_evens = events[events.passHltEle30WPTightGsf == 0]

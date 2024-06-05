@@ -108,7 +108,7 @@ class ElectronTagNProbeFromNanoAOD(BaseTagNProbe):
             tags_pt_cut=tags_pt_cut,
             probes_pt_cut=probes_pt_cut,
             tags_abseta_cut=tags_abseta_cut,
-            probes_abseta_cut=tags_abseta_cut,
+            probes_abseta_cut=probes_abseta_cut,
             cutbased_id=cutbased_id,
             goldenjson=goldenjson,
             extra_filter=extra_filter,

@@ -16,6 +16,7 @@ class BaseTagNProbe:
         tags_pt_cut,
         probes_pt_cut,
         tags_abseta_cut,
+        probes_abseta_cut,
         cutbased_id,
         goldenjson,
         extra_filter,
@@ -40,6 +41,7 @@ class BaseTagNProbe:
         self.filter = filter
         self.tags_pt_cut = tags_pt_cut
         self.tags_abseta_cut = tags_abseta_cut
+        self.probes_abseta_cut = probes_abseta_cut
         self.cutbased_id = cutbased_id
         self.goldenjson = goldenjson
         self.extra_filter = extra_filter

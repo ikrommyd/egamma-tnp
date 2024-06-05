@@ -16,6 +16,7 @@ class ElectronTagNProbeFromNTuples(BaseTagNProbe):
         tags_pt_cut=35,
         probes_pt_cut=None,
         tags_abseta_cut=2.5,
+        probes_abseta_cut=2.5,
         cutbased_id=None,
         goldenjson=None,
         extra_filter=None,
@@ -42,6 +43,8 @@ class ElectronTagNProbeFromNTuples(BaseTagNProbe):
                 If it fails to do so, it will set it to 0.
             tags_abseta_cut: int or float, optional
                 The absolute Eta cut to apply to the tag electrons. The default is 2.5.
+            probes_abseta_cut: int or float, optional
+                The absolute Eta cut to apply to the probe electrons. The default is 2.5.
             cutbased_id: str, optional
                 The name of the cutbased ID to apply to the probes.
                 If None, no cutbased ID is applied. The default is None.
@@ -67,6 +70,7 @@ class ElectronTagNProbeFromNTuples(BaseTagNProbe):
             tags_pt_cut=tags_pt_cut,
             probes_pt_cut=probes_pt_cut,
             tags_abseta_cut=tags_abseta_cut,
+            probes_abseta_cut=probes_abseta_cut,
             cutbased_id=cutbased_id,
             goldenjson=goldenjson,
             extra_filter=extra_filter,
@@ -129,8 +133,9 @@ class ElectronTagNProbeFromNTuples(BaseTagNProbe):
 
         pass_pt_tags = events.tag_Ele_pt > self.tags_pt_cut
         pass_abseta_tags = abs(events.tag_Ele_eta_to_use) < self.tags_abseta_cut
+        pass_abseta_probes = abs(events.el_eta_to_use) < self.probes_abseta_cut
         opposite_charge = events.tag_Ele_q * events.el_q == -1
-        events = events[pass_pt_tags & pass_abseta_tags & opposite_charge]
+        events = events[pass_pt_tags & pass_abseta_tags & pass_abseta_probes & opposite_charge]
 
         passing_probe_events, failing_probe_events = self._find_probe_events(events, cut_and_count=cut_and_count)
 
@@ -157,6 +162,7 @@ class PhotonTagNProbeFromNTuples(BaseTagNProbe):
         tags_pt_cut=35,
         probes_pt_cut=None,
         tags_abseta_cut=2.5,
+        probes_abseta_cut=2.5,
         cutbased_id=None,
         goldenjson=None,
         extra_filter=None,
@@ -183,6 +189,8 @@ class PhotonTagNProbeFromNTuples(BaseTagNProbe):
                 If it fails to do so, it will set it to 0.
             tags_abseta_cut: int or float, optional
                 The absolute Eta cut to apply to the tag photons. The default is 2.5.
+            probes_abseta_cut: int or float, optional
+                The absolute Eta cut to apply to the probe photons. The default is 2.5.
             cutbased_id: str, optional
                 The name of the cutbased ID to apply to the probes.
                 If None, no cutbased ID is applied. The default is None.
@@ -208,6 +216,7 @@ class PhotonTagNProbeFromNTuples(BaseTagNProbe):
             tags_pt_cut=tags_pt_cut,
             probes_pt_cut=probes_pt_cut,
             tags_abseta_cut=tags_abseta_cut,
+            probes_abseta_cut=probes_abseta_cut,
             cutbased_id=cutbased_id,
             goldenjson=goldenjson,
             extra_filter=extra_filter,
@@ -270,7 +279,8 @@ class PhotonTagNProbeFromNTuples(BaseTagNProbe):
 
         pass_pt_tags = events.tag_Ele_pt > self.tags_pt_cut
         pass_abseta_tags = abs(events.tag_Ele_eta_to_use) < self.tags_abseta_cut
-        events = events[pass_pt_tags & pass_abseta_tags]
+        pass_abseta_probes = abs(events.ph_eta_to_use) < self.probes_abseta_cut
+        events = events[pass_pt_tags & pass_abseta_tags & pass_abseta_probes]
 
         passing_probe_events, failing_probe_events = self._find_probe_events(events, cut_and_count=cut_and_count)
 

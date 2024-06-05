@@ -21,6 +21,7 @@ class ElectronTagNProbeFromNanoAOD(BaseTagNProbe):
         tags_pt_cut=35,
         probes_pt_cut=None,
         tags_abseta_cut=2.5,
+        probes_abseta_cut=2.5,
         filterbit=None,
         cutbased_id=None,
         goldenjson=None,
@@ -61,6 +62,10 @@ class ElectronTagNProbeFromNanoAOD(BaseTagNProbe):
             If it fails to do so, it will set it to 0.
         tags_abseta_cut: int or float, optional
             The absolute Eta cut to apply to the tag electrons. The default is 2.5.
+        probes_abseta_cut: int or float, optional
+            The absolute Eta cut to apply to the probe electrons. The default is 2.5.
+        probes_abseta_cut: int or float, optional
+            The absolute Eta cut to apply to the probe electrons. The default is 2.5.
         cutbased_id: str, optional
             ID expression to apply to the probes. An example is "cutBased >= 2".
             If None, no cutbased ID is applied. The default is None.
@@ -103,6 +108,7 @@ class ElectronTagNProbeFromNanoAOD(BaseTagNProbe):
             tags_pt_cut=tags_pt_cut,
             probes_pt_cut=probes_pt_cut,
             tags_abseta_cut=tags_abseta_cut,
+            probes_abseta_cut=tags_abseta_cut,
             cutbased_id=cutbased_id,
             goldenjson=goldenjson,
             extra_filter=extra_filter,
@@ -145,12 +151,16 @@ class ElectronTagNProbeFromNanoAOD(BaseTagNProbe):
             mask = lumimask(events.run, events.luminosityBlock)
             events = events[mask]
 
-        good_events = ElectronTagNProbeFromNanoAOD._filter_events(events, self.cutbased_id)
+        good_events = events[events.HLT.Ele30_WPTight_Gsf]
 
         ij = dak.argcartesian([good_events.Electron, good_events.Electron])
         is_not_diag = ij["0"] != ij["1"]
         i, j = dak.unzip(ij[is_not_diag])
         zcands = dak.zip({"tag": good_events.Electron[i], "probe": good_events.Electron[j]})
+
+        pass_tight_id_tags = zcands.tag.cutBased >= 4
+        pass_cutbased_id_probes = eval(f"zcands.probe.{self.cutbased_id}")
+        zcands = zcands[pass_tight_id_tags & pass_cutbased_id_probes]
 
         if self.avoid_ecal_transition_tags:
             tags = zcands.tag
@@ -168,6 +178,7 @@ class ElectronTagNProbeFromNanoAOD(BaseTagNProbe):
             pt_tags=self.tags_pt_cut,
             pt_probes=self.probes_pt_cut,
             abseta_tags=self.tags_abseta_cut,
+            abseta_probes=self.probes_abseta_cut,
             filterbit=self.filterbit,
             cut_and_count=cut_and_count,
             hlt_filter=self.hlt_filter,
@@ -200,23 +211,6 @@ class ElectronTagNProbeFromNanoAOD(BaseTagNProbe):
         return passing_probes, failing_probes
 
     @staticmethod
-    def _filter_events(events, cutbased_id):
-        pass_hlt = events.HLT.Ele30_WPTight_Gsf
-        two_electrons = dak.num(events.Electron) >= 2
-        abs_eta = abs(events.Electron.eta_to_use)
-        if cutbased_id is not None:
-            pass_cutbased_id = eval(f"events.Electron.{cutbased_id}")
-        else:
-            pass_cutbased_id = True
-        pass_eta = abs_eta <= 2.5
-        pass_selection = pass_hlt & two_electrons & pass_eta & pass_cutbased_id
-        n_of_good_electrons = dak.sum(pass_selection, axis=1)
-        events["Electron"] = events.Electron[pass_selection]
-        good_events = events[n_of_good_electrons >= 2]
-
-        return good_events
-
-    @staticmethod
     def _trigger_match(leptons, trigobjs, pdgid, pt, filterbit):
         pass_pt = trigobjs.pt > pt
         pass_id = abs(trigobjs.id) == pdgid
@@ -237,6 +231,7 @@ class ElectronTagNProbeFromNanoAOD(BaseTagNProbe):
         pt_tags,
         pt_probes,
         abseta_tags,
+        abseta_probes,
         filterbit,
         cut_and_count,
         hlt_filter,
@@ -246,8 +241,9 @@ class ElectronTagNProbeFromNanoAOD(BaseTagNProbe):
         pt_cond_tags = zcands.tag.pt > pt_tags
         eta_cond_tags = abs(zcands.tag.eta_to_use) < abseta_tags
         pt_cond_probes = zcands.probe.pt > pt_probes
+        eta_cond_probes = abs(zcands.probe.eta_to_use) < abseta_probes
         trig_matched_tag = ElectronTagNProbeFromNanoAOD._trigger_match(zcands.tag, trigobjs, 11, 30, 1)
-        zcands = zcands[trig_matched_tag & pt_cond_tags & pt_cond_probes & eta_cond_tags]
+        zcands = zcands[trig_matched_tag & pt_cond_tags & pt_cond_probes & eta_cond_tags & eta_cond_probes]
         events_with_tags = dak.num(zcands.tag, axis=1) >= 1
         zcands = zcands[events_with_tags]
         trigobjs = trigobjs[events_with_tags]
@@ -305,6 +301,7 @@ class PhotonTagNProbeFromNanoAOD(BaseTagNProbe):
         tags_pt_cut=35,
         probes_pt_cut=None,
         tags_abseta_cut=2.5,
+        probes_abseta_cut=2.5,
         filterbit=None,
         cutbased_id=None,
         goldenjson=None,
@@ -350,6 +347,8 @@ class PhotonTagNProbeFromNanoAOD(BaseTagNProbe):
             If it fails to do so, it will set it to 0.
         tags_abseta_cut: int or float, optional
             The absolute Eta cut to apply to the tag photons. The default is 2.5.
+        probes_abseta_cut: int or float, optional
+            The absolute Eta cut to apply to the probe photons. The default is 2.5.
         cutbased_id: str, optional
             ID expression to apply to the probes. An example is "cutBased >= 2".
             If None, no cutbased ID is applied. The default is None.
@@ -392,6 +391,7 @@ class PhotonTagNProbeFromNanoAOD(BaseTagNProbe):
             tags_pt_cut=tags_pt_cut,
             probes_pt_cut=probes_pt_cut,
             tags_abseta_cut=tags_abseta_cut,
+            probes_abseta_cut=probes_abseta_cut,
             cutbased_id=cutbased_id,
             goldenjson=goldenjson,
             extra_filter=extra_filter,
@@ -444,21 +444,23 @@ class PhotonTagNProbeFromNanoAOD(BaseTagNProbe):
         # keep until new coffea release
         events["Photon", "charge"] = 0.0 * events.Photon.pt
 
-        if self.start_from_diphotons:
-            good_events = PhotonTagNProbeFromNanoAOD._filter_events_diphotons(events, self.cutbased_id)
-        else:
-            good_events = PhotonTagNProbeFromNanoAOD._filter_events_electron_photon(events, self.cutbased_id)
+        good_events = events[events.HLT.Ele30_WPTight_Gsf]
 
         if self.start_from_diphotons:
             ij = dak.argcartesian([good_events.Photon, good_events.Photon])
             is_not_diag = ij["0"] != ij["1"]
             i, j = dak.unzip(ij[is_not_diag])
             zcands = dak.zip({"tag": good_events.Photon[i], "probe": good_events.Photon[j]})
+            pass_tight_id_tags = zcands.tag.cutBased >= 3
         else:
             ij = dak.argcartesian({"tag": good_events.Electron, "probe": good_events.Photon})
             tnp = dak.cartesian({"tag": good_events.Electron, "probe": good_events.Photon})
             probe_is_not_tag = (tnp.probe.electronIdx != ij.tag) & (tnp.tag.delta_r(tnp.probe) > 0.1)
             zcands = tnp[probe_is_not_tag]
+            pass_tight_id_tags = zcands.tag.cutBased >= 4
+
+        pass_cutbased_id_probes = eval(f"zcands.probe.{self.cutbased_id}")
+        zcands = zcands[pass_tight_id_tags & pass_cutbased_id_probes]
 
         if self.avoid_ecal_transition_tags:
             tags = zcands.tag
@@ -476,6 +478,7 @@ class PhotonTagNProbeFromNanoAOD(BaseTagNProbe):
             pt_tags=self.tags_pt_cut,
             pt_probes=self.probes_pt_cut,
             abseta_tags=self.tags_abseta_cut,
+            abseta_probes=self.probes_abseta_cut,
             filterbit=self.filterbit,
             cut_and_count=cut_and_count,
             hlt_filter=self.hlt_filter,
@@ -509,48 +512,6 @@ class PhotonTagNProbeFromNanoAOD(BaseTagNProbe):
         return passing_probes, failing_probes
 
     @staticmethod
-    def _filter_events_diphotons(events, cutbased_id):
-        pass_hlt = events.HLT.Ele30_WPTight_Gsf
-        two_photons = dak.num(events.Photon) >= 2
-        abs_eta = abs(events.Photon.eta_to_use)
-        if cutbased_id is not None:
-            pass_cutbased_id = eval(f"events.Photon.{cutbased_id}")
-        else:
-            pass_cutbased_id = True
-        pass_eta = abs_eta <= 2.5
-        pass_selection = pass_hlt & two_photons & pass_eta & pass_cutbased_id
-        n_of_good_photons = dak.sum(pass_selection, axis=1)
-        events["Photon"] = events.Photon[pass_selection]
-        good_events = events[n_of_good_photons >= 2]
-
-        return good_events
-
-    @staticmethod
-    def _filter_events_electron_photon(events, cutbased_id):
-        pass_hlt = events.HLT.Ele30_WPTight_Gsf
-        one_electron = dak.num(events.Electron) >= 1
-        one_photon = dak.num(events.Photon) >= 1
-        abs_eta_electron = abs(events.Electron.eta_to_use)
-        abs_eta_photon = abs(events.Photon.eta_to_use)
-        if cutbased_id is not None:
-            pass_cutbased_id_electron = events.Electron.cutBased >= 4
-            pass_cutbased_id_photon = eval(f"events.Photon.{cutbased_id}")
-        else:
-            pass_cutbased_id_electron = True
-            pass_cutbased_id_photon = True
-        pass_eta_electron = abs_eta_electron <= 2.5
-        pass_eta_photon = abs_eta_photon <= 2.5
-        pass_selection_electrons = pass_hlt & one_electron & pass_eta_electron & pass_cutbased_id_electron
-        pass_selection_photons = pass_hlt & one_photon & pass_eta_photon & pass_cutbased_id_photon
-        n_of_good_electrons = dak.sum(pass_selection_electrons, axis=1)
-        n_of_good_photons = dak.sum(pass_selection_photons, axis=1)
-        events["Electron"] = events.Electron[pass_selection_electrons]
-        events["Photon"] = events.Photon[pass_selection_photons]
-        good_events = events[(n_of_good_electrons >= 1) & (n_of_good_photons >= 1)]
-
-        return good_events
-
-    @staticmethod
     def _trigger_match(leptons, trigobjs, pdgid, pt, filterbit):
         pass_pt = trigobjs.pt > pt
         pass_id = abs(trigobjs.id) == pdgid
@@ -570,6 +531,7 @@ class PhotonTagNProbeFromNanoAOD(BaseTagNProbe):
         pt_tags,
         pt_probes,
         abseta_tags,
+        abseta_probes,
         filterbit,
         cut_and_count,
         hlt_filter,
@@ -580,13 +542,14 @@ class PhotonTagNProbeFromNanoAOD(BaseTagNProbe):
         pt_cond_tags = zcands.tag.pt > pt_tags
         eta_cond_tags = abs(zcands.tag.eta_to_use) < abseta_tags
         pt_cond_probes = zcands.probe.pt > pt_probes
+        eta_cond_probes = abs(zcands.probe.eta_to_use) < abseta_probes
         if start_from_diphotons:
             has_matched_electron_tags = (zcands.tag.electronIdx != -1) & (zcands.tag.pixelSeed)
             trig_matched_tag = PhotonTagNProbeFromNanoAOD._trigger_match(zcands.tag.matched_electron, trigobjs, 11, 30, 1)
         else:
             has_matched_electron_tags = True
             trig_matched_tag = PhotonTagNProbeFromNanoAOD._trigger_match(zcands.tag, trigobjs, 11, 30, 1)
-        zcands = zcands[has_matched_electron_tags & trig_matched_tag & pt_cond_tags & pt_cond_probes & eta_cond_tags]
+        zcands = zcands[has_matched_electron_tags & trig_matched_tag & pt_cond_tags & pt_cond_probes & eta_cond_tags & eta_cond_probes]
         events_with_tags = dak.num(zcands.tag, axis=1) >= 1
         zcands = zcands[events_with_tags]
         trigobjs = trigobjs[events_with_tags]

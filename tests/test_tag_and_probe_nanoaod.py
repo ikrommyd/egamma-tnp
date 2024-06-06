@@ -32,6 +32,10 @@ def test_tag_and_probe_electrons():
     result = tag_n_probe.get_tnp_arrays(cut_and_count=False, vars=["Electron_pt", "tag_Ele_eta", "el_pt", "el_eta", "MET_pt", "event"], compute=True)["sample"]
     assert_eq(result["passing"], solution[0])
     assert_eq(result["failing"], solution[1])
+    assert len(result["passing"]) == 467
+    assert len(result["failing"]) == 183
+    assert len(solution[0]) == 467
+    assert len(solution[1]) == 183
 
 
 @pytest.mark.parametrize("start_from_diphotons", [True, False])
@@ -59,3 +63,13 @@ def test_tag_and_probe_photons(start_from_diphotons):
     result = tag_n_probe.get_tnp_arrays(cut_and_count=False, vars=["Photon_pt", "tag_Ele_eta", "ph_pt", "ph_eta", "MET_pt", "event"], compute=True)["sample"]
     assert_eq(result["passing"], solution[0])
     assert_eq(result["failing"], solution[1])
+    if start_from_diphotons:
+        assert len(result["passing"]) == 336
+        assert len(result["failing"]) == 101
+        assert len(solution[0]) == 336
+        assert len(solution[1]) == 101
+    else:
+        assert len(result["passing"]) == 441
+        assert len(result["failing"]) == 122
+        assert len(solution[0]) == 441
+        assert len(solution[1]) == 122

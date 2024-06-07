@@ -14,7 +14,7 @@ from egamma_tnp.utils import (
     fill_pt_eta_phi_mll_histograms,
 )
 
-fileset = {"sample": {"files": {os.path.abspath("tests/samples/TnPNTuples.root"): "fitter_tree"}}}
+fileset = {"sample": {"files": {os.path.abspath("tests/samples/TnPNTuples_el.root"): "fitter_tree"}}}
 
 
 def assert_histograms_equal(h1, h2, flow):
@@ -26,7 +26,7 @@ def assert_histograms_equal(h1, h2, flow):
 def test_fitter_histogram_conversion_1d():
     import egamma_tnp
 
-    events = uproot.dask({os.path.abspath("tests/samples/TnPNTuples.root"): "fitter_tree"})
+    events = uproot.dask({os.path.abspath("tests/samples/TnPNTuples_el.root"): "fitter_tree"})
 
     passing_probe_evens = events[events.passHltEle30WPTightGsf == 1]
     failing_probe_evens = events[events.passHltEle30WPTightGsf == 0]
@@ -62,7 +62,6 @@ def test_fitter_histogram_conversion_1d():
         },
         plateau_cut=35,
         vars=["pt", "eta", "phi"],
-        delayed=False,
     )
 
     res1d = convert_2d_mll_hists_to_1d_hists(hmll1d)
@@ -121,7 +120,7 @@ def test_fitter_histogram_conversion_1d():
 def test_fitter_histogram_conversion_3d():
     import egamma_tnp
 
-    events = uproot.dask({os.path.abspath("tests/samples/TnPNTuples.root"): "fitter_tree"})
+    events = uproot.dask({os.path.abspath("tests/samples/TnPNTuples_el.root"): "fitter_tree"})
 
     passing_probe_evens = events[events.passHltEle30WPTightGsf == 1]
     failing_probe_evens = events[events.passHltEle30WPTightGsf == 0]
@@ -151,7 +150,6 @@ def test_fitter_histogram_conversion_3d():
         passing_probes,
         failing_probes,
         vars=["pt", "eta", "phi"],
-        delayed=False,
     )
 
     res3d, bining = convert_nd_mll_hists_to_1d_hists(hmll3d, axes=["eta", "pt"])
@@ -192,7 +190,7 @@ def test_fitter_histogram_saving_1d():
 
     import egamma_tnp
 
-    events = uproot.dask({os.path.abspath("tests/samples/TnPNTuples.root"): "fitter_tree"})
+    events = uproot.dask({os.path.abspath("tests/samples/TnPNTuples_el.root"): "fitter_tree"})
 
     passing_probe_evens = events[events.passHltEle30WPTightGsf == 1]
     failing_probe_evens = events[events.passHltEle30WPTightGsf == 0]
@@ -228,7 +226,6 @@ def test_fitter_histogram_saving_1d():
         },
         plateau_cut=35,
         vars=["pt", "eta", "phi"],
-        delayed=False,
     )
 
     create_hists_root_file_for_fitter(hmll1d, "1d_hists.root", "1d_bining.pkl")
@@ -292,7 +289,7 @@ def test_fitter_histogram_saving_3d():
 
     import egamma_tnp
 
-    events = uproot.dask({os.path.abspath("tests/samples/TnPNTuples.root"): "fitter_tree"})
+    events = uproot.dask({os.path.abspath("tests/samples/TnPNTuples_el.root"): "fitter_tree"})
 
     passing_probe_evens = events[events.passHltEle30WPTightGsf == 1]
     failing_probe_evens = events[events.passHltEle30WPTightGsf == 0]
@@ -322,7 +319,6 @@ def test_fitter_histogram_saving_3d():
         passing_probes,
         failing_probes,
         vars=["pt", "eta", "phi"],
-        delayed=False,
     )
 
     create_hists_root_file_for_fitter(hmll3d, "3d_hists.root", "3d_bining.pkl", axes=["pt", "eta"])
@@ -353,7 +349,7 @@ def test_fitter_histogram_saving_against_reference():
 
     import egamma_tnp
 
-    events = uproot.dask({os.path.abspath("tests/samples/TnPNTuples.root"): "fitter_tree"})
+    events = uproot.dask({os.path.abspath("tests/samples/TnPNTuples_el.root"): "fitter_tree"})
 
     passing_probe_evens = events[events.passHltEle30WPTightGsf == 1]
     failing_probe_evens = events[events.passHltEle30WPTightGsf == 0]
@@ -380,7 +376,6 @@ def test_fitter_histogram_saving_against_reference():
         passing_probes,
         failing_probes,
         vars=["el_sc_eta", "el_pt"],
-        delayed=False,
     )
 
     create_hists_root_file_for_fitter(hmll3d, "3d_hists.root", "3d_bining.pkl", axes=["el_sc_eta", "el_pt"])
@@ -427,7 +422,7 @@ def test_fitter_histogram_conversion_bining():
 
     import egamma_tnp
 
-    events = uproot.dask({os.path.abspath("tests/samples/TnPNTuples.root"): "fitter_tree"})
+    events = uproot.dask({os.path.abspath("tests/samples/TnPNTuples_el.root"): "fitter_tree"})
 
     passing_probe_evens = events[events.passHltEle30WPTightGsf == 1]
     failing_probe_evens = events[events.passHltEle30WPTightGsf == 0]
@@ -454,7 +449,6 @@ def test_fitter_histogram_conversion_bining():
         passing_probes,
         failing_probes,
         vars=["el_sc_eta", "el_pt"],
-        delayed=False,
     )
 
     res3d, bining = convert_nd_mll_hists_to_1d_hists(hmll3d, axes=["el_sc_eta", "el_pt"])

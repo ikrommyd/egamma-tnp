@@ -16,7 +16,10 @@ class BaseTagNProbe:
         tags_pt_cut,
         probes_pt_cut,
         tags_abseta_cut,
+        probes_abseta_cut,
         cutbased_id,
+        extra_tags_mask,
+        extra_probes_mask,
         goldenjson,
         extra_filter,
         extra_filter_args,
@@ -25,6 +28,7 @@ class BaseTagNProbe:
         avoid_ecal_transition_tags,
         avoid_ecal_transition_probes,
         schemaclass,
+        default_vars,
     ):
         if extra_filter_args is None:
             extra_filter_args = {}
@@ -39,7 +43,10 @@ class BaseTagNProbe:
         self.filter = filter
         self.tags_pt_cut = tags_pt_cut
         self.tags_abseta_cut = tags_abseta_cut
+        self.probes_abseta_cut = probes_abseta_cut
         self.cutbased_id = cutbased_id
+        self.extra_tags_mask = extra_tags_mask
+        self.extra_probes_mask = extra_probes_mask
         self.goldenjson = goldenjson
         self.extra_filter = extra_filter
         self.extra_filter_args = extra_filter_args
@@ -48,16 +55,45 @@ class BaseTagNProbe:
         self.avoid_ecal_transition_tags = avoid_ecal_transition_tags
         self.avoid_ecal_transition_probes = avoid_ecal_transition_probes
         self.schemaclass = schemaclass
+        self.default_vars = default_vars
 
         if goldenjson is not None and not os.path.exists(goldenjson):
             raise FileNotFoundError(f"Golden JSON {goldenjson} does not exist.")
 
-    def find_probes(self, events, cut_and_count, vars):
+    def find_probes(self, events, cut_and_count, mass_range, vars):
+        """Find the passing and failing probes given some events.
+
+        This method will perform the Tag and Probe method given some events and return the passing and failing probe events
+        with the fields specified in `vars`. Probe variables can be accessed using `el_*` and tag variables using `tag_Ele_*`.
+        Also other event-level variables and other object variables are available. For instance to get the electron Pt of all electrons
+        in NanoAOD, you would have to request `Electron_pt` in `vars`.
+
+        Parameters
+        ----------
+            events : awkward.Array or dask_awarkward.Array
+                events read using coffea.nanoevents.NanoEventsFactory.from_root
+            cut_and_count : bool
+                Whether to consider all tag-probe pairs 30 GeV away from the Z boson mass as Z bosons
+                or to compute the invariant mass of all tag-probe pairs between 50 and 130 GeV
+                and add it to the returned probes as a `pair_mass` field.
+            mass_range: int or float or tuple of two ints or floats, optional
+                The allowed mass range of the tag-probe pairs.
+                For cut and count efficiencies, it is a single value representing the mass window around the Z mass.
+                For invariant masses to be fit with a Sig+Bkg model, it is a tuple of two values representing the mass range.
+            vars : list
+                The list of variables of the probes to return.
+
+        Returns
+        _______
+            A tuple of the form (passing_probes, failing_probes) where passing_probes and failing_probes are awkward zip items.
+            Each of the zip items has the fields specified in `vars`.
+        """
         raise NotImplementedError("find_probes method must be implemented.")
 
     def get_tnp_arrays(
         self,
         cut_and_count=True,
+        mass_range=None,
         vars=None,
         uproot_options=None,
         compute=False,
@@ -73,6 +109,12 @@ class BaseTagNProbe:
                 Whether to use the cut and count method to find the probes coming from a Z boson.
                 If False, invariant mass histograms of the tag-probe pairs will be filled to be fit by a Signal+Background model.
                 The default is True.
+            mass_range: int or float or tuple of two ints or floats, optional
+                The allowed mass range of the tag-probe pairs.
+                For cut and count efficiencies, it is a single value representing the mass window around the Z mass.
+                For invariant masses to be fit with a Sig+Bkg model, it is a tuple of two values representing the mass range.
+                If None, the default is 30 GeV around the Z mass for cut and count efficiencies and 50-130 GeV range otherwise.
+                The default is None.
             vars: list, optional
                 The list of variables of the probes to return. The default is ["el_pt", "el_eta", "el_phi"].
             uproot_options : dict, optional
@@ -91,22 +133,23 @@ class BaseTagNProbe:
         -------
             A tuple of the form (arrays, report) if `allow_read_errors_with_report` is True, otherwise just arrays.
             arrays: a dictionary of the form {"passing": passing_probes, "failing": failing_probes}
-            where passing_probes and failing_probes are awkward zip items.
-                Each of the zip items has the following fields:
-                    pt: dask_awkward.Array
-                        The Pt array of the probes.
-                    eta: dask_awkward.array
-                        The Eta array of the probes.
-                    phi: dask_awkward.array
-                        The Phi array of the probes.
+                where passing_probes and failing_probes are awkward zip items.
+                Each of the zip items has the fields specified in `vars`.
             report: dict of awkward arrays of the same form as fileset.
                 For each dataset an awkward array that contains information about the file access is present.
         """
         if uproot_options is None:
             uproot_options = {}
+        if mass_range is None:
+            if cut_and_count:
+                mass_range = 30
+            else:
+                mass_range = (50, 130)
+        if vars is None:
+            vars = self.default_vars
 
         def data_manipulation(events):
-            passing_probes, failing_probes = self._find_probes(events, cut_and_count=cut_and_count, vars=vars)
+            passing_probes, failing_probes = self.find_probes(events, cut_and_count=cut_and_count, mass_range=mass_range, vars=vars)
             return {"passing": passing_probes, "failing": failing_probes}
 
         to_compute = apply_to_fileset(
@@ -135,6 +178,7 @@ class BaseTagNProbe:
     def get_1d_pt_eta_phi_tnp_histograms(
         self,
         cut_and_count=True,
+        mass_range=None,
         plateau_cut=None,
         eta_regions_pt=None,
         eta_regions_eta=None,
@@ -153,6 +197,12 @@ class BaseTagNProbe:
                 Whether to use the cut and count method to find the probes coming from a Z boson.
                 If False, invariant mass histograms of the tag-probe pairs will be filled to be fit by a Signal+Background model.
                 The default is True.
+            mass_range: int or float or tuple of two ints or floats, optional
+                The allowed mass range of the tag-probe pairs.
+                For cut and count efficiencies, it is a single value representing the mass window around the Z mass.
+                For invariant masses to be fit with a Sig+Bkg model, it is a tuple of two values representing the mass range.
+                If None, the default is 30 GeV around the Z mass for cut and count efficiencies and 50-130 GeV range otherwise.
+                The default is None.
             plateau_cut : int or float, optional
                 The Pt threshold to use to ensure that we are on the efficiency plateau for eta and phi histograms.
                 The default None, meaning that no extra cut is applied and the activation region is included in those histograms.
@@ -200,11 +250,19 @@ class BaseTagNProbe:
         """
         if uproot_options is None:
             uproot_options = {}
+        if mass_range is None:
+            if cut_and_count:
+                mass_range = 30
+            else:
+                mass_range = (50, 130)
+        if vars is None:
+            vars = self.default_vars
 
         if cut_and_count:
             data_manipulation = partial(
                 self._make_cutncount_histograms,
                 pt_eta_phi_1d=True,
+                mass_range=mass_range,
                 vars=vars,
                 plateau_cut=plateau_cut,
                 eta_regions_pt=eta_regions_pt,
@@ -215,6 +273,7 @@ class BaseTagNProbe:
             data_manipulation = partial(
                 self._make_mll_histograms,
                 pt_eta_phi_1d=True,
+                mass_range=mass_range,
                 vars=vars,
                 plateau_cut=plateau_cut,
                 eta_regions_pt=eta_regions_pt,
@@ -248,6 +307,7 @@ class BaseTagNProbe:
     def get_nd_tnp_histograms(
         self,
         cut_and_count=True,
+        mass_range=None,
         vars=None,
         uproot_options=None,
         compute=False,
@@ -262,6 +322,12 @@ class BaseTagNProbe:
                 Whether to use the cut and count method to find the probes coming from a Z boson.
                 If False, invariant mass histograms of the tag-probe pairs will be filled to be fit by a Signal+Background model.
                 The default is True.
+            mass_range: int or float or tuple of two ints or floats, optional
+                The allowed mass range of the tag-probe pairs.
+                For cut and count efficiencies, it is a single value representing the mass window around the Z mass.
+                For invariant masses to be fit with a Sig+Bkg model, it is a tuple of two values representing the mass range.
+                If None, the default is 30 GeV around the Z mass for cut and count efficiencies and 50-130 GeV range otherwise.
+                The default is None.
             vars: list, optional
                 The variables to use to fill the N-dimensional histograms. The default is ["el_pt", "el_eta", "el_phi"].
                 These vars will be used to fill the N-dimensional histograms.
@@ -289,11 +355,19 @@ class BaseTagNProbe:
         """
         if uproot_options is None:
             uproot_options = {}
+        if mass_range is None:
+            if cut_and_count:
+                mass_range = 30
+            else:
+                mass_range = (50, 130)
+        if vars is None:
+            vars = self.default_vars
 
         if cut_and_count:
             data_manipulation = partial(
                 self._make_cutncount_histograms,
                 pt_eta_phi_1d=False,
+                mass_range=mass_range,
                 vars=vars,
                 plateau_cut=None,
                 eta_regions_pt=None,
@@ -304,6 +378,7 @@ class BaseTagNProbe:
             data_manipulation = partial(
                 self._make_mll_histograms,
                 pt_eta_phi_1d=False,
+                mass_range=mass_range,
                 vars=vars,
                 plateau_cut=None,
                 eta_regions_pt=None,
@@ -338,6 +413,7 @@ class BaseTagNProbe:
         self,
         events,
         pt_eta_phi_1d,
+        mass_range,
         vars,
         plateau_cut,
         eta_regions_pt,
@@ -349,7 +425,7 @@ class BaseTagNProbe:
             fill_pt_eta_phi_cutncount_histograms,
         )
 
-        passing_probes, failing_probes = self._find_probes(events, cut_and_count=True, vars=vars)
+        passing_probes, failing_probes = self.find_probes(events, cut_and_count=True, mass_range=mass_range, vars=vars)
 
         if pt_eta_phi_1d:
             return fill_pt_eta_phi_cutncount_histograms(
@@ -372,6 +448,7 @@ class BaseTagNProbe:
         self,
         events,
         pt_eta_phi_1d,
+        mass_range,
         vars,
         plateau_cut,
         eta_regions_pt,
@@ -383,7 +460,7 @@ class BaseTagNProbe:
             fill_pt_eta_phi_mll_histograms,
         )
 
-        passing_probes, failing_probes = self._find_probes(events, cut_and_count=False, vars=vars)
+        passing_probes, failing_probes = self.find_probes(events, cut_and_count=False, mass_range=mass_range, vars=vars)
 
         if pt_eta_phi_1d:
             return fill_pt_eta_phi_mll_histograms(

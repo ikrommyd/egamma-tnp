@@ -3,10 +3,9 @@ from __future__ import annotations
 import os
 
 import numpy as np
+import pytest
 
-from egamma_tnp import TagNProbeFromNTuples
-
-fileset = {"sample": {"files": {os.path.abspath("tests/samples/TnPNTuples.root"): "fitter_tree"}}}
+from egamma_tnp import ElectronTagNProbeFromNTuples, PhotonTagNProbeFromNTuples
 
 
 def assert_histograms_equal(h1, h2, flow):
@@ -15,14 +14,27 @@ def assert_histograms_equal(h1, h2, flow):
     assert h1.sum(flow=flow).variance == h2.sum(flow=flow).variance
 
 
-def test_histogramming_default_vars():
-    tag_n_probe = TagNProbeFromNTuples(
-        fileset,
-        "passHltEle30WPTightGsf",
-        cutbased_id="passingCutBasedTight122XV1",
-        use_sc_eta=True,
-        tags_pt_cut=30,
-    )
+@pytest.mark.parametrize("tag_n_probe_class", [ElectronTagNProbeFromNTuples, PhotonTagNProbeFromNTuples])
+def test_histogramming_default_vars(tag_n_probe_class):
+    if tag_n_probe_class == ElectronTagNProbeFromNTuples:
+        fileset = {"sample": {"files": {os.path.abspath("tests/samples/TnPNTuples_el.root"): "fitter_tree"}}}
+        tag_n_probe = tag_n_probe_class(
+            fileset,
+            "passHltEle30WPTightGsf",
+            cutbased_id="passingCutBasedTight122XV1",
+            use_sc_eta=True,
+            tags_pt_cut=30,
+        )
+        fileset = {"sample": {"files": {os.path.abspath("tests/samples/TnPNTuples_el.root"): "fitter_tree"}}}
+    else:
+        fileset = {"sample": {"files": {os.path.abspath("tests/samples/TnPNTuples_ph.root"): "fitter_tree"}}}
+        tag_n_probe = tag_n_probe_class(
+            fileset,
+            "passingCutBasedTight122XV1",
+            cutbased_id="passingCutBasedLoose122XV1",
+            use_sc_eta=True,
+            tags_pt_cut=30,
+        )
 
     hcnc1d = tag_n_probe.get_1d_pt_eta_phi_tnp_histograms(
         cut_and_count=True,
@@ -92,18 +104,31 @@ def test_histogramming_default_vars():
     assert_histograms_equal(hmll1d["phi"]["entire"]["failing"], hmll3d["failing"][35j::sum, -2.5j:2.5j:sum, :, :], flow=False)
 
 
-def test_histogramming_custom_vars():
+@pytest.mark.parametrize("tag_n_probe_class", [ElectronTagNProbeFromNTuples, PhotonTagNProbeFromNTuples])
+def test_histogramming_custom_vars(tag_n_probe_class):
     import egamma_tnp
 
-    tag_n_probe = TagNProbeFromNTuples(
-        fileset,
-        "passHltEle30WPTightGsf",
-        cutbased_id="passingCutBasedTight122XV1",
-        use_sc_eta=True,
-        tags_pt_cut=30,
-    )
+    if tag_n_probe_class == ElectronTagNProbeFromNTuples:
+        fileset = {"sample": {"files": {os.path.abspath("tests/samples/TnPNTuples_el.root"): "fitter_tree"}}}
+        tag_n_probe = tag_n_probe_class(
+            fileset,
+            "passHltEle30WPTightGsf",
+            cutbased_id="passingCutBasedTight122XV1",
+            use_sc_eta=True,
+            tags_pt_cut=30,
+        )
+    else:
+        fileset = {"sample": {"files": {os.path.abspath("tests/samples/TnPNTuples_ph.root"): "fitter_tree"}}}
+        tag_n_probe = tag_n_probe_class(
+            fileset,
+            "passingCutBasedTight122XV1",
+            cutbased_id="passingCutBasedLoose122XV1",
+            use_sc_eta=True,
+            tags_pt_cut=30,
+        )
 
     egamma_tnp.config.set("el_r9_bins", np.linspace(0.1, 1.05, 100).tolist())
+    egamma_tnp.config.set("ph_r9_bins", np.linspace(0.1, 1.05, 100).tolist())
 
     hmll1d = tag_n_probe.get_1d_pt_eta_phi_tnp_histograms(
         cut_and_count=False,
@@ -116,11 +141,10 @@ def test_histogramming_custom_vars():
         compute=True,
     )["sample"]
 
-    hmll3d = tag_n_probe.get_nd_tnp_histograms(
-        cut_and_count=False,
-        vars=["el_eta", "el_r9"],
-        compute=True,
-    )["sample"]
+    if tag_n_probe_class == ElectronTagNProbeFromNTuples:
+        hmll3d = tag_n_probe.get_nd_tnp_histograms(cut_and_count=False, vars=["el_eta", "el_r9"], compute=True)["sample"]
+    else:
+        hmll3d = tag_n_probe.get_nd_tnp_histograms(cut_and_count=False, vars=["ph_eta", "ph_r9"], compute=True)["sample"]
 
     assert_histograms_equal(hmll1d["eta"]["entire"]["passing"], hmll3d["passing"][-2.5j:2.5j, sum, :], flow=False)
     assert_histograms_equal(hmll1d["eta"]["entire"]["failing"], hmll3d["failing"][-2.5j:2.5j, sum, :], flow=False)
@@ -128,17 +152,28 @@ def test_histogramming_custom_vars():
     egamma_tnp.config.reset_all()
 
 
-def test_histogramming_non_probe_vars():
+@pytest.mark.parametrize("tag_n_probe_class", [ElectronTagNProbeFromNTuples, PhotonTagNProbeFromNTuples])
+def test_histogramming_non_probe_vars(tag_n_probe_class):
     import egamma_tnp
 
-    tag_n_probe = TagNProbeFromNTuples(
-        fileset,
-        "passHltEle30WPTightGsf",
-        cutbased_id="passingCutBasedTight122XV1",
-        use_sc_eta=True,
-        tags_pt_cut=30,
-        tags_abseta_cut=2.5,
-    )
+    if tag_n_probe_class == ElectronTagNProbeFromNTuples:
+        fileset = {"sample": {"files": {os.path.abspath("tests/samples/TnPNTuples_el.root"): "fitter_tree"}}}
+        tag_n_probe = tag_n_probe_class(
+            fileset,
+            "passHltEle30WPTightGsf",
+            cutbased_id="passingCutBasedTight122XV1",
+            use_sc_eta=True,
+            tags_pt_cut=30,
+        )
+    else:
+        fileset = {"sample": {"files": {os.path.abspath("tests/samples/TnPNTuples_ph.root"): "fitter_tree"}}}
+        tag_n_probe = tag_n_probe_class(
+            fileset,
+            "passingCutBasedTight122XV1",
+            cutbased_id="passingCutBasedLoose122XV1",
+            use_sc_eta=True,
+            tags_pt_cut=30,
+        )
 
     egamma_tnp.config.set("tag_sc_eta_bins", egamma_tnp.config.get("eta_bins"))
     egamma_tnp.config.set("lumi_bins", np.linspace(0, 1000, 11).tolist())
@@ -154,11 +189,10 @@ def test_histogramming_non_probe_vars():
         compute=True,
     )["sample"]
 
-    hmll3d = tag_n_probe.get_nd_tnp_histograms(
-        cut_and_count=False,
-        vars=["el_eta", "tag_sc_eta", "lumi"],
-        compute=True,
-    )["sample"]
+    if tag_n_probe_class == ElectronTagNProbeFromNTuples:
+        hmll3d = tag_n_probe.get_nd_tnp_histograms(cut_and_count=False, vars=["el_eta", "tag_sc_eta", "lumi"], compute=True)["sample"]
+    else:
+        hmll3d = tag_n_probe.get_nd_tnp_histograms(cut_and_count=False, vars=["ph_eta", "tag_sc_eta", "lumi"], compute=True)["sample"]
 
     assert_histograms_equal(hmll1d["eta"]["entire"]["passing"], hmll3d["passing"][-2.5j:2.5j, -2.5j:2.5j:sum, sum, :], flow=False)
     assert_histograms_equal(hmll1d["eta"]["entire"]["failing"], hmll3d["failing"][-2.5j:2.5j, -2.5j:2.5j:sum, sum, :], flow=False)

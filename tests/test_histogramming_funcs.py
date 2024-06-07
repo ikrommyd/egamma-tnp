@@ -13,7 +13,7 @@ from egamma_tnp.utils import (
     fill_pt_eta_phi_mll_histograms,
 )
 
-fileset = {"sample": {"files": {os.path.abspath("tests/samples/TnPNTuples.root"): "fitter_tree"}}}
+fileset = {"sample": {"files": {os.path.abspath("tests/samples/TnPNTuples_el.root"): "fitter_tree"}}}
 
 
 def assert_histograms_equal(h1, h2, flow):
@@ -23,7 +23,7 @@ def assert_histograms_equal(h1, h2, flow):
 
 
 def test_histogramming_funcs_default_vars():
-    events = uproot.dask({os.path.abspath("tests/samples/TnPNTuples.root"): "fitter_tree"})
+    events = uproot.dask({os.path.abspath("tests/samples/TnPNTuples_el.root"): "fitter_tree"})
 
     passing_probe_evens = events[events.passHltEle30WPTightGsf == 1]
     failing_probe_evens = events[events.passHltEle30WPTightGsf == 0]
@@ -55,7 +55,6 @@ def test_histogramming_funcs_default_vars():
         },
         plateau_cut=35,
         vars=["pt", "eta", "phi"],
-        delayed=False,
     )
     hmll1d = fill_pt_eta_phi_mll_histograms(
         passing_probes,
@@ -67,19 +66,16 @@ def test_histogramming_funcs_default_vars():
         },
         plateau_cut=35,
         vars=["pt", "eta", "phi"],
-        delayed=False,
     )
     hcnc3d = fill_nd_cutncount_histograms(
         passing_probes,
         failing_probes,
         vars=["pt", "eta", "phi"],
-        delayed=False,
     )
     hmll3d = fill_nd_mll_histograms(
         passing_probes,
         failing_probes,
         vars=["pt", "eta", "phi"],
-        delayed=False,
     )
 
     assert_histograms_equal(hcnc1d["pt"]["barrel"]["passing"], hcnc3d["passing"][:, -1.4442j:1.4442j:sum, sum], flow=False)
@@ -176,7 +172,7 @@ def test_histogramming_funcs_default_vars():
 def test_histogramming_funcs_custom_vars():
     import egamma_tnp
 
-    events = uproot.dask({os.path.abspath("tests/samples/TnPNTuples.root"): "fitter_tree"})
+    events = uproot.dask({os.path.abspath("tests/samples/TnPNTuples_el.root"): "fitter_tree"})
 
     passing_probe_evens = events[events.passHltEle30WPTightGsf == 1]
     failing_probe_evens = events[events.passHltEle30WPTightGsf == 0]
@@ -212,25 +208,21 @@ def test_histogramming_funcs_custom_vars():
         },
         plateau_cut=0,
         vars=["pt", "eta", "phi"],
-        delayed=False,
     )
     hmll1d = fill_pt_eta_phi_mll_histograms(
         passing_probes,
         failing_probes,
         vars=["pt", "eta", "phi"],
-        delayed=False,
     )
     hcnc3d = fill_nd_cutncount_histograms(
         passing_probes,
         failing_probes,
         vars=["eta", "r9"],
-        delayed=False,
     )
     hmll3d = fill_nd_mll_histograms(
         passing_probes,
         failing_probes,
         vars=["eta", "r9"],
-        delayed=False,
     )
 
     assert_histograms_equal(hcnc1d["eta"]["entire"]["passing"], hcnc3d["passing"][-2.5j:2.5j, sum], flow=False)

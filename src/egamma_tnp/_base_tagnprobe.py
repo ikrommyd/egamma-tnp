@@ -18,6 +18,8 @@ class BaseTagNProbe:
         tags_abseta_cut,
         probes_abseta_cut,
         cutbased_id,
+        extra_tags_mask,
+        extra_probes_mask,
         goldenjson,
         extra_filter,
         extra_filter_args,
@@ -43,6 +45,8 @@ class BaseTagNProbe:
         self.tags_abseta_cut = tags_abseta_cut
         self.probes_abseta_cut = probes_abseta_cut
         self.cutbased_id = cutbased_id
+        self.extra_tags_mask = extra_tags_mask
+        self.extra_probes_mask = extra_probes_mask
         self.goldenjson = goldenjson
         self.extra_filter = extra_filter
         self.extra_filter_args = extra_filter_args

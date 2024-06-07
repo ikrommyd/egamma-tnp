@@ -1,6 +1,8 @@
 from __future__ import annotations
 
+import awkward as ak  # noqa: F401
 import dask_awkward as dak
+import numpy as np  # noqa: F401
 from coffea.lumi_tools import LumiMask
 from coffea.nanoevents import NanoAODSchema
 
@@ -24,6 +26,8 @@ class ElectronTagNProbeFromNanoAOD(BaseTagNProbe):
         probes_abseta_cut=2.5,
         filterbit=None,
         cutbased_id=None,
+        extra_tags_mask=None,
+        extra_probes_mask=None,
         goldenjson=None,
         extra_filter=None,
         extra_filter_args=None,
@@ -69,6 +73,12 @@ class ElectronTagNProbeFromNanoAOD(BaseTagNProbe):
         cutbased_id: str, optional
             ID expression to apply to the probes. An example is "cutBased >= 2".
             If None, no cutbased ID is applied. The default is None.
+        extra_tags_mask: str, optional
+            An extra mask to apply to the tags. The default is None.
+            Must be of the form "zcands.tag.<mask> & zcands.tag.<mask> & ...".
+        extra_probes_mask: str, optional
+            An extra mask to apply to the probes. The default is None.
+            Must be of the form "zcands.probe.<mask> & zcands.probe.<mask> & ...".
         goldenjson: str, optional
             The golden json to use for luminosity masking. The default is None.
         extra_filter : Callable, optional
@@ -111,6 +121,8 @@ class ElectronTagNProbeFromNanoAOD(BaseTagNProbe):
             probes_abseta_cut=probes_abseta_cut,
             cutbased_id=cutbased_id,
             goldenjson=goldenjson,
+            extra_tags_mask=extra_tags_mask,
+            extra_probes_mask=extra_probes_mask,
             extra_filter=extra_filter,
             extra_filter_args=extra_filter_args,
             use_sc_eta=use_sc_eta,
@@ -163,7 +175,15 @@ class ElectronTagNProbeFromNanoAOD(BaseTagNProbe):
             pass_cutbased_id_probes = eval(f"zcands.probe.{self.cutbased_id}")
         else:
             pass_cutbased_id_probes = True
-        zcands = zcands[pass_tight_id_tags & pass_cutbased_id_probes]
+        if self.extra_tags_mask is not None:
+            pass_tag_mask = eval(self.extra_tags_mask)
+        else:
+            pass_tag_mask = True
+        if self.extra_probes_mask is not None:
+            pass_probe_mask = eval(self.extra_probes_mask)
+        else:
+            pass_probe_mask = True
+        zcands = zcands[pass_tight_id_tags & pass_cutbased_id_probes & pass_tag_mask & pass_probe_mask]
 
         if self.avoid_ecal_transition_tags:
             tags = zcands.tag
@@ -307,6 +327,8 @@ class PhotonTagNProbeFromNanoAOD(BaseTagNProbe):
         probes_abseta_cut=2.5,
         filterbit=None,
         cutbased_id=None,
+        extra_tags_mask=None,
+        extra_probes_mask=None,
         goldenjson=None,
         extra_filter=None,
         extra_filter_args=None,
@@ -355,6 +377,12 @@ class PhotonTagNProbeFromNanoAOD(BaseTagNProbe):
         cutbased_id: str, optional
             ID expression to apply to the probes. An example is "cutBased >= 2".
             If None, no cutbased ID is applied. The default is None.
+        extra_tags_mask: str, optional
+            An extra mask to apply to the tags. The default is None.
+            Must be of the form "zcands.tag.<mask> & zcands.tag.<mask> & ...".
+        extra_probes_mask: str, optional
+            An extra mask to apply to the probes. The default is None.
+            Must be of the form "zcands.probe.<mask> & zcands.probe.<mask> & ...".
         goldenjson: str, optional
             The golden json to use for luminosity masking. The default is None.
         extra_filter : Callable, optional
@@ -396,6 +424,8 @@ class PhotonTagNProbeFromNanoAOD(BaseTagNProbe):
             tags_abseta_cut=tags_abseta_cut,
             probes_abseta_cut=probes_abseta_cut,
             cutbased_id=cutbased_id,
+            extra_tags_mask=extra_tags_mask,
+            extra_probes_mask=extra_probes_mask,
             goldenjson=goldenjson,
             extra_filter=extra_filter,
             extra_filter_args=extra_filter_args,
@@ -466,7 +496,15 @@ class PhotonTagNProbeFromNanoAOD(BaseTagNProbe):
             pass_cutbased_id_probes = eval(f"zcands.probe.{self.cutbased_id}")
         else:
             pass_cutbased_id_probes = True
-        zcands = zcands[pass_tight_id_tags & pass_cutbased_id_probes]
+        if self.extra_tags_mask is not None:
+            pass_tag_mask = eval(self.extra_tags_mask)
+        else:
+            pass_tag_mask = True
+        if self.extra_probes_mask is not None:
+            pass_probe_mask = eval(self.extra_probes_mask)
+        else:
+            pass_probe_mask = True
+        zcands = zcands[pass_tight_id_tags & pass_cutbased_id_probes & pass_tag_mask & pass_probe_mask]
 
         if self.avoid_ecal_transition_tags:
             tags = zcands.tag

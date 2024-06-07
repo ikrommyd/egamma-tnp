@@ -1,6 +1,8 @@
 from __future__ import annotations
 
+import awkward as ak  # noqa: F401
 import dask_awkward as dak
+import numpy as np  # noqa: F401
 from coffea.lumi_tools import LumiMask
 from coffea.nanoevents import BaseSchema
 
@@ -18,6 +20,8 @@ class ElectronTagNProbeFromNTuples(BaseTagNProbe):
         tags_abseta_cut=2.5,
         probes_abseta_cut=2.5,
         cutbased_id=None,
+        extra_tags_mask=None,
+        extra_probes_mask=None,
         goldenjson=None,
         extra_filter=None,
         extra_filter_args=None,
@@ -48,6 +52,12 @@ class ElectronTagNProbeFromNTuples(BaseTagNProbe):
             cutbased_id: str, optional
                 The name of the cutbased ID to apply to the probes.
                 If None, no cutbased ID is applied. The default is None.
+            extra_tags_mask: str, optional
+                An extra mask to apply to the tags. The default is None.
+                Must be of the form "events.<mask> & events.<mask> & ...".
+            extra_probes_mask: str, optional
+                An extra mask to apply to the probes. The default is None.
+                Must be of the form "events.<mask> & events.<mask> & ...".
             goldenjson: str, optional
                 The golden json to use for luminosity masking. The default is None.
             extra_filter : Callable, optional
@@ -72,6 +82,8 @@ class ElectronTagNProbeFromNTuples(BaseTagNProbe):
             tags_abseta_cut=tags_abseta_cut,
             probes_abseta_cut=probes_abseta_cut,
             cutbased_id=cutbased_id,
+            extra_tags_mask=extra_tags_mask,
+            extra_probes_mask=extra_probes_mask,
             goldenjson=goldenjson,
             extra_filter=extra_filter,
             extra_filter_args=extra_filter_args,
@@ -135,7 +147,15 @@ class ElectronTagNProbeFromNTuples(BaseTagNProbe):
         pass_abseta_tags = abs(events.tag_Ele_eta_to_use) < self.tags_abseta_cut
         pass_abseta_probes = abs(events.el_eta_to_use) < self.probes_abseta_cut
         opposite_charge = events.tag_Ele_q * events.el_q == -1
-        events = events[pass_pt_tags & pass_abseta_tags & pass_abseta_probes & opposite_charge]
+        if self.extra_tags_mask is not None:
+            pass_tag_mask = eval(self.extra_tags_mask)
+        else:
+            pass_tag_mask = True
+        if self.extra_probes_mask is not None:
+            pass_probe_mask = eval(self.extra_probes_mask)
+        else:
+            pass_probe_mask = True
+        events = events[pass_pt_tags & pass_abseta_tags & pass_abseta_probes & opposite_charge & pass_tag_mask & pass_probe_mask]
 
         passing_probe_events, failing_probe_events = self._find_probe_events(events, cut_and_count=cut_and_count)
 
@@ -164,6 +184,8 @@ class PhotonTagNProbeFromNTuples(BaseTagNProbe):
         tags_abseta_cut=2.5,
         probes_abseta_cut=2.5,
         cutbased_id=None,
+        extra_tags_mask=None,
+        extra_probes_mask=None,
         goldenjson=None,
         extra_filter=None,
         extra_filter_args=None,
@@ -194,6 +216,12 @@ class PhotonTagNProbeFromNTuples(BaseTagNProbe):
             cutbased_id: str, optional
                 The name of the cutbased ID to apply to the probes.
                 If None, no cutbased ID is applied. The default is None.
+            extra_tags_mask: str, optional
+                An extra mask to apply to the tags. The default is None.
+                Must be of the form "events.<mask> & events.<mask> & ...".
+            extra_probes_mask: str, optional
+                An extra mask to apply to the probes. The default is None.
+                Must be of the form "events.<mask> & events.<mask> & ...".
             goldenjson: str, optional
                 The golden json to use for luminosity masking. The default is None.
             extra_filter : Callable, optional
@@ -218,6 +246,8 @@ class PhotonTagNProbeFromNTuples(BaseTagNProbe):
             tags_abseta_cut=tags_abseta_cut,
             probes_abseta_cut=probes_abseta_cut,
             cutbased_id=cutbased_id,
+            extra_tags_mask=extra_tags_mask,
+            extra_probes_mask=extra_probes_mask,
             goldenjson=goldenjson,
             extra_filter=extra_filter,
             extra_filter_args=extra_filter_args,
@@ -280,7 +310,15 @@ class PhotonTagNProbeFromNTuples(BaseTagNProbe):
         pass_pt_tags = events.tag_Ele_pt > self.tags_pt_cut
         pass_abseta_tags = abs(events.tag_Ele_eta_to_use) < self.tags_abseta_cut
         pass_abseta_probes = abs(events.ph_eta_to_use) < self.probes_abseta_cut
-        events = events[pass_pt_tags & pass_abseta_tags & pass_abseta_probes]
+        if self.extra_tags_mask is not None:
+            pass_tag_mask = eval(self.extra_tags_mask)
+        else:
+            pass_tag_mask = True
+        if self.extra_probes_mask is not None:
+            pass_probe_mask = eval(self.extra_probes_mask)
+        else:
+            pass_probe_mask = True
+        events = events[pass_pt_tags & pass_abseta_tags & pass_abseta_probes & pass_tag_mask & pass_probe_mask]
 
         passing_probe_events, failing_probe_events = self._find_probe_events(events, cut_and_count=cut_and_count)
 

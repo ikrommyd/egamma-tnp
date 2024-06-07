@@ -101,16 +101,22 @@ class ElectronTagNProbeFromNTuples(BaseTagNProbe):
             n_of_files += len(dataset["files"])
         return f"ElectronTagNProbeFromNTuples({self.filter}, Number of files: {n_of_files}, Golden JSON: {self.goldenjson})"
 
-    def _find_probe_events(self, events, cut_and_count):
+    def _find_probe_events(self, events, cut_and_count, mass_range):
         pass_pt_probes = events.el_pt > self.probes_pt_cut
         if self.cutbased_id:
             pass_cutbased_id = events[self.cutbased_id] == 1
         else:
             pass_cutbased_id = True
-        if cut_and_count:
-            in_mass_window = abs(events.pair_mass - 91.1876) < 30
+        if mass_range is not None:
+            if cut_and_count:
+                in_mass_window = abs(events.pair_mass - 91.1876) < mass_range
+            else:
+                in_mass_window = (events.pair_mass > mass_range[0]) & (events.pair_mass < mass_range[1])
         else:
-            in_mass_window = (events.pair_mass > 50) & (events.pair_mass < 130)
+            if cut_and_count:
+                in_mass_window = abs(events.pair_mass - 91.1876) < 30
+            else:
+                in_mass_window = (events.pair_mass > 50) & (events.pair_mass < 130)
         all_probe_events = events[pass_cutbased_id & in_mass_window & pass_pt_probes]
         passing_locs = all_probe_events[self.filter] == 1
         passing_probe_events = all_probe_events[passing_locs]
@@ -118,7 +124,7 @@ class ElectronTagNProbeFromNTuples(BaseTagNProbe):
 
         return passing_probe_events, failing_probe_events
 
-    def find_probes(self, events, cut_and_count, vars):
+    def find_probes(self, events, cut_and_count, mass_range, vars):
         if self.use_sc_eta:
             events["el_eta_to_use"] = events.el_sc_eta
             events["tag_Ele_eta_to_use"] = events.tag_sc_eta
@@ -157,7 +163,7 @@ class ElectronTagNProbeFromNTuples(BaseTagNProbe):
             pass_probe_mask = True
         events = events[pass_pt_tags & pass_abseta_tags & pass_abseta_probes & opposite_charge & pass_tag_mask & pass_probe_mask]
 
-        passing_probe_events, failing_probe_events = self._find_probe_events(events, cut_and_count=cut_and_count)
+        passing_probe_events, failing_probe_events = self._find_probe_events(events, cut_and_count=cut_and_count, mass_range=mass_range)
 
         if cut_and_count:
             passing_probes = dak.zip({var: passing_probe_events[var] for var in vars})
@@ -265,16 +271,22 @@ class PhotonTagNProbeFromNTuples(BaseTagNProbe):
             n_of_files += len(dataset["files"])
         return f"PhotonTagNProbeFromNTuples({self.filter}, Number of files: {n_of_files}, Golden JSON: {self.goldenjson})"
 
-    def _find_probe_events(self, events, cut_and_count):
+    def _find_probe_events(self, events, cut_and_count, mass_range):
         pass_pt_probes = events.ph_et > self.probes_pt_cut
         if self.cutbased_id:
             pass_cutbased_id = events[self.cutbased_id] == 1
         else:
             pass_cutbased_id = True
-        if cut_and_count:
-            in_mass_window = abs(events.pair_mass - 91.1876) < 30
+        if mass_range is not None:
+            if cut_and_count:
+                in_mass_window = abs(events.pair_mass - 91.1876) < mass_range
+            else:
+                in_mass_window = (events.pair_mass > mass_range[0]) & (events.pair_mass < mass_range[1])
         else:
-            in_mass_window = (events.pair_mass > 50) & (events.pair_mass < 130)
+            if cut_and_count:
+                in_mass_window = abs(events.pair_mass - 91.1876) < 30
+            else:
+                in_mass_window = (events.pair_mass > 50) & (events.pair_mass < 130)
         all_probe_events = events[pass_cutbased_id & in_mass_window & pass_pt_probes]
         passing_locs = all_probe_events[self.filter] == 1
         passing_probe_events = all_probe_events[passing_locs]
@@ -282,7 +294,7 @@ class PhotonTagNProbeFromNTuples(BaseTagNProbe):
 
         return passing_probe_events, failing_probe_events
 
-    def find_probes(self, events, cut_and_count, vars):
+    def find_probes(self, events, cut_and_count, mass_range, vars):
         if self.use_sc_eta:
             events["ph_eta_to_use"] = events.ph_sc_eta
             events["tag_Ele_eta_to_use"] = events.tag_sc_eta
@@ -320,7 +332,7 @@ class PhotonTagNProbeFromNTuples(BaseTagNProbe):
             pass_probe_mask = True
         events = events[pass_pt_tags & pass_abseta_tags & pass_abseta_probes & pass_tag_mask & pass_probe_mask]
 
-        passing_probe_events, failing_probe_events = self._find_probe_events(events, cut_and_count=cut_and_count)
+        passing_probe_events, failing_probe_events = self._find_probe_events(events, cut_and_count=cut_and_count, mass_range=mass_range)
 
         if cut_and_count:
             passing_probes = dak.zip({var: passing_probe_events[var] for var in vars})

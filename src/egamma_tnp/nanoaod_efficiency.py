@@ -120,9 +120,9 @@ class ElectronTagNProbeFromNanoAOD(BaseTagNProbe):
             tags_abseta_cut=tags_abseta_cut,
             probes_abseta_cut=probes_abseta_cut,
             cutbased_id=cutbased_id,
-            goldenjson=goldenjson,
             extra_tags_mask=extra_tags_mask,
             extra_probes_mask=extra_probes_mask,
+            goldenjson=goldenjson,
             extra_filter=extra_filter,
             extra_filter_args=extra_filter_args,
             use_sc_eta=use_sc_eta,
@@ -144,7 +144,7 @@ class ElectronTagNProbeFromNanoAOD(BaseTagNProbe):
             n_of_files += len(dataset["files"])
         return f"ElectronTagNProbeFromNanoAOD({self.filter}, Number of files: {n_of_files}, Golden JSON: {self.goldenjson})"
 
-    def find_probes(self, events, cut_and_count, vars):
+    def find_probes(self, events, cut_and_count, mass_range, vars):
         if self.use_sc_eta:
             if self.egm_nano:
                 events["Electron", "eta_to_use"] = events.Electron.superclusterEta
@@ -204,6 +204,7 @@ class ElectronTagNProbeFromNanoAOD(BaseTagNProbe):
             abseta_probes=self.probes_abseta_cut,
             filterbit=self.filterbit,
             cut_and_count=cut_and_count,
+            mass_range=mass_range,
             hlt_filter=self.hlt_filter,
             is_photon_filter=self.is_photon_filter,
         )
@@ -257,6 +258,7 @@ class ElectronTagNProbeFromNanoAOD(BaseTagNProbe):
         abseta_probes,
         filterbit,
         cut_and_count,
+        mass_range,
         hlt_filter,
         is_photon_filter,
     ):
@@ -274,10 +276,16 @@ class ElectronTagNProbeFromNanoAOD(BaseTagNProbe):
         probes = zcands.probe
         dr = tags.delta_r(probes)
         mass = (tags + probes).mass
-        if cut_and_count:
-            in_mass_window = abs(mass - 91.1876) < 30
+        if mass_range is None:
+            if cut_and_count:
+                in_mass_window = abs(mass - 91.1876) < 30
+            else:
+                in_mass_window = (mass > 50) & (mass < 130)
         else:
-            in_mass_window = (mass > 50) & (mass < 130)
+            if cut_and_count:
+                in_mass_window = abs(mass - 91.1876) < mass_range
+            else:
+                in_mass_window = (mass > mass_range[0]) & (mass < mass_range[1])
         opposite_charge = tags.charge * probes.charge == -1
         isZ = in_mass_window & opposite_charge
         dr_condition = dr > 0.0
@@ -449,7 +457,7 @@ class PhotonTagNProbeFromNanoAOD(BaseTagNProbe):
             n_of_files += len(dataset["files"])
         return f"PhotonTagNProbeFromNanoAOD({self.filter}, Number of files: {n_of_files}, Golden JSON: {self.goldenjson})"
 
-    def find_probes(self, events, cut_and_count, vars):
+    def find_probes(self, events, cut_and_count, mass_range, vars):
         if self.use_sc_eta:
             if "superclusterEta" not in events.Photon.fields:
                 events["Photon", "superclusterEta"] = calculate_photon_SC_eta(events.Photon, events.PV)
@@ -525,6 +533,7 @@ class PhotonTagNProbeFromNanoAOD(BaseTagNProbe):
             abseta_probes=self.probes_abseta_cut,
             filterbit=self.filterbit,
             cut_and_count=cut_and_count,
+            mass_range=mass_range,
             hlt_filter=self.hlt_filter,
             is_electron_filter=self.is_electron_filter,
             start_from_diphotons=self.start_from_diphotons,
@@ -578,6 +587,7 @@ class PhotonTagNProbeFromNanoAOD(BaseTagNProbe):
         abseta_probes,
         filterbit,
         cut_and_count,
+        mass_range,
         hlt_filter,
         is_electron_filter,
         start_from_diphotons,
@@ -601,10 +611,16 @@ class PhotonTagNProbeFromNanoAOD(BaseTagNProbe):
         probes = zcands.probe
         dr = tags.delta_r(probes)
         mass = (tags + probes).mass
-        if cut_and_count:
-            in_mass_window = abs(mass - 91.1876) < 30
+        if mass_range is None:
+            if cut_and_count:
+                in_mass_window = abs(mass - 91.1876) < 30
+            else:
+                in_mass_window = (mass > 50) & (mass < 130)
         else:
-            in_mass_window = (mass > 50) & (mass < 130)
+            if cut_and_count:
+                in_mass_window = abs(mass - 91.1876) < mass_range
+            else:
+                in_mass_window = (mass > mass_range[0]) & (mass < mass_range[1])
         # Use this unless we choose to pixel match the probes as well
         opposite_charge = True
         # opposite_charge = tags.charge * probes.charge == -1

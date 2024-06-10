@@ -15,8 +15,7 @@ def test_tag_and_probe_electrons():
 
     tag_n_probe = ElectronTagNProbeFromNanoAOD(
         fileset,
-        True,
-        filter="Ele32",
+        "HLT_Ele32_WPTight_Gsf",
         trigger_pt=32,
         filterbit=1,
         cutbased_id="cutBased >= 4",
@@ -24,7 +23,7 @@ def test_tag_and_probe_electrons():
         probes_pt_cut=27,
         tags_abseta_cut=2.17,
         use_sc_eta=True,
-        hlt_filter="Ele32_WPTight_Gsf",
+        require_event_to_pass_hlt_filter=True,
     )
 
     events = NanoEventsFactory.from_root({os.path.abspath("tests/samples/DYto2E.root"): "Events"}, delayed=False).events()
@@ -44,8 +43,7 @@ def test_tag_and_probe_photons(start_from_diphotons):
 
     tag_n_probe = PhotonTagNProbeFromNanoAOD(
         fileset,
-        True,
-        filter="Ele32",
+        "HLT_Ele32_WPTight_Gsf",
         is_electron_filter=True,
         start_from_diphotons=start_from_diphotons,
         cutbased_id="cutBased >= 3",
@@ -55,7 +53,7 @@ def test_tag_and_probe_photons(start_from_diphotons):
         probes_pt_cut=27,
         tags_abseta_cut=2.17,
         use_sc_eta=False,
-        hlt_filter="Ele32_WPTight_Gsf",
+        require_event_to_pass_hlt_filter=True,
     )
 
     events = NanoEventsFactory.from_root({os.path.abspath("tests/samples/DYto2E.root"): "Events"}, delayed=False).events()

@@ -20,8 +20,7 @@ def assert_histograms_equal(h1, h2, flow):
 def test_histogramming_default_vars(tag_n_probe_class):
     tag_n_probe = tag_n_probe_class(
         fileset,
-        True,
-        filter="Ele30",
+        filter="HLT_Ele30_WPTight_Gsf",
         filterbit=1,
         tags_pt_cut=30,
         use_sc_eta=True,
@@ -97,8 +96,7 @@ def test_histogramming_custom_vars(tag_n_probe_class):
 
     tag_n_probe = tag_n_probe_class(
         fileset,
-        True,
-        filter="Ele30",
+        filter="HLT_Ele30_WPTight_Gsf",
         filterbit=1,
         tags_pt_cut=30,
         use_sc_eta=True,
@@ -138,8 +136,7 @@ def test_histogramming_non_probe_vars(tag_n_probe_class):
 
     tag_n_probe = tag_n_probe_class(
         fileset,
-        True,
-        filter="Ele30",
+        filter="HLT_Ele30_WPTight_Gsf",
         filterbit=1,
         tags_pt_cut=30,
         use_sc_eta=True,

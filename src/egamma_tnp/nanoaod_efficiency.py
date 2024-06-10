@@ -16,7 +16,6 @@ class ElectronTagNProbeFromNanoAOD(BaseTagNProbe):
         fileset,
         filter,
         *,
-        egm_nano=False,
         is_photon_filter=False,
         trigger_pt=None,
         tags_pt_cut=35,
@@ -44,8 +43,6 @@ class ElectronTagNProbeFromNanoAOD(BaseTagNProbe):
             The fileset to calculate the trigger efficiencies for.
         filter: str
             The name of the filter to calculate the efficiencies for.
-        egm_nano: bool, optional
-            Whether the input fileset is EGamma NanoAOD or NanoAOD. The default is False.
         is_photon_filter: bool, optional
             Whether the filter to calculate the efficiencies for is a photon filter. The default is False.
         trigger_pt: int or float, optional
@@ -94,8 +91,6 @@ class ElectronTagNProbeFromNanoAOD(BaseTagNProbe):
             Also require the event to have passed the filter HLT filter under study to consider a probe belonging to that event as passing.
             The default is True.
         """
-        if use_sc_phi and not egm_nano:
-            raise NotImplementedError("Supercluster Phi is only available for EGamma NanoAOD.")
         if trigger_pt is None:
             from egamma_tnp.utils.misc import find_pt_threshold
 
@@ -122,7 +117,6 @@ class ElectronTagNProbeFromNanoAOD(BaseTagNProbe):
             schemaclass=NanoAODSchema,
             default_vars=["el_pt", "el_eta", "el_phi"],
         )
-        self.egm_nano = egm_nano
         self.is_photon_filter = is_photon_filter
         self.filterbit = filterbit
         self.require_event_to_pass_hlt_filter = require_event_to_pass_hlt_filter
@@ -141,7 +135,7 @@ class ElectronTagNProbeFromNanoAOD(BaseTagNProbe):
 
     def find_probes(self, events, cut_and_count, mass_range, vars):
         if self.use_sc_eta:
-            if self.egm_nano:
+            if "superclusterEta" in events.Electron.fields:
                 events["Electron", "eta_to_use"] = events.Electron.superclusterEta
             else:
                 events["Electron", "eta_to_use"] = events.Electron.eta + events.Electron.deltaEtaSC
@@ -326,7 +320,6 @@ class PhotonTagNProbeFromNanoAOD(BaseTagNProbe):
         fileset,
         filter,
         *,
-        egm_nano=False,
         is_electron_filter=False,
         start_from_diphotons=True,
         trigger_pt=None,
@@ -355,8 +348,6 @@ class PhotonTagNProbeFromNanoAOD(BaseTagNProbe):
             The fileset to calculate the trigger efficiencies for.
         filter: str
             The name of the filter to calculate the efficiencies for.
-        egm_nano: bool, optional
-            Whether the input fileset is EGamma NanoAOD or NanoAOD. The default is False.
         is_electron_filter: bool, optional
             Whether the filter to calculate the efficiencies for is an electron filter. The default is False.
         start_from_diphotons: bool, optional
@@ -408,8 +399,6 @@ class PhotonTagNProbeFromNanoAOD(BaseTagNProbe):
             Also require the event to have passed the filter HLT filter under study to consider a probe belonging to that event as passing.
             The default is True.
         """
-        if use_sc_phi and not egm_nano:
-            raise NotImplementedError("Supercluster Phi is not yet available in NanoAOD.")
         if trigger_pt is None:
             from egamma_tnp.utils.misc import find_pt_threshold
 
@@ -436,7 +425,6 @@ class PhotonTagNProbeFromNanoAOD(BaseTagNProbe):
             schemaclass=NanoAODSchema,
             default_vars=["ph_pt", "ph_eta", "ph_phi"],
         )
-        self.egm_nano = egm_nano
         self.is_electron_filter = is_electron_filter
         self.start_from_diphotons = start_from_diphotons
         self.filterbit = filterbit
@@ -459,7 +447,7 @@ class PhotonTagNProbeFromNanoAOD(BaseTagNProbe):
             if "superclusterEta" not in events.Photon.fields:
                 events["Photon", "superclusterEta"] = calculate_photon_SC_eta(events.Photon, events.PV)
             events["Photon", "eta_to_use"] = events.Photon.superclusterEta
-            if self.egm_nano:
+            if "superclusterEta" in events.Electron.fields:
                 events["Electron", "eta_to_use"] = events.Electron.superclusterEta
             else:
                 events["Electron", "eta_to_use"] = events.Electron.eta + events.Electron.deltaEtaSC

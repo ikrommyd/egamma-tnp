@@ -18,14 +18,14 @@ def test_pileup_ntuples(do_preprocess, allow_read_errors_with_report):
                     os.path.abspath("tests/samples/TnPNTuples_el.root"): "fitter_tree",
                     os.path.abspath("tests/samples/not_a_file.root"): "fitter_tree",
                 },
-                "metadata": {"isMC": True, "PU_json": os.path.abspath("tests/samples/test_pu_correction.json")},
+                "metadata": {"isMC": True, "pileupJSON": os.path.abspath("tests/samples/test_pu_correction.json")},
             }
         }
     else:
         fileset = {
             "sample": {
                 "files": {os.path.abspath("tests/samples/TnPNTuples_el.root"): "fitter_tree"},
-                "metadata": {"isMC": True, "PU_json": os.path.abspath("tests/samples/test_pu_correction.json")},
+                "metadata": {"isMC": True, "pileupJSON": os.path.abspath("tests/samples/test_pu_correction.json")},
             }
         }
 
@@ -91,14 +91,14 @@ def test_pileup_nanoaod(do_preprocess, allow_read_errors_with_report):
                     os.path.abspath("tests/samples/DYto2E.root"): "Events",
                     os.path.abspath("tests/samples/not_a_file.root"): "Events",
                 },
-                "metadata": {"isMC": True, "PU_json": os.path.abspath("tests/samples/test_pu_correction.json")},
+                "metadata": {"isMC": True, "pileupJSON": os.path.abspath("tests/samples/test_pu_correction.json")},
             }
         }
     else:
         fileset = {
             "sample": {
                 "files": {os.path.abspath("tests/samples/DYto2E.root"): "Events"},
-                "metadata": {"isMC": True, "PU_json": os.path.abspath("tests/samples/test_pu_correction.json")},
+                "metadata": {"isMC": True, "pileupJSON": os.path.abspath("tests/samples/test_pu_correction.json")},
             }
         }
 

@@ -17,7 +17,7 @@ def trigger_match(leptons, trigobjs, pdgid, pt, filterbit):
     return trig_matched_locs
 
 
-def tag_and_probe_electrons(events):
+def tag_and_probe_electrons(events, is_id):
     events["Electron", "eta_to_use"] = events.Electron.eta + events.Electron.deltaEtaSC
     events["Electron", "phi_to_use"] = events.Electron.phi
 
@@ -38,7 +38,10 @@ def tag_and_probe_electrons(events):
         zcands = zcands[pass_eta_ebeegap_probes]
 
     pass_tight_id_tags = zcands.tag.cutBased >= 4
-    pass_cutbased_id_probes = zcands.probe.cutBased >= 4
+    if is_id:
+        pass_cutbased_id_probes = (True,)
+    else:
+        pass_cutbased_id_probes = zcands.probe.cutBased >= 4
     zcands = zcands[pass_tight_id_tags & pass_cutbased_id_probes]
 
     trigobjs = good_events.TrigObj
@@ -65,8 +68,12 @@ def tag_and_probe_electrons(events):
     isZ = in_mass_window & opposite_charge
     dr_condition = dr > 0.0
     zcands = zcands[isZ & dr_condition]
-    trig_matched_probe = trigger_match(zcands.probe, trigobjs, 11, 32, 1)
-    hlt_filter = "Ele32_WPTight_Gsf"
+    if is_id:
+        trig_matched_probe = zcands.probe.cutBased >= 4
+        hlt_filter = None
+    else:
+        trig_matched_probe = trigger_match(zcands.probe, trigobjs, 11, 32, 1)
+        hlt_filter = "Ele32_WPTight_Gsf"
     if hlt_filter is None:
         passing_pairs = zcands[trig_matched_probe]
         failing_pairs = zcands[~trig_matched_probe]
@@ -113,7 +120,7 @@ def tag_and_probe_electrons(events):
     return passing_probes, failing_probes
 
 
-def tag_and_probe_photons(events, start_from_diphotons):
+def tag_and_probe_photons(events, start_from_diphotons, is_id):
     events["Photon", "eta_to_use"] = events.Photon.eta
     events["Photon", "phi_to_use"] = events.Photon.phi
     events["Electron", "eta_to_use"] = events.Electron.eta
@@ -135,7 +142,10 @@ def tag_and_probe_photons(events, start_from_diphotons):
         zcands = tnp[probe_is_not_tag]
         pass_tight_id_tags = zcands.tag.cutBased >= 4
 
-    pass_cutbased_id_probes = zcands.probe.cutBased >= 3
+    if is_id:
+        pass_cutbased_id_probes = True
+    else:
+        pass_cutbased_id_probes = zcands.probe.cutBased >= 3
     zcands = zcands[pass_tight_id_tags & pass_cutbased_id_probes]
 
     if True:
@@ -176,8 +186,12 @@ def tag_and_probe_photons(events, start_from_diphotons):
     isZ = in_mass_window & opposite_charge
     dr_condition = dr > 0.0
     zcands = zcands[isZ & dr_condition]
-    trig_matched_probe = trigger_match(zcands.probe, trigobjs, 11, 32, 1)
-    hlt_filter = "Ele32_WPTight_Gsf"
+    if is_id:
+        trig_matched_probe = zcands.probe.cutBased >= 3
+        hlt_filter = None
+    else:
+        trig_matched_probe = trigger_match(zcands.probe, trigobjs, 11, 32, 1)
+        hlt_filter = "Ele32_WPTight_Gsf"
     if hlt_filter is None:
         passing_pairs = zcands[trig_matched_probe]
         failing_pairs = zcands[~trig_matched_probe]

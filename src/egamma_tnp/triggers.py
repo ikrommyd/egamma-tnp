@@ -73,8 +73,7 @@ class ElePt_WPTight_Gsf:
         else:
             instance = ElectronTagNProbeFromNanoAOD(
                 fileset=fileset,
-                filter=f"passHltEle{trigger_pt}WPTightGsf",
-                for_trigger=True,
+                filter=f"HLT_Ele{trigger_pt}_WPTight_Gsf_v16",
                 trigger_pt=trigger_pt,
                 tags_pt_cut=tags_pt_cut,
                 probes_pt_cut=probes_pt_cut,
@@ -88,7 +87,7 @@ class ElePt_WPTight_Gsf:
                 use_sc_phi=use_sc_phi,
                 avoid_ecal_transition_tags=avoid_ecal_transition_tags,
                 avoid_ecal_transition_probes=avoid_ecal_transition_probes,
-                hlt_filter=f"Ele{trigger_pt}_WPTight_Gsf",
+                require_event_to_pass_hlt_filter=True,
             )
 
         return instance
@@ -171,8 +170,7 @@ class ElePt_CaloIdVT_GsfTrkIdT:
                 filterbit = 11
             instance = ElectronTagNProbeFromNanoAOD(
                 fileset=fileset,
-                filter=f"passHltEle{trigger_pt}CaloIdVTGsfTrkIdTGsf",
-                for_trigger=True,
+                filter=f"HLT_Ele{trigger_pt}_CaloIdVT_GsfTrkIdT",
                 trigger_pt=trigger_pt,
                 tags_pt_cut=tags_pt_cut,
                 probes_pt_cut=probes_pt_cut,
@@ -186,7 +184,7 @@ class ElePt_CaloIdVT_GsfTrkIdT:
                 use_sc_phi=use_sc_phi,
                 avoid_ecal_transition_tags=avoid_ecal_transition_tags,
                 avoid_ecal_transition_probes=avoid_ecal_transition_probes,
-                hlt_filter=f"Ele{trigger_pt}_CaloIdVT_GsfTrkIdT",
+                require_event_to_pass_hlt_filter=True,
             )
 
         return instance
@@ -265,8 +263,7 @@ class ElePt1_ElePt2_CaloIdL_TrackIdL_IsoVL_Leg1:
         else:
             instance = ElectronTagNProbeFromNanoAOD(
                 fileset=fileset,
-                filter=f"passHltEle{trigger_pt1}Ele{trigger_pt2}CaloIdLTrackIdLIsoVLLeg1L1match",
-                for_trigger=True,
+                filter=f"HLT_Ele{trigger_pt1}_Ele{trigger_pt2}_CaloIdL_TrackIdL_IsoVL_Leg1",
                 trigger_pt=trigger_pt1,
                 tags_pt_cut=tags_pt_cut,
                 probes_pt_cut=probes_pt_cut,
@@ -280,7 +277,7 @@ class ElePt1_ElePt2_CaloIdL_TrackIdL_IsoVL_Leg1:
                 use_sc_phi=use_sc_phi,
                 avoid_ecal_transition_tags=avoid_ecal_transition_tags,
                 avoid_ecal_transition_probes=avoid_ecal_transition_probes,
-                hlt_filter=f"Ele{trigger_pt1}_Ele{trigger_pt2}_CaloIdL_TrackIdL_IsoVL",
+                require_event_to_pass_hlt_filter=True,
             )
 
         return instance
@@ -366,8 +363,7 @@ class ElePt1_ElePt2_CaloIdL_TrackIdL_IsoVL_Leg2:
                 )
             instance = ElectronTagNProbeFromNanoAOD(
                 fileset=fileset,
-                filter=f"passHltEle{trigger_pt1}Ele{trigger_pt2}CaloIdLTrackIdLIsoVLLeg2",
-                for_trigger=True,
+                filter=f"HLT_Ele{trigger_pt1}_Ele{trigger_pt2}_CaloIdL_TrackIdL_IsoVL_Leg2",
                 trigger_pt=trigger_pt2,
                 tags_pt_cut=tags_pt_cut,
                 probes_pt_cut=probes_pt_cut,
@@ -381,7 +377,7 @@ class ElePt1_ElePt2_CaloIdL_TrackIdL_IsoVL_Leg2:
                 use_sc_phi=use_sc_phi,
                 avoid_ecal_transition_tags=avoid_ecal_transition_tags,
                 avoid_ecal_transition_probes=avoid_ecal_transition_probes,
-                hlt_filter=f"Ele{trigger_pt1}_Ele{trigger_pt2}_CaloIdL_TrackIdL_IsoVL",
+                require_event_to_pass_hlt_filter=True,
             )
 
         return instance
@@ -462,8 +458,7 @@ class DoubleElePt_CaloIdL_MW_SeededLeg:
                 raise ValueError("Measuring the efficiency of the HLT_DoubleElePt_CaloIdL_MW trigger is only supported for NanoAODv13 and above.")
             instance = ElectronTagNProbeFromNanoAOD(
                 fileset=fileset,
-                filter=f"passHltDoubleEle{trigger_pt}CaloIdLMWSeedLegL1match",
-                for_trigger=True,
+                filter=f"HLT_DoubleEle{trigger_pt}_CaloIdL_MW_SeededLeg",
                 trigger_pt=trigger_pt,
                 tags_pt_cut=tags_pt_cut,
                 probes_pt_cut=probes_pt_cut,
@@ -477,7 +472,7 @@ class DoubleElePt_CaloIdL_MW_SeededLeg:
                 use_sc_phi=use_sc_phi,
                 avoid_ecal_transition_tags=avoid_ecal_transition_tags,
                 avoid_ecal_transition_probes=avoid_ecal_transition_probes,
-                hlt_filter=f"DoubleEle{trigger_pt}_CaloIdL_MW",
+                require_event_to_pass_hlt_filter=True,
             )
 
         return instance
@@ -558,8 +553,7 @@ class DoubleElePt_CaloIdL_MW_UnseededLeg:
                 raise ValueError("Measuring the efficiency of the HLT_DoubleElePt_CaloIdL_MW trigger is only supported for NanoAODv13 and above.")
             instance = ElectronTagNProbeFromNanoAOD(
                 fileset=fileset,
-                filter=f"passHltDoubleEle{trigger_pt}CaloIdLMWUnsLeg",
-                for_trigger=True,
+                filter=f"HLT_DoubleEle{trigger_pt}_CaloIdL_MW_UnseededLeg",
                 trigger_pt=trigger_pt,
                 tags_pt_cut=tags_pt_cut,
                 probes_pt_cut=probes_pt_cut,
@@ -573,7 +567,7 @@ class DoubleElePt_CaloIdL_MW_UnseededLeg:
                 use_sc_phi=use_sc_phi,
                 avoid_ecal_transition_tags=avoid_ecal_transition_tags,
                 avoid_ecal_transition_probes=avoid_ecal_transition_probes,
-                hlt_filter=f"DoubleEle{trigger_pt}_CaloIdL_MW",
+                require_event_to_pass_hlt_filter=True,
             )
 
         return instance

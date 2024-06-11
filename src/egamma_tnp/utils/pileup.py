@@ -22,7 +22,7 @@ def create_correction(pu_data_histogram, pu_mc_array, outfile=None, normalize_pu
     pu_data = uproot.open(pu_data_histogram)["pileup"].to_hist().density()
     pu_mc = pu_mc_array / np.sum(pu_mc_array) if normalize_pu_mc_array else pu_mc_array
     assert len(pu_data) == len(pu_mc), "Data and MC pileup distributions have different lengths"
-    sfhist = hist.Hist(hist.axis.Variable(np.arange(len(pu_data) + 1), label="pileup"))
+    sfhist = hist.Hist(hist.axis.Variable(np.arange(len(pu_data) + 1), label="pileup"), label="pileup", name="Pileup")
     sfhist[:] = pu_data / pu_mc
 
     clibcorr = correctionlib.convert.from_histogram(sfhist)

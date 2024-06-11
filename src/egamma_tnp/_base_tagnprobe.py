@@ -442,9 +442,9 @@ class BaseTagNProbe:
         if events.metadata.get("isMC"):
             from egamma_tnp.utils.pileup import create_correction, get_pileup_weight, load_correction
 
-            if events.metadata.get("PU_json"):
+            if "PU_json" in events.metadata:
                 pileup_corr = load_correction(events.metadata["PU_json"])
-            elif events.metadata.get("PU_data") and events.metadata.get("PU_mc"):
+            elif "PU_data" in events.metadata and "PU_mc" in events.metadata:
                 pileup_corr = create_correction(events.metadata["PU_data"], events.metadata["PU_mc"])
 
             if "truePU" in events.fields:
@@ -454,7 +454,7 @@ class BaseTagNProbe:
 
         passing_probes, failing_probes = self.find_probes(events, cut_and_count=True, mass_range=mass_range, vars=vars)
 
-        if events.metadata.get("isMC") and events.metadata.get("PU_json") or events.metadata.get("PU_data") and events.metadata.get("PU_mc"):
+        if events.metadata.get("isMC") and ("PU_json" in events.metadata or ("PU_data" in events.metadata and "PU_mc" in events.metadata)):
             if "truePU" in passing_probes.fields and "truePU" in failing_probes.fields:
                 passing_probes["PU_weight"] = get_pileup_weight(passing_probes.truePU, pileup_corr)
                 failing_probes["PU_weight"] = get_pileup_weight(failing_probes.truePU, pileup_corr)
@@ -500,9 +500,9 @@ class BaseTagNProbe:
         if events.metadata.get("isMC"):
             from egamma_tnp.utils.pileup import create_correction, get_pileup_weight, load_correction
 
-            if events.metadata.get("PU_json"):
+            if "PU_json" in events.metadata:
                 pileup_corr = load_correction(events.metadata["PU_json"])
-            elif events.metadata.get("PU_data") and events.metadata.get("PU_mc"):
+            elif "PU_data" in events.metadata and "PU_mc" in events.metadata:
                 pileup_corr = create_correction(events.metadata["PU_data"], events.metadata["PU_mc"])
 
             if "truePU" in events.fields:
@@ -512,14 +512,15 @@ class BaseTagNProbe:
 
         passing_probes, failing_probes = self.find_probes(events, cut_and_count=False, mass_range=mass_range, vars=vars)
 
-        if "truePU" in passing_probes.fields and "truePU" in failing_probes.fields:
-            passing_probes["PU_weight"] = get_pileup_weight(passing_probes.truePU, pileup_corr)
-            failing_probes["PU_weight"] = get_pileup_weight(failing_probes.truePU, pileup_corr)
-            vars.remove("truePU")
-        elif "Pileup_nTrueInt" in passing_probes.fields and "Pileup_nTrueInt" in failing_probes.fields:
-            passing_probes["PU_weight"] = get_pileup_weight(passing_probes.Pileup_nTrueInt, pileup_corr)
-            failing_probes["PU_weight"] = get_pileup_weight(failing_probes.Pileup_nTrueInt, pileup_corr)
-            vars.remove("Pileup_nTrueInt")
+        if events.metadata.get("isMC") and ("PU_json" in events.metadata or ("PU_data" in events.metadata and "PU_mc" in events.metadata)):
+            if "truePU" in passing_probes.fields and "truePU" in failing_probes.fields:
+                passing_probes["PU_weight"] = get_pileup_weight(passing_probes.truePU, pileup_corr)
+                failing_probes["PU_weight"] = get_pileup_weight(failing_probes.truePU, pileup_corr)
+                vars.remove("truePU")
+            elif "Pileup_nTrueInt" in passing_probes.fields and "Pileup_nTrueInt" in failing_probes.fields:
+                passing_probes["PU_weight"] = get_pileup_weight(passing_probes.Pileup_nTrueInt, pileup_corr)
+                failing_probes["PU_weight"] = get_pileup_weight(failing_probes.Pileup_nTrueInt, pileup_corr)
+                vars.remove("Pileup_nTrueInt")
 
         if pt_eta_phi_1d:
             return fill_pt_eta_phi_mll_histograms(

@@ -51,6 +51,7 @@ def create_correction(pu_data_histogram, pu_mc_array, outfile=None, normalize_pu
 
     ceval = cset.to_evaluator()
     corr = ceval["Pileup"]
+    np.testing.assert_allclose(corr.evaluate(np.arange(100, dtype=float)), (pu_data / pu_mc), err_msg="Pileup correction does not match input data")
     return correctionlib_wrapper(corr)
 
 

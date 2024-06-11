@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import os
 from functools import partial
 
 from coffea.dataset_tools import apply_to_fileset
@@ -56,9 +55,6 @@ class BaseTagNProbe:
         self.avoid_ecal_transition_probes = avoid_ecal_transition_probes
         self.schemaclass = schemaclass
         self.default_vars = default_vars
-
-        if goldenjson is not None and not os.path.exists(goldenjson):
-            raise FileNotFoundError(f"Golden JSON {goldenjson} does not exist.")
 
     def find_probes(self, events, cut_and_count, mass_range, vars):
         """Find the passing and failing probes given some events.
@@ -145,6 +141,12 @@ class BaseTagNProbe:
                 mass_range = 30
             else:
                 mass_range = (50, 130)
+        if cut_and_count and isinstance(mass_range, tuple):
+            raise ValueError("For cut and count efficiencies, mass_range must be a single value representing the mass window around the Z mass.")
+        if not cut_and_count and not isinstance(mass_range, tuple):
+            raise ValueError(
+                "For invariant masses to be fit with a Sig+Bkg model, mass_range must be a tuple of two values representing the bounds of the mass range."
+            )
         if vars is None:
             vars = self.default_vars
 
@@ -255,6 +257,12 @@ class BaseTagNProbe:
                 mass_range = 30
             else:
                 mass_range = (50, 130)
+        if cut_and_count and isinstance(mass_range, tuple):
+            raise ValueError("For cut and count efficiencies, mass_range must be a single value representing the mass window around the Z mass.")
+        if not cut_and_count and not isinstance(mass_range, tuple):
+            raise ValueError(
+                "For invariant masses to be fit with a Sig+Bkg model, mass_range must be a tuple of two values representing the bounds of the mass range."
+            )
         if vars is None:
             vars = self.default_vars
 
@@ -360,6 +368,12 @@ class BaseTagNProbe:
                 mass_range = 30
             else:
                 mass_range = (50, 130)
+        if cut_and_count and isinstance(mass_range, tuple):
+            raise ValueError("For cut and count efficiencies, mass_range must be a single value representing the mass window around the Z mass.")
+        if not cut_and_count and not isinstance(mass_range, tuple):
+            raise ValueError(
+                "For invariant masses to be fit with a Sig+Bkg model, mass_range must be a tuple of two values representing the bounds of the mass range."
+            )
         if vars is None:
             vars = self.default_vars
 
@@ -425,7 +439,30 @@ class BaseTagNProbe:
             fill_pt_eta_phi_cutncount_histograms,
         )
 
+        if events.metadata.get("isMC"):
+            from egamma_tnp.utils.pileup import create_correction, get_pileup_weight, load_correction
+
+            if events.metadata.get("PU_json"):
+                pileup_corr = load_correction(events.metadata["PU_json"])
+            elif events.metadata.get("PU_data") and events.metadata.get("PU_mc"):
+                pileup_corr = create_correction(events.metadata["PU_data"], events.metadata["PU_mc"])
+
+            if "truePU" in events.fields:
+                vars.append("truePU")
+            else:
+                vars.append("Pileup_nTrueInt")
+
         passing_probes, failing_probes = self.find_probes(events, cut_and_count=True, mass_range=mass_range, vars=vars)
+
+        if events.metadata.get("isMC") and events.metadata.get("PU_json") or events.metadata.get("PU_data") and events.metadata.get("PU_mc"):
+            if "truePU" in passing_probes.fields and "truePU" in failing_probes.fields:
+                passing_probes["PU_weight"] = get_pileup_weight(passing_probes.truePU, pileup_corr)
+                failing_probes["PU_weight"] = get_pileup_weight(failing_probes.truePU, pileup_corr)
+                vars.remove("truePU")
+            elif "Pileup_nTrueInt" in passing_probes.fields and "Pileup_nTrueInt" in failing_probes.fields:
+                passing_probes["PU_weight"] = get_pileup_weight(passing_probes.Pileup_nTrueInt, pileup_corr)
+                failing_probes["PU_weight"] = get_pileup_weight(failing_probes.Pileup_nTrueInt, pileup_corr)
+                vars.remove("Pileup_nTrueInt")
 
         if pt_eta_phi_1d:
             return fill_pt_eta_phi_cutncount_histograms(
@@ -460,7 +497,29 @@ class BaseTagNProbe:
             fill_pt_eta_phi_mll_histograms,
         )
 
+        if events.metadata.get("isMC"):
+            from egamma_tnp.utils.pileup import create_correction, get_pileup_weight, load_correction
+
+            if events.metadata.get("PU_json"):
+                pileup_corr = load_correction(events.metadata["PU_json"])
+            elif events.metadata.get("PU_data") and events.metadata.get("PU_mc"):
+                pileup_corr = create_correction(events.metadata["PU_data"], events.metadata["PU_mc"])
+
+            if "truePU" in events.fields:
+                vars.append("truePU")
+            else:
+                vars.append("Pileup_nTrueInt")
+
         passing_probes, failing_probes = self.find_probes(events, cut_and_count=False, mass_range=mass_range, vars=vars)
+
+        if "truePU" in passing_probes.fields and "truePU" in failing_probes.fields:
+            passing_probes["PU_weight"] = get_pileup_weight(passing_probes.truePU, pileup_corr)
+            failing_probes["PU_weight"] = get_pileup_weight(failing_probes.truePU, pileup_corr)
+            vars.remove("truePU")
+        elif "Pileup_nTrueInt" in passing_probes.fields and "Pileup_nTrueInt" in failing_probes.fields:
+            passing_probes["PU_weight"] = get_pileup_weight(passing_probes.Pileup_nTrueInt, pileup_corr)
+            failing_probes["PU_weight"] = get_pileup_weight(failing_probes.Pileup_nTrueInt, pileup_corr)
+            vars.remove("Pileup_nTrueInt")
 
         if pt_eta_phi_1d:
             return fill_pt_eta_phi_mll_histograms(

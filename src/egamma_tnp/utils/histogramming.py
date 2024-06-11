@@ -6,21 +6,21 @@ import uproot
 from hist import intervals
 
 
-def flatten_probes(probes):
+def flatten_array(array):
     """Flatten the probes array.
 
     Parameters
     ----------
-        probes : awkward.Array or dask_awkward.Array
-            An array with the probes.
+        array : awkward.Array or dask_awkward.Array
+            An array with the fields to be flattened.
 
     Returns
     -------
-        probes : awkward.Array or dask_awkward.Array
-            The flattened probes array.
+        awkward.Array or dask_awkward.Array
+            The flattened array.
     """
 
-    return ak.flatten(ak.zip({var: probes[var] for var in probes.fields}), axis=-1)
+    return ak.flatten(ak.zip({var: array[var] for var in array.fields}), axis=-1)
 
 
 def get_ratio_histogram(passing_probes, failing_or_all_probes, denominator_type="failing"):
@@ -122,7 +122,10 @@ def fill_pt_eta_phi_cutncount_histograms(
 
     import egamma_tnp
 
-    passing_probes, failing_probes = flatten_probes(passing_probes), flatten_probes(failing_probes)
+    if "PU_weight" not in passing_probes.fields or "PU_weight" not in failing_probes.fields:
+        passing_probes["PU_weight"] = 1
+        failing_probes["PU_weight"] = 1
+    passing_probes, failing_probes = flatten_array(passing_probes), flatten_array(failing_probes)
 
     if plateau_cut is None:
         plateau_cut = 0
@@ -148,6 +151,8 @@ def fill_pt_eta_phi_cutncount_histograms(
     eta_fail = failing_probes[vars[1]]
     phi_pass = passing_probes[vars[2]]
     phi_fail = failing_probes[vars[2]]
+    passing_probes_weight = passing_probes.PU_weight
+    failing_probes_weight = failing_probes.PU_weight
 
     histograms = {}
     histograms["pt"] = {}
@@ -168,8 +173,8 @@ def fill_pt_eta_phi_cutncount_histograms(
             hist.axis.Variable(ptbins, name="pt", label="Pt [GeV]"),
             storage=hist.storage.Weight(),
         )
-        hpt_pass.fill(pt_pass[eta_mask_pt_pass])
-        hpt_fail.fill(pt_fail[eta_mask_pt_fail])
+        hpt_pass.fill(pt_pass[eta_mask_pt_pass], weight=passing_probes_weight[eta_mask_pt_pass])
+        hpt_fail.fill(pt_fail[eta_mask_pt_fail], weight=failing_probes_weight[eta_mask_pt_fail])
 
         histograms["pt"][name_pt] = {"passing": hpt_pass, "failing": hpt_fail}
 
@@ -184,8 +189,8 @@ def fill_pt_eta_phi_cutncount_histograms(
             hist.axis.Variable(etabins, name="eta", label="eta"),
             storage=hist.storage.Weight(),
         )
-        heta_pass.fill(eta_pass[plateau_mask_pass & eta_mask_eta_pass])
-        heta_fail.fill(eta_fail[plateau_mask_fail & eta_mask_eta_fail])
+        heta_pass.fill(eta_pass[plateau_mask_pass & eta_mask_eta_pass], weight=passing_probes_weight[plateau_mask_pass & eta_mask_eta_pass])
+        heta_fail.fill(eta_fail[plateau_mask_fail & eta_mask_eta_fail], weight=failing_probes_weight[plateau_mask_fail & eta_mask_eta_fail])
 
         histograms["eta"][name_eta] = {"passing": heta_pass, "failing": heta_fail}
 
@@ -200,8 +205,8 @@ def fill_pt_eta_phi_cutncount_histograms(
             hist.axis.Variable(phibins, name="phi", label="phi"),
             storage=hist.storage.Weight(),
         )
-        hphi_pass.fill(phi_pass[plateau_mask_pass & eta_mask_phi_pass])
-        hphi_fail.fill(phi_fail[plateau_mask_fail & eta_mask_phi_fail])
+        hphi_pass.fill(phi_pass[plateau_mask_pass & eta_mask_phi_pass], weight=passing_probes_weight[plateau_mask_pass & eta_mask_phi_pass])
+        hphi_fail.fill(phi_fail[plateau_mask_fail & eta_mask_phi_fail], weight=failing_probes_weight[plateau_mask_fail & eta_mask_phi_fail])
 
         histograms["phi"][name_phi] = {"passing": hphi_pass, "failing": hphi_fail}
 
@@ -266,7 +271,10 @@ def fill_pt_eta_phi_mll_histograms(
 
     import egamma_tnp
 
-    passing_probes, failing_probes = flatten_probes(passing_probes), flatten_probes(failing_probes)
+    if "PU_weight" not in passing_probes.fields or "PU_weight" not in failing_probes.fields:
+        passing_probes["PU_weight"] = 1
+        failing_probes["PU_weight"] = 1
+    passing_probes, failing_probes = flatten_array(passing_probes), flatten_array(failing_probes)
 
     if plateau_cut is None:
         plateau_cut = 0
@@ -294,6 +302,8 @@ def fill_pt_eta_phi_mll_histograms(
     phi_fail = failing_probes[vars[2]]
     mll_pass = passing_probes.pair_mass
     mll_fail = failing_probes.pair_mass
+    passing_probes_weight = passing_probes.PU_weight
+    failing_probes_weight = failing_probes.PU_weight
 
     histograms = {}
     histograms["pt"] = {}
@@ -316,8 +326,8 @@ def fill_pt_eta_phi_mll_histograms(
             hist.axis.Regular(80, 50, 130, name="mll", label="mll [GeV]"),
             storage=hist.storage.Weight(),
         )
-        hpt_pass.fill(pt_pass[eta_mask_pt_pass], mll_pass[eta_mask_pt_pass])
-        hpt_fail.fill(pt_fail[eta_mask_pt_fail], mll_fail[eta_mask_pt_fail])
+        hpt_pass.fill(pt_pass[eta_mask_pt_pass], mll_pass[eta_mask_pt_pass], weight=passing_probes_weight[eta_mask_pt_pass])
+        hpt_fail.fill(pt_fail[eta_mask_pt_fail], mll_fail[eta_mask_pt_fail], weight=failing_probes_weight[eta_mask_pt_fail])
 
         histograms["pt"][name_pt] = {"passing": hpt_pass, "failing": hpt_fail}
 
@@ -336,8 +346,8 @@ def fill_pt_eta_phi_mll_histograms(
         )
         eta_mask_pass = plateau_mask_pass & eta_mask_eta_pass
         eta_mask_fail = plateau_mask_fail & eta_mask_eta_fail
-        heta_pass.fill(eta_pass[eta_mask_pass], mll_pass[eta_mask_pass])
-        heta_fail.fill(eta_fail[eta_mask_fail], mll_fail[eta_mask_fail])
+        heta_pass.fill(eta_pass[eta_mask_pass], mll_pass[eta_mask_pass], weight=passing_probes_weight[eta_mask_pass])
+        heta_fail.fill(eta_fail[eta_mask_fail], mll_fail[eta_mask_fail], weight=failing_probes_weight[eta_mask_fail])
 
         histograms["eta"][name_eta] = {"passing": heta_pass, "failing": heta_fail}
 
@@ -356,8 +366,8 @@ def fill_pt_eta_phi_mll_histograms(
         )
         phi_mask_pass = plateau_mask_pass & eta_mask_phi_pass
         phi_mask_fail = plateau_mask_fail & eta_mask_phi_fail
-        hphi_pass.fill(phi_pass[phi_mask_pass], mll_pass[phi_mask_pass])
-        hphi_fail.fill(phi_fail[phi_mask_fail], mll_fail[phi_mask_fail])
+        hphi_pass.fill(phi_pass[phi_mask_pass], mll_pass[phi_mask_pass], weight=passing_probes_weight[phi_mask_pass])
+        hphi_fail.fill(phi_fail[phi_mask_fail], mll_fail[phi_mask_fail], weight=failing_probes_weight[phi_mask_fail])
 
         histograms["phi"][name_phi] = {"passing": hphi_pass, "failing": hphi_fail}
 
@@ -406,7 +416,10 @@ def fill_nd_cutncount_histograms(
 
     import egamma_tnp
 
-    passing_probes, failing_probes = flatten_probes(passing_probes), flatten_probes(failing_probes)
+    if "PU_weight" not in passing_probes.fields or "PU_weight" not in failing_probes.fields:
+        passing_probes["PU_weight"] = 1
+        failing_probes["PU_weight"] = 1
+    passing_probes, failing_probes = flatten_array(passing_probes), flatten_array(failing_probes)
 
     if any(egamma_tnp.config.get(f"{var}_bins") is None for var in vars):
         raise ValueError(
@@ -420,8 +433,8 @@ def fill_nd_cutncount_histograms(
     hpass = Hist(*axes, storage=hist.storage.Weight())
     hfail = Hist(*axes, storage=hist.storage.Weight())
 
-    hpass.fill(*[passing_probes[var] for var in vars])
-    hfail.fill(*[failing_probes[var] for var in vars])
+    hpass.fill(*[passing_probes[var] for var in vars], weight=passing_probes.PU_weight)
+    hfail.fill(*[failing_probes[var] for var in vars], weight=failing_probes.PU_weight)
 
     return {"passing": hpass, "failing": hfail}
 
@@ -468,7 +481,10 @@ def fill_nd_mll_histograms(
 
     import egamma_tnp
 
-    passing_probes, failing_probes = flatten_probes(passing_probes), flatten_probes(failing_probes)
+    if "PU_weight" not in passing_probes.fields or "PU_weight" not in failing_probes.fields:
+        passing_probes["PU_weight"] = 1
+        failing_probes["PU_weight"] = 1
+    passing_probes, failing_probes = flatten_array(passing_probes), flatten_array(failing_probes)
 
     if any(egamma_tnp.config.get(f"{var}_bins") is None for var in vars):
         raise ValueError(
@@ -483,8 +499,8 @@ def fill_nd_mll_histograms(
     hpass = Hist(*axes, storage=hist.storage.Weight())
     hfail = Hist(*axes, storage=hist.storage.Weight())
 
-    hpass.fill(*[passing_probes[var] for var in vars], passing_probes.pair_mass)
-    hfail.fill(*[failing_probes[var] for var in vars], failing_probes.pair_mass)
+    hpass.fill(*[passing_probes[var] for var in vars], passing_probes.pair_mass, weight=passing_probes.PU_weight)
+    hfail.fill(*[failing_probes[var] for var in vars], failing_probes.pair_mass, weight=failing_probes.PU_weight)
 
     return {"passing": hpass, "failing": hfail}
 

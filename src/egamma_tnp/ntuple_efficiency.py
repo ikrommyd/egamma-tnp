@@ -13,7 +13,7 @@ class ElectronTagNProbeFromNTuples(BaseTagNProbe):
     def __init__(
         self,
         fileset,
-        filter,
+        filters,
         *,
         tags_pt_cut=35,
         probes_pt_cut=None,
@@ -36,15 +36,12 @@ class ElectronTagNProbeFromNTuples(BaseTagNProbe):
         ----------
             fileset: dict
                 The fileset to calculate the trigger efficiencies for.
-            filter: str
-                The name of the filter to calculate the efficiencies for.
+            filters: list of str
+                The name of the filters to calculate the efficiencies for.
             tags_pt_cut: int or float, optional
                 The Pt cut to apply to the tag electrons. The default is 35.
             probes_pt_cut: int or float, optional
                 The Pt threshold of the probe electron to calculate efficiencies over that threshold. The default is None.
-                Should be very slightly below the Pt threshold of the filter.
-                If it is None, it will attempt to infer it from the filter name.
-                If it fails to do so, it will set it to 0.
             tags_abseta_cut: int or float, optional
                 The absolute Eta cut to apply to the tag electrons. The default is 2.5.
             probes_abseta_cut: int or float, optional
@@ -76,7 +73,7 @@ class ElectronTagNProbeFromNTuples(BaseTagNProbe):
         """
         super().__init__(
             fileset=fileset,
-            filter=filter,
+            filters=filters,
             tags_pt_cut=tags_pt_cut,
             probes_pt_cut=probes_pt_cut,
             tags_abseta_cut=tags_abseta_cut,
@@ -99,9 +96,9 @@ class ElectronTagNProbeFromNTuples(BaseTagNProbe):
         n_of_files = 0
         for dataset in self.fileset.values():
             n_of_files += len(dataset["files"])
-        return f"ElectronTagNProbeFromNTuples({self.filter}, Number of files: {n_of_files}, Golden JSON: {self.goldenjson})"
+        return f"ElectronTagNProbeFromNTuples({self.filters}, Number of files: {n_of_files}, Golden JSON: {self.goldenjson})"
 
-    def _find_probe_events(self, events, cut_and_count, mass_range):
+    def _find_passing_events(self, events, cut_and_count, mass_range):
         pass_pt_probes = events.el_pt > self.probes_pt_cut
         if self.cutbased_id:
             pass_cutbased_id = events[self.cutbased_id] == 1
@@ -118,11 +115,9 @@ class ElectronTagNProbeFromNTuples(BaseTagNProbe):
             else:
                 in_mass_window = (events.pair_mass > 50) & (events.pair_mass < 130)
         all_probe_events = events[pass_cutbased_id & in_mass_window & pass_pt_probes]
-        passing_locs = all_probe_events[self.filter] == 1
-        passing_probe_events = all_probe_events[passing_locs]
-        failing_probe_events = all_probe_events[~passing_locs]
+        passing_locs = {filter: (all_probe_events[filter] == 1) for filter in self.filters}
 
-        return passing_probe_events, failing_probe_events
+        return passing_locs, all_probe_events
 
     def find_probes(self, events, cut_and_count, mass_range, vars):
         if self.use_sc_eta:
@@ -163,27 +158,21 @@ class ElectronTagNProbeFromNTuples(BaseTagNProbe):
             pass_probe_mask = True
         events = events[pass_pt_tags & pass_abseta_tags & pass_abseta_probes & opposite_charge & pass_tag_mask & pass_probe_mask]
 
-        passing_probe_events, failing_probe_events = self._find_probe_events(events, cut_and_count=cut_and_count, mass_range=mass_range)
+        passing_locs, all_probe_events = self._find_passing_events(events, cut_and_count=cut_and_count, mass_range=mass_range)
 
         if cut_and_count:
-            passing_probes = dak.zip({var: passing_probe_events[var] for var in vars})
-            failing_probes = dak.zip({var: failing_probe_events[var] for var in vars})
+            probes = dak.zip({var: all_probe_events[var] for var in vars} | passing_locs)
         else:
-            p_arrays = {var: passing_probe_events[var] for var in vars}
-            p_arrays["pair_mass"] = passing_probe_events["pair_mass"]
-            f_arrays = {var: failing_probe_events[var] for var in vars}
-            f_arrays["pair_mass"] = failing_probe_events["pair_mass"]
-            passing_probes = dak.zip(p_arrays)
-            failing_probes = dak.zip(f_arrays)
+            probes = dak.zip({var: all_probe_events[var] for var in vars} | passing_locs | {"pair_mass": all_probe_events["pair_mass"]})
 
-        return passing_probes, failing_probes
+        return probes
 
 
 class PhotonTagNProbeFromNTuples(BaseTagNProbe):
     def __init__(
         self,
         fileset,
-        filter,
+        filters,
         *,
         tags_pt_cut=35,
         probes_pt_cut=None,
@@ -206,7 +195,7 @@ class PhotonTagNProbeFromNTuples(BaseTagNProbe):
         ----------
             fileset: dict
                 The fileset to calculate the trigger efficiencies for.
-            filter: str
+            filters: str
                 The name of the filter to calculate the efficiencies for.
             tags_pt_cut: int or float, optional
                 The Pt cut to apply to the tag photons. The default is 35.
@@ -246,7 +235,7 @@ class PhotonTagNProbeFromNTuples(BaseTagNProbe):
         """
         super().__init__(
             fileset=fileset,
-            filter=filter,
+            filters=filters,
             tags_pt_cut=tags_pt_cut,
             probes_pt_cut=probes_pt_cut,
             tags_abseta_cut=tags_abseta_cut,
@@ -269,9 +258,9 @@ class PhotonTagNProbeFromNTuples(BaseTagNProbe):
         n_of_files = 0
         for dataset in self.fileset.values():
             n_of_files += len(dataset["files"])
-        return f"PhotonTagNProbeFromNTuples({self.filter}, Number of files: {n_of_files}, Golden JSON: {self.goldenjson})"
+        return f"PhotonTagNProbeFromNTuples({self.filters}, Number of files: {n_of_files}, Golden JSON: {self.goldenjson})"
 
-    def _find_probe_events(self, events, cut_and_count, mass_range):
+    def _find_passing_events(self, events, cut_and_count, mass_range):
         pass_pt_probes = events.ph_et > self.probes_pt_cut
         if self.cutbased_id:
             pass_cutbased_id = events[self.cutbased_id] == 1
@@ -288,11 +277,9 @@ class PhotonTagNProbeFromNTuples(BaseTagNProbe):
             else:
                 in_mass_window = (events.pair_mass > 50) & (events.pair_mass < 130)
         all_probe_events = events[pass_cutbased_id & in_mass_window & pass_pt_probes]
-        passing_locs = all_probe_events[self.filter] == 1
-        passing_probe_events = all_probe_events[passing_locs]
-        failing_probe_events = all_probe_events[~passing_locs]
+        passing_locs = {filter: (all_probe_events[filter] == 1) for filter in self.filters}
 
-        return passing_probe_events, failing_probe_events
+        return passing_locs, all_probe_events
 
     def find_probes(self, events, cut_and_count, mass_range, vars):
         if self.use_sc_eta:
@@ -332,17 +319,11 @@ class PhotonTagNProbeFromNTuples(BaseTagNProbe):
             pass_probe_mask = True
         events = events[pass_pt_tags & pass_abseta_tags & pass_abseta_probes & pass_tag_mask & pass_probe_mask]
 
-        passing_probe_events, failing_probe_events = self._find_probe_events(events, cut_and_count=cut_and_count, mass_range=mass_range)
+        passing_locs, all_probe_events = self._find_passing_events(events, cut_and_count=cut_and_count, mass_range=mass_range)
 
         if cut_and_count:
-            passing_probes = dak.zip({var: passing_probe_events[var] for var in vars})
-            failing_probes = dak.zip({var: failing_probe_events[var] for var in vars})
+            probes = dak.zip({var: all_probe_events[var] for var in vars} | passing_locs)
         else:
-            p_arrays = {var: passing_probe_events[var] for var in vars}
-            p_arrays["pair_mass"] = passing_probe_events["pair_mass"]
-            f_arrays = {var: failing_probe_events[var] for var in vars}
-            f_arrays["pair_mass"] = failing_probe_events["pair_mass"]
-            passing_probes = dak.zip(p_arrays)
-            failing_probes = dak.zip(f_arrays)
+            probes = dak.zip({var: all_probe_events[var] for var in vars} | passing_locs | {"pair_mass": all_probe_events["pair_mass"]})
 
-        return passing_probes, failing_probes
+        return probes

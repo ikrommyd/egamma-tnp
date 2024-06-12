@@ -47,6 +47,7 @@ def test_pileup_ntuples(do_preprocess, allow_read_errors_with_report):
     )
 
     res = tag_n_probe.get_1d_pt_eta_phi_tnp_histograms(
+        "passHltEle32WPTightGsf",
         uproot_options={"allow_read_errors_with_report": allow_read_errors_with_report},
         compute=True,
         scheduler=None,

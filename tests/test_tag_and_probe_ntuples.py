@@ -14,7 +14,7 @@ def test_tag_and_probe_electrons():
 
     tag_n_probe = ElectronTagNProbeFromNTuples(
         fileset,
-        "passingCutBasedTight122XV1",
+        ["passingCutBasedTight122XV1"],
         cutbased_id="passingCutBasedLoose122XV1",
         use_sc_eta=True,
         tags_pt_cut=35,
@@ -24,7 +24,9 @@ def test_tag_and_probe_electrons():
 
     events = NanoEventsFactory.from_root({os.path.abspath("tests/samples/TnPNTuples_el.root"): "fitter_tree"}, schemaclass=BaseSchema, delayed=False).events()
     solution = tag_and_probe_electrons(events)
-    result = tag_n_probe.get_tnp_arrays(cut_and_count=False, vars=["el_pt", "el_eta", "truePU", "tag_Ele_eta"], compute=True)["sample"]
+    result = tag_n_probe.get_passing_and_failing_probes(
+        "passingCutBasedTight122XV1", cut_and_count=False, vars=["el_pt", "el_eta", "truePU", "tag_Ele_eta"], compute=True
+    )["sample"]
     assert_eq(result["passing"], solution[0])
     assert_eq(result["failing"], solution[1])
     assert len(result["passing"]) == 414
@@ -38,7 +40,7 @@ def test_tag_and_probe_photons():
 
     tag_n_probe = PhotonTagNProbeFromNTuples(
         fileset,
-        "passingCutBasedTight122XV1",
+        ["passingCutBasedTight122XV1"],
         cutbased_id="passingCutBasedLoose122XV1",
         use_sc_eta=True,
         tags_pt_cut=35,
@@ -48,7 +50,9 @@ def test_tag_and_probe_photons():
 
     events = NanoEventsFactory.from_root({os.path.abspath("tests/samples/TnPNTuples_ph.root"): "fitter_tree"}, schemaclass=BaseSchema, delayed=False).events()
     solution = tag_and_probe_photons(events)
-    result = tag_n_probe.get_tnp_arrays(cut_and_count=False, vars=["ph_et", "ph_eta", "truePU", "tag_Ele_eta"], compute=True)["sample"]
+    result = tag_n_probe.get_passing_and_failing_probes(
+        "passingCutBasedTight122XV1", cut_and_count=False, vars=["ph_et", "ph_eta", "truePU", "tag_Ele_eta"], compute=True
+    )["sample"]
     assert_eq(result["passing"], solution[0])
     assert_eq(result["failing"], solution[1])
     assert len(result["passing"]) == 372

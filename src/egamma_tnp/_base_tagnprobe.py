@@ -263,18 +263,16 @@ class BaseTagNProbe:
             from egamma_tnp.utils.histogramming import flatten_array
 
             def data_manipulation(events):
-                probes = self.find_probes(events, cut_and_count=cut_and_count, mass_range=mass_range, vars=vars)
-                passing_probes = dak.without_field(probes[probes[filter]], self.filters)
-                failing_probes = dak.without_field(probes[~probes[filter]], self.filters)
-                return {"passing": flatten_array(passing_probes), "failing": flatten_array(failing_probes)}
-
+                p_and_f = self._make_passing_and_failing_probes(events, filter, cut_and_count=cut_and_count, mass_range=mass_range, vars=vars)
+                return {key: flatten_array(value) for key, value in p_and_f.items()}
         else:
-
-            def data_manipulation(events):
-                probes = self.find_probes(events, cut_and_count=cut_and_count, mass_range=mass_range, vars=vars)
-                passing_probes = dak.without_field(probes[probes[filter]], self.filters)
-                failing_probes = dak.without_field(probes[~probes[filter]], self.filters)
-                return {"passing": passing_probes, "failing": failing_probes}
+            data_manipulation = partial(
+                self._make_passing_and_failing_probes,
+                filter=filter,
+                cut_and_count=cut_and_count,
+                mass_range=mass_range,
+                vars=vars,
+            )
 
         to_compute = apply_to_fileset(
             data_manipulation=data_manipulation,
@@ -555,6 +553,28 @@ class BaseTagNProbe:
 
         return to_compute
 
+    def _make_passing_and_failing_probes(self, events, filter, cut_and_count, mass_range, vars):
+        probes = self.find_probes(events, cut_and_count=cut_and_count, mass_range=mass_range, vars=vars)
+        if "NanoAOD" in self.__class__.__name__:
+            has_passing_probe = dak.any(probes[filter], axis=1)
+            has_failing_probe = dak.any(~probes[filter], axis=1)
+            passing_probes = probes[has_passing_probe]
+            failing_probes = probes[has_failing_probe]
+            for var in vars:
+                if var.startswith(("el_", "tag_Ele_", "ph_")):
+                    passing_probes[var] = passing_probes[var][passing_probes[filter]]
+                    failing_probes[var] = failing_probes[var][~failing_probes[filter]]
+            if "pair_mass" in probes.fields:
+                passing_probes["pair_mass"] = passing_probes["pair_mass"][passing_probes[filter]]
+                failing_probes["pair_mass"] = failing_probes["pair_mass"][~failing_probes[filter]]
+            passing_probes = dak.without_field(passing_probes, self.filters)
+            failing_probes = dak.without_field(failing_probes, self.filters)
+        else:
+            passing_probes = dak.without_field(probes[probes[filter]], self.filters)
+            failing_probes = dak.without_field(probes[~probes[filter]], self.filters)
+
+        return {"passing": passing_probes, "failing": failing_probes}
+
     def _make_cutncount_histograms(
         self,
         events,
@@ -585,9 +605,9 @@ class BaseTagNProbe:
             else:
                 vars.append("Pileup_nTrueInt")
 
-        probes = self.find_probes(events, cut_and_count=True, mass_range=mass_range, vars=vars)
-        passing_probes = probes[probes[filter]]
-        failing_probes = probes[~probes[filter]]
+        p_and_f = self._make_passing_and_failing_probes(events, filter, cut_and_count=True, mass_range=mass_range, vars=vars)
+        passing_probes = p_and_f["passing"]
+        failing_probes = p_and_f["failing"]
 
         if events.metadata.get("isMC") and ("pileupJSON" in events.metadata or ("pileupData" in events.metadata and "pileupMC" in events.metadata)):
             if "truePU" in passing_probes.fields and "truePU" in failing_probes.fields:
@@ -646,9 +666,9 @@ class BaseTagNProbe:
             else:
                 vars.append("Pileup_nTrueInt")
 
-        probes = self.find_probes(events, cut_and_count=False, mass_range=mass_range, vars=vars)
-        passing_probes = probes[probes[filter]]
-        failing_probes = probes[~probes[filter]]
+        p_and_f = self._make_passing_and_failing_probes(events, filter, cut_and_count=False, mass_range=mass_range, vars=vars)
+        passing_probes = p_and_f["passing"]
+        failing_probes = p_and_f["failing"]
 
         if events.metadata.get("isMC") and ("pileupJSON" in events.metadata or ("pileupData" in events.metadata and "pileupMC" in events.metadata)):
             if "truePU" in passing_probes.fields and "truePU" in failing_probes.fields:

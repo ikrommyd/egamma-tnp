@@ -54,6 +54,7 @@ def test_without_compute(do_preprocess, allow_read_errors_with_report):
 
     for tag_n_probe in [tag_n_probe_leg1, tag_n_probe_leg2]:
         res = tag_n_probe.get_1d_pt_eta_phi_tnp_histograms(
+            "HLT_Ele23_Ele12_CaloIdL_TrackIdL_IsoVL_Leg1" if tag_n_probe == tag_n_probe_leg1 else "HLT_Ele23_Ele12_CaloIdL_TrackIdL_IsoVL_Leg2",
             uproot_options={"allow_read_errors_with_report": allow_read_errors_with_report},
             compute=False,
             scheduler=None,
@@ -133,6 +134,7 @@ def test_local_compute(do_preprocess, allow_read_errors_with_report):
         [1272.0, 1317.0],
     ):
         res = tag_n_probe.get_1d_pt_eta_phi_tnp_histograms(
+            "HLT_Ele23_Ele12_CaloIdL_TrackIdL_IsoVL_Leg1" if tag_n_probe == tag_n_probe_leg1 else "HLT_Ele23_Ele12_CaloIdL_TrackIdL_IsoVL_Leg2",
             uproot_options={"allow_read_errors_with_report": allow_read_errors_with_report},
             compute=True,
             scheduler=None,
@@ -218,6 +220,7 @@ def test_distributed_compute(do_preprocess, allow_read_errors_with_report):
             [1272.0, 1317.0],
         ):
             res = tag_n_probe.get_1d_pt_eta_phi_tnp_histograms(
+                "HLT_Ele23_Ele12_CaloIdL_TrackIdL_IsoVL_Leg1" if tag_n_probe == tag_n_probe_leg1 else "HLT_Ele23_Ele12_CaloIdL_TrackIdL_IsoVL_Leg2",
                 uproot_options={"allow_read_errors_with_report": allow_read_errors_with_report},
                 compute=True,
                 scheduler=None,

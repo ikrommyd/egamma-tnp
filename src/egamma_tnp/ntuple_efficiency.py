@@ -195,15 +195,12 @@ class PhotonTagNProbeFromNTuples(BaseTagNProbe):
         ----------
             fileset: dict
                 The fileset to calculate the trigger efficiencies for.
-            filters: str
-                The name of the filter to calculate the efficiencies for.
+            filters: list of str
+                The name of the filters to calculate the efficiencies for.
             tags_pt_cut: int or float, optional
                 The Pt cut to apply to the tag photons. The default is 35.
             probes_pt_cut: int or float, optional
                 The Pt threshold of the probe photon to calculate efficiencies over that threshold. The default is None.
-                Should be very slightly below the Pt threshold of the filter.
-                If it is None, it will attempt to infer it from the filter name.
-                If it fails to do so, it will set it to 0.
             tags_abseta_cut: int or float, optional
                 The absolute Eta cut to apply to the tag photons. The default is 2.5.
             probes_abseta_cut: int or float, optional

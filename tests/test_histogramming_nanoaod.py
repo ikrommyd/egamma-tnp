@@ -20,15 +20,16 @@ def assert_histograms_equal(h1, h2, flow):
 def test_histogramming_default_vars(tag_n_probe_class):
     tag_n_probe = tag_n_probe_class(
         fileset,
-        filter="HLT_Ele30_WPTight_Gsf",
-        filterbit=1,
+        ["HLT_Ele30_WPTight_Gsf"],
+        filterbit=[1],
         tags_pt_cut=30,
         use_sc_eta=True,
         tags_abseta_cut=2.50,
         probes_pt_cut=27,
-        trigger_pt=30,
+        trigger_pt=[30],
     )
     hcnc1d = tag_n_probe.get_1d_pt_eta_phi_tnp_histograms(
+        "HLT_Ele30_WPTight_Gsf",
         cut_and_count=True,
         eta_regions_pt={
             "barrel": [0.0, 1.4442],
@@ -39,6 +40,7 @@ def test_histogramming_default_vars(tag_n_probe_class):
         compute=True,
     )["sample"]
     hmll1d = tag_n_probe.get_1d_pt_eta_phi_tnp_histograms(
+        "HLT_Ele30_WPTight_Gsf",
         cut_and_count=False,
         eta_regions_pt={
             "barrel": [0.0, 1.4442],
@@ -48,8 +50,8 @@ def test_histogramming_default_vars(tag_n_probe_class):
         plateau_cut=35,
         compute=True,
     )["sample"]
-    hcnc3d = tag_n_probe.get_nd_tnp_histograms(cut_and_count=True, compute=True)["sample"]
-    hmll3d = tag_n_probe.get_nd_tnp_histograms(cut_and_count=False, compute=True)["sample"]
+    hcnc3d = tag_n_probe.get_nd_tnp_histograms("HLT_Ele30_WPTight_Gsf", cut_and_count=True, compute=True)["sample"]
+    hmll3d = tag_n_probe.get_nd_tnp_histograms("HLT_Ele30_WPTight_Gsf", cut_and_count=False, compute=True)["sample"]
 
     assert_histograms_equal(hcnc1d["pt"]["barrel"]["passing"], hcnc3d["passing"][:, -1.4442j:1.4442j:sum, sum], flow=False)
     assert_histograms_equal(hcnc1d["pt"]["barrel"]["failing"], hcnc3d["failing"][:, -1.4442j:1.4442j:sum, sum], flow=False)
@@ -96,19 +98,20 @@ def test_histogramming_custom_vars(tag_n_probe_class):
 
     tag_n_probe = tag_n_probe_class(
         fileset,
-        filter="HLT_Ele30_WPTight_Gsf",
-        filterbit=1,
+        ["HLT_Ele30_WPTight_Gsf"],
+        filterbit=[1],
         tags_pt_cut=30,
         use_sc_eta=True,
         tags_abseta_cut=2.50,
         probes_pt_cut=27,
-        trigger_pt=30,
+        trigger_pt=[30],
     )
 
     egamma_tnp.config.set("el_r9_bins", np.linspace(0.1, 1.05, 100).tolist())
     egamma_tnp.config.set("ph_r9_bins", np.linspace(0.1, 1.05, 100).tolist())
 
     hmll1d = tag_n_probe.get_1d_pt_eta_phi_tnp_histograms(
+        "HLT_Ele30_WPTight_Gsf",
         cut_and_count=False,
         eta_regions_pt={
             "barrel": [0.0, 1.4442],
@@ -120,9 +123,9 @@ def test_histogramming_custom_vars(tag_n_probe_class):
     )["sample"]
 
     if tag_n_probe_class == ElectronTagNProbeFromNanoAOD:
-        hmll3d = tag_n_probe.get_nd_tnp_histograms(cut_and_count=False, vars=["el_eta", "el_r9"], compute=True)["sample"]
+        hmll3d = tag_n_probe.get_nd_tnp_histograms("HLT_Ele30_WPTight_Gsf", cut_and_count=False, vars=["el_eta", "el_r9"], compute=True)["sample"]
     else:
-        hmll3d = tag_n_probe.get_nd_tnp_histograms(cut_and_count=False, vars=["ph_eta", "ph_r9"], compute=True)["sample"]
+        hmll3d = tag_n_probe.get_nd_tnp_histograms("HLT_Ele30_WPTight_Gsf", cut_and_count=False, vars=["ph_eta", "ph_r9"], compute=True)["sample"]
 
     assert_histograms_equal(hmll1d["eta"]["entire"]["passing"], hmll3d["passing"][-2.5j:2.5j, sum, :], flow=False)
     assert_histograms_equal(hmll1d["eta"]["entire"]["failing"], hmll3d["failing"][-2.5j:2.5j, sum, :], flow=False)
@@ -136,13 +139,13 @@ def test_histogramming_non_probe_vars(tag_n_probe_class):
 
     tag_n_probe = tag_n_probe_class(
         fileset,
-        filter="HLT_Ele30_WPTight_Gsf",
-        filterbit=1,
+        ["HLT_Ele30_WPTight_Gsf"],
+        filterbit=[1],
         tags_pt_cut=30,
         use_sc_eta=True,
         tags_abseta_cut=2.50,
         probes_pt_cut=27,
-        trigger_pt=30,
+        trigger_pt=[30],
     )
 
     egamma_tnp.config.set("MET_pt_bins", np.linspace(0, 200, 10).tolist())
@@ -150,6 +153,7 @@ def test_histogramming_non_probe_vars(tag_n_probe_class):
     egamma_tnp.config.set("tag_Ele_pt_bins", egamma_tnp.config.get("pt_bins"))
 
     hmll1d = tag_n_probe.get_1d_pt_eta_phi_tnp_histograms(
+        "HLT_Ele30_WPTight_Gsf",
         cut_and_count=False,
         eta_regions_pt={
             "barrel": [0.0, 1.4442],
@@ -161,9 +165,13 @@ def test_histogramming_non_probe_vars(tag_n_probe_class):
     )["sample"]
 
     if tag_n_probe_class == ElectronTagNProbeFromNanoAOD:
-        hmll3d = tag_n_probe.get_nd_tnp_histograms(cut_and_count=False, vars=["el_eta", "tag_Ele_pt", "MET_pt", "luminosityBlock"], compute=True)["sample"]
+        hmll3d = tag_n_probe.get_nd_tnp_histograms(
+            "HLT_Ele30_WPTight_Gsf", cut_and_count=False, vars=["el_eta", "tag_Ele_pt", "MET_pt", "luminosityBlock"], compute=True
+        )["sample"]
     else:
-        hmll3d = tag_n_probe.get_nd_tnp_histograms(cut_and_count=False, vars=["ph_eta", "tag_Ele_pt", "MET_pt", "luminosityBlock"], compute=True)["sample"]
+        hmll3d = tag_n_probe.get_nd_tnp_histograms(
+            "HLT_Ele30_WPTight_Gsf", cut_and_count=False, vars=["ph_eta", "tag_Ele_pt", "MET_pt", "luminosityBlock"], compute=True
+        )["sample"]
 
     assert_histograms_equal(hmll1d["eta"]["entire"]["passing"], hmll3d["passing"][-2.5j:2.5j, sum, sum, sum, :], flow=False)
     assert_histograms_equal(hmll1d["eta"]["entire"]["failing"], hmll3d["failing"][-2.5j:2.5j, sum, sum, sum, :], flow=False)

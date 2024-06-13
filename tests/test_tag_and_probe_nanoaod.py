@@ -15,9 +15,9 @@ def test_tag_and_probe_electrons_trigger():
 
     tag_n_probe = ElectronTagNProbeFromNanoAOD(
         fileset,
-        "HLT_Ele32_WPTight_Gsf",
-        trigger_pt=32,
-        filterbit=1,
+        ["HLT_Ele32_WPTight_Gsf"],
+        trigger_pt=[32],
+        filterbit=[1],
         cutbased_id="cutBased >= 4",
         tags_pt_cut=35,
         probes_pt_cut=27,
@@ -28,7 +28,9 @@ def test_tag_and_probe_electrons_trigger():
 
     events = NanoEventsFactory.from_root({os.path.abspath("tests/samples/DYto2E.root"): "Events"}, delayed=False).events()
     solution = tag_and_probe_electrons(events, is_id=False)
-    result = tag_n_probe.get_tnp_arrays(cut_and_count=False, vars=["Electron_pt", "tag_Ele_eta", "el_pt", "el_eta", "MET_pt", "event"], compute=True)["sample"]
+    result = tag_n_probe.get_passing_and_failing_probes(
+        "HLT_Ele32_WPTight_Gsf", cut_and_count=False, vars=["Electron_pt", "tag_Ele_eta", "el_pt", "el_eta", "MET_pt", "event"], compute=True
+    )["sample"]
     assert_eq(result["passing"], solution[0])
     assert_eq(result["failing"], solution[1])
     assert len(result["passing"]) == 467
@@ -42,9 +44,9 @@ def test_tag_and_probe_electrons_id():
 
     tag_n_probe = ElectronTagNProbeFromNanoAOD(
         fileset,
-        "cutBased >= 4",
-        trigger_pt=32,
-        filterbit=1,
+        ["cutBased >= 4"],
+        trigger_pt=[32],
+        filterbit=[1],
         cutbased_id=None,
         tags_pt_cut=35,
         probes_pt_cut=27,
@@ -54,7 +56,9 @@ def test_tag_and_probe_electrons_id():
 
     events = NanoEventsFactory.from_root({os.path.abspath("tests/samples/DYto2E.root"): "Events"}, delayed=False).events()
     solution = tag_and_probe_electrons(events, is_id=True)
-    result = tag_n_probe.get_tnp_arrays(cut_and_count=False, vars=["Electron_pt", "tag_Ele_eta", "el_pt", "el_eta", "MET_pt", "event"], compute=True)["sample"]
+    result = tag_n_probe.get_passing_and_failing_probes(
+        "cutBased >= 4", cut_and_count=False, vars=["Electron_pt", "tag_Ele_eta", "el_pt", "el_eta", "MET_pt", "event"], compute=True
+    )["sample"]
     assert_eq(result["passing"], solution[0])
     assert_eq(result["failing"], solution[1])
     assert len(result["passing"]) == 649
@@ -69,12 +73,12 @@ def test_tag_and_probe_photons_trigger(start_from_diphotons):
 
     tag_n_probe = PhotonTagNProbeFromNanoAOD(
         fileset,
-        "HLT_Ele32_WPTight_Gsf",
-        is_electron_filter=True,
+        ["HLT_Ele32_WPTight_Gsf"],
+        is_electron_filter=[True],
         start_from_diphotons=start_from_diphotons,
         cutbased_id="cutBased >= 3",
-        trigger_pt=32,
-        filterbit=1,
+        trigger_pt=[32],
+        filterbit=[1],
         tags_pt_cut=35,
         probes_pt_cut=27,
         tags_abseta_cut=2.17,
@@ -84,7 +88,9 @@ def test_tag_and_probe_photons_trigger(start_from_diphotons):
 
     events = NanoEventsFactory.from_root({os.path.abspath("tests/samples/DYto2E.root"): "Events"}, delayed=False).events()
     solution = tag_and_probe_photons(events, start_from_diphotons, is_id=False)
-    result = tag_n_probe.get_tnp_arrays(cut_and_count=False, vars=["Photon_pt", "tag_Ele_eta", "ph_pt", "ph_eta", "MET_pt", "event"], compute=True)["sample"]
+    result = tag_n_probe.get_passing_and_failing_probes(
+        "HLT_Ele32_WPTight_Gsf", cut_and_count=False, vars=["Photon_pt", "tag_Ele_eta", "ph_pt", "ph_eta", "MET_pt", "event"], compute=True
+    )["sample"]
     assert_eq(result["passing"], solution[0])
     assert_eq(result["failing"], solution[1])
     if start_from_diphotons:
@@ -105,12 +111,12 @@ def test_tag_and_probe_photons_id(start_from_diphotons):
 
     tag_n_probe = PhotonTagNProbeFromNanoAOD(
         fileset,
-        "cutBased >= 3",
-        is_electron_filter=True,
+        ["cutBased >= 3"],
+        is_electron_filter=[True],
         start_from_diphotons=start_from_diphotons,
         cutbased_id=None,
-        trigger_pt=32,
-        filterbit=1,
+        trigger_pt=[32],
+        filterbit=[1],
         tags_pt_cut=35,
         probes_pt_cut=27,
         tags_abseta_cut=2.17,
@@ -119,7 +125,9 @@ def test_tag_and_probe_photons_id(start_from_diphotons):
 
     events = NanoEventsFactory.from_root({os.path.abspath("tests/samples/DYto2E.root"): "Events"}, delayed=False).events()
     solution = tag_and_probe_photons(events, start_from_diphotons, is_id=True)
-    result = tag_n_probe.get_tnp_arrays(cut_and_count=False, vars=["Photon_pt", "tag_Ele_eta", "ph_pt", "ph_eta", "MET_pt", "event"], compute=True)["sample"]
+    result = tag_n_probe.get_passing_and_failing_probes(
+        "cutBased >= 3", cut_and_count=False, vars=["Photon_pt", "tag_Ele_eta", "ph_pt", "ph_eta", "MET_pt", "event"], compute=True
+    )["sample"]
     assert_eq(result["passing"], solution[0])
     assert_eq(result["failing"], solution[1])
     if start_from_diphotons:

@@ -319,7 +319,7 @@ class PhotonTagNProbeFromNanoAOD(BaseTagNProbe):
         fileset,
         filters,
         *,
-        is_electron_filter=False,
+        is_electron_filter=None,
         start_from_diphotons=True,
         trigger_pt=None,
         tags_pt_cut=35,

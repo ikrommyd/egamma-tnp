@@ -103,13 +103,13 @@ def calculate_photon_SC_eta_numpy(photons, PV):
 
 def dask_calculate_photon_SC_eta(photons, PV):
     """Wrapper for calculate_photon_SC_eta_numpy to be used with map_partitions"""
-    ak.typetracer.length_zero_if_typetracer(photons.eta)
-    ak.typetracer.length_zero_if_typetracer(photons.phi)
-    ak.typetracer.length_zero_if_typetracer(photons.isScEtaEB)
-    ak.typetracer.length_zero_if_typetracer(photons.isScEtaEE)
-    ak.typetracer.length_zero_if_typetracer(PV.x)
-    ak.typetracer.length_zero_if_typetracer(PV.y)
-    ak.typetracer.length_zero_if_typetracer(PV.z)
+    ak.typetracer.touch_data(photons.eta)
+    ak.typetracer.touch_data(photons.phi)
+    ak.typetracer.touch_data(photons.isScEtaEB)
+    ak.typetracer.touch_data(photons.isScEtaEE)
+    ak.typetracer.touch_data(PV.x)
+    ak.typetracer.touch_data(PV.y)
+    ak.typetracer.touch_data(PV.z)
     if ak.backend(photons, PV) == "typetracer":
         return ak.Array(ak.Array([[0.0]]).layout.to_typetracer(forget_length=True))
     return calculate_photon_SC_eta_numpy(photons, PV)

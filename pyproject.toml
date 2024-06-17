@@ -35,8 +35,8 @@ classifiers = [
   "Topic :: Utilities",
 ]
 dependencies = [
-  "coffea[dask,rucio]>=2023.12.0",
-  "mplhep>=0.3.29",
+  "coffea[dask,rucio]>=2024.5.0",
+  "dask-awkward>=2024.6.0",
 ]
 dynamic = ["version"]
 

@@ -219,6 +219,11 @@ class ElectronTagNProbeFromNanoAOD(BaseTagNProbe):
             is_photon_filter=self.is_photon_filter,
         )
 
+        if vars == "all":
+            vars_tags = [f"tag_Ele_{var}" for var in all_probe_events.tag_Ele.fields]
+            vars_probes = [f"el_{var}" for var in all_probe_events.el.fields]
+            vars = vars_tags + vars_probes
+
         probe_dict = {}
         for var in vars:
             if var.startswith("el_"):
@@ -554,6 +559,11 @@ class PhotonTagNProbeFromNanoAOD(BaseTagNProbe):
             is_electron_filter=self.is_electron_filter,
             start_from_diphotons=self.start_from_diphotons,
         )
+
+        if vars == "all":
+            vars_tags = [f"tag_Ele_{var}" for var in all_probe_events.tag_Ele.fields]
+            vars_probes = [f"ph_{var}" for var in all_probe_events.ph.fields]
+            vars = vars_tags + vars_probes
 
         probe_dict = {}
         for var in vars:

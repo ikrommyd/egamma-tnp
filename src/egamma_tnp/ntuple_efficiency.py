@@ -163,6 +163,11 @@ class ElectronTagNProbeFromNTuples(BaseTagNProbe):
 
         passing_locs, all_probe_events = self._find_passing_events(events, cut_and_count=cut_and_count, mass_range=mass_range)
 
+        if vars == "all":
+            vars_tags = [v for v in events.fields if v.startswith("tag_Ele_")]
+            vars_probes = [v for v in events.fields if v.startswith("el_")]
+            vars = vars_tags + vars_probes
+
         if cut_and_count:
             probes = dak.zip({var: all_probe_events[var] for var in vars} | passing_locs)
         else:
@@ -323,6 +328,11 @@ class PhotonTagNProbeFromNTuples(BaseTagNProbe):
         events = events[pass_pt_tags & pass_abseta_tags & pass_abseta_probes & pass_tag_mask & pass_probe_mask]
 
         passing_locs, all_probe_events = self._find_passing_events(events, cut_and_count=cut_and_count, mass_range=mass_range)
+
+        if vars == "all":
+            vars_tags = [v for v in events.fields if v.startswith("tag_Ele_")]
+            vars_probes = [v for v in events.fields if v.startswith("ph_")]
+            vars = vars_tags + vars_probes
 
         if cut_and_count:
             probes = dak.zip({var: all_probe_events[var] for var in vars} | passing_locs)

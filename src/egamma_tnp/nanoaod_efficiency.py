@@ -310,7 +310,6 @@ class ElectronTagNProbeFromNanoAOD(BaseTagNProbe):
                 passing_locs[filter] = is_passing_probe & getattr(good_events.HLT, hlt_filter)
             else:
                 passing_locs[filter] = is_passing_probe
-
         all_probe_events = good_events
         all_probe_events["el"] = zcands.probe
         all_probe_events["tag_Ele"] = zcands.tag
@@ -647,7 +646,6 @@ class PhotonTagNProbeFromNanoAOD(BaseTagNProbe):
                 passing_locs[filter] = is_passing_probe & getattr(good_events.HLT, hlt_filter)
             else:
                 passing_locs[filter] = is_passing_probe
-
         all_probe_events = good_events
         all_probe_events["ph"] = zcands.probe
         all_probe_events["tag_Ele"] = zcands.tag

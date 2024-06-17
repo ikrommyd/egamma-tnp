@@ -169,9 +169,9 @@ class ElectronTagNProbeFromNTuples(BaseTagNProbe):
             vars = vars_tags + vars_probes
 
         if cut_and_count:
-            probes = dak.zip({var: all_probe_events[var] for var in vars} | passing_locs)
+            probes = dak.zip({var: all_probe_events[var] for var in vars if "to_use" not in var} | passing_locs)
         else:
-            probes = dak.zip({var: all_probe_events[var] for var in vars} | passing_locs | {"pair_mass": all_probe_events["pair_mass"]})
+            probes = dak.zip({var: all_probe_events[var] for var in vars if "to_use" not in var} | passing_locs | {"pair_mass": all_probe_events["pair_mass"]})
 
         return probes
 
@@ -335,8 +335,8 @@ class PhotonTagNProbeFromNTuples(BaseTagNProbe):
             vars = vars_tags + vars_probes
 
         if cut_and_count:
-            probes = dak.zip({var: all_probe_events[var] for var in vars} | passing_locs)
+            probes = dak.zip({var: all_probe_events[var] for var in vars if "to_use" not in var} | passing_locs)
         else:
-            probes = dak.zip({var: all_probe_events[var] for var in vars} | passing_locs | {"pair_mass": all_probe_events["pair_mass"]})
+            probes = dak.zip({var: all_probe_events[var] for var in vars if "to_use" not in var} | passing_locs | {"pair_mass": all_probe_events["pair_mass"]})
 
         return probes

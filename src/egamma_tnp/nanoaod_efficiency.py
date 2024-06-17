@@ -240,7 +240,8 @@ class ElectronTagNProbeFromNanoAOD(BaseTagNProbe):
         if not cut_and_count:
             probe_dict["pair_mass"] = all_probe_events.pair_mass
 
-        probes = dak.zip(probe_dict, depth_limit=1)
+        final_probe_dict = {k: v for k, v in probe_dict.items() if "to_use" not in k}
+        probes = dak.zip(final_probe_dict, depth_limit=1)
 
         return probes
 
@@ -581,7 +582,8 @@ class PhotonTagNProbeFromNanoAOD(BaseTagNProbe):
         if not cut_and_count:
             probe_dict["pair_mass"] = all_probe_events.pair_mass
 
-        probes = dak.zip(probe_dict, depth_limit=1)
+        final_probe_dict = {k: v for k, v in probe_dict.items() if "to_use" not in k}
+        probes = dak.zip(final_probe_dict, depth_limit=1)
 
         return probes
 
@@ -595,6 +597,7 @@ class PhotonTagNProbeFromNanoAOD(BaseTagNProbe):
         pass_delta_r = delta_r < 0.1
         n_of_trigger_matches = dak.sum(pass_delta_r, axis=2)
         trig_matched_locs = n_of_trigger_matches >= 1
+
         return trig_matched_locs
 
     @staticmethod

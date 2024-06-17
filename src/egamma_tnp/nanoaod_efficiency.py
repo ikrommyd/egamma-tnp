@@ -41,7 +41,7 @@ class ElectronTagNProbeFromNanoAOD(BaseTagNProbe):
         ----------
         fileset: dict
             The fileset to calculate the trigger efficiencies for.
-        filters: list of str
+        filters: list of str or None
             The names of the filters to calculate the efficiencies for.
         is_photon_filter: list of bools, optional
             Whether the filters to calculate the efficiencies are photon filters. The default is all False.
@@ -89,28 +89,33 @@ class ElectronTagNProbeFromNanoAOD(BaseTagNProbe):
             Also require the event to have passed the filter HLT filter under study to consider a probe belonging to that event as passing.
             The default is True.
         """
-        if trigger_pt is None:
-            from egamma_tnp.utils.misc import find_pt_threshold
+        if filters is not None:
+            if trigger_pt is None:
+                from egamma_tnp.utils.misc import find_pt_threshold
 
-            self.trigger_pt = [find_pt_threshold(filter) for filter in filters]
-        else:
-            self.trigger_pt = trigger_pt
-            if len(self.trigger_pt) != len(filters):
-                raise ValueError("The trigger_pt list must have the same length as the filters list.")
+                self.trigger_pt = [find_pt_threshold(filter) for filter in filters]
+            else:
+                self.trigger_pt = trigger_pt
+                if len(self.trigger_pt) != len(filters):
+                    raise ValueError("The trigger_pt list must have the same length as the filters list.")
 
-        if is_photon_filter is None:
-            self.is_photon_filter = [False for _ in filters]
-        else:
-            self.is_photon_filter = is_photon_filter
-            if len(self.is_photon_filter) != len(filters):
-                raise ValueError("The is_photon_filter list must have the same length as the filters list.")
+            if is_photon_filter is None:
+                self.is_photon_filter = [False for _ in filters]
+            else:
+                self.is_photon_filter = is_photon_filter
+                if len(self.is_photon_filter) != len(filters):
+                    raise ValueError("The is_photon_filter list must have the same length as the filters list.")
 
-        if filterbit is None:
-            self.filterbit = [None for _ in filters]
+            if filterbit is None:
+                self.filterbit = [None for _ in filters]
+            else:
+                self.filterbit = filterbit
+                if len(self.filterbit) != len(filters):
+                    raise ValueError("The filterbit list must have the same length as the filters list.")
         else:
-            self.filterbit = filterbit
-            if len(self.filterbit) != len(filters):
-                raise ValueError("The filterbit list must have the same length as the filters list.")
+            self.trigger_pt = None
+            self.is_photon_filter = None
+            self.filterbit = None
 
         super().__init__(
             fileset=fileset,
@@ -134,12 +139,13 @@ class ElectronTagNProbeFromNanoAOD(BaseTagNProbe):
         )
         self.require_event_to_pass_hlt_filter = require_event_to_pass_hlt_filter
 
-        for filter, bit, pt in zip(self.filters, self.filterbit, self.trigger_pt):
-            if filter.startswith("HLT_"):
-                if bit is None:
-                    raise ValueError("TrigObj filerbit must be provided for all trigger filters.")
-                if pt == 0:
-                    raise ValueError("A trigger Pt threshold must be provided for all trigger filters.")
+        if filters is not None:
+            for filter, bit, pt in zip(self.filters, self.filterbit, self.trigger_pt):
+                if filter.startswith("HLT_"):
+                    if bit is None:
+                        raise ValueError("TrigObj filerbit must be provided for all trigger filters.")
+                    if pt == 0:
+                        raise ValueError("A trigger Pt threshold must be provided for all trigger filters.")
 
     def __repr__(self):
         n_of_files = 0
@@ -296,20 +302,21 @@ class ElectronTagNProbeFromNanoAOD(BaseTagNProbe):
         trigobjs = trigobjs[has_pair]
         good_events = good_events[has_pair]
         passing_locs = {}
-        for filter, isphotonfilter, bit, pt in zip(filters, is_photon_filter, filterbit, trigger_pt):
-            if isphotonfilter:
-                trigobj_pdgid = 22
-            else:
-                trigobj_pdgid = 11
-            if filter.startswith("HLT_"):
-                is_passing_probe = ElectronTagNProbeFromNanoAOD._trigger_match(zcands.probe, trigobjs, trigobj_pdgid, pt, bit)
-            else:
-                is_passing_probe = eval(f"zcands.probe.{filter}")
-            if filter.startswith("HLT_") and require_event_to_pass_hlt_filter:
-                hlt_filter = filter.rsplit("_", 1)[0].split("HLT_")[1] if filter.split("HLT_")[1] not in good_events.HLT.fields else filter.split("HLT_")[1]
-                passing_locs[filter] = is_passing_probe & getattr(good_events.HLT, hlt_filter)
-            else:
-                passing_locs[filter] = is_passing_probe
+        if filters is not None:
+            for filter, isphotonfilter, bit, pt in zip(filters, is_photon_filter, filterbit, trigger_pt):
+                if isphotonfilter:
+                    trigobj_pdgid = 22
+                else:
+                    trigobj_pdgid = 11
+                if filter.startswith("HLT_"):
+                    is_passing_probe = ElectronTagNProbeFromNanoAOD._trigger_match(zcands.probe, trigobjs, trigobj_pdgid, pt, bit)
+                else:
+                    is_passing_probe = eval(f"zcands.probe.{filter}")
+                if filter.startswith("HLT_") and require_event_to_pass_hlt_filter:
+                    hlt_filter = filter.rsplit("_", 1)[0].split("HLT_")[1] if filter.split("HLT_")[1] not in good_events.HLT.fields else filter.split("HLT_")[1]
+                    passing_locs[filter] = is_passing_probe & getattr(good_events.HLT, hlt_filter)
+                else:
+                    passing_locs[filter] = is_passing_probe
         all_probe_events = good_events
         all_probe_events["el"] = zcands.probe
         all_probe_events["tag_Ele"] = zcands.tag
@@ -350,7 +357,7 @@ class PhotonTagNProbeFromNanoAOD(BaseTagNProbe):
         ----------
         fileset: dict
             The fileset to calculate the trigger efficiencies for.
-        filters: list of str
+        filters: list of str or None
             The names of the filters to calculate the efficiencies for.
         is_electron_filter: list of bools, optional
             Whether the filters to calculate the efficiencies are electron filters. The default is False.
@@ -400,28 +407,33 @@ class PhotonTagNProbeFromNanoAOD(BaseTagNProbe):
             Also require the event to have passed the filter HLT filter under study to consider a probe belonging to that event as passing.
             The default is True.
         """
-        if trigger_pt is None:
-            from egamma_tnp.utils.misc import find_pt_threshold
+        if filters is not None:
+            if trigger_pt is None:
+                from egamma_tnp.utils.misc import find_pt_threshold
 
-            self.trigger_pt = [find_pt_threshold(filter) for filter in filters]
-        else:
-            self.trigger_pt = trigger_pt
-            if len(self.trigger_pt) != len(filters):
-                raise ValueError("The trigger_pt list must have the same length as the filters list.")
+                self.trigger_pt = [find_pt_threshold(filter) for filter in filters]
+            else:
+                self.trigger_pt = trigger_pt
+                if len(self.trigger_pt) != len(filters):
+                    raise ValueError("The trigger_pt list must have the same length as the filters list.")
 
-        if is_electron_filter is None:
-            self.is_electron_filter = [False for _ in filters]
-        else:
-            self.is_electron_filter = is_electron_filter
-            if len(self.is_electron_filter) != len(filters):
-                raise ValueError("The is_electron_filter list must have the same length as the filters list.")
+            if is_electron_filter is None:
+                self.is_electron_filter = [False for _ in filters]
+            else:
+                self.is_electron_filter = is_electron_filter
+                if len(self.is_electron_filter) != len(filters):
+                    raise ValueError("The is_electron_filter list must have the same length as the filters list.")
 
-        if filterbit is None:
-            self.filterbit = [None for _ in filters]
+            if filterbit is None:
+                self.filterbit = [None for _ in filters]
+            else:
+                self.filterbit = filterbit
+                if len(self.filterbit) != len(filters):
+                    raise ValueError("The filterbit list must have the same length as the filters list.")
         else:
-            self.filterbit = filterbit
-            if len(self.filterbit) != len(filters):
-                raise ValueError("The filterbit list must have the same length as the filters list.")
+            self.trigger_pt = None
+            self.is_electron_filter = None
+            self.filterbit = None
 
         super().__init__(
             fileset=fileset,
@@ -446,12 +458,13 @@ class PhotonTagNProbeFromNanoAOD(BaseTagNProbe):
         self.start_from_diphotons = start_from_diphotons
         self.require_event_to_pass_hlt_filter = require_event_to_pass_hlt_filter
 
-        for filter, bit, pt in zip(self.filters, self.filterbit, self.trigger_pt):
-            if filter.startswith("HLT_"):
-                if bit is None:
-                    raise ValueError("TrigObj filerbit must be provided for all trigger filters.")
-                if pt == 0:
-                    raise ValueError("A trigger Pt threshold must be provided for all trigger filters.")
+        if filters is not None:
+            for filter, bit, pt in zip(self.filters, self.filterbit, self.trigger_pt):
+                if filter.startswith("HLT_"):
+                    if bit is None:
+                        raise ValueError("TrigObj filerbit must be provided for all trigger filters.")
+                    if pt == 0:
+                        raise ValueError("A trigger Pt threshold must be provided for all trigger filters.")
 
     def __repr__(self):
         n_of_files = 0
@@ -632,20 +645,21 @@ class PhotonTagNProbeFromNanoAOD(BaseTagNProbe):
         trigobjs = trigobjs[has_pair]
         good_events = good_events[has_pair]
         passing_locs = {}
-        for filter, iselectronfilter, bit, pt in zip(filters, is_electron_filter, filterbit, trigger_pt):
-            if iselectronfilter:
-                trigobj_pdgid = 11
-            else:
-                trigobj_pdgid = 22
-            if filter.startswith("HLT_"):
-                is_passing_probe = PhotonTagNProbeFromNanoAOD._trigger_match(zcands.probe, trigobjs, trigobj_pdgid, pt, bit)
-            else:
-                is_passing_probe = eval(f"zcands.probe.{filter}")
-            if filter.startswith("HLT_") and require_event_to_pass_hlt_filter:
-                hlt_filter = filter.rsplit("_", 1)[0].split("HLT_")[1] if filter.split("HLT_")[1] not in good_events.HLT.fields else filter.split("HLT_")[1]
-                passing_locs[filter] = is_passing_probe & getattr(good_events.HLT, hlt_filter)
-            else:
-                passing_locs[filter] = is_passing_probe
+        if filters is not None:
+            for filter, iselectronfilter, bit, pt in zip(filters, is_electron_filter, filterbit, trigger_pt):
+                if iselectronfilter:
+                    trigobj_pdgid = 11
+                else:
+                    trigobj_pdgid = 22
+                if filter.startswith("HLT_"):
+                    is_passing_probe = PhotonTagNProbeFromNanoAOD._trigger_match(zcands.probe, trigobjs, trigobj_pdgid, pt, bit)
+                else:
+                    is_passing_probe = eval(f"zcands.probe.{filter}")
+                if filter.startswith("HLT_") and require_event_to_pass_hlt_filter:
+                    hlt_filter = filter.rsplit("_", 1)[0].split("HLT_")[1] if filter.split("HLT_")[1] not in good_events.HLT.fields else filter.split("HLT_")[1]
+                    passing_locs[filter] = is_passing_probe & getattr(good_events.HLT, hlt_filter)
+                else:
+                    passing_locs[filter] = is_passing_probe
         all_probe_events = good_events
         all_probe_events["ph"] = zcands.probe
         all_probe_events["tag_Ele"] = zcands.tag

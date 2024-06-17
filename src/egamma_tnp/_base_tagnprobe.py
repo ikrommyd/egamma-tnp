@@ -32,18 +32,21 @@ class BaseTagNProbe:
     ):
         if extra_filter_args is None:
             extra_filter_args = {}
-        if probes_pt_cut is None and len(filters) == 1:
-            from egamma_tnp.utils.misc import find_pt_threshold
+        if filters is not None:
+            if probes_pt_cut is None and len(filters) == 1:
+                from egamma_tnp.utils.misc import find_pt_threshold
 
-            self.probes_pt_cut = find_pt_threshold(filters[0]) - 3
-        elif probes_pt_cut is None and len(filters) > 1:
-            probes_pt_cut = 5
+                self.probes_pt_cut = find_pt_threshold(filters[0]) - 3
+            elif probes_pt_cut is None and len(filters) > 1:
+                self.probes_pt_cut = 5
+            else:
+                self.probes_pt_cut = probes_pt_cut
         else:
-            self.probes_pt_cut = probes_pt_cut
-        if not isinstance(filters, list):
-            raise ValueError("filters must be a list of strings.")
+            self.probes_pt_cut = 5
+        if not isinstance(filters, list) and filters is not None:
+            raise ValueError("filters must be a list of strings or None.")
             if not all(isinstance(f, str) for f in filters):
-                raise ValueError("filters must be a list of strings.")
+                raise ValueError("filters must be a list of strings or None.")
 
         self.fileset = fileset
         self.filters = filters
@@ -247,6 +250,8 @@ class BaseTagNProbe:
             report: dict of awkward arrays of the same form as fileset.
                 For each dataset an awkward array that contains information about the file access is present.
         """
+        if self.filters is None:
+            raise ValueError("filters must be specified during class initialization to use this method.")
         if uproot_options is None:
             uproot_options = {}
         if mass_range is None:
@@ -377,6 +382,8 @@ class BaseTagNProbe:
             report: dict of awkward arrays of the same form as fileset.
                 For each dataset an awkward array that contains information about the file access is present.
         """
+        if self.filters is None:
+            raise ValueError("filters must be specified during class initialization to use this method.")
         if uproot_options is None:
             uproot_options = {}
         if mass_range is None:
@@ -493,6 +500,8 @@ class BaseTagNProbe:
             report: dict of awkward arrays of the same form as fileset.
                 For each dataset an awkward array that contains information about the file access is present.
         """
+        if self.filters is None:
+            raise ValueError("filters must be specified during class initialization to use this method.")
         if uproot_options is None:
             uproot_options = {}
         if mass_range is None:

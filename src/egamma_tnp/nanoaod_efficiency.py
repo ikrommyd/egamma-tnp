@@ -95,16 +95,22 @@ class ElectronTagNProbeFromNanoAOD(BaseTagNProbe):
             self.trigger_pt = [find_pt_threshold(filter) for filter in filters]
         else:
             self.trigger_pt = trigger_pt
+            if len(self.trigger_pt) != len(filters):
+                raise ValueError("The trigger_pt list must have the same length as the filters list.")
 
         if is_photon_filter is None:
             self.is_photon_filter = [False for _ in filters]
         else:
             self.is_photon_filter = is_photon_filter
+            if len(self.is_photon_filter) != len(filters):
+                raise ValueError("The is_photon_filter list must have the same length as the filters list.")
 
         if filterbit is None:
             self.filterbit = [None for _ in filters]
         else:
             self.filterbit = filterbit
+            if len(self.filterbit) != len(filters):
+                raise ValueError("The filterbit list must have the same length as the filters list.")
 
         super().__init__(
             fileset=fileset,
@@ -139,7 +145,7 @@ class ElectronTagNProbeFromNanoAOD(BaseTagNProbe):
         n_of_files = 0
         for dataset in self.fileset.values():
             n_of_files += len(dataset["files"])
-        return f"ElectronTagNProbeFromNanoAOD({self.filters}, Number of files: {n_of_files}, Golden JSON: {self.goldenjson})"
+        return f"ElectronTagNProbeFromNanoAOD(Filters: {self.filters}, Number of files: {n_of_files}, Golden JSON: {self.goldenjson})"
 
     def find_probes(self, events, cut_and_count, mass_range, vars):
         if self.use_sc_eta:
@@ -401,16 +407,22 @@ class PhotonTagNProbeFromNanoAOD(BaseTagNProbe):
             self.trigger_pt = [find_pt_threshold(filter) for filter in filters]
         else:
             self.trigger_pt = trigger_pt
+            if len(self.trigger_pt) != len(filters):
+                raise ValueError("The trigger_pt list must have the same length as the filters list.")
 
         if is_electron_filter is None:
             self.is_electron_filter = [False for _ in filters]
         else:
             self.is_electron_filter = is_electron_filter
+            if len(self.is_electron_filter) != len(filters):
+                raise ValueError("The is_electron_filter list must have the same length as the filters list.")
 
         if filterbit is None:
             self.filterbit = [None for _ in filters]
         else:
             self.filterbit = filterbit
+            if len(self.filterbit) != len(filters):
+                raise ValueError("The filterbit list must have the same length as the filters list.")
 
         super().__init__(
             fileset=fileset,
@@ -446,7 +458,7 @@ class PhotonTagNProbeFromNanoAOD(BaseTagNProbe):
         n_of_files = 0
         for dataset in self.fileset.values():
             n_of_files += len(dataset["files"])
-        return f"PhotonTagNProbeFromNanoAOD({self.filters}, Number of files: {n_of_files}, Golden JSON: {self.goldenjson})"
+        return f"PhotonTagNProbeFromNanoAOD(Filters: {self.filters}, Number of files: {n_of_files}, Golden JSON: {self.goldenjson})"
 
     def find_probes(self, events, cut_and_count, mass_range, vars):
         if self.use_sc_eta:

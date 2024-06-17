@@ -36,7 +36,7 @@ class ElectronTagNProbeFromNTuples(BaseTagNProbe):
         ----------
             fileset: dict
                 The fileset to calculate the trigger efficiencies for.
-            filters: list of str
+            filters: list of str or None
                 The name of the filters to calculate the efficiencies for.
             tags_pt_cut: int or float, optional
                 The Pt cut to apply to the tag electrons. The default is 35.
@@ -96,7 +96,7 @@ class ElectronTagNProbeFromNTuples(BaseTagNProbe):
         n_of_files = 0
         for dataset in self.fileset.values():
             n_of_files += len(dataset["files"])
-        return f"ElectronTagNProbeFromNTuples({self.filters}, Number of files: {n_of_files}, Golden JSON: {self.goldenjson})"
+        return f"ElectronTagNProbeFromNTuples(Filters: {self.filters}, Number of files: {n_of_files}, Golden JSON: {self.goldenjson})"
 
     def _find_passing_events(self, events, cut_and_count, mass_range):
         pass_pt_probes = events.el_pt > self.probes_pt_cut
@@ -255,7 +255,7 @@ class PhotonTagNProbeFromNTuples(BaseTagNProbe):
         n_of_files = 0
         for dataset in self.fileset.values():
             n_of_files += len(dataset["files"])
-        return f"PhotonTagNProbeFromNTuples({self.filters}, Number of files: {n_of_files}, Golden JSON: {self.goldenjson})"
+        return f"PhotonTagNProbeFromNTuples(Filters: {self.filters}, Number of files: {n_of_files}, Golden JSON: {self.goldenjson})"
 
     def _find_passing_events(self, events, cut_and_count, mass_range):
         pass_pt_probes = events.ph_et > self.probes_pt_cut

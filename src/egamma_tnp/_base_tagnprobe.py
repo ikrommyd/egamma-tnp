@@ -40,6 +40,10 @@ class BaseTagNProbe:
             probes_pt_cut = 5
         else:
             self.probes_pt_cut = probes_pt_cut
+        if not isinstance(filters, list):
+            raise ValueError("filters must be a list of strings.")
+            if not all(isinstance(f, str) for f in filters):
+                raise ValueError("filters must be a list of strings.")
 
         self.fileset = fileset
         self.filters = filters

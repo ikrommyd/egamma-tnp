@@ -605,32 +605,9 @@ class BaseTagNProbe:
             fill_pt_eta_phi_cutncount_histograms,
         )
 
-        if events.metadata.get("isMC"):
-            from egamma_tnp.utils.pileup import create_correction, get_pileup_weight, load_correction
-
-            if "pileupJSON" in events.metadata:
-                pileup_corr = load_correction(events.metadata["pileupJSON"])
-            elif "pileupData" in events.metadata and "pileupMC" in events.metadata:
-                pileup_corr = create_correction(events.metadata["pileupData"], events.metadata["pileupMC"])
-
-            if "truePU" in events.fields:
-                vars.append("truePU")
-            else:
-                vars.append("Pileup_nTrueInt")
-
         p_and_f = self._make_passing_and_failing_probes(events, filter, cut_and_count=True, mass_range=mass_range, vars=vars)
         passing_probes = p_and_f["passing"]
         failing_probes = p_and_f["failing"]
-
-        if events.metadata.get("isMC") and ("pileupJSON" in events.metadata or ("pileupData" in events.metadata and "pileupMC" in events.metadata)):
-            if "truePU" in passing_probes.fields and "truePU" in failing_probes.fields:
-                passing_probes["PU_weight"] = get_pileup_weight(passing_probes.truePU, pileup_corr)
-                failing_probes["PU_weight"] = get_pileup_weight(failing_probes.truePU, pileup_corr)
-                vars.remove("truePU")
-            elif "Pileup_nTrueInt" in passing_probes.fields and "Pileup_nTrueInt" in failing_probes.fields:
-                passing_probes["PU_weight"] = get_pileup_weight(passing_probes.Pileup_nTrueInt, pileup_corr)
-                failing_probes["PU_weight"] = get_pileup_weight(failing_probes.Pileup_nTrueInt, pileup_corr)
-                vars.remove("Pileup_nTrueInt")
 
         if pt_eta_phi_1d:
             return fill_pt_eta_phi_cutncount_histograms(
@@ -666,32 +643,9 @@ class BaseTagNProbe:
             fill_pt_eta_phi_mll_histograms,
         )
 
-        if events.metadata.get("isMC"):
-            from egamma_tnp.utils.pileup import create_correction, get_pileup_weight, load_correction
-
-            if "pileupJSON" in events.metadata:
-                pileup_corr = load_correction(events.metadata["pileupJSON"])
-            elif "pileupData" in events.metadata and "pileupMC" in events.metadata:
-                pileup_corr = create_correction(events.metadata["pileupData"], events.metadata["pileupMC"])
-
-            if "truePU" in events.fields:
-                vars.append("truePU")
-            else:
-                vars.append("Pileup_nTrueInt")
-
         p_and_f = self._make_passing_and_failing_probes(events, filter, cut_and_count=False, mass_range=mass_range, vars=vars)
         passing_probes = p_and_f["passing"]
         failing_probes = p_and_f["failing"]
-
-        if events.metadata.get("isMC") and ("pileupJSON" in events.metadata or ("pileupData" in events.metadata and "pileupMC" in events.metadata)):
-            if "truePU" in passing_probes.fields and "truePU" in failing_probes.fields:
-                passing_probes["PU_weight"] = get_pileup_weight(passing_probes.truePU, pileup_corr)
-                failing_probes["PU_weight"] = get_pileup_weight(failing_probes.truePU, pileup_corr)
-                vars.remove("truePU")
-            elif "Pileup_nTrueInt" in passing_probes.fields and "Pileup_nTrueInt" in failing_probes.fields:
-                passing_probes["PU_weight"] = get_pileup_weight(passing_probes.Pileup_nTrueInt, pileup_corr)
-                failing_probes["PU_weight"] = get_pileup_weight(failing_probes.Pileup_nTrueInt, pileup_corr)
-                vars.remove("Pileup_nTrueInt")
 
         if pt_eta_phi_1d:
             return fill_pt_eta_phi_mll_histograms(

@@ -3,11 +3,13 @@ from __future__ import annotations
 import awkward as ak  # noqa: F401
 import dask_awkward as dak
 import numpy as np  # noqa: F401
+from coffea.analysis_tools import Weights
 from coffea.lumi_tools import LumiMask
 from coffea.nanoevents import NanoAODSchema
 
 from egamma_tnp._base_tagnprobe import BaseTagNProbe
 from egamma_tnp.utils import calculate_photon_SC_eta, custom_delta_r
+from egamma_tnp.utils.pileup import create_correction, get_pileup_weight, load_correction
 
 
 class ElectronTagNProbeFromNanoAOD(BaseTagNProbe):
@@ -222,7 +224,9 @@ class ElectronTagNProbeFromNanoAOD(BaseTagNProbe):
         if vars == "all":
             vars_tags = [f"tag_Ele_{var}" for var in all_probe_events.tag_Ele.fields]
             vars_probes = [f"el_{var}" for var in all_probe_events.el.fields]
-            vars = vars_tags + vars_probes
+            vars = vars_tags + vars_probes + ["event", "run", "luminosityBlock"]
+            if all_probe_events.metadata.get("isMC"):
+                vars = [*vars, "Pileup_nTrueInt"]
 
         probe_dict = {}
         for var in vars:
@@ -239,6 +243,31 @@ class ElectronTagNProbeFromNanoAOD(BaseTagNProbe):
         probe_dict.update(passing_locs)
         if not cut_and_count:
             probe_dict["pair_mass"] = all_probe_events.pair_mass
+
+        if all_probe_events.metadata.get("isMC"):
+            weights = Weights(size=None, storeIndividual=True)
+            if "genWeight" in all_probe_events.fields:
+                weights.add("genWeight", all_probe_events.genWeight)
+            else:
+                weights.add("genWeight", dak.ones_like(all_probe_events.event))
+            if "LHEWeight" in all_probe_events.fields:
+                weights.add("LHEWeight", all_probe_events.LHEWeight.originalXWGTUP)
+            else:
+                weights.add("LHEWeight", dak.ones_like(all_probe_events.event))
+            if "pileupJSON" in all_probe_events.metadata:
+                pileup_corr = load_correction(all_probe_events.metadata["pileupJSON"])
+            elif "pileupData" in all_probe_events.metadata and "pileupMC" in all_probe_events.metadata:
+                pileup_corr = create_correction(all_probe_events.metadata["pileupData"], all_probe_events.metadata["pileupMC"])
+            else:
+                pileup_corr = None
+            if pileup_corr is not None:
+                pileup_weight = get_pileup_weight(all_probe_events.Pileup.nTrueInt, pileup_corr)
+                weights.add("PUWeight", pileup_weight)
+            else:
+                weights.add("PUWeight", dak.ones_like(all_probe_events.event))
+            probe_dict["weight"] = weights.partial_weight(include=["genWeight", "PUWeight"])
+            probe_dict["weight_nopileup"] = weights.partial_weight(exclude=["PUWeight", "LHEWeight"])
+            probe_dict["weight_gen"] = weights.partial_weight(include=["genWeight"])
 
         final_probe_dict = {k: v for k, v in probe_dict.items() if "to_use" not in k}
         probes = dak.zip(final_probe_dict, depth_limit=1)
@@ -564,7 +593,9 @@ class PhotonTagNProbeFromNanoAOD(BaseTagNProbe):
         if vars == "all":
             vars_tags = [f"tag_Ele_{var}" for var in all_probe_events.tag_Ele.fields]
             vars_probes = [f"ph_{var}" for var in all_probe_events.ph.fields]
-            vars = vars_tags + vars_probes
+            vars = vars_tags + vars_probes + ["event", "run", "luminosityBlock"]
+            if all_probe_events.metadata.get("isMC"):
+                vars = [*vars, "Pileup_nTrueInt"]
 
         probe_dict = {}
         for var in vars:
@@ -581,6 +612,34 @@ class PhotonTagNProbeFromNanoAOD(BaseTagNProbe):
         probe_dict.update(passing_locs)
         if not cut_and_count:
             probe_dict["pair_mass"] = all_probe_events.pair_mass
+
+        if all_probe_events.metadata.get("isMC"):
+            weights = Weights(size=None, storeIndividual=True)
+            if "genWeight" in all_probe_events.fields:
+                weights.add("genWeight", all_probe_events.genWeight)
+            else:
+                weights.add("genWeight", dak.ones_like(all_probe_events.event))
+            if "LHEWeight" in all_probe_events.fields:
+                weights.add("LHEWeight", all_probe_events.LHEWeight.originalXWGTUP)
+            else:
+                weights.add("LHEWeight", dak.ones_like(all_probe_events.event))
+            if "pileupJSON" in all_probe_events.metadata:
+                pileup_corr = load_correction(all_probe_events.metadata["pileupJSON"])
+            elif "pileupData" in all_probe_events.metadata and "pileupMC" in all_probe_events.metadata:
+                pileup_corr = create_correction(all_probe_events.metadata["pileupData"], all_probe_events.metadata["pileupMC"])
+            else:
+                pileup_corr = None
+            if pileup_corr is not None:
+                pileup_weight = get_pileup_weight(all_probe_events.Pileup.nTrueInt, pileup_corr)
+                weights.add("PUWeight", pileup_weight)
+            else:
+                weights.add("PUWeight", dak.ones_like(all_probe_events.event))
+            probe_dict["weight"] = weights.partial_weight(include=["genWeight", "PUWeight"])
+            probe_dict["weight_nopileup"] = weights.partial_weight(exclude=["PUWeight", "LHEWeight"])
+            probe_dict["weight_gen"] = weights.partial_weight(include=["genWeight"])
+
+        final_probe_dict = {k: v for k, v in probe_dict.items() if "to_use" not in k}
+        probes = dak.zip(final_probe_dict, depth_limit=1)
 
         final_probe_dict = {k: v for k, v in probe_dict.items() if "to_use" not in k}
         probes = dak.zip(final_probe_dict, depth_limit=1)

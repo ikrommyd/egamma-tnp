@@ -7,6 +7,7 @@ from coffea.lumi_tools import LumiMask
 from coffea.nanoevents import BaseSchema
 
 from egamma_tnp._base_tagnprobe import BaseTagNProbe
+from egamma_tnp.utils.pileup import create_correction, get_pileup_weight, load_correction
 
 
 class ElectronTagNProbeFromNTuples(BaseTagNProbe):
@@ -164,14 +165,27 @@ class ElectronTagNProbeFromNTuples(BaseTagNProbe):
         passing_locs, all_probe_events = self._find_passing_events(events, cut_and_count=cut_and_count, mass_range=mass_range)
 
         if vars == "all":
-            vars_tags = [v for v in events.fields if v.startswith("tag_Ele_")]
-            vars_probes = [v for v in events.fields if v.startswith("el_")]
-            vars = vars_tags + vars_probes
+            vars_tags = [v for v in all_probe_events.fields if v.startswith("tag_Ele_")]
+            vars_probes = [v for v in all_probe_events.fields if v.startswith("el_")]
+            vars = vars_tags + vars_probes + ["event", "run", "lumi"] + [x for x in all_probe_events.fields if "weight" in x or "Weight" in x]
+            if all_probe_events.metadata.get("isMC"):
+                vars = [*vars, "truePU"]
 
         if cut_and_count:
             probes = dak.zip({var: all_probe_events[var] for var in vars if "to_use" not in var} | passing_locs)
         else:
             probes = dak.zip({var: all_probe_events[var] for var in vars if "to_use" not in var} | passing_locs | {"pair_mass": all_probe_events["pair_mass"]})
+
+        if all_probe_events.metadata.get("isMC"):
+            if "pileupJSON" in all_probe_events.metadata:
+                pileup_corr = load_correction(all_probe_events.metadata["pileupJSON"])
+            elif "pileupData" in all_probe_events.metadata and "pileupMC" in all_probe_events.metadata:
+                pileup_corr = create_correction(all_probe_events.metadata["pileupData"], all_probe_events.metadata["pileupMC"])
+            else:
+                pileup_corr = None
+            if pileup_corr is not None:
+                pileup_weight = get_pileup_weight(all_probe_events.truePU, pileup_corr)
+                probes["weight"] = pileup_weight
 
         return probes
 
@@ -330,13 +344,26 @@ class PhotonTagNProbeFromNTuples(BaseTagNProbe):
         passing_locs, all_probe_events = self._find_passing_events(events, cut_and_count=cut_and_count, mass_range=mass_range)
 
         if vars == "all":
-            vars_tags = [v for v in events.fields if v.startswith("tag_Ele_")]
-            vars_probes = [v for v in events.fields if v.startswith("ph_")]
-            vars = vars_tags + vars_probes
+            vars_tags = [v for v in all_probe_events.fields if v.startswith("tag_Ele_")]
+            vars_probes = [v for v in all_probe_events.fields if v.startswith("el_")]
+            vars = vars_tags + vars_probes + ["event", "run", "lumi"] + [x for x in all_probe_events.fields if "weight" in x or "Weight" in x]
+            if all_probe_events.metadata.get("isMC"):
+                vars = [*vars, "truePU"]
 
         if cut_and_count:
             probes = dak.zip({var: all_probe_events[var] for var in vars if "to_use" not in var} | passing_locs)
         else:
             probes = dak.zip({var: all_probe_events[var] for var in vars if "to_use" not in var} | passing_locs | {"pair_mass": all_probe_events["pair_mass"]})
+
+        if all_probe_events.metadata.get("isMC"):
+            if "pileupJSON" in all_probe_events.metadata:
+                pileup_corr = load_correction(all_probe_events.metadata["pileupJSON"])
+            elif "pileupData" in all_probe_events.metadata and "pileupMC" in all_probe_events.metadata:
+                pileup_corr = create_correction(all_probe_events.metadata["pileupData"], all_probe_events.metadata["pileupMC"])
+            else:
+                pileup_corr = None
+            if pileup_corr is not None:
+                pileup_weight = get_pileup_weight(all_probe_events.truePU, pileup_corr)
+                probes["weight"] = pileup_weight
 
         return probes

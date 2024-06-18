@@ -122,9 +122,9 @@ def fill_pt_eta_phi_cutncount_histograms(
 
     import egamma_tnp
 
-    if "PU_weight" not in passing_probes.fields or "PU_weight" not in failing_probes.fields:
-        passing_probes["PU_weight"] = 1
-        failing_probes["PU_weight"] = 1
+    if "weight" not in passing_probes.fields or "weight" not in failing_probes.fields:
+        passing_probes["weight"] = 1
+        failing_probes["weight"] = 1
     passing_probes, failing_probes = flatten_array(passing_probes), flatten_array(failing_probes)
 
     if plateau_cut is None:
@@ -151,8 +151,8 @@ def fill_pt_eta_phi_cutncount_histograms(
     eta_fail = failing_probes[vars[1]]
     phi_pass = passing_probes[vars[2]]
     phi_fail = failing_probes[vars[2]]
-    passing_probes_weight = passing_probes.PU_weight
-    failing_probes_weight = failing_probes.PU_weight
+    passing_probes_weight = passing_probes.weight
+    failing_probes_weight = failing_probes.weight
 
     histograms = {}
     histograms["pt"] = {}
@@ -271,9 +271,9 @@ def fill_pt_eta_phi_mll_histograms(
 
     import egamma_tnp
 
-    if "PU_weight" not in passing_probes.fields or "PU_weight" not in failing_probes.fields:
-        passing_probes["PU_weight"] = 1
-        failing_probes["PU_weight"] = 1
+    if "weight" not in passing_probes.fields or "weight" not in failing_probes.fields:
+        passing_probes["weight"] = 1
+        failing_probes["weight"] = 1
     passing_probes, failing_probes = flatten_array(passing_probes), flatten_array(failing_probes)
 
     if plateau_cut is None:
@@ -302,8 +302,8 @@ def fill_pt_eta_phi_mll_histograms(
     phi_fail = failing_probes[vars[2]]
     mll_pass = passing_probes.pair_mass
     mll_fail = failing_probes.pair_mass
-    passing_probes_weight = passing_probes.PU_weight
-    failing_probes_weight = failing_probes.PU_weight
+    passing_probes_weight = passing_probes.weight
+    failing_probes_weight = failing_probes.weight
 
     histograms = {}
     histograms["pt"] = {}
@@ -416,9 +416,9 @@ def fill_nd_cutncount_histograms(
 
     import egamma_tnp
 
-    if "PU_weight" not in passing_probes.fields or "PU_weight" not in failing_probes.fields:
-        passing_probes["PU_weight"] = 1
-        failing_probes["PU_weight"] = 1
+    if "weight" not in passing_probes.fields or "weight" not in failing_probes.fields:
+        passing_probes["weight"] = 1
+        failing_probes["weight"] = 1
     passing_probes, failing_probes = flatten_array(passing_probes), flatten_array(failing_probes)
 
     if any(egamma_tnp.config.get(f"{var}_bins") is None for var in vars):
@@ -433,8 +433,8 @@ def fill_nd_cutncount_histograms(
     hpass = Hist(*axes, storage=hist.storage.Weight())
     hfail = Hist(*axes, storage=hist.storage.Weight())
 
-    hpass.fill(*[passing_probes[var] for var in vars], weight=passing_probes.PU_weight)
-    hfail.fill(*[failing_probes[var] for var in vars], weight=failing_probes.PU_weight)
+    hpass.fill(*[passing_probes[var] for var in vars], weight=passing_probes.weight)
+    hfail.fill(*[failing_probes[var] for var in vars], weight=failing_probes.weight)
 
     return {"passing": hpass, "failing": hfail}
 
@@ -481,9 +481,9 @@ def fill_nd_mll_histograms(
 
     import egamma_tnp
 
-    if "PU_weight" not in passing_probes.fields or "PU_weight" not in failing_probes.fields:
-        passing_probes["PU_weight"] = 1
-        failing_probes["PU_weight"] = 1
+    if "weight" not in passing_probes.fields or "weight" not in failing_probes.fields:
+        passing_probes["weight"] = 1
+        failing_probes["weight"] = 1
     passing_probes, failing_probes = flatten_array(passing_probes), flatten_array(failing_probes)
 
     if any(egamma_tnp.config.get(f"{var}_bins") is None for var in vars):
@@ -499,8 +499,8 @@ def fill_nd_mll_histograms(
     hpass = Hist(*axes, storage=hist.storage.Weight())
     hfail = Hist(*axes, storage=hist.storage.Weight())
 
-    hpass.fill(*[passing_probes[var] for var in vars], passing_probes.pair_mass, weight=passing_probes.PU_weight)
-    hfail.fill(*[failing_probes[var] for var in vars], failing_probes.pair_mass, weight=failing_probes.PU_weight)
+    hpass.fill(*[passing_probes[var] for var in vars], passing_probes.pair_mass, weight=passing_probes.weight)
+    hfail.fill(*[failing_probes[var] for var in vars], failing_probes.pair_mass, weight=failing_probes.weight)
 
     return {"passing": hpass, "failing": hfail}
 

@@ -580,11 +580,11 @@ class BaseTagNProbe:
             if "pair_mass" in probes.fields:
                 passing_probes["pair_mass"] = passing_probes["pair_mass"][passing_probes[filter]]
                 failing_probes["pair_mass"] = failing_probes["pair_mass"][~failing_probes[filter]]
-            passing_probes = dak.without_field(passing_probes, self.filters)
-            failing_probes = dak.without_field(failing_probes, self.filters)
+            passing_probes = passing_probes[[x for x in passing_probes.fields if x not in self.filters]]
+            failing_probes = failing_probes[[x for x in failing_probes.fields if x not in self.filters]]
         else:
-            passing_probes = dak.without_field(probes[probes[filter]], self.filters)
-            failing_probes = dak.without_field(probes[~probes[filter]], self.filters)
+            passing_probes = probes[probes[filter]][[x for x in probes.fields if x not in self.filters]]
+            failing_probes = probes[~probes[filter]][[x for x in probes.fields if x not in self.filters]]
 
         return {"passing": passing_probes, "failing": failing_probes}
 

@@ -57,7 +57,7 @@ class ElePt_WPTight_Gsf:
         if from_ntuples:
             instance = ElectronTagNProbeFromNTuples(
                 fileset=fileset,
-                filter=f"passHltEle{trigger_pt}WPTightGsf",
+                filters=[f"passHltEle{trigger_pt}WPTightGsf"],
                 tags_pt_cut=tags_pt_cut,
                 probes_pt_cut=probes_pt_cut,
                 tags_abseta_cut=2.5,
@@ -73,12 +73,12 @@ class ElePt_WPTight_Gsf:
         else:
             instance = ElectronTagNProbeFromNanoAOD(
                 fileset=fileset,
-                filter=f"HLT_Ele{trigger_pt}_WPTight_Gsf_v16",
-                trigger_pt=trigger_pt,
+                filters=[f"HLT_Ele{trigger_pt}_WPTight_Gsf"],
+                trigger_pt=[trigger_pt],
                 tags_pt_cut=tags_pt_cut,
                 probes_pt_cut=probes_pt_cut,
                 tags_abseta_cut=2.5,
-                filterbit=1,
+                filterbit=[1],
                 cutbased_id="cutBased >= 4",
                 goldenjson=goldenjson,
                 extra_filter=extra_filter,
@@ -147,7 +147,7 @@ class ElePt_CaloIdVT_GsfTrkIdT:
         if from_ntuples:
             instance = ElectronTagNProbeFromNTuples(
                 fileset=fileset,
-                filter=f"passHltEle{trigger_pt}CaloIdVTGsfTrkIdTGsf",
+                filters=[f"passHltEle{trigger_pt}CaloIdVTGsfTrkIdTGsf"],
                 tags_pt_cut=tags_pt_cut,
                 probes_pt_cut=probes_pt_cut,
                 tags_abseta_cut=2.5,
@@ -170,12 +170,12 @@ class ElePt_CaloIdVT_GsfTrkIdT:
                 filterbit = 11
             instance = ElectronTagNProbeFromNanoAOD(
                 fileset=fileset,
-                filter=f"HLT_Ele{trigger_pt}_CaloIdVT_GsfTrkIdT",
-                trigger_pt=trigger_pt,
+                filters=[f"HLT_Ele{trigger_pt}_CaloIdVT_GsfTrkIdT"],
+                trigger_pt=[trigger_pt],
                 tags_pt_cut=tags_pt_cut,
                 probes_pt_cut=probes_pt_cut,
                 tags_abseta_cut=2.5,
-                filterbit=filterbit,
+                filterbit=[filterbit],
                 cutbased_id="cutBased >= 4",
                 goldenjson=goldenjson,
                 extra_filter=extra_filter,
@@ -247,7 +247,7 @@ class ElePt1_ElePt2_CaloIdL_TrackIdL_IsoVL_Leg1:
         if from_ntuples:
             instance = ElectronTagNProbeFromNTuples(
                 fileset=fileset,
-                filter=f"passHltEle{trigger_pt1}Ele{trigger_pt2}CaloIdLTrackIdLIsoVLLeg1L1match",
+                filters=[f"passHltEle{trigger_pt1}Ele{trigger_pt2}CaloIdLTrackIdLIsoVLLeg1L1match"],
                 tags_pt_cut=tags_pt_cut,
                 probes_pt_cut=probes_pt_cut,
                 tags_abseta_cut=2.5,
@@ -263,12 +263,12 @@ class ElePt1_ElePt2_CaloIdL_TrackIdL_IsoVL_Leg1:
         else:
             instance = ElectronTagNProbeFromNanoAOD(
                 fileset=fileset,
-                filter=f"HLT_Ele{trigger_pt1}_Ele{trigger_pt2}_CaloIdL_TrackIdL_IsoVL_Leg1",
-                trigger_pt=trigger_pt1,
+                filters=[f"HLT_Ele{trigger_pt1}_Ele{trigger_pt2}_CaloIdL_TrackIdL_IsoVL_Leg1"],
+                trigger_pt=[trigger_pt1],
                 tags_pt_cut=tags_pt_cut,
                 probes_pt_cut=probes_pt_cut,
                 tags_abseta_cut=2.5,
-                filterbit=4,
+                filterbit=[4],
                 cutbased_id="cutBased >= 4",
                 goldenjson=goldenjson,
                 extra_filter=extra_filter,
@@ -340,7 +340,7 @@ class ElePt1_ElePt2_CaloIdL_TrackIdL_IsoVL_Leg2:
         if from_ntuples:
             instance = ElectronTagNProbeFromNTuples(
                 fileset=fileset,
-                filter=f"passHltEle{trigger_pt1}Ele{trigger_pt2}CaloIdLTrackIdLIsoVLLeg2",
+                filters=[f"passHltEle{trigger_pt1}Ele{trigger_pt2}CaloIdLTrackIdLIsoVLLeg2"],
                 tags_pt_cut=tags_pt_cut,
                 probes_pt_cut=probes_pt_cut,
                 tags_abseta_cut=2.5,
@@ -363,12 +363,12 @@ class ElePt1_ElePt2_CaloIdL_TrackIdL_IsoVL_Leg2:
                 )
             instance = ElectronTagNProbeFromNanoAOD(
                 fileset=fileset,
-                filter=f"HLT_Ele{trigger_pt1}_Ele{trigger_pt2}_CaloIdL_TrackIdL_IsoVL_Leg2",
-                trigger_pt=trigger_pt2,
+                filters=[f"HLT_Ele{trigger_pt1}_Ele{trigger_pt2}_CaloIdL_TrackIdL_IsoVL_Leg2"],
+                trigger_pt=[trigger_pt2],
                 tags_pt_cut=tags_pt_cut,
                 probes_pt_cut=probes_pt_cut,
                 tags_abseta_cut=2.5,
-                filterbit=5,
+                filterbit=[5],
                 cutbased_id="cutBased >= 4",
                 goldenjson=goldenjson,
                 extra_filter=extra_filter,
@@ -437,7 +437,7 @@ class DoubleElePt_CaloIdL_MW_SeededLeg:
         if from_ntuples:
             instance = ElectronTagNProbeFromNTuples(
                 fileset=fileset,
-                filter=f"passHltDoubleEle{trigger_pt}CaloIdLMWSeedLegL1match",
+                filters=[f"passHltDoubleEle{trigger_pt}CaloIdLMWSeedLegL1match"],
                 tags_pt_cut=tags_pt_cut,
                 probes_pt_cut=probes_pt_cut,
                 tags_abseta_cut=2.5,
@@ -458,12 +458,12 @@ class DoubleElePt_CaloIdL_MW_SeededLeg:
                 raise ValueError("Measuring the efficiency of the HLT_DoubleElePt_CaloIdL_MW trigger is only supported for NanoAODv13 and above.")
             instance = ElectronTagNProbeFromNanoAOD(
                 fileset=fileset,
-                filter=f"HLT_DoubleEle{trigger_pt}_CaloIdL_MW_SeededLeg",
-                trigger_pt=trigger_pt,
+                filters=[f"HLT_DoubleEle{trigger_pt}_CaloIdL_MW_SeededLeg"],
+                trigger_pt=[trigger_pt],
                 tags_pt_cut=tags_pt_cut,
                 probes_pt_cut=probes_pt_cut,
                 tags_abseta_cut=2.5,
-                filterbit=15,
+                filterbit=[15],
                 cutbased_id="cutBased >= 4",
                 goldenjson=goldenjson,
                 extra_filter=extra_filter,
@@ -532,7 +532,7 @@ class DoubleElePt_CaloIdL_MW_UnseededLeg:
         if from_ntuples:
             instance = ElectronTagNProbeFromNTuples(
                 fileset=fileset,
-                filter=f"passHltDoubleEle{trigger_pt}CaloIdLMWUnsLeg",
+                filters=[f"passHltDoubleEle{trigger_pt}CaloIdLMWUnsLeg"],
                 tags_pt_cut=tags_pt_cut,
                 probes_pt_cut=probes_pt_cut,
                 tags_abseta_cut=2.5,
@@ -553,12 +553,12 @@ class DoubleElePt_CaloIdL_MW_UnseededLeg:
                 raise ValueError("Measuring the efficiency of the HLT_DoubleElePt_CaloIdL_MW trigger is only supported for NanoAODv13 and above.")
             instance = ElectronTagNProbeFromNanoAOD(
                 fileset=fileset,
-                filter=f"HLT_DoubleEle{trigger_pt}_CaloIdL_MW_UnseededLeg",
-                trigger_pt=trigger_pt,
+                filters=[f"HLT_DoubleEle{trigger_pt}_CaloIdL_MW_UnseededLeg"],
+                trigger_pt=[trigger_pt],
                 tags_pt_cut=tags_pt_cut,
                 probes_pt_cut=probes_pt_cut,
                 tags_abseta_cut=2.5,
-                filterbit=16,
+                filterbit=[16],
                 cutbased_id="cutBased >= 4",
                 goldenjson=goldenjson,
                 extra_filter=extra_filter,

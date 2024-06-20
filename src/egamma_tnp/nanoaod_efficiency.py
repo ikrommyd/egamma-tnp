@@ -265,9 +265,9 @@ class ElectronTagNProbeFromNanoAOD(BaseTagNProbe):
                 weights.add("PUWeight", pileup_weight)
             else:
                 weights.add("PUWeight", dak.ones_like(all_probe_events.event))
-            probe_dict["weight"] = weights.partial_weight(include=["genWeight", "PUWeight"])
-            probe_dict["weight_nopileup"] = weights.partial_weight(exclude=["PUWeight", "LHEWeight"])
+            probe_dict["weight"] = weights.partial_weight(include=["PUWeight"])
             probe_dict["weight_gen"] = weights.partial_weight(include=["genWeight"])
+            probe_dict["weight_total"] = weights.weight()
 
         final_probe_dict = {k: v for k, v in probe_dict.items() if "to_use" not in k}
         probes = dak.zip(final_probe_dict, depth_limit=1)
@@ -634,9 +634,9 @@ class PhotonTagNProbeFromNanoAOD(BaseTagNProbe):
                 weights.add("PUWeight", pileup_weight)
             else:
                 weights.add("PUWeight", dak.ones_like(all_probe_events.event))
-            probe_dict["weight"] = weights.partial_weight(include=["genWeight", "PUWeight"])
-            probe_dict["weight_nopileup"] = weights.partial_weight(exclude=["PUWeight", "LHEWeight"])
+            probe_dict["weight"] = weights.partial_weight(include=["PUWeight"])
             probe_dict["weight_gen"] = weights.partial_weight(include=["genWeight"])
+            probe_dict["weight_total"] = weights.weight()
 
         final_probe_dict = {k: v for k, v in probe_dict.items() if "to_use" not in k}
         probes = dak.zip(final_probe_dict, depth_limit=1)

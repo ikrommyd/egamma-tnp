@@ -55,12 +55,11 @@ dev = [
 dataset_query = "scripts.dataset_query:main"
 
 [tool.hatch.build.targets.wheel]
-include = [
-    "scripts/**",
-]
+packages = ["src/egamma_tnp", "scripts"]
 
 [tool.hatch.build.targets.sdist]
 include = [
+    "src/egamma_tnp/**",
     "scripts/**",
 ]
 

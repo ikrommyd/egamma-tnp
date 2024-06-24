@@ -141,9 +141,9 @@ def fill_pt_eta_phi_cutncount_histograms(
     if vars is None:
         vars = ["el_pt", "el_eta", "el_phi"]
 
-    ptbins = egamma_tnp.config.get("pt_bins")
-    etabins = egamma_tnp.config.get("eta_bins")
-    phibins = egamma_tnp.config.get("phi_bins")
+    ptbins = egamma_tnp.binning.get("pt_bins")
+    etabins = egamma_tnp.binning.get("eta_bins")
+    phibins = egamma_tnp.binning.get("phi_bins")
 
     pt_pass = passing_probes[vars[0]]
     pt_fail = failing_probes[vars[0]]
@@ -290,9 +290,9 @@ def fill_pt_eta_phi_mll_histograms(
     if vars is None:
         vars = ["el_pt", "el_eta", "el_phi"]
 
-    ptbins = egamma_tnp.config.get("pt_bins")
-    etabins = egamma_tnp.config.get("eta_bins")
-    phibins = egamma_tnp.config.get("phi_bins")
+    ptbins = egamma_tnp.binning.get("pt_bins")
+    etabins = egamma_tnp.binning.get("eta_bins")
+    phibins = egamma_tnp.binning.get("phi_bins")
 
     pt_pass = passing_probes[vars[0]]
     pt_fail = failing_probes[vars[0]]
@@ -421,14 +421,14 @@ def fill_nd_cutncount_histograms(
         failing_probes["weight"] = 1
     passing_probes, failing_probes = flatten_array(passing_probes), flatten_array(failing_probes)
 
-    if any(egamma_tnp.config.get(f"{var}_bins") is None for var in vars):
+    if any(egamma_tnp.binning.get(f"{var}_bins") is None for var in vars):
         raise ValueError(
             """One or more variables do not have binning information.
-            Please define the bining information using `egamma_tnp.config.set`.
+            Please define the binning information using `egamma_tnp.binning.set`.
             The variable names in the configuration json should be in the form of `"{var}_bins"`."""
         )
 
-    axes = [hist.axis.Variable(egamma_tnp.config.get(f"{var}_bins"), name=var, label=f"{var.capitalize()}") for var in vars]
+    axes = [hist.axis.Variable(egamma_tnp.binning.get(f"{var}_bins"), name=var, label=f"{var.capitalize()}") for var in vars]
 
     hpass = Hist(*axes, storage=hist.storage.Weight())
     hfail = Hist(*axes, storage=hist.storage.Weight())
@@ -486,14 +486,14 @@ def fill_nd_mll_histograms(
         failing_probes["weight"] = 1
     passing_probes, failing_probes = flatten_array(passing_probes), flatten_array(failing_probes)
 
-    if any(egamma_tnp.config.get(f"{var}_bins") is None for var in vars):
+    if any(egamma_tnp.binning.get(f"{var}_bins") is None for var in vars):
         raise ValueError(
             """One or more variables do not have binning information.
-            Please define the bining information using `egamma_tnp.config.set`.
+            Please define the binning information using `egamma_tnp.binning.set`.
             The variable names in the configuration json should be in the form of `"{var}_bins"`. """
         )
 
-    axes = [hist.axis.Variable(egamma_tnp.config.get(f"{var}_bins"), name=var, label=f"{var.capitalize()}") for var in vars]
+    axes = [hist.axis.Variable(egamma_tnp.binning.get(f"{var}_bins"), name=var, label=f"{var.capitalize()}") for var in vars]
     axes.append(hist.axis.Regular(80, 50, 130, name="mll", label="mll [GeV]"))
 
     hpass = Hist(*axes, storage=hist.storage.Weight())
@@ -535,9 +535,9 @@ def _convert_2d_mll_hist_to_1d_hists(h2d):
             }
         )
 
-    bining = {"bins": bin_info_list, "vars": [ax]}
+    binning = {"bins": bin_info_list, "vars": [ax]}
 
-    return histograms, bining
+    return histograms, binning
 
 
 def _convert_nd_mll_hist_to_1d_hists(h4d, axes):
@@ -595,9 +595,9 @@ def _convert_nd_mll_hist_to_1d_hists(h4d, axes):
         bin_info_list.append(bin_details)
         counter += 1
 
-    bining = {"bins": bin_info_list, "vars": axes}
+    binning = {"bins": bin_info_list, "vars": axes}
 
-    return histograms, bining
+    return histograms, binning
 
 
 def convert_2d_mll_hists_to_1d_hists(hist_dict):
@@ -612,7 +612,7 @@ def convert_2d_mll_hists_to_1d_hists(hist_dict):
     Returns
     -------
         histograms : dict
-            A dictionary of the form {"var": {"region": {"passing": {bin_name: hist.Hist, ...}, "failing": {bin_name: hist.Hist, ...}, "bining": bining}, ...}, ...}
+            A dictionary of the form {"var": {"region": {"passing": {bin_name: hist.Hist, ...}, "failing": {bin_name: hist.Hist, ...}, "binning": binning}, ...}, ...}
     """
     histograms = {}  # Create a new dictionary instead of modifying the original
     for var, region_dict in hist_dict.items():
@@ -620,9 +620,9 @@ def convert_2d_mll_hists_to_1d_hists(hist_dict):
         for region_name, hists in region_dict.items():
             histograms[var][region_name] = {}  # Initialize region dictionary
             for histname, h in hists.items():
-                hs, bining = _convert_2d_mll_hist_to_1d_hists(h)
+                hs, binning = _convert_2d_mll_hist_to_1d_hists(h)
                 histograms[var][region_name][histname] = hs  # Populate with new histograms
-                histograms[var][region_name]["bining"] = bining  # Set bining for this region
+                histograms[var][region_name]["binning"] = binning  # Set binning for this region
     return histograms
 
 
@@ -651,7 +651,7 @@ def convert_nd_mll_hists_to_1d_hists(hists, axes=None):
             where hpass and hfail are dictionaries of 1D histograms.
             The keys are the bin combinations of the specified axes
             and the values are the 1D histograms for each bin combination.
-        bining : dict
+        binning : dict
             A dictionary with the binning information.
     """
     if axes is None:
@@ -667,7 +667,7 @@ def convert_nd_mll_hists_to_1d_hists(hists, axes=None):
     return histograms, binning
 
 
-def create_hists_root_file_for_fitter(hists, root_path, bining_path, axes=None):
+def create_hists_root_file_for_fitter(hists, root_path, binning_path, axes=None):
     """Create a ROOT file with 1D histograms of passing and failing probes.
     To be used as input to the fitter.
 
@@ -679,7 +679,7 @@ def create_hists_root_file_for_fitter(hists, root_path, bining_path, axes=None):
             where hpass and hfail are 4D histograms with axes (Pt, Eta, Phi, mll).
         root_path : str
             The path to the ROOT file.
-        bining_path : str
+        binning_path : str
             The path to the pickle file with the binning information.
         axes : list, optional
             A list of the axes to keep in the 1D histograms.
@@ -689,7 +689,7 @@ def create_hists_root_file_for_fitter(hists, root_path, bining_path, axes=None):
         -----
             If the input is a dictionary of 2D histograms, then multiple ROOT files and binning files will be created,
             one for each variable and region present in the input.
-            For each variable and region present, a trailing `_<var>_<region>.root` and `_<var>_<region>.pkl` will be added to the root_path and bining_path respectively.
+            For each variable and region present, a trailing `_<var>_<region>.root` and `_<var>_<region>.pkl` will be added to the root_path and binning_path respectively.
     """
     import pickle
 
@@ -701,7 +701,7 @@ def create_hists_root_file_for_fitter(hists, root_path, bining_path, axes=None):
         raise ValueError("All axes must be unique.")
 
     if isinstance(hists, dict) and "passing" in hists and "failing" in hists:
-        histograms, bining = convert_nd_mll_hists_to_1d_hists(hists, axes=axes)
+        histograms, binning = convert_nd_mll_hists_to_1d_hists(hists, axes=axes)
         passing_hists = histograms["passing"]
         failing_hists = histograms["failing"]
 
@@ -719,15 +719,15 @@ def create_hists_root_file_for_fitter(hists, root_path, bining_path, axes=None):
                 f[f"bin{counter_str}_{name}_Fail"] = failing_hists[name]
                 counter += 1
 
-        with open(bining_path, "wb") as f:
-            pickle.dump(bining, f, protocol=2)
+        with open(binning_path, "wb") as f:
+            pickle.dump(binning, f, protocol=2)
 
     elif isinstance(hists, dict) and "pt" in hists and "eta" in hists and "phi" in hists:
         histograms = convert_2d_mll_hists_to_1d_hists(hists)
         for var, region_dict in histograms.items():
             for region_name, hists in region_dict.items():
                 new_path = root_path.replace(".root", f"_{var}_{region_name}.root")
-                new_bining_path = bining_path.replace(".pkl", f"_{var}_{region_name}.pkl")
+                new_binning_path = binning_path.replace(".pkl", f"_{var}_{region_name}.pkl")
                 with uproot.recreate(new_path) as f:
                     passing_hists = hists["passing"]
                     failing_hists = hists["failing"]
@@ -740,8 +740,8 @@ def create_hists_root_file_for_fitter(hists, root_path, bining_path, axes=None):
                         f[f"bin{counter_str}_{name}_Fail"] = failing_hists[name]
                         counter += 1
 
-                with open(new_bining_path, "wb") as f:
-                    pickle.dump(hists["bining"], f, protocol=2)
+                with open(new_binning_path, "wb") as f:
+                    pickle.dump(hists["binning"], f, protocol=2)
 
     else:
         raise ValueError("Invalid `hists` format")

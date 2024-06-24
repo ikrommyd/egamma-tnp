@@ -107,8 +107,8 @@ def test_histogramming_custom_vars(tag_n_probe_class):
         trigger_pt=[30],
     )
 
-    egamma_tnp.config.set("el_r9_bins", np.linspace(0.1, 1.05, 100).tolist())
-    egamma_tnp.config.set("ph_r9_bins", np.linspace(0.1, 1.05, 100).tolist())
+    egamma_tnp.binning.set("el_r9_bins", np.linspace(0.1, 1.05, 100).tolist())
+    egamma_tnp.binning.set("ph_r9_bins", np.linspace(0.1, 1.05, 100).tolist())
 
     hmll1d = tag_n_probe.get_1d_pt_eta_phi_tnp_histograms(
         "HLT_Ele30_WPTight_Gsf",
@@ -130,7 +130,7 @@ def test_histogramming_custom_vars(tag_n_probe_class):
     assert_histograms_equal(hmll1d["eta"]["entire"]["passing"], hmll3d["passing"][-2.5j:2.5j, sum, :], flow=False)
     assert_histograms_equal(hmll1d["eta"]["entire"]["failing"], hmll3d["failing"][-2.5j:2.5j, sum, :], flow=False)
 
-    egamma_tnp.config.reset_all()
+    egamma_tnp.binning.reset_all()
 
 
 @pytest.mark.parametrize("tag_n_probe_class", [ElectronTagNProbeFromNanoAOD, PhotonTagNProbeFromNanoAOD])
@@ -148,9 +148,9 @@ def test_histogramming_non_probe_vars(tag_n_probe_class):
         trigger_pt=[30],
     )
 
-    egamma_tnp.config.set("MET_pt_bins", np.linspace(0, 200, 10).tolist())
-    egamma_tnp.config.set("luminosityBlock_bins", np.linspace(0, 1000, 11).tolist())
-    egamma_tnp.config.set("tag_Ele_pt_bins", egamma_tnp.config.get("pt_bins"))
+    egamma_tnp.binning.set("MET_pt_bins", np.linspace(0, 200, 10).tolist())
+    egamma_tnp.binning.set("luminosityBlock_bins", np.linspace(0, 1000, 11).tolist())
+    egamma_tnp.binning.set("tag_Ele_pt_bins", egamma_tnp.binning.get("pt_bins"))
 
     hmll1d = tag_n_probe.get_1d_pt_eta_phi_tnp_histograms(
         "HLT_Ele30_WPTight_Gsf",
@@ -176,4 +176,4 @@ def test_histogramming_non_probe_vars(tag_n_probe_class):
     assert_histograms_equal(hmll1d["eta"]["entire"]["passing"], hmll3d["passing"][-2.5j:2.5j, sum, sum, sum, :], flow=False)
     assert_histograms_equal(hmll1d["eta"]["entire"]["failing"], hmll3d["failing"][-2.5j:2.5j, sum, sum, sum, :], flow=False)
 
-    egamma_tnp.config.reset_all()
+    egamma_tnp.binning.reset_all()

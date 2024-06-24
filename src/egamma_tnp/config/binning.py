@@ -4,10 +4,10 @@ import json
 import os
 
 
-class Config:
+class Binning:
     def __init__(self):
-        self.runtime_filename = os.path.join(os.path.dirname(__file__), "runtime_config.json")
-        self.default_filename = os.path.join(os.path.dirname(__file__), "default_config.json")
+        self.runtime_filename = os.path.join(os.path.dirname(__file__), "runtime_binning.json")
+        self.default_filename = os.path.join(os.path.dirname(__file__), "default_binning.json")
 
         with open(self.default_filename) as df:  # read from default config
             default_data = json.load(df)

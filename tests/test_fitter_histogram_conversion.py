@@ -48,9 +48,9 @@ def test_fitter_histogram_conversion_1d():
         }
     ).compute()
 
-    egamma_tnp.config.set("pt_bins", [5, 50, 200, 500])
-    egamma_tnp.config.set("eta_bins", [-2.5, 0, 2.5])
-    egamma_tnp.config.set("phi_bins", [-3.32, 3.32])
+    egamma_tnp.binning.set("pt_bins", [5, 50, 200, 500])
+    egamma_tnp.binning.set("eta_bins", [-2.5, 0, 2.5])
+    egamma_tnp.binning.set("phi_bins", [-3.32, 3.32])
 
     hmll1d = fill_pt_eta_phi_mll_histograms(
         passing_probes,
@@ -114,7 +114,7 @@ def test_fitter_histogram_conversion_1d():
     assert_histograms_equal(res1d["phi"]["entire"]["passing"]["phi_m3p32To3p32"], hmll1d["phi"]["entire"]["passing"][-3.32j:3.32j:sum, :], flow=False)
     assert_histograms_equal(res1d["phi"]["entire"]["failing"]["phi_m3p32To3p32"], hmll1d["phi"]["entire"]["failing"][-3.32j:3.32j:sum, :], flow=False)
 
-    egamma_tnp.config.reset_all()
+    egamma_tnp.binning.reset_all()
 
 
 def test_fitter_histogram_conversion_3d():
@@ -142,9 +142,9 @@ def test_fitter_histogram_conversion_3d():
         }
     ).compute()
 
-    egamma_tnp.config.set("pt_bins", [5, 50, 200, 500])
-    egamma_tnp.config.set("eta_bins", [-2.5, 0, 2.5])
-    egamma_tnp.config.set("phi_bins", [-3.32, 3.32])
+    egamma_tnp.binning.set("pt_bins", [5, 50, 200, 500])
+    egamma_tnp.binning.set("eta_bins", [-2.5, 0, 2.5])
+    egamma_tnp.binning.set("phi_bins", [-3.32, 3.32])
 
     hmll3d = fill_nd_mll_histograms(
         passing_probes,
@@ -152,8 +152,8 @@ def test_fitter_histogram_conversion_3d():
         vars=["pt", "eta", "phi"],
     )
 
-    res3d, bining = convert_nd_mll_hists_to_1d_hists(hmll3d, axes=["eta", "pt"])
-    bining_solution = [
+    res3d, binning = convert_nd_mll_hists_to_1d_hists(hmll3d, axes=["eta", "pt"])
+    binning_solution = [
         "eta_m2p50To0p00_pt_5p00To50p00",
         "eta_0p00To2p50_pt_5p00To50p00",
         "eta_m2p50To0p00_pt_50p00To200p00",
@@ -162,12 +162,12 @@ def test_fitter_histogram_conversion_3d():
         "eta_0p00To2p50_pt_200p00To500p00",
     ]
 
-    assert list(res3d["passing"].keys()) == bining_solution
-    assert list(res3d["failing"].keys()) == bining_solution
-    assert bining["vars"] == ["eta", "pt"]
-    bining_names = [x["name"] for x in bining["bins"]]
-    zfill_length = len(str(len(bining_solution)))
-    assert bining_names == [f"bin{str(i).zfill(zfill_length)}_{x}" for i, x in enumerate(bining_solution)]
+    assert list(res3d["passing"].keys()) == binning_solution
+    assert list(res3d["failing"].keys()) == binning_solution
+    assert binning["vars"] == ["eta", "pt"]
+    binning_names = [x["name"] for x in binning["bins"]]
+    zfill_length = len(str(len(binning_solution)))
+    assert binning_names == [f"bin{str(i).zfill(zfill_length)}_{x}" for i, x in enumerate(binning_solution)]
 
     assert_histograms_equal(res3d["passing"]["eta_m2p50To0p00_pt_5p00To50p00"], hmll3d["passing"][5j:50j:sum, -2.5j:0j:sum, sum, :], flow=False)
     assert_histograms_equal(res3d["failing"]["eta_m2p50To0p00_pt_5p00To50p00"], hmll3d["failing"][5j:50j:sum, -2.5j:0j:sum, sum, :], flow=False)
@@ -182,7 +182,7 @@ def test_fitter_histogram_conversion_3d():
     assert_histograms_equal(res3d["passing"]["eta_0p00To2p50_pt_200p00To500p00"], hmll3d["passing"][200j:500j:sum, 0j:2.5j:sum, sum, :], flow=False)
     assert_histograms_equal(res3d["failing"]["eta_0p00To2p50_pt_200p00To500p00"], hmll3d["failing"][200j:500j:sum, 0j:2.5j:sum, sum, :], flow=False)
 
-    egamma_tnp.config.reset_all()
+    egamma_tnp.binning.reset_all()
 
 
 def test_fitter_histogram_saving_1d():
@@ -212,9 +212,9 @@ def test_fitter_histogram_saving_1d():
         }
     ).compute()
 
-    egamma_tnp.config.set("pt_bins", [5, 50, 200, 500])
-    egamma_tnp.config.set("eta_bins", [-2.5, 0, 2.5])
-    egamma_tnp.config.set("phi_bins", [-3.32, 3.32])
+    egamma_tnp.binning.set("pt_bins", [5, 50, 200, 500])
+    egamma_tnp.binning.set("eta_bins", [-2.5, 0, 2.5])
+    egamma_tnp.binning.set("phi_bins", [-3.32, 3.32])
 
     hmll1d = fill_pt_eta_phi_mll_histograms(
         passing_probes,
@@ -228,12 +228,12 @@ def test_fitter_histogram_saving_1d():
         vars=["pt", "eta", "phi"],
     )
 
-    create_hists_root_file_for_fitter(hmll1d, "1d_hists.root", "1d_bining.pkl")
+    create_hists_root_file_for_fitter(hmll1d, "1d_hists.root", "1d_binning.pkl")
 
     for region in ["barrel", "endcap_loweta", "endcap_higheta"]:
         with uproot.open(f"1d_hists_pt_{region}.root") as f:
-            bining = pickle.load(open(f"1d_bining_pt_{region}.pkl", "rb"))
-            for bin in bining["bins"]:
+            binning = pickle.load(open(f"1d_binning_pt_{region}.pkl", "rb"))
+            for bin in binning["bins"]:
                 name = bin["name"]
                 min_pt = bin["vars"]["pt"]["min"] * 1j
                 max_pt = bin["vars"]["pt"]["max"] * 1j
@@ -245,8 +245,8 @@ def test_fitter_histogram_saving_1d():
                 assert_histograms_equal(saved_failing_hist, hmll1d["pt"][region]["failing"][min_pt:max_pt:sum, :], flow=False)
 
     with uproot.open("1d_hists_eta_entire.root") as f:
-        bining = pickle.load(open("1d_bining_eta_entire.pkl", "rb"))
-        for bin in bining["bins"]:
+        binning = pickle.load(open("1d_binning_eta_entire.pkl", "rb"))
+        for bin in binning["bins"]:
             name = bin["name"]
             min_eta = bin["vars"]["eta"]["min"] * 1j
             max_eta = bin["vars"]["eta"]["max"] * 1j
@@ -258,8 +258,8 @@ def test_fitter_histogram_saving_1d():
             assert_histograms_equal(saved_failing_hist, hmll1d["eta"]["entire"]["failing"][min_eta:max_eta:sum, :], flow=False)
 
     with uproot.open("1d_hists_phi_entire.root") as f:
-        bining = pickle.load(open("1d_bining_phi_entire.pkl", "rb"))
-        for bin in bining["bins"]:
+        binning = pickle.load(open("1d_binning_phi_entire.pkl", "rb"))
+        for bin in binning["bins"]:
             name = bin["name"]
             min_phi = bin["vars"]["phi"]["min"] * 1j
             max_phi = bin["vars"]["phi"]["max"] * 1j
@@ -275,13 +275,13 @@ def test_fitter_histogram_saving_1d():
     os.remove("1d_hists_pt_endcap_higheta.root")
     os.remove("1d_hists_eta_entire.root")
     os.remove("1d_hists_phi_entire.root")
-    os.remove("1d_bining_pt_barrel.pkl")
-    os.remove("1d_bining_pt_endcap_loweta.pkl")
-    os.remove("1d_bining_pt_endcap_higheta.pkl")
-    os.remove("1d_bining_eta_entire.pkl")
-    os.remove("1d_bining_phi_entire.pkl")
+    os.remove("1d_binning_pt_barrel.pkl")
+    os.remove("1d_binning_pt_endcap_loweta.pkl")
+    os.remove("1d_binning_pt_endcap_higheta.pkl")
+    os.remove("1d_binning_eta_entire.pkl")
+    os.remove("1d_binning_phi_entire.pkl")
 
-    egamma_tnp.config.reset_all()
+    egamma_tnp.binning.reset_all()
 
 
 def test_fitter_histogram_saving_3d():
@@ -311,9 +311,9 @@ def test_fitter_histogram_saving_3d():
         }
     ).compute()
 
-    egamma_tnp.config.set("pt_bins", [5, 50, 200, 500])
-    egamma_tnp.config.set("eta_bins", [-2.5, 0, 2.5])
-    egamma_tnp.config.set("phi_bins", [-3.32, 3.32])
+    egamma_tnp.binning.set("pt_bins", [5, 50, 200, 500])
+    egamma_tnp.binning.set("eta_bins", [-2.5, 0, 2.5])
+    egamma_tnp.binning.set("phi_bins", [-3.32, 3.32])
 
     hmll3d = fill_nd_mll_histograms(
         passing_probes,
@@ -321,11 +321,11 @@ def test_fitter_histogram_saving_3d():
         vars=["pt", "eta", "phi"],
     )
 
-    create_hists_root_file_for_fitter(hmll3d, "3d_hists.root", "3d_bining.pkl", axes=["pt", "eta"])
+    create_hists_root_file_for_fitter(hmll3d, "3d_hists.root", "3d_binning.pkl", axes=["pt", "eta"])
 
     with uproot.open("3d_hists.root") as f:
-        bining = pickle.load(open("3d_bining.pkl", "rb"))
-        for bin in bining["bins"]:
+        binning = pickle.load(open("3d_binning.pkl", "rb"))
+        for bin in binning["bins"]:
             name = bin["name"]
             min_eta = bin["vars"]["eta"]["min"] * 1j
             max_eta = bin["vars"]["eta"]["max"] * 1j
@@ -339,9 +339,9 @@ def test_fitter_histogram_saving_3d():
             assert_histograms_equal(saved_failing_hist, hmll3d["failing"][min_pt:max_pt:sum, min_eta:max_eta:sum, sum, :], flow=False)
 
     os.remove("3d_hists.root")
-    os.remove("3d_bining.pkl")
+    os.remove("3d_binning.pkl")
 
-    egamma_tnp.config.reset_all()
+    egamma_tnp.binning.reset_all()
 
 
 def test_fitter_histogram_saving_against_reference():
@@ -369,8 +369,8 @@ def test_fitter_histogram_saving_against_reference():
         }
     ).compute()
 
-    egamma_tnp.config.set("el_pt_bins", [10, 20, 35, 50, 100, 200, 500])
-    egamma_tnp.config.set("el_sc_eta_bins", [-2.5, -2.0, -1.566, -1.4442, -0.8, 0.0, 0.8, 1.4442, 1.566, 2.0, 2.5])
+    egamma_tnp.binning.set("el_pt_bins", [10, 20, 35, 50, 100, 200, 500])
+    egamma_tnp.binning.set("el_sc_eta_bins", [-2.5, -2.0, -1.566, -1.4442, -0.8, 0.0, 0.8, 1.4442, 1.566, 2.0, 2.5])
 
     hmll3d = fill_nd_mll_histograms(
         passing_probes,
@@ -378,27 +378,27 @@ def test_fitter_histogram_saving_against_reference():
         vars=["el_sc_eta", "el_pt"],
     )
 
-    create_hists_root_file_for_fitter(hmll3d, "3d_hists.root", "3d_bining.pkl", axes=["el_sc_eta", "el_pt"])
+    create_hists_root_file_for_fitter(hmll3d, "3d_hists.root", "3d_binning.pkl", axes=["el_sc_eta", "el_pt"])
 
-    bining = pickle.load(open("3d_bining.pkl", "rb"))
-    modified_bining = bining.copy()
+    binning = pickle.load(open("3d_binning.pkl", "rb"))
+    modified_binning = binning.copy()
 
-    for bin in modified_bining["bins"]:
+    for bin in modified_binning["bins"]:
         current_cut = bin["cut"]
         new_cut = "tag_Ele_pt > 35 && abs(tag_sc_eta) < 2.17 && el_q*tag_Ele_q < 0 && " + current_cut + " && tag_Ele_trigMVA > 0.92  "
         new_cut = "tag_Ele_pt > 35 && abs(tag_sc_eta) < 2.17 && el_q*tag_Ele_q < 0 && " + current_cut
         bin["cut"] = new_cut
 
-    for bin in modified_bining["bins"][:10]:
+    for bin in modified_binning["bins"][:10]:
         current_cut = bin["cut"]
         new_cut = current_cut + " && tag_Ele_trigMVA > 0.92  "
         bin["cut"] = new_cut
 
-    egm_tnp_analysis_bining = pickle.load(open(os.path.abspath("tests/samples/fitter_bining.pkl"), "rb"))
-    assert modified_bining == egm_tnp_analysis_bining
+    egm_tnp_analysis_binning = pickle.load(open(os.path.abspath("tests/samples/fitter_binning.pkl"), "rb"))
+    assert modified_binning == egm_tnp_analysis_binning
 
     with uproot.open("3d_hists.root") as f:
-        for bin in bining["bins"]:
+        for bin in binning["bins"]:
             name = bin["name"]
             min_eta = bin["vars"]["el_sc_eta"]["min"] * 1j
             max_eta = bin["vars"]["el_sc_eta"]["max"] * 1j
@@ -412,12 +412,12 @@ def test_fitter_histogram_saving_against_reference():
             assert_histograms_equal(saved_failing_hist, hmll3d["failing"][min_eta:max_eta:sum, min_pt:max_pt:sum, :], flow=False)
 
     os.remove("3d_hists.root")
-    os.remove("3d_bining.pkl")
+    os.remove("3d_binning.pkl")
 
-    egamma_tnp.config.reset_all()
+    egamma_tnp.binning.reset_all()
 
 
-def test_fitter_histogram_conversion_bining():
+def test_fitter_histogram_conversion_binning():
     import pickle
 
     import egamma_tnp
@@ -442,8 +442,8 @@ def test_fitter_histogram_conversion_bining():
         }
     ).compute()
 
-    egamma_tnp.config.set("el_pt_bins", [10, 20, 35, 50, 100, 200, 500])
-    egamma_tnp.config.set("el_sc_eta_bins", [-2.5, -2.0, -1.566, -1.4442, -0.8, 0.0, 0.8, 1.4442, 1.566, 2.0, 2.5])
+    egamma_tnp.binning.set("el_pt_bins", [10, 20, 35, 50, 100, 200, 500])
+    egamma_tnp.binning.set("el_sc_eta_bins", [-2.5, -2.0, -1.566, -1.4442, -0.8, 0.0, 0.8, 1.4442, 1.566, 2.0, 2.5])
 
     hmll3d = fill_nd_mll_histograms(
         passing_probes,
@@ -451,25 +451,25 @@ def test_fitter_histogram_conversion_bining():
         vars=["el_sc_eta", "el_pt"],
     )
 
-    res3d, bining = convert_nd_mll_hists_to_1d_hists(hmll3d, axes=["el_sc_eta", "el_pt"])
+    res3d, binning = convert_nd_mll_hists_to_1d_hists(hmll3d, axes=["el_sc_eta", "el_pt"])
 
-    modified_bining = bining.copy()
+    modified_binning = binning.copy()
 
-    for bin in modified_bining["bins"]:
+    for bin in modified_binning["bins"]:
         current_cut = bin["cut"]
         new_cut = "tag_Ele_pt > 35 && abs(tag_sc_eta) < 2.17 && el_q*tag_Ele_q < 0 && " + current_cut + " && tag_Ele_trigMVA > 0.92  "
         new_cut = "tag_Ele_pt > 35 && abs(tag_sc_eta) < 2.17 && el_q*tag_Ele_q < 0 && " + current_cut
         bin["cut"] = new_cut
 
-    for bin in modified_bining["bins"][:10]:
+    for bin in modified_binning["bins"][:10]:
         current_cut = bin["cut"]
         new_cut = current_cut + " && tag_Ele_trigMVA > 0.92  "
         bin["cut"] = new_cut
 
-    egm_tnp_analysis_bining = pickle.load(open(os.path.abspath("tests/samples/fitter_bining.pkl"), "rb"))
-    assert modified_bining == egm_tnp_analysis_bining
+    egm_tnp_analysis_binning = pickle.load(open(os.path.abspath("tests/samples/fitter_binning.pkl"), "rb"))
+    assert modified_binning == egm_tnp_analysis_binning
 
-    for bin in bining["bins"]:
+    for bin in binning["bins"]:
         name = bin["name"].split("_", 1)[1]
         min_eta = bin["vars"]["el_sc_eta"]["min"] * 1j
         max_eta = bin["vars"]["el_sc_eta"]["max"] * 1j
@@ -479,4 +479,4 @@ def test_fitter_histogram_conversion_bining():
         assert_histograms_equal(res3d["passing"][name], hmll3d["passing"][min_eta:max_eta:sum, min_pt:max_pt:sum, :], flow=False)
         assert_histograms_equal(res3d["failing"][name], hmll3d["failing"][min_eta:max_eta:sum, min_pt:max_pt:sum, :], flow=False)
 
-    egamma_tnp.config.reset_all()
+    egamma_tnp.binning.reset_all()

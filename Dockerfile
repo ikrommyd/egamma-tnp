@@ -6,7 +6,7 @@ ARG CLUSTER=lxplus-cc7
 ADD . .
 
 RUN echo "=======================================" && \
-    echo "Installing PocketCoffea" && \
+    echo "Installing egamma-tnp" && \
     echo "on cluster environment: $CLUSTER" && \
     echo "Current time:" $(date) && \
     echo "=======================================" && \

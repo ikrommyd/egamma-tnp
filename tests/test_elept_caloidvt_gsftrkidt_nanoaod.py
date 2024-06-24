@@ -5,10 +5,7 @@ import os
 import pytest
 from coffea.dataset_tools import preprocess
 
-import egamma_tnp
 from egamma_tnp.triggers import ElePt_CaloIdVT_GsfTrkIdT
-
-egamma_tnp.config.set("NanoAODv", 12)
 
 
 @pytest.mark.parametrize("do_preprocess", [True, False])
@@ -207,6 +204,3 @@ def test_distributed_compute(do_preprocess, allow_read_errors_with_report):
         assert heta_fail.values(flow=True)[0] == 0.0
         assert hphi_pass.values(flow=True)[0] == 0.0
         assert hphi_fail.values(flow=True)[0] == 0.0
-
-
-egamma_tnp.config.reset("NanoAODv")

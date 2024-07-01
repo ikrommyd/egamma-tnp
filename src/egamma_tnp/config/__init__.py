@@ -1,10 +1,10 @@
 from __future__ import annotations
 
-from egamma_tnp.config.manager import Config
+from egamma_tnp.config.binning import Binning
 
-config = Config()
+binning = Binning()
 
-__all__ = ("config",)
+__all__ = ("binning",)
 
 
 def dir():

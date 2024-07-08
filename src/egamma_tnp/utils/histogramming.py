@@ -141,9 +141,9 @@ def fill_pt_eta_phi_cutncount_histograms(
     if vars is None:
         vars = ["el_pt", "el_eta", "el_phi"]
 
-    ptbins = egamma_tnp.binning.get("pt_bins")
-    etabins = egamma_tnp.binning.get("eta_bins")
-    phibins = egamma_tnp.binning.get("phi_bins")
+    ptbins = egamma_tnp.binning.get(f"{vars[0]}_bins")
+    etabins = egamma_tnp.binning.get(f"{vars[1]}_bins")
+    phibins = egamma_tnp.binning.get(f"{vars[2]}_bins")
 
     pt_pass = passing_probes[vars[0]]
     pt_fail = failing_probes[vars[0]]
@@ -290,9 +290,9 @@ def fill_pt_eta_phi_mll_histograms(
     if vars is None:
         vars = ["el_pt", "el_eta", "el_phi"]
 
-    ptbins = egamma_tnp.binning.get("pt_bins")
-    etabins = egamma_tnp.binning.get("eta_bins")
-    phibins = egamma_tnp.binning.get("phi_bins")
+    ptbins = egamma_tnp.binning.get(f"{vars[0]}_bins")
+    etabins = egamma_tnp.binning.get(f"{vars[1]}_bins")
+    phibins = egamma_tnp.binning.get(f"{vars[2]}_bins")
 
     pt_pass = passing_probes[vars[0]]
     pt_fail = failing_probes[vars[0]]

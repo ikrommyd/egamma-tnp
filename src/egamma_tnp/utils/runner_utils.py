@@ -33,7 +33,7 @@ def filter_class_args(class_, args):
     return {k: v for k, v in args.items() if k in sig.parameters}
 
 
-def initialize_class(config, filtered_args, fileset):
+def initialize_class(config, args, fileset):
     class_map = {
         "ElectronTagNProbeFromNanoAOD": ElectronTagNProbeFromNanoAOD,
         "ElectronTagNProbeFromNTuples": ElectronTagNProbeFromNTuples,
@@ -42,8 +42,9 @@ def initialize_class(config, filtered_args, fileset):
     }
     class_name = config["workflow"]
     workflow = class_map[class_name]
-    class_args = filter_class_args(workflow, filtered_args)
-    return workflow(fileset, **class_args)
+    class_args = config["workflow_args"] | filter_class_args(workflow, vars(args))
+    class_args.pop("fileset")
+    return workflow(fileset=fileset, **class_args)
 
 
 def run_methods(instance, methods):

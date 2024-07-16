@@ -1,0 +1,18 @@
+{
+  "workflow": "ElectronTagNProbeFromNanoAOD",
+  "methods": [
+    {
+      "name": "get_tnp_arrays",
+      "args": {
+        "cut_and_count": true,
+        "mass_range": null,
+        "vars": ["el_pt", "el_eta", "el_phi"],
+        "flat": true,
+        "uproot_options": null,
+        "compute": false,
+        "scheduler": null,
+        "progress": false
+      }
+    }
+    ]
+}

@@ -19,6 +19,6 @@ RUN echo "=======================================" && \
         echo "Installing on alma9"; \
     fi && \
     echo "Installing lpcjobqueue" && \
-    python -m pip install git+https://github.com/CoffeaTeam/lpcjobqueue.git@v\${LPCJQ_VERSION}; \
+    python -m pip install git+https://github.com/CoffeaTeam/lpcjobqueue.git@v${LPCJQ_VERSION} && \
     echo "Installing egamma-tnp" && \
     python -m pip install . --verbose

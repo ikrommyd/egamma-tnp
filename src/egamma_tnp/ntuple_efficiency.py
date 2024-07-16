@@ -136,7 +136,7 @@ class ElectronTagNProbeFromNTuples(BaseTagNProbe):
             events["el_phi_to_use"] = events.el_phi
         if self.extra_filter is not None:
             events = self.extra_filter(events, **self.extra_filter_args)
-        if self.goldenjson is not None:
+        if self.goldenjson is not None and not events.metadata.get("isMC"):
             lumimask = LumiMask(self.goldenjson)
             mask = lumimask(events.run, events.lumi)
             events = events[mask]
@@ -316,7 +316,7 @@ class PhotonTagNProbeFromNTuples(BaseTagNProbe):
             events["ph_phi_to_use"] = events.ph_phi
         if self.extra_filter is not None:
             events = self.extra_filter(events, **self.extra_filter_args)
-        if self.goldenjson is not None:
+        if self.goldenjson is not None and not events.metadata.get("isMC"):
             lumimask = LumiMask(self.goldenjson)
             mask = lumimask(events.run, events.lumi)
             events = events[mask]

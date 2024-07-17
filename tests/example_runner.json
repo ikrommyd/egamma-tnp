@@ -1,6 +1,6 @@
 {
   "workflow": "ElectronTagNProbeFromNanoAOD",
-  "workflow_args": {"filters": null},
+  "workflow_args": {"filters": ["HLT_Ele30_WPTight_Gsf"], "filterbit": [1]},
   "methods": [
     {
       "name": "get_tnp_arrays",
@@ -8,12 +8,44 @@
         "cut_and_count": true,
         "mass_range": null,
         "vars": ["el_pt", "el_eta", "el_phi"],
-        "flat": true,
-        "uproot_options": null,
-        "compute": false,
-        "scheduler": null,
-        "progress": false
+        "flat": false,
+        "uproot_options": null
+      }
+    },
+    {
+      "name": "get_passing_and_failing_probes",
+      "args": {
+        "filter": "HLT_Ele30_WPTight_Gsf",
+        "cut_and_count": true,
+        "mass_range": null,
+        "vars": ["el_pt", "el_eta", "el_phi"],
+        "flat": false,
+        "uproot_options": null
+      }
+    },
+    {
+      "name": "get_1d_pt_eta_phi_tnp_histograms",
+      "args": {
+        "filter": "HLT_Ele30_WPTight_Gsf",
+        "cut_and_count": true,
+        "mass_range": null,
+        "plateau_cut": null,
+        "eta_regions_pt": null,
+        "eta_regions_eta": null,
+        "eta_regions_phi": null,
+        "vars": ["el_pt", "el_eta", "el_phi"],
+        "uproot_options": null
+      }
+    },
+    {
+      "name": "get_nd_tnp_histograms",
+      "args": {
+        "filter": "HLT_Ele30_WPTight_Gsf",
+        "cut_and_count": true,
+        "mass_range": null,
+        "vars": ["el_pt", "el_eta", "el_phi"],
+        "uproot_options": null
       }
     }
-    ]
+  ]
 }

@@ -1,5 +1,11 @@
 {
-  "sample": {
+  "dataset1": {
+    "files": {
+      "root_files/EGamma0.root": "Events",
+      "root_files/EGamma1.root": "Events"
+    }
+  },
+  "dataset2": {
     "files": {
       "tests/samples/DYto2E.root": "Events"
     }

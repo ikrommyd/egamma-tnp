@@ -1,0 +1,7 @@
+{
+  "sample": {
+    "files": {
+      "tests/samples/DYto2E.root": "Events"
+    }
+  }
+}

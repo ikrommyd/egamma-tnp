@@ -14,14 +14,23 @@ def main():
     parser = runner_utils.get_main_parser()
     parser.add_argument("--port", type=int, default=8786, help="Port for the Dask scheduler")
     parser.add_argument("--dashboard_address", type=str, default=":8787", help="Address for the Dask dashboard")
-    parser.add_argument("--cores", type=int, default=1, help="Number of cores for each worker")
-    parser.add_argument("--memory", type=str, default="4GB", help="Memory allocation for each worker")
-    parser.add_argument("--disk", type=str, default="4GB", help="Disk allocation for each worker")
-    parser.add_argument("--scaleout", type=int, default=100, help="Maximum number of workers")
+    parser.add_argument("--cores", type=int, help="Number of cores for each worker")
+    parser.add_argument("--memory", type=str, help="Memory allocation for each worker")
+    parser.add_argument("--disk", type=str, help="Disk allocation for each worker")
+    parser.add_argument("--scaleout", type=int, help="Maximum number of workers")
     parser.add_argument("--adaptive", type=bool, default=True, help="Adaptive scaling")
     parser.add_argument("--queue", type=str, help="Queue for job submission")
     parser.add_argument("--walltime", type=str, help="Walltime for job execution")
     args = parser.parse_args()
+    if args.executor != "distributed":
+        if args.scaleout is None:
+            args.scaleout = 100
+        if args.cores is None:
+            args.cores = 1
+        if args.memory is None:
+            args.memory = "4GB"
+        if args.disk is None:
+            args.disk = "4GB"
 
     config = runner_utils.load_json(args.config)
     if args.binning:
@@ -36,16 +45,7 @@ def main():
     if args.executor in ["multiprocessing", "processes", "single-threaded", "sync", "synchronous", "threading", "threads"]:
         scheduler = args.executor
     elif args.executor == "distributed":
-        default_cores = 1
-        default_memory = "4GB"
-        default_scaleout = 100
-
-        cluster = LocalCluster(
-            n_workers=args.scaleout if args.scaleout != default_scaleout else None,
-            threads_per_worker=args.cores if args.cores != default_cores else None,
-            memory_limit=args.memory if args.memory != default_memory else None,
-            dashboard_address=args.dashboard_address,
-        )
+        cluster = LocalCluster(n_workers=args.scaleout, threads_per_worker=args.cores, memory_limit=args.memory, dashboard_address=args.dashboard_address)
     elif args.executor == "dask/lpc":
         from lpcjobqueue import LPCCondorCluster
 
@@ -117,14 +117,14 @@ def main():
     else:
         raise ValueError(f"Unknown executor: {args.executor}")
 
-    to_compute = runner_utils.run_methods(instance, config["methods"])
-
     if cluster:
         if args.adaptive and args.executor != "distributed":
             cluster.adapt(minimum=1, maximum=args.scaleout)
         elif not args.adaptive and args.executor != "distributed":
             cluster.scale(args.scaleout)
         client = Client(cluster)
+
+    to_compute = runner_utils.run_methods(instance, config["methods"])
 
     if client:
         with performance_report(filename="/tmp/dask-report.html"):

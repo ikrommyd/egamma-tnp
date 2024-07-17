@@ -265,7 +265,7 @@ class ElectronTagNProbeFromNanoAOD(BaseTagNProbe):
                 weights.add("PUWeight", pileup_weight)
             else:
                 weights.add("PUWeight", dak.ones_like(all_probe_events.event))
-            probe_dict["weight"] = weights.partial_weight(include=["PUWeight"])
+            probe_dict["weight"] = weights.partial_weight(include=["PUWeight", "genWeight"])
             probe_dict["weight_gen"] = weights.partial_weight(include=["genWeight"])
             probe_dict["weight_total"] = weights.weight()
 
@@ -645,7 +645,7 @@ class PhotonTagNProbeFromNanoAOD(BaseTagNProbe):
                 weights.add("PUWeight", pileup_weight)
             else:
                 weights.add("PUWeight", dak.ones_like(all_probe_events.event))
-            probe_dict["weight"] = weights.partial_weight(include=["PUWeight"])
+            probe_dict["weight"] = weights.partial_weight(include=["PUWeight", "genWeight"])
             probe_dict["weight_gen"] = weights.partial_weight(include=["genWeight"])
             probe_dict["weight_total"] = weights.weight()
 

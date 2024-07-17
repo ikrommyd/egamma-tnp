@@ -12,15 +12,6 @@ from egamma_tnp.utils import runner_utils
 
 def main():
     parser = runner_utils.get_main_parser()
-    parser.add_argument("--cores", type=int, help="Number of cores for each worker")
-    parser.add_argument("--memory", type=str, help="Memory allocation for each worker")
-    parser.add_argument("--disk", type=str, help="Disk allocation for each worker")
-    parser.add_argument("--scaleout", type=int, help="Maximum number of workers")
-    parser.add_argument("--adaptive", type=bool, default=True, help="Adaptive scaling")
-    parser.add_argument("--port", type=int, default=8786, help="Port for the Dask scheduler")
-    parser.add_argument("--dashboard_address", type=str, default=":8787", help="Address for the Dask dashboard")
-    parser.add_argument("--queue", type=str, help="Queue for job submission")
-    parser.add_argument("--walltime", type=str, help="Walltime for job execution")
     args = parser.parse_args()
     if args.executor != "distributed":
         if args.scaleout is None:
@@ -128,10 +119,10 @@ def main():
 
     if client:
         with performance_report(filename="/tmp/dask-report.html"):
-            out = dask.compute(to_compute, scheduler="distributed")
+            (out,) = dask.compute(to_compute, scheduler="distributed")
     else:
         with ProgressBar():
-            out = dask.compute(to_compute, scheduler=scheduler)
+            (out,) = dask.compute(to_compute, scheduler=scheduler)
 
     print(out)  # noqa: T201
 

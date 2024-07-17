@@ -53,7 +53,10 @@ def run_methods(instance, methods):
         method_name = method["name"]
         method_args = method["args"]
         method_to_call = getattr(instance, method_name)
-        results[method_name] = method_to_call(**method_args)
+        for arg in method_args:
+            if arg in ["compute", "scheduler", "progress"]:
+                raise ValueError(f"Argument `{arg}` is not allowed to be specified in the JSON configuration file.")
+        results[method_name] = method_to_call(compute=False, **method_args)
     return results
 
 
@@ -125,6 +128,15 @@ def get_main_parser():
 
     # Executor
     parser.add_argument("--executor", type=str, help="The executor to use for the computations. Default is None and lets dask decide.")
+    parser.add_argument("--cores", type=int, help="Number of cores for each worker")
+    parser.add_argument("--memory", type=str, help="Memory allocation for each worker")
+    parser.add_argument("--disk", type=str, help="Disk allocation for each worker")
+    parser.add_argument("--scaleout", type=int, help="Maximum number of workers")
+    parser.add_argument("--adaptive", type=bool, default=True, help="Adaptive scaling")
+    parser.add_argument("--port", type=int, default=8786, help="Port for the Dask scheduler")
+    parser.add_argument("--dashboard_address", type=str, default=":8787", help="Address for the Dask dashboard")
+    parser.add_argument("--queue", type=str, help="Queue for job submission")
+    parser.add_argument("--walltime", type=str, help="Walltime for job execution")
 
     # Common options
     parser.add_argument("--tags_pt_cut", type=float, default=35, help="The Pt cut to apply to the tag particles. Default is 35.")

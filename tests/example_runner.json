@@ -9,7 +9,7 @@
         "mass_range": null,
         "vars": ["el_pt", "el_eta", "el_phi"],
         "flat": false,
-        "uproot_options": null
+        "uproot_options": {"allow_read_errors_with_report": true}
       }
     },
     {

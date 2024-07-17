@@ -141,6 +141,12 @@ def fill_pt_eta_phi_cutncount_histograms(
     if vars is None:
         vars = ["el_pt", "el_eta", "el_phi"]
 
+    if any(egamma_tnp.binning.get(f"{var}_bins") is None for var in vars):
+        raise ValueError(
+            """One or more variables do not have binning information.
+            Please define the binning information using `egamma_tnp.binning.set`.
+            The variable names in the configuration json should be in the form of `"{var}_bins"`."""
+        )
     ptbins = egamma_tnp.binning.get(f"{vars[0]}_bins")
     etabins = egamma_tnp.binning.get(f"{vars[1]}_bins")
     phibins = egamma_tnp.binning.get(f"{vars[2]}_bins")
@@ -290,6 +296,12 @@ def fill_pt_eta_phi_mll_histograms(
     if vars is None:
         vars = ["el_pt", "el_eta", "el_phi"]
 
+    if any(egamma_tnp.binning.get(f"{var}_bins") is None for var in vars):
+        raise ValueError(
+            """One or more variables do not have binning information.
+            Please define the binning information using `egamma_tnp.binning.set`.
+            The variable names in the configuration json should be in the form of `"{var}_bins"`."""
+        )
     ptbins = egamma_tnp.binning.get(f"{vars[0]}_bins")
     etabins = egamma_tnp.binning.get(f"{vars[1]}_bins")
     phibins = egamma_tnp.binning.get(f"{vars[2]}_bins")
@@ -490,7 +502,7 @@ def fill_nd_mll_histograms(
         raise ValueError(
             """One or more variables do not have binning information.
             Please define the binning information using `egamma_tnp.binning.set`.
-            The variable names in the configuration json should be in the form of `"{var}_bins"`. """
+            The variable names in the configuration json should be in the form of `"{var}_bins"`."""
         )
 
     axes = [hist.axis.Variable(egamma_tnp.binning.get(f"{var}_bins"), name=var, label=f"{var.capitalize()}") for var in vars]

@@ -110,7 +110,7 @@ def main():
 
     if cluster:
         if args.adaptive and args.executor != "distributed":
-            cluster.adapt(minimum=1, maximum=args.scaleout)
+            cluster.adapt(minimum=0, maximum=args.scaleout)
         elif not args.adaptive and args.executor != "distributed":
             cluster.scale(args.scaleout)
         client = Client(cluster)

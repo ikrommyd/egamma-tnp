@@ -8,7 +8,7 @@
         "cut_and_count": true,
         "mass_range": null,
         "vars": "all",
-        "flat": false,
+        "flat": true,
         "uproot_options": {"allow_read_errors_with_report": true}
       }
     },
@@ -19,7 +19,7 @@
         "cut_and_count": true,
         "mass_range": null,
         "vars": ["el_pt", "el_eta", "el_phi"],
-        "flat": false,
+        "flat": true,
         "uproot_options": null
       }
     },

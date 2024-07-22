@@ -30,6 +30,11 @@ def main():
 
     instance = runner_utils.initialize_class(config, args, fileset)
 
+    if args.voms is not None:
+        _x509_path = args.voms
+    else:
+        _x509_path = runner_utils.get_proxy()
+
     cluster = None
     client = None
     scheduler = None
@@ -43,9 +48,6 @@ def main():
         cluster = LPCCondorCluster(
             ship_env=True,
             scheduler_options={"dashboard_address": args.dashboard_address},
-            job_script_prologue=[
-                f"export PYTHONPATH=$PYTHONPATH:{os.getcwd()}",
-            ],
             memory=args.memory,
             disk=args.disk,
             cores=args.cores,
@@ -68,12 +70,11 @@ def main():
                 "error": "dask_job_output.err",
                 "should_transfer_files": "Yes",
                 "when_to_transfer_output": "ON_EXIT",
-                "transfer_input_files": "root://eosuser.cern.ch//eos/user/i/ikrommyd/voms/x509px",
-                "+JobFlavour": '"longlunch"',
+                "+JobFlavour": f'"{args.jobflavour}"',
             },
             job_script_prologue=[
                 "export XRD_RUNFORKHANDLER=1",
-                "export X509_USER_PROXY=${_CONDOR_SCRATCH_DIR}/x509px",
+                f"export X509_USER_PROXY={_x509_path}",
                 "export PYTHONPATH=$PYTHONPATH:$_CONDOR_SCRATCH_DIR",
             ],
         )
@@ -87,6 +88,8 @@ def main():
             memory=args.memory,
             walltime=args.walltime,
             job_script_prologue=[
+                "export XRD_RUNFORKHANDLER=1",
+                f"export X509_USER_PROXY={_x509_path}",
                 f"export PYTHONPATH=$PYTHONPATH:{os.getcwd()}",
             ],
             scheduler_options={"dashboard_address": args.dashboard_address},
@@ -100,13 +103,15 @@ def main():
             memory=args.memory,
             disk=args.disk,
             job_script_prologue=[
+                "export XRD_RUNFORKHANDLER=1",
+                f"export X509_USER_PROXY={_x509_path}",
                 f"export PYTHONPATH=$PYTHONPATH:{os.getcwd()}",
             ],
             scheduler_options={"dashboard_address": args.dashboard_address},
         )
         scheduler = "distributed"
     else:
-        raise ValueError(f"Unknown executor: {args.executor}")
+        raise ValueError(f"Unknown executor `{args.executor}`")
 
     if cluster:
         if args.adaptive and args.executor != "distributed":

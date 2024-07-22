@@ -4,6 +4,8 @@ import argparse
 import gzip
 import inspect
 import json
+import os
+import subprocess
 
 import egamma_tnp
 from egamma_tnp import (
@@ -60,6 +62,32 @@ def run_methods(instance, methods):
     return results
 
 
+def get_proxy():
+    """
+    Use voms-proxy-info to check if a proxy is available.
+    If so, copy it to $HOME/.proxy and return the path.
+    An exception is raised in the following cases:
+    - voms-proxy-info is not installed
+    - the proxy is not valid
+
+    :return: Path to proxy
+    :rtype: str
+    """
+    if subprocess.getstatusoutput("voms-proxy-info")[0] != 0:
+        raise RuntimeError("voms-proxy-init not found. Please install it.")
+
+    stat, out = subprocess.getstatusoutput("voms-proxy-info -e -p")
+    # stat is 0 the proxy is valid
+    if stat != 0:
+        raise RuntimeError("No valid proxy found. Please create one.")
+
+    _x509_localpath = out
+    _x509_path = os.environ["HOME"] + f'/.{_x509_localpath.split("/")[-1]}'
+    os.system(f"cp {_x509_localpath} {_x509_path}")
+
+    return _x509_path
+
+
 def get_main_parser():
     """
     Common argument parser for Tag and Probe calculations.
@@ -77,6 +105,28 @@ def get_main_parser():
         Path to a JSON file specifying the binning. The default is None.
     --executor: str, optional
         The executor to use for the computations. The default is None and lets dask decide.
+    --cores: int, optional
+        Number of cores for each worker. The default is None.
+    --memory: str, optional
+        Memory allocation for each worker. The default is None.
+    --disk: str, optional
+        Disk allocation for each worker. The default is None.
+    --scaleout: int, optional
+        Maximum number of workers. The default is None.
+    --adaptive: bool, optional
+        Adaptive scaling. The default is True.
+    --voms: str, optional
+        Path to the VOMS proxy. The default is None. If not specified, it will try to find if there is a valid proxy available.
+    --port: int, optional
+        Port for the Dask scheduler. The default is 8786.
+    --dashboard_address: str, optional
+        Address for the Dask dashboard. The default is ":8787".
+    --jobflavour: str, optional
+        Job flavour for job submission. The default is "longlunch".
+    --queue: str, optional
+        Queue for job submission. The default is None.
+    --walltime: str, optional
+        Walltime for job execution. The default is None.
     --tags_pt_cut: int or float, optional
         The Pt cut to apply to the tag particles. The default is 35.
     --probes_pt_cut: int or float, optional
@@ -133,8 +183,12 @@ def get_main_parser():
     parser.add_argument("--disk", type=str, help="Disk allocation for each worker")
     parser.add_argument("--scaleout", type=int, help="Maximum number of workers")
     parser.add_argument("--adaptive", type=bool, default=True, help="Adaptive scaling")
+    parser.add_argument(
+        "--voms", type=str, help="Path to the VOMS proxy. Default is None. If not specified, it will try to find if there is a valid proxy available."
+    )
     parser.add_argument("--port", type=int, default=8786, help="Port for the Dask scheduler")
     parser.add_argument("--dashboard_address", type=str, default=":8787", help="Address for the Dask dashboard")
+    parser.add_argument("--jobflavour", type=str, default="longlunch", help="Job flavour for lxplus conodr job submission")
     parser.add_argument("--queue", type=str, help="Queue for job submission")
     parser.add_argument("--walltime", type=str, help="Walltime for job execution")
 

@@ -1,12 +1,13 @@
 from __future__ import annotations
 
+import getpass
 import json
 import os
 
 
 class Binning:
     def __init__(self):
-        self.runtime_filename = os.path.join(os.path.dirname(__file__), "/tmp/runtime_binning.json")
+        self.runtime_filename = os.path.join(os.path.dirname(__file__), f"/tmp/runtime_binning_{getpass.getuser()}.json")
         self.default_filename = os.path.join(os.path.dirname(__file__), "default_binning.json")
 
         with open(self.default_filename) as df:  # read from default config

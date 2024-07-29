@@ -52,6 +52,7 @@ dev = [
 ]
 
 [project.scripts]
+run_analysis = "scripts.run_analysis:main"
 dataset_query = "scripts.dataset_query:main"
 
 [tool.hatch.build.targets.wheel]

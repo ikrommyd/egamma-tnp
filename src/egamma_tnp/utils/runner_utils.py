@@ -6,6 +6,7 @@ import inspect
 import json
 import os
 import subprocess
+import warnings
 
 import egamma_tnp
 from egamma_tnp import (
@@ -58,7 +59,12 @@ def run_methods(instance, methods):
         for arg in method_args:
             if arg in ["compute", "scheduler", "progress"]:
                 raise ValueError(f"Argument `{arg}` is not allowed to be specified in the JSON configuration file.")
-        results[method_name] = method_to_call(compute=False, **method_args)
+        if method_name != "get_tnp_arrays" and isinstance(method_args["filter"], list):
+            new_method_args = method_args.copy()
+            del new_method_args["filter"]
+            results[method_name] = {f: method_to_call(compute=False, filter=f, **new_method_args) for f in method_args["filter"]}
+        else:
+            results[method_name] = method_to_call(compute=False, **method_args)
     return results
 
 
@@ -74,18 +80,19 @@ def get_proxy():
     :rtype: str
     """
     if subprocess.getstatusoutput("voms-proxy-info")[0] != 0:
-        raise RuntimeError("voms-proxy-init not found. Please install it.")
+        warnings.warn("voms-proxy-init not found, You need a valid certificate to access data over xrootd.", stacklevel=1)
 
-    stat, out = subprocess.getstatusoutput("voms-proxy-info -e -p")
-    # stat is 0 the proxy is valid
-    if stat != 0:
-        raise RuntimeError("No valid proxy found. Please create one.")
+    else:
+        stat, out = subprocess.getstatusoutput("voms-proxy-info -e -p")
+        # stat is 0 the proxy is valid
+        if stat != 0:
+            raise RuntimeError("No valid proxy found. Please create one.")
 
-    _x509_localpath = out
-    _x509_path = os.environ["HOME"] + f'/.{_x509_localpath.split("/")[-1]}'
-    os.system(f"cp {_x509_localpath} {_x509_path}")
+        _x509_localpath = out
+        _x509_path = os.environ["HOME"] + f'/.{_x509_localpath.split("/")[-1]}'
+        os.system(f"cp {_x509_localpath} {_x509_path}")
 
-    return _x509_path
+        return _x509_path
 
 
 def get_main_parser():

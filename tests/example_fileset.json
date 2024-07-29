@@ -1,13 +1,47 @@
 {
   "dataset1": {
     "files": {
-      "root_files/EGamma0.root": "Events",
-      "root_files/EGamma1.root": "Events"
-    }
+      "root_files/EGamma0.root": {
+        "object_path": "Events",
+        "steps": [
+          [
+            0,
+            542854
+          ]
+        ],
+        "num_entries": 542854,
+        "uuid": "89580ede-f524-11ed-ab8f-050011acbeef"
+      },
+      "root_files/EGamma1.root": {
+        "object_path": "Events",
+        "steps": [
+          [
+            0,
+            608140
+          ]
+        ],
+        "num_entries": 608140,
+        "uuid": "bb19186c-f3a5-11ed-bef3-50f08e80beef"
+      }
+    },
+    "form": null,
+    "metadata": null
   },
   "dataset2": {
     "files": {
-      "tests/samples/DYto2E.root": "Events"
-    }
+      "tests/samples/DYto2E.root": {
+        "object_path": "Events",
+        "steps": [
+          [
+            0,
+            1000
+          ]
+        ],
+        "num_entries": 1000,
+        "uuid": "462c74b2-2807-11ef-8b5b-f64dfa2c5e3c"
+      }
+    },
+    "form": null,
+    "metadata": null
   }
 }

@@ -4,6 +4,7 @@ import os
 import socket
 
 import dask
+import dask_awkward as dak
 from dask.diagnostics import ProgressBar
 from dask.distributed import Client, LocalCluster, performance_report
 
@@ -22,6 +23,9 @@ def main():
             args.memory = "4GB"
         if args.disk is None:
             args.disk = "4GB"
+    if args.executor == "distributed":
+        if args.memory is None:
+            args.memory = "auto"
 
     config = runner_utils.load_json(args.config)
     if args.binning:
@@ -121,6 +125,9 @@ def main():
         client = Client(cluster)
 
     to_compute = runner_utils.run_methods(instance, config["methods"])
+    print("NECESSARY COLUMNS:\n", dak.necessary_columns(to_compute))  # noqa: T201
+    # dask.visualize(to_compute, filename="/tmp/graph-unoptimized.pdf", optimize_graph=False)
+    # dask.visualize(to_compute, filename="/tmp/graph-optimized.pdf", optimize_graph=True)
 
     if client:
         with performance_report(filename="/tmp/dask-report.html"):

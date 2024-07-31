@@ -69,7 +69,7 @@ def fill_pt_eta_phi_cutncount_histograms(
     failing_probes,
     plateau_cut=None,
     eta_regions_pt=None,
-    eta_regions_eta=None,
+    phi_regions_eta=None,
     eta_regions_phi=None,
     vars=None,
 ):
@@ -89,9 +89,9 @@ def fill_pt_eta_phi_cutncount_histograms(
             where name is the name of the region and etamin and etamax are the absolute eta bounds.
             The Pt histograms will be split into those eta regions.
             The default is to avoid the ECAL transition region meaning |eta| < 1.4442 or 1.566 < |eta| < 2.5.
-        eta_regions_eta : dict, optional
-            A dictionary of the form `{"name": [etamin, etamax], ...}`
-            where name is the name of the region and etamin and etamax are the absolute eta bounds.
+        phi_regions_eta : dict, optional
+            A dictionary of the form `{"name": [phimin, phimax], ...}`
+            where name is the name of the region and phimin and phimax are the absolute phi bounds.
             The Eta histograms will be split into those eta regions.
             The default is to use the entire |eta| < 2.5 region.
         eta_regions_phi : dict, optional
@@ -134,8 +134,8 @@ def fill_pt_eta_phi_cutncount_histograms(
             "barrel": [0.0, 1.4442],
             "endcap": [1.566, 2.5],
         }
-    if eta_regions_eta is None:
-        eta_regions_eta = {"entire": [0.0, 2.5]}
+    if phi_regions_eta is None:
+        phi_regions_eta = {"entire": [0.0, 3.32]}
     if eta_regions_phi is None:
         eta_regions_phi = {"entire": [0.0, 2.5]}
     if vars is None:
@@ -184,9 +184,9 @@ def fill_pt_eta_phi_cutncount_histograms(
 
         histograms["pt"][name_pt] = {"passing": hpt_pass, "failing": hpt_fail}
 
-    for name_eta, region_eta in eta_regions_eta.items():
-        eta_mask_eta_pass = (abs(eta_pass) > region_eta[0]) & (abs(eta_pass) < region_eta[1])
-        eta_mask_eta_fail = (abs(eta_fail) > region_eta[0]) & (abs(eta_fail) < region_eta[1])
+    for name_eta, region_eta in phi_regions_eta.items():
+        phi_mask_eta_pass = (abs(phi_pass) > region_eta[0]) & (abs(phi_pass) < region_eta[1])
+        phi_mask_eta_fail = (abs(phi_fail) > region_eta[0]) & (abs(phi_fail) < region_eta[1])
         heta_pass = Hist(
             hist.axis.Variable(etabins, name="eta", label="eta"),
             storage=hist.storage.Weight(),
@@ -195,8 +195,8 @@ def fill_pt_eta_phi_cutncount_histograms(
             hist.axis.Variable(etabins, name="eta", label="eta"),
             storage=hist.storage.Weight(),
         )
-        heta_pass.fill(eta_pass[plateau_mask_pass & eta_mask_eta_pass], weight=passing_probes_weight[plateau_mask_pass & eta_mask_eta_pass])
-        heta_fail.fill(eta_fail[plateau_mask_fail & eta_mask_eta_fail], weight=failing_probes_weight[plateau_mask_fail & eta_mask_eta_fail])
+        heta_pass.fill(eta_pass[plateau_mask_pass & phi_mask_eta_pass], weight=passing_probes_weight[plateau_mask_pass & phi_mask_eta_pass])
+        heta_fail.fill(eta_fail[plateau_mask_fail & phi_mask_eta_fail], weight=failing_probes_weight[plateau_mask_fail & phi_mask_eta_fail])
 
         histograms["eta"][name_eta] = {"passing": heta_pass, "failing": heta_fail}
 
@@ -224,7 +224,7 @@ def fill_pt_eta_phi_mll_histograms(
     failing_probes,
     plateau_cut=None,
     eta_regions_pt=None,
-    eta_regions_eta=None,
+    phi_regions_eta=None,
     eta_regions_phi=None,
     vars=None,
 ):
@@ -244,9 +244,9 @@ def fill_pt_eta_phi_mll_histograms(
             where name is the name of the region and etamin and etamax are the absolute eta bounds.
             The Pt histograms will be split into those eta regions.
             The default is to avoid the ECAL transition region meaning |eta| < 1.4442 or 1.566 < |eta| < 2.5.
-        eta_regions_eta : dict, optional
-            A dictionary of the form `{"name": [etamin, etamax], ...}`
-            where name is the name of the region and etamin and etamax are the absolute eta bounds.
+        phi_regions_eta : dict, optional
+            A dictionary of the form `{"name": [phimin, phimax], ...}`
+            where name is the name of the region and phimin and phimax are the absolute phi bounds.
             The Eta histograms will be split into those eta regions.
             The default is to use the entire |eta| < 2.5 region.
         eta_regions_phi : dict, optional
@@ -289,8 +289,8 @@ def fill_pt_eta_phi_mll_histograms(
             "barrel": [0.0, 1.4442],
             "endcap": [1.566, 2.5],
         }
-    if eta_regions_eta is None:
-        eta_regions_eta = {"entire": [0.0, 2.5]}
+    if phi_regions_eta is None:
+        phi_regions_eta = {"entire": [0.0, 3.32]}
     if eta_regions_phi is None:
         eta_regions_phi = {"entire": [0.0, 2.5]}
     if vars is None:
@@ -343,9 +343,9 @@ def fill_pt_eta_phi_mll_histograms(
 
         histograms["pt"][name_pt] = {"passing": hpt_pass, "failing": hpt_fail}
 
-    for name_eta, region_eta in eta_regions_eta.items():
-        eta_mask_eta_pass = (abs(eta_pass) > region_eta[0]) & (abs(eta_pass) < region_eta[1])
-        eta_mask_eta_fail = (abs(eta_fail) > region_eta[0]) & (abs(eta_fail) < region_eta[1])
+    for name_eta, region_eta in phi_regions_eta.items():
+        phi_mask_eta_pass = (abs(phi_pass) > region_eta[0]) & (abs(phi_pass) < region_eta[1])
+        phi_mask_eta_fail = (abs(phi_fail) > region_eta[0]) & (abs(phi_fail) < region_eta[1])
         heta_pass = Hist(
             hist.axis.Variable(etabins, name="eta", label="eta"),
             hist.axis.Regular(80, 50, 130, name="mll", label="mll [GeV]"),
@@ -356,8 +356,8 @@ def fill_pt_eta_phi_mll_histograms(
             hist.axis.Regular(80, 50, 130, name="mll", label="mll [GeV]"),
             storage=hist.storage.Weight(),
         )
-        eta_mask_pass = plateau_mask_pass & eta_mask_eta_pass
-        eta_mask_fail = plateau_mask_fail & eta_mask_eta_fail
+        eta_mask_fail = plateau_mask_fail & phi_mask_eta_fail
+        eta_mask_pass = plateau_mask_pass & phi_mask_eta_pass
         heta_pass.fill(eta_pass[eta_mask_pass], mll_pass[eta_mask_pass], weight=passing_probes_weight[eta_mask_pass])
         heta_fail.fill(eta_fail[eta_mask_fail], mll_fail[eta_mask_fail], weight=failing_probes_weight[eta_mask_fail])
 

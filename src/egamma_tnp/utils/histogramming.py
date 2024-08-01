@@ -92,8 +92,8 @@ def fill_pt_eta_phi_cutncount_histograms(
         phi_regions_eta : dict, optional
             A dictionary of the form `{"name": [phimin, phimax], ...}`
             where name is the name of the region and phimin and phimax are the absolute phi bounds.
-            The Eta histograms will be split into those eta regions.
-            The default is to use the entire |eta| < 2.5 region.
+            The Eta histograms will be split into those phi regions.
+            The default is to use the entire |phi| < 2.5 region.
         eta_regions_phi : dict, optional
             A dictionary of the form `{"name": [etamin, etamax], ...}`
             where name is the name of the region and etamin and etamax are the absolute eta bounds.
@@ -247,8 +247,8 @@ def fill_pt_eta_phi_mll_histograms(
         phi_regions_eta : dict, optional
             A dictionary of the form `{"name": [phimin, phimax], ...}`
             where name is the name of the region and phimin and phimax are the absolute phi bounds.
-            The Eta histograms will be split into those eta regions.
-            The default is to use the entire |eta| < 2.5 region.
+            The Eta histograms will be split into those phi regions.
+            The default is to use the entire |phi| < 2.5 region.
         eta_regions_phi : dict, optional
             A dictionary of the form `{"name": [etamin, etamax], ...}`
             where name is the name of the region and etamin and etamax are the absolute eta bounds.

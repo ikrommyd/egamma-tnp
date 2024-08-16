@@ -23,7 +23,6 @@ class ElectronTagNProbeFromNTuples(BaseTagNProbe):
         cutbased_id=None,
         extra_tags_mask=None,
         extra_probes_mask=None,
-        goldenjson=None,
         extra_filter=None,
         extra_filter_args=None,
         use_sc_eta=False,
@@ -56,8 +55,6 @@ class ElectronTagNProbeFromNTuples(BaseTagNProbe):
             extra_probes_mask: str, optional
                 An extra mask to apply to the probes. The default is None.
                 Must be of the form "events.<mask> & events.<mask> & ...".
-            goldenjson: str, optional
-                The golden json to use for luminosity masking. The default is None.
             extra_filter : Callable, optional
                 An extra function to filter the events. The default is None.
                 Must take in a coffea NanoEventsArray and return a filtered NanoEventsArray of the events you want to keep.
@@ -82,7 +79,6 @@ class ElectronTagNProbeFromNTuples(BaseTagNProbe):
             cutbased_id=cutbased_id,
             extra_tags_mask=extra_tags_mask,
             extra_probes_mask=extra_probes_mask,
-            goldenjson=goldenjson,
             extra_filter=extra_filter,
             extra_filter_args=extra_filter_args,
             use_sc_eta=use_sc_eta,
@@ -97,7 +93,7 @@ class ElectronTagNProbeFromNTuples(BaseTagNProbe):
         n_of_files = 0
         for dataset in self.fileset.values():
             n_of_files += len(dataset["files"])
-        return f"ElectronTagNProbeFromNTuples(Filters: {self.filters}, Number of files: {n_of_files}, Golden JSON: {self.goldenjson})"
+        return f"ElectronTagNProbeFromNTuples(Filters: {self.filters}, Number of files: {n_of_files})"
 
     def _find_passing_events(self, events, cut_and_count, mass_range):
         pass_pt_probes = events.el_pt > self.probes_pt_cut
@@ -136,8 +132,8 @@ class ElectronTagNProbeFromNTuples(BaseTagNProbe):
             events["el_phi_to_use"] = events.el_phi
         if self.extra_filter is not None:
             events = self.extra_filter(events, **self.extra_filter_args)
-        if self.goldenjson is not None and not events.metadata.get("isMC"):
-            lumimask = LumiMask(self.goldenjson)
+        if events.metadata.get("goldenJSON") and not events.metadata.get("isMC"):
+            lumimask = LumiMask(events.metadata["goldenJSON"])
             mask = lumimask(events.run, events.lumi)
             events = events[mask]
 
@@ -203,7 +199,6 @@ class PhotonTagNProbeFromNTuples(BaseTagNProbe):
         cutbased_id=None,
         extra_tags_mask=None,
         extra_probes_mask=None,
-        goldenjson=None,
         extra_filter=None,
         extra_filter_args=None,
         use_sc_eta=False,
@@ -236,8 +231,6 @@ class PhotonTagNProbeFromNTuples(BaseTagNProbe):
             extra_probes_mask: str, optional
                 An extra mask to apply to the probes. The default is None.
                 Must be of the form "events.<mask> & events.<mask> & ...".
-            goldenjson: str, optional
-                The golden json to use for luminosity masking. The default is None.
             extra_filter : Callable, optional
                 An extra function to filter the events. The default is None.
                 Must take in a coffea NanoEventsArray and return a filtered NanoEventsArray of the events you want to keep.
@@ -262,7 +255,6 @@ class PhotonTagNProbeFromNTuples(BaseTagNProbe):
             cutbased_id=cutbased_id,
             extra_tags_mask=extra_tags_mask,
             extra_probes_mask=extra_probes_mask,
-            goldenjson=goldenjson,
             extra_filter=extra_filter,
             extra_filter_args=extra_filter_args,
             use_sc_eta=use_sc_eta,
@@ -277,7 +269,7 @@ class PhotonTagNProbeFromNTuples(BaseTagNProbe):
         n_of_files = 0
         for dataset in self.fileset.values():
             n_of_files += len(dataset["files"])
-        return f"PhotonTagNProbeFromNTuples(Filters: {self.filters}, Number of files: {n_of_files}, Golden JSON: {self.goldenjson})"
+        return f"PhotonTagNProbeFromNTuples(Filters: {self.filters}, Number of files: {n_of_files})"
 
     def _find_passing_events(self, events, cut_and_count, mass_range):
         pass_pt_probes = events.ph_et > self.probes_pt_cut
@@ -316,8 +308,8 @@ class PhotonTagNProbeFromNTuples(BaseTagNProbe):
             events["ph_phi_to_use"] = events.ph_phi
         if self.extra_filter is not None:
             events = self.extra_filter(events, **self.extra_filter_args)
-        if self.goldenjson is not None and not events.metadata.get("isMC"):
-            lumimask = LumiMask(self.goldenjson)
+        if events.metadata.get("goldenJSON") and not events.metadata.get("isMC"):
+            lumimask = LumiMask(events.metadata["goldenJSON"])
             mask = lumimask(events.run, events.lumi)
             events = events[mask]
 

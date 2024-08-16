@@ -36,7 +36,6 @@ def test_without_compute(do_preprocess, allow_read_errors_with_report):
         probes_pt_cut=29,
         avoid_ecal_transition_tags=True,
         avoid_ecal_transition_probes=True,
-        goldenjson=None,
     )
 
     res = tag_n_probe.get_1d_pt_eta_phi_tnp_histograms(
@@ -100,7 +99,6 @@ def test_local_compute(do_preprocess, allow_read_errors_with_report):
         probes_pt_cut=29,
         avoid_ecal_transition_tags=True,
         avoid_ecal_transition_probes=True,
-        goldenjson=None,
     )
 
     res = tag_n_probe.get_1d_pt_eta_phi_tnp_histograms(
@@ -169,7 +167,6 @@ def test_distributed_compute(do_preprocess, allow_read_errors_with_report):
         probes_pt_cut=29,
         avoid_ecal_transition_tags=True,
         avoid_ecal_transition_probes=True,
-        goldenjson=None,
     )
 
     with Client():

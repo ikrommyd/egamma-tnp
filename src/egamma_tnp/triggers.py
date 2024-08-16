@@ -29,8 +29,6 @@ class ElePt_WPTight_Gsf:
             Whether to avoid the ECAL transition region for the tags with an eta cut. The default is True.
         avoid_ecal_transition_probes : bool, optional
             Whether to avoid the ECAL transition region for the probes with an eta cut. The default is False.
-        goldenjson : str, optional
-            The golden json to use for luminosity masking. The default is None.
         extra_filter : Callable, optional
             An extra function to filter the events. The default is None.
             Must take in a coffea NanoEventsArray and return a filtered NanoEventsArray of the events you want to keep.
@@ -50,7 +48,6 @@ class ElePt_WPTight_Gsf:
         use_sc_phi=False,
         avoid_ecal_transition_tags=True,
         avoid_ecal_transition_probes=False,
-        goldenjson=None,
         extra_filter=None,
         extra_filter_args=None,
     ):
@@ -62,7 +59,6 @@ class ElePt_WPTight_Gsf:
                 probes_pt_cut=probes_pt_cut,
                 tags_abseta_cut=2.5,
                 cutbased_id="passingCutBasedTight122XV1",
-                goldenjson=goldenjson,
                 extra_filter=extra_filter,
                 extra_filter_args=extra_filter_args,
                 use_sc_eta=use_sc_eta,
@@ -80,7 +76,6 @@ class ElePt_WPTight_Gsf:
                 tags_abseta_cut=2.5,
                 filterbit=[1],
                 cutbased_id="cutBased >= 4",
-                goldenjson=goldenjson,
                 extra_filter=extra_filter,
                 extra_filter_args=extra_filter_args,
                 use_sc_eta=use_sc_eta,
@@ -119,8 +114,6 @@ class ElePt_CaloIdVT_GsfTrkIdT:
             Whether to avoid the ECAL transition region for the tags with an eta cut. The default is True.
         avoid_ecal_transition_probes : bool, optional
             Whether to avoid the ECAL transition region for the probes with an eta cut. The default is False.
-        goldenjson : str, optional
-            The golden json to use for luminosity masking. The default is None.
         extra_filter : Callable, optional
             An extra function to filter the events. The default is None.
             Must take in a coffea NanoEventsArray and return a filtered NanoEventsArray of the events you want to keep.
@@ -140,7 +133,6 @@ class ElePt_CaloIdVT_GsfTrkIdT:
         use_sc_phi=False,
         avoid_ecal_transition_tags=True,
         avoid_ecal_transition_probes=False,
-        goldenjson=None,
         extra_filter=None,
         extra_filter_args=None,
     ):
@@ -152,7 +144,6 @@ class ElePt_CaloIdVT_GsfTrkIdT:
                 probes_pt_cut=probes_pt_cut,
                 tags_abseta_cut=2.5,
                 cutbased_id="passingCutBasedTight122XV1",
-                goldenjson=goldenjson,
                 extra_filter=extra_filter,
                 extra_filter_args=extra_filter_args,
                 use_sc_eta=use_sc_eta,
@@ -170,7 +161,6 @@ class ElePt_CaloIdVT_GsfTrkIdT:
                 tags_abseta_cut=2.5,
                 filterbit=[12],
                 cutbased_id="cutBased >= 4",
-                goldenjson=goldenjson,
                 extra_filter=extra_filter,
                 extra_filter_args=extra_filter_args,
                 use_sc_eta=use_sc_eta,
@@ -211,8 +201,6 @@ class ElePt1_ElePt2_CaloIdL_TrackIdL_IsoVL_Leg1:
             Whether to avoid the ECAL transition region for the tags with an eta cut. The default is True.
         avoid_ecal_transition_probes : bool, optional
             Whether to avoid the ECAL transition region for the probes with an eta cut. The default is False.
-        goldenjson : str, optional
-            The golden json to use for luminosity masking. The default is None.
         extra_filter : Callable, optional
             An extra function to filter the events. The default is None.
             Must take in a coffea NanoEventsArray and return a filtered NanoEventsArray of the events you want to keep.
@@ -233,7 +221,6 @@ class ElePt1_ElePt2_CaloIdL_TrackIdL_IsoVL_Leg1:
         use_sc_phi=False,
         avoid_ecal_transition_tags=True,
         avoid_ecal_transition_probes=False,
-        goldenjson=None,
         extra_filter=None,
         extra_filter_args=None,
     ):
@@ -245,7 +232,6 @@ class ElePt1_ElePt2_CaloIdL_TrackIdL_IsoVL_Leg1:
                 probes_pt_cut=probes_pt_cut,
                 tags_abseta_cut=2.5,
                 cutbased_id="passingCutBasedTight122XV1",
-                goldenjson=goldenjson,
                 extra_filter=extra_filter,
                 extra_filter_args=extra_filter_args,
                 use_sc_eta=use_sc_eta,
@@ -263,7 +249,6 @@ class ElePt1_ElePt2_CaloIdL_TrackIdL_IsoVL_Leg1:
                 tags_abseta_cut=2.5,
                 filterbit=[4],
                 cutbased_id="cutBased >= 4",
-                goldenjson=goldenjson,
                 extra_filter=extra_filter,
                 extra_filter_args=extra_filter_args,
                 use_sc_eta=use_sc_eta,
@@ -304,8 +289,6 @@ class ElePt1_ElePt2_CaloIdL_TrackIdL_IsoVL_Leg2:
             Whether to avoid the ECAL transition region for the tags with an eta cut. The default is True.
         avoid_ecal_transition_probes : bool, optional
             Whether to avoid the ECAL transition region for the probes with an eta cut. The default is False.
-        goldenjson : str, optional
-            The golden json to use for luminosity masking. The default is None.
         extra_filter : Callable, optional
             An extra function to filter the events. The default is None.
             Must take in a coffea NanoEventsArray and return a filtered NanoEventsArray of the events you want to keep.
@@ -326,7 +309,6 @@ class ElePt1_ElePt2_CaloIdL_TrackIdL_IsoVL_Leg2:
         use_sc_phi=False,
         avoid_ecal_transition_tags=True,
         avoid_ecal_transition_probes=False,
-        goldenjson=None,
         extra_filter=None,
         extra_filter_args=None,
     ):
@@ -338,7 +320,6 @@ class ElePt1_ElePt2_CaloIdL_TrackIdL_IsoVL_Leg2:
                 probes_pt_cut=probes_pt_cut,
                 tags_abseta_cut=2.5,
                 cutbased_id="passingCutBasedTight122XV1",
-                goldenjson=goldenjson,
                 extra_filter=extra_filter,
                 extra_filter_args=extra_filter_args,
                 use_sc_eta=use_sc_eta,
@@ -356,7 +337,6 @@ class ElePt1_ElePt2_CaloIdL_TrackIdL_IsoVL_Leg2:
                 tags_abseta_cut=2.5,
                 filterbit=[5],
                 cutbased_id="cutBased >= 4",
-                goldenjson=goldenjson,
                 extra_filter=extra_filter,
                 extra_filter_args=extra_filter_args,
                 use_sc_eta=use_sc_eta,
@@ -395,8 +375,6 @@ class DoubleElePt_CaloIdL_MW_SeededLeg:
             Whether to avoid the ECAL transition region for the tags with an eta cut. The default is True.
         avoid_ecal_transition_probes : bool, optional
             Whether to avoid the ECAL transition region for the probes with an eta cut. The default is False.
-        goldenjson : str, optional
-            The golden json to use for luminosity masking. The default is None.
         extra_filter : Callable, optional
             An extra function to filter the events. The default is None.
             Must take in a coffea NanoEventsArray and return a filtered NanoEventsArray of the events you want to keep.
@@ -416,7 +394,6 @@ class DoubleElePt_CaloIdL_MW_SeededLeg:
         use_sc_phi=False,
         avoid_ecal_transition_tags=True,
         avoid_ecal_transition_probes=False,
-        goldenjson=None,
         extra_filter=None,
         extra_filter_args=None,
     ):
@@ -428,7 +405,6 @@ class DoubleElePt_CaloIdL_MW_SeededLeg:
                 probes_pt_cut=probes_pt_cut,
                 tags_abseta_cut=2.5,
                 cutbased_id="passingCutBasedTight122XV1",
-                goldenjson=goldenjson,
                 extra_filter=extra_filter,
                 extra_filter_args=extra_filter_args,
                 use_sc_eta=use_sc_eta,
@@ -446,7 +422,6 @@ class DoubleElePt_CaloIdL_MW_SeededLeg:
                 tags_abseta_cut=2.5,
                 filterbit=[15],
                 cutbased_id="cutBased >= 4",
-                goldenjson=goldenjson,
                 extra_filter=extra_filter,
                 extra_filter_args=extra_filter_args,
                 use_sc_eta=use_sc_eta,
@@ -485,8 +460,6 @@ class DoubleElePt_CaloIdL_MW_UnseededLeg:
             Whether to avoid the ECAL transition region for the tags with an eta cut. The default is True.
         avoid_ecal_transition_probes : bool, optional
             Whether to avoid the ECAL transition region for the probes with an eta cut. The default is False.
-        goldenjson : str, optional
-            The golden json to use for luminosity masking. The default is None.
         extra_filter : Callable, optional
             An extra function to filter the events. The default is None.
             Must take in a coffea NanoEventsArray and return a filtered NanoEventsArray of the events you want to keep.
@@ -506,7 +479,6 @@ class DoubleElePt_CaloIdL_MW_UnseededLeg:
         use_sc_phi=False,
         avoid_ecal_transition_tags=True,
         avoid_ecal_transition_probes=False,
-        goldenjson=None,
         extra_filter=None,
         extra_filter_args=None,
     ):
@@ -518,7 +490,6 @@ class DoubleElePt_CaloIdL_MW_UnseededLeg:
                 probes_pt_cut=probes_pt_cut,
                 tags_abseta_cut=2.5,
                 cutbased_id="passingCutBasedTight122XV1",
-                goldenjson=goldenjson,
                 extra_filter=extra_filter,
                 extra_filter_args=extra_filter_args,
                 use_sc_eta=use_sc_eta,
@@ -536,7 +507,6 @@ class DoubleElePt_CaloIdL_MW_UnseededLeg:
                 tags_abseta_cut=2.5,
                 filterbit=[16],
                 cutbased_id="cutBased >= 4",
-                goldenjson=goldenjson,
                 extra_filter=extra_filter,
                 extra_filter_args=extra_filter_args,
                 use_sc_eta=use_sc_eta,

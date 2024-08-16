@@ -28,7 +28,6 @@ class ElectronTagNProbeFromNanoAOD(BaseTagNProbe):
         cutbased_id=None,
         extra_tags_mask=None,
         extra_probes_mask=None,
-        goldenjson=None,
         extra_filter=None,
         extra_filter_args=None,
         use_sc_eta=False,
@@ -72,8 +71,6 @@ class ElectronTagNProbeFromNanoAOD(BaseTagNProbe):
         extra_probes_mask: str, optional
             An extra mask to apply to the probes. The default is None.
             Must be of the form "zcands.probe.<mask> & zcands.probe.<mask> & ...".
-        goldenjson: str, optional
-            The golden json to use for luminosity masking. The default is None.
         extra_filter : Callable, optional
             An extra function to filter the events. The default is None.
             Must take in a coffea NanoEventsArray and return a filtered NanoEventsArray of the events you want to keep.
@@ -129,7 +126,6 @@ class ElectronTagNProbeFromNanoAOD(BaseTagNProbe):
             cutbased_id=cutbased_id,
             extra_tags_mask=extra_tags_mask,
             extra_probes_mask=extra_probes_mask,
-            goldenjson=goldenjson,
             extra_filter=extra_filter,
             extra_filter_args=extra_filter_args,
             use_sc_eta=use_sc_eta,
@@ -153,7 +149,7 @@ class ElectronTagNProbeFromNanoAOD(BaseTagNProbe):
         n_of_files = 0
         for dataset in self.fileset.values():
             n_of_files += len(dataset["files"])
-        return f"ElectronTagNProbeFromNanoAOD(Filters: {self.filters}, Number of files: {n_of_files}, Golden JSON: {self.goldenjson})"
+        return f"ElectronTagNProbeFromNanoAOD(Filters: {self.filters}, Number of files: {n_of_files})"
 
     def find_probes(self, events, cut_and_count, mass_range, vars):
         if self.use_sc_eta:
@@ -169,8 +165,8 @@ class ElectronTagNProbeFromNanoAOD(BaseTagNProbe):
             events["Electron", "phi_to_use"] = events.Electron.phi
         if self.extra_filter is not None:
             events = self.extra_filter(events, **self.extra_filter_args)
-        if self.goldenjson is not None and not events.metadata.get("isMC"):
-            lumimask = LumiMask(self.goldenjson)
+        if events.metadata.get("goldenJSON") and not events.metadata.get("isMC"):
+            lumimask = LumiMask(events.metadata["goldenJSON"])
             mask = lumimask(events.run, events.luminosityBlock)
             events = events[mask]
 
@@ -388,7 +384,6 @@ class PhotonTagNProbeFromNanoAOD(BaseTagNProbe):
         cutbased_id=None,
         extra_tags_mask=None,
         extra_probes_mask=None,
-        goldenjson=None,
         extra_filter=None,
         extra_filter_args=None,
         use_sc_eta=False,
@@ -434,8 +429,6 @@ class PhotonTagNProbeFromNanoAOD(BaseTagNProbe):
         extra_probes_mask: str, optional
             An extra mask to apply to the probes. The default is None.
             Must be of the form "zcands.probe.<mask> & zcands.probe.<mask> & ...".
-        goldenjson: str, optional
-            The golden json to use for luminosity masking. The default is None.
         extra_filter : Callable, optional
             An extra function to filter the events. The default is None.
             Must take in a coffea NanoEventsArray and return a filtered NanoEventsArray of the events you want to keep.
@@ -491,7 +484,6 @@ class PhotonTagNProbeFromNanoAOD(BaseTagNProbe):
             cutbased_id=cutbased_id,
             extra_tags_mask=extra_tags_mask,
             extra_probes_mask=extra_probes_mask,
-            goldenjson=goldenjson,
             extra_filter=extra_filter,
             extra_filter_args=extra_filter_args,
             use_sc_eta=use_sc_eta,
@@ -516,7 +508,7 @@ class PhotonTagNProbeFromNanoAOD(BaseTagNProbe):
         n_of_files = 0
         for dataset in self.fileset.values():
             n_of_files += len(dataset["files"])
-        return f"PhotonTagNProbeFromNanoAOD(Filters: {self.filters}, Number of files: {n_of_files}, Golden JSON: {self.goldenjson})"
+        return f"PhotonTagNProbeFromNanoAOD(Filters: {self.filters}, Number of files: {n_of_files})"
 
     def find_probes(self, events, cut_and_count, mass_range, vars):
         if self.use_sc_eta:
@@ -538,8 +530,8 @@ class PhotonTagNProbeFromNanoAOD(BaseTagNProbe):
             events["Electron", "phi_to_use"] = events.Electron.phi
         if self.extra_filter is not None:
             events = self.extra_filter(events, **self.extra_filter_args)
-        if self.goldenjson is not None and not events.metadata.get("isMC"):
-            lumimask = LumiMask(self.goldenjson)
+        if events.metadata.get("goldenJSON") and not events.metadata.get("isMC"):
+            lumimask = LumiMask(events.metadata["goldenJSON"])
             mask = lumimask(events.run, events.luminosityBlock)
             events = events[mask]
 

@@ -20,7 +20,6 @@ class BaseTagNProbe:
         cutbased_id,
         extra_tags_mask,
         extra_probes_mask,
-        goldenjson,
         extra_filter,
         extra_filter_args,
         use_sc_eta,
@@ -56,7 +55,6 @@ class BaseTagNProbe:
         self.cutbased_id = cutbased_id
         self.extra_tags_mask = extra_tags_mask
         self.extra_probes_mask = extra_probes_mask
-        self.goldenjson = goldenjson
         self.extra_filter = extra_filter
         self.extra_filter_args = extra_filter_args
         self.use_sc_eta = use_sc_eta

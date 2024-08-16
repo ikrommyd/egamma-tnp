@@ -40,7 +40,6 @@ def test_without_compute(do_preprocess, allow_read_errors_with_report):
         probes_pt_cut=20,
         avoid_ecal_transition_tags=True,
         avoid_ecal_transition_probes=True,
-        goldenjson=None,
     )
     tag_n_probe_leg2 = ElePt1_ElePt2_CaloIdL_TrackIdL_IsoVL_Leg2(
         fileset,
@@ -49,7 +48,6 @@ def test_without_compute(do_preprocess, allow_read_errors_with_report):
         probes_pt_cut=9,
         avoid_ecal_transition_tags=True,
         avoid_ecal_transition_probes=True,
-        goldenjson=None,
     )
 
     for tag_n_probe in [tag_n_probe_leg1, tag_n_probe_leg2]:
@@ -115,7 +113,6 @@ def test_local_compute(do_preprocess, allow_read_errors_with_report):
         probes_pt_cut=20,
         avoid_ecal_transition_tags=True,
         avoid_ecal_transition_probes=True,
-        goldenjson=None,
     )
     tag_n_probe_leg2 = ElePt1_ElePt2_CaloIdL_TrackIdL_IsoVL_Leg2(
         fileset,
@@ -124,7 +121,6 @@ def test_local_compute(do_preprocess, allow_read_errors_with_report):
         probes_pt_cut=9,
         avoid_ecal_transition_tags=True,
         avoid_ecal_transition_probes=True,
-        goldenjson=None,
     )
 
     for tag_n_probe, target_pt, target_eta_phi, total_sum in zip(
@@ -200,7 +196,6 @@ def test_distributed_compute(do_preprocess, allow_read_errors_with_report):
         probes_pt_cut=20,
         avoid_ecal_transition_tags=True,
         avoid_ecal_transition_probes=True,
-        goldenjson=None,
     )
     tag_n_probe_leg2 = ElePt1_ElePt2_CaloIdL_TrackIdL_IsoVL_Leg2(
         fileset,
@@ -209,7 +204,6 @@ def test_distributed_compute(do_preprocess, allow_read_errors_with_report):
         probes_pt_cut=9,
         avoid_ecal_transition_tags=True,
         avoid_ecal_transition_probes=True,
-        goldenjson=None,
     )
 
     with Client():

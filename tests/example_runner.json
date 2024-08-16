@@ -41,7 +41,7 @@
         "mass_range": null,
         "plateau_cut": null,
         "eta_regions_pt": null,
-        "eta_regions_eta": null,
+        "phi_regions_eta": null,
         "eta_regions_phi": null,
         "vars": ["el_pt", "el_eta", "el_phi"],
         "uproot_options": null

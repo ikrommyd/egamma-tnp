@@ -28,10 +28,11 @@ def main():
             args.memory = "auto"
 
     config = runner_utils.load_json(args.config)
+    settings = runner_utils.load_settings(args.settings)
+    args = runner_utils.merge_settings_with_args(args, settings)
     if args.binning:
         runner_utils.set_binning(runner_utils.load_json(args.binning))
     fileset = runner_utils.load_json(args.fileset)
-
     instance = runner_utils.initialize_class(config, args, fileset)
 
     if args.voms is not None:
@@ -124,10 +125,13 @@ def main():
             cluster.scale(args.scaleout)
         client = Client(cluster)
 
+    print("Calculating task graph")  # noqa: T201
     to_compute = runner_utils.run_methods(instance, config["methods"])
+    print("Calculating necessary columns")  # noqa: T201
     print("NECESSARY COLUMNS:\n", dak.necessary_columns(to_compute))  # noqa: T201
-    # dask.visualize(to_compute, filename="/tmp/graph-unoptimized.pdf", optimize_graph=False)
-    # dask.visualize(to_compute, filename="/tmp/graph-optimized.pdf", optimize_graph=True)
+    print("Visualizing task graph")  # noqa: T201
+    dask.visualize(to_compute, filename="/tmp/graph-unoptimized.pdf", optimize_graph=False)
+    dask.visualize(to_compute, filename="/tmp/graph-optimized.pdf", optimize_graph=True)
 
     if client:
         with performance_report(filename="/tmp/dask-report.html"):

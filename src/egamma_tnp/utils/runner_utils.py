@@ -84,20 +84,28 @@ def initialize_class(config, args, fileset):
 
 def run_methods(instance, methods):
     """Run specified methods on the initialized Tag and Probe instance."""
-    results = {}
+    results = []
     for method in methods:
         method_name = method["name"]
         method_args = method["args"]
         method_to_call = getattr(instance, method_name)
+
+        # Check for disallowed arguments in the JSON configuration
         for arg in method_args:
             if arg in ["compute", "scheduler", "progress"]:
                 raise ValueError(f"Argument `{arg}` is not allowed to be specified in the JSON configuration file.")
-        if method_name != "get_tnp_arrays" and isinstance(method_args["filter"], list):
+
+        # Handle methods with a list of filters
+        if method_name != "get_tnp_arrays" and isinstance(method_args.get("filter"), list):
             new_method_args = method_args.copy()
             del new_method_args["filter"]
-            results[method_name] = {f: method_to_call(compute=False, filter=f, **new_method_args) for f in method_args["filter"]}
+            result = {f: method_to_call(compute=False, filter=f, **new_method_args) for f in method_args["filter"]}
         else:
-            results[method_name] = method_to_call(compute=False, **method_args)
+            result = method_to_call(compute=False, **method_args)
+
+        # Append the result, method name, and args to the results list
+        results.append({"method": method_name, "args": method_args, "result": result})
+
     return results
 
 

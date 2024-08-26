@@ -23,6 +23,16 @@
       }
     },
     {
+      "name": "get_tnp_arrays",
+      "args": {
+        "cut_and_count": true,
+        "mass_range": null,
+        "vars": ["el_pt", "el_eta", "Jet_pt", "MET_sumEt"],
+        "flat": false,
+        "uproot_options": null
+      }
+    },
+    {
       "name": "get_passing_and_failing_probes",
       "args": {
         "filter": ["HLT_Ele30_WPTight_Gsf", "cutBased >= 2"],

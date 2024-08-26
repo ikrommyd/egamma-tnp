@@ -126,7 +126,9 @@ def main():
         client = Client(cluster)
 
     print("Calculating task graph")  # noqa: T201
+    print("METHODS:\n", config["methods"])  # noqa: T201
     to_compute = runner_utils.run_methods(instance, config["methods"])
+    print("TO COMPUTE:\n", to_compute)  # noqa: T201
     print("Calculating necessary columns")  # noqa: T201
     print("NECESSARY COLUMNS:\n", dak.necessary_columns(to_compute))  # noqa: T201
     print("Visualizing task graph")  # noqa: T201

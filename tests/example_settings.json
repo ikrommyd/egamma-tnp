@@ -1,0 +1,17 @@
+{
+    "tags_pt_cut": 35,
+    "probes_pt_cut": 27,
+    "tags_abseta_cut": 2.17,
+    "probes_abseta_cut": 2.5,
+    "cutbased_id": null,
+    "extra_tags_mask": null,
+    "extra_probes_mask": null,
+    "extra_filter": null,
+    "extra_filter_args": {},
+    "use_sc_eta": true,
+    "use_sc_phi": false,
+    "avoid_ecal_transition_tags": true,
+    "avoid_ecal_transition_probes": false,
+    "require_event_to_pass_hlt_filter": true,
+    "start_from_diphotons": true
+}

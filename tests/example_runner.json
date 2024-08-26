@@ -15,7 +15,7 @@
     {
       "name": "get_tnp_arrays",
       "args": {
-        "cut_and_count": true,
+        "cut_and_count": false,
         "mass_range": null,
         "vars": "all",
         "flat": true,

@@ -222,7 +222,6 @@ def save_histogram_dict_to_pickle(hist_dict, output_dir, dataset, subdir, filena
         output_dir = os.getcwd()
 
     output_path = os.path.join(output_dir, dataset.replace("/", "_"), subdir)
-    os.makedirs(output_path, exist_ok=True)
 
     with fsspec.open(os.path.join(output_path, f"{filename}.pkl"), "wb") as f:
         pickle.dump(hist_dict, f)

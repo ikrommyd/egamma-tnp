@@ -129,6 +129,8 @@ def main():
     print("METHODS:\n", config["methods"])  # noqa: T201
     to_compute = runner_utils.run_methods(instance, config["methods"])
     print("TO COMPUTE:\n", to_compute)  # noqa: T201
+    to_compute = runner_utils.process_to_compute(to_compute, args.output)
+    print("TO COMPUTE:\n", to_compute)  # noqa: T201
     print("Calculating necessary columns")  # noqa: T201
     print("NECESSARY COLUMNS:\n", dak.necessary_columns(to_compute))  # noqa: T201
     print("Visualizing task graph")  # noqa: T201
@@ -141,6 +143,7 @@ def main():
     else:
         with ProgressBar():
             (out,) = dask.compute(to_compute, scheduler=scheduler)
+    out = runner_utils.process_out(out, args.output)
 
     print(out)  # noqa: T201
 

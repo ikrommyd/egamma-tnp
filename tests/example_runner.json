@@ -19,7 +19,7 @@
         "mass_range": null,
         "vars": "all",
         "flat": true,
-        "uproot_options": null
+        "uproot_options": {"allow_read_errors_with_report": true, "timeout": 120}
       }
     },
     {
@@ -29,7 +29,7 @@
         "mass_range": null,
         "vars": ["el_pt", "el_eta", "Jet_pt", "MET_sumEt"],
         "flat": false,
-        "uproot_options": null
+        "uproot_options": {"allow_read_errors_with_report": ["OSError", "ValueError"]}
       }
     },
     {

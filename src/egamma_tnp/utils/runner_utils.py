@@ -8,6 +8,8 @@ import os
 import subprocess
 import warnings
 
+import dask_awkward as dak
+
 import egamma_tnp
 from egamma_tnp import (
     ElectronTagNProbeFromNanoAOD,
@@ -40,6 +42,22 @@ def load_settings(settings_path):
         raise FileNotFoundError(f"Settings file not found: {settings_path}")
 
     return load_json(settings_path)
+
+
+def parse_uproot_options(uproot_options):
+    """Convert uproot_options from JSON format to the proper Python format."""
+    if uproot_options is None:
+        return {}
+
+    if isinstance(uproot_options, dict):
+        if "allow_read_errors_with_report" in uproot_options:
+            errors = uproot_options["allow_read_errors_with_report"]
+            if errors is True:  # If set to true, keep it as True
+                uproot_options["allow_read_errors_with_report"] = True
+            elif isinstance(errors, list):
+                uproot_options["allow_read_errors_with_report"] = tuple(__builtins__[error] for error in errors)
+
+    return uproot_options
 
 
 def merge_settings_with_args(args, settings):
@@ -88,6 +106,7 @@ def run_methods(instance, methods):
     for method in methods:
         method_name = method["name"]
         method_args = method["args"]
+        method_args["uproot_options"] = parse_uproot_options(method_args["uproot_options"])
         method_to_call = getattr(instance, method_name)
 
         # Check for disallowed arguments in the JSON configuration
@@ -107,6 +126,87 @@ def run_methods(instance, methods):
         results.append({"method": method_name, "args": method_args, "result": result})
 
     return results
+
+
+def save_array_to_parquet(array, output_dir, dataset, subdir, prefix=None, repartition_n=5):
+    """Helper function to save a Dask array to a Parquet file."""
+    if dataset.startswith("/"):
+        dataset = dataset[1:]
+
+    # Ensure output directory is set
+    if output_dir is None:
+        output_dir = os.getcwd()
+
+    output_path = os.path.join(output_dir, dataset.replace("/", "_"), subdir)
+
+    # Repartition the array if needed
+    if repartition_n:
+        array = array.repartition(n_to_one=repartition_n)
+
+    return dak.to_parquet(array, output_path, compute=False, prefix=prefix)
+
+
+def process_to_compute(to_compute, output_dir, repartition_n=5):
+    """
+    Process the task graph (to_compute) to save arrays to Parquet files and keep track of reports.
+
+    Parameters:
+    - to_compute (list): The task graph to process, which includes method results and arguments.
+    - output_dir (str): The directory to save the output Parquet files. If None, current directory is used.
+    - repartition_n (int): The number of partitions to reduce to during saving. Default is 5.
+
+    Returns:
+    - processed_to_compute (list): The modified task graph with arrays replaced by Parquet save tasks.
+    """
+    processed_to_compute = []
+    method_counts = {}
+
+    for entry in to_compute:
+        method = entry["method"]
+        args = entry["args"]
+        result = entry["result"]
+        processed_result = {}
+
+        # Track how many times each method is called
+        method_counts[method] = method_counts.get(method, 0) + 1
+        subdir_name = f"{method}_{method_counts[method]}"
+
+        # Separate arrays and reports if present
+        if isinstance(result, tuple):
+            arrays, reports = result
+        else:
+            arrays = result
+            reports = None
+
+        # Handle 'get_tnp_arrays' method
+        if method == "get_tnp_arrays":
+            for dataset, array in arrays.items():
+                processed_result[dataset] = save_array_to_parquet(array, output_dir, dataset, subdir_name, prefix="NTuples", repartition_n=repartition_n)
+
+        # Handle 'get_passing_and_failing_probes' method
+        elif method == "get_passing_and_failing_probes":
+            for filter_name, datasets in arrays.items():
+                processed_result[filter_name] = {}
+                for dataset, arr_dict in datasets.items():
+                    processed_result[filter_name][dataset] = {}
+                    for key in arr_dict:  # 'passing' and 'failing'
+                        prefix = f"{key}_{filter_name.replace(' ', '_')}"
+                        processed_result[filter_name][dataset][key] = save_array_to_parquet(
+                            arr_dict[key], output_dir, dataset, subdir_name, prefix=prefix, repartition_n=repartition_n
+                        )
+
+        # For other methods, just keep the result as is
+        else:
+            processed_result = arrays
+
+        # Add reports if present
+        if reports is not None:
+            processed_result["reports"] = reports
+
+        # Append to the list of processed tasks
+        processed_to_compute.append({"method": method, "args": args, "result": processed_result})
+
+    return processed_to_compute
 
 
 def get_proxy():
@@ -152,6 +252,8 @@ def get_main_parser():
         The fileset to perform the tag and probe calculations on.
     --binning: str, optional
         Path to a JSON file specifying the binning. The default is None.
+    --output: str, optional
+        Path to the output directory. The default is the current working directory.
     --executor: str, optional
         The executor to use for the computations. The default is None and lets dask decide.
     --cores: int, optional
@@ -189,6 +291,7 @@ def get_main_parser():
     parser.add_argument("--settings", type=str, help="Path to a JSON file specifying common options. Default is None.")
     parser.add_argument("--fileset", type=str, required=True, help="The fileset to perform the tag and probe calculations on.")
     parser.add_argument("--binning", type=str, help="Path to a JSON file specifying the binning. Default is None.")
+    parser.add_argument("--output", type=str, help="Path to the output directory. Default is None.")
     parser.add_argument("--executor", type=str, help="The executor to use for the computations. Default is None and lets dask decide.")
     parser.add_argument("--cores", type=int, help="Number of cores for each worker")
     parser.add_argument("--memory", type=str, help="Memory allocation for each worker")

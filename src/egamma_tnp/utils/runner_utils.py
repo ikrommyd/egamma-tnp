@@ -194,7 +194,7 @@ def process_to_compute(to_compute, output_dir, repartition_n=5):
                 for dataset, arr_dict in datasets.items():
                     processed_result[filter_name][dataset] = {}
                     for key in arr_dict:  # 'passing' and 'failing'
-                        prefix = f"{key}_{filter_name.replace(' ', '_')}"
+                        prefix = f"{key}_{filter_name.replace(' ', '_').replace('>=', 'gte').replace('<=', 'lte').replace('>','gt').replace('<','lt')}_histos"
                         processed_result[filter_name][dataset][key] = save_array_to_parquet(
                             arr_dict[key], output_dir, dataset, subdir_name, prefix=prefix, repartition_n=repartition_n
                         )
@@ -267,7 +267,7 @@ def process_out(out, output_dir):
         if method in ["get_1d_pt_eta_phi_tnp_histograms", "get_nd_tnp_histograms"]:
             for filter_name, datasets in result.items():
                 for dataset, hist_dict in datasets.items():
-                    filename = f"{filter_name.replace(' ', '_')}_histos"
+                    filename = f"{filter_name.replace(' ', '_').replace('>=', 'gte').replace('<=', 'lte').replace('>','gt').replace('<','lt')}_histos"
                     save_histogram_dict_to_pickle(hist_dict, output_dir, dataset, subdir_name, filename)
 
         else:

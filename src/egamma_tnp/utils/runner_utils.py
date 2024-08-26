@@ -5,10 +5,13 @@ import gzip
 import inspect
 import json
 import os
+import pickle
 import subprocess
 import warnings
 
+import awkward as ak
 import dask_awkward as dak
+import fsspec
 
 import egamma_tnp
 from egamma_tnp import (
@@ -115,10 +118,11 @@ def run_methods(instance, methods):
                 raise ValueError(f"Argument `{arg}` is not allowed to be specified in the JSON configuration file.")
 
         # Handle methods with a list of filters
-        if method_name != "get_tnp_arrays" and isinstance(method_args.get("filter"), list):
+        if method_name != "get_tnp_arrays":
             new_method_args = method_args.copy()
             del new_method_args["filter"]
-            result = {f: method_to_call(compute=False, filter=f, **new_method_args) for f in method_args["filter"]}
+            modified_filters = [method_args["filter"]] if isinstance(method_args["filter"], str) else method_args["filter"]
+            result = {f: method_to_call(compute=False, filter=f, **new_method_args) for f in modified_filters}
         else:
             result = method_to_call(compute=False, **method_args)
 
@@ -207,6 +211,70 @@ def process_to_compute(to_compute, output_dir, repartition_n=5):
         processed_to_compute.append({"method": method, "args": args, "result": processed_result})
 
     return processed_to_compute
+
+
+def save_histogram_dict_to_pickle(hist_dict, output_dir, dataset, subdir, filename):
+    """Helper function to save a dictionary of histograms to a Pickle file."""
+    if dataset.startswith("/"):
+        dataset = dataset[1:]
+
+    if output_dir is None:
+        output_dir = os.getcwd()
+
+    output_path = os.path.join(output_dir, dataset.replace("/", "_"), subdir)
+    os.makedirs(output_path, exist_ok=True)
+
+    with fsspec.open(os.path.join(output_path, f"{filename}.pkl"), "wb") as f:
+        pickle.dump(hist_dict, f)
+
+
+def save_report_to_json(report, output_dir, dataset, subdir):
+    """Helper function to save a report to a JSON file."""
+    if dataset.startswith("/"):
+        dataset = dataset[1:]
+
+    if output_dir is None:
+        output_dir = os.getcwd()
+
+    output_path = os.path.join(output_dir, dataset.replace("/", "_"), subdir)
+    ak.to_json(report, os.path.join(output_path, "report.json"), num_readability_spaces=1, num_indent_spaces=4)
+
+
+def process_out(out, output_dir):
+    """
+    Process the output after computing the task graph.
+    This function saves histograms to pickle files and reports to JSON files.
+
+    Parameters:
+    - out (list): The computed output from Dask, containing method results and arguments.
+    - output_dir (str): The directory to save the output files. If None, the current directory is used.
+    """
+    method_counts = {}  # Initialize method counts
+
+    for entry in out:
+        method = entry["method"]
+        result = entry["result"]
+
+        # Track how many times each method is called
+        method_counts[method] = method_counts.get(method, 0) + 1
+        subdir_name = f"{method}_{method_counts[method]}"
+
+        # Handle the report saving
+        reports = result.pop("reports", None)
+        if reports:
+            for dataset, report in reports.items():
+                save_report_to_json(report, output_dir, dataset, subdir_name)
+
+        if method in ["get_1d_pt_eta_phi_tnp_histograms", "get_nd_tnp_histograms"]:
+            for filter_name, datasets in result.items():
+                for dataset, hist_dict in datasets.items():
+                    filename = f"{filter_name.replace(' ', '_')}_histos"
+                    save_histogram_dict_to_pickle(hist_dict, output_dir, dataset, subdir_name, filename)
+
+        else:
+            continue
+
+    return out
 
 
 def get_proxy():

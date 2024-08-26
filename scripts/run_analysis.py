@@ -4,7 +4,6 @@ import os
 import socket
 
 import dask
-import dask_awkward as dak
 from dask.diagnostics import ProgressBar
 from dask.distributed import Client, LocalCluster, performance_report
 
@@ -132,10 +131,10 @@ def main():
     to_compute = runner_utils.process_to_compute(to_compute, args.output)
     print("TO COMPUTE:\n", to_compute)  # noqa: T201
     print("Calculating necessary columns")  # noqa: T201
-    print("NECESSARY COLUMNS:\n", dak.necessary_columns(to_compute))  # noqa: T201
+    # print("NECESSARY COLUMNS:\n", dak.necessary_columns(to_compute))
     print("Visualizing task graph")  # noqa: T201
-    dask.visualize(to_compute, filename="/tmp/graph-unoptimized.pdf", optimize_graph=False)
-    dask.visualize(to_compute, filename="/tmp/graph-optimized.pdf", optimize_graph=True)
+    # dask.visualize(to_compute, filename="/tmp/graph-unoptimized.pdf", optimize_graph=False)
+    # dask.visualize(to_compute, filename="/tmp/graph-optimized.pdf", optimize_graph=True)
 
     if client:
         with performance_report(filename="/tmp/dask-report.html"):
@@ -143,8 +142,8 @@ def main():
     else:
         with ProgressBar():
             (out,) = dask.compute(to_compute, scheduler=scheduler)
+    print(out)  # noqa: T201
     out = runner_utils.process_out(out, args.output)
-
     print(out)  # noqa: T201
 
 

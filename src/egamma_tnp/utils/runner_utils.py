@@ -336,6 +336,8 @@ def get_main_parser():
         Queue for job submission. The default is None.
     --walltime: str, optional
         Walltime for job execution. The default is None.
+    --log_directory: str, optional
+        Directory to save dask worker logs. The default is None.
 
     Returns
     -------
@@ -364,5 +366,6 @@ def get_main_parser():
     parser.add_argument("--jobflavour", type=str, default="longlunch", help="Job flavour for lxplus condor job submission")
     parser.add_argument("--queue", type=str, help="Queue for job submission")
     parser.add_argument("--walltime", type=str, help="Walltime for job execution")
+    parser.add_argument("--log_directory", type=str, help="Directory to save dask worker logs")
 
     return parser

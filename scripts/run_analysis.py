@@ -55,6 +55,7 @@ def main():
             memory=args.memory,
             disk=args.disk,
             cores=args.cores,
+            log_directory=args.log_directory,
         )
         scheduler = "distributed"
     elif args.executor == "dask/lxplus":
@@ -68,6 +69,7 @@ def main():
             worker_image="/cvmfs/unpacked.cern.ch/gitlab-registry.cern.ch/cms-egamma/egamma-tnp:lxplus-el9-latest",
             death_timeout="3600",
             scheduler_options={"port": args.port, "host": socket.gethostname(), "dashboard_address": args.dashboard_address},
+            log_directory=args.log_directory,
             job_extra={
                 "log": "dask_job_output.log",
                 "output": "dask_job_output.out",
@@ -91,6 +93,7 @@ def main():
             cores=args.cores,
             memory=args.memory,
             walltime=args.walltime,
+            log_directory=args.log_directory,
             job_script_prologue=[
                 "export XRD_RUNFORKHANDLER=1",
                 f"export X509_USER_PROXY={_x509_path}",
@@ -106,6 +109,7 @@ def main():
             cores=args.cores,
             memory=args.memory,
             disk=args.disk,
+            log_directory=args.log_directory,
             job_script_prologue=[
                 "export XRD_RUNFORKHANDLER=1",
                 f"export X509_USER_PROXY={_x509_path}",

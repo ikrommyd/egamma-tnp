@@ -134,14 +134,11 @@ def run_methods(instance, methods):
 
 def save_array_to_parquet(array, output_dir, dataset, subdir, prefix=None, repartition_n=5):
     """Helper function to save a Dask array to a Parquet file."""
-    if dataset.startswith("/"):
-        dataset = dataset[1:]
-
     # Ensure output directory is set
     if output_dir is None:
         output_dir = os.getcwd()
 
-    output_path = os.path.join(output_dir, dataset.replace("/", "_"), subdir)
+    output_path = os.path.join(output_dir, dataset.removeprefix("/").replace("/", "_"), subdir)
 
     # Repartition the array if needed
     if repartition_n:
@@ -215,13 +212,10 @@ def process_to_compute(to_compute, output_dir, repartition_n=5):
 
 def save_histogram_dict_to_pickle(hist_dict, output_dir, dataset, subdir, filename):
     """Helper function to save a dictionary of histograms to a Pickle file."""
-    if dataset.startswith("/"):
-        dataset = dataset[1:]
-
     if output_dir is None:
         output_dir = os.getcwd()
 
-    output_path = os.path.join(output_dir, dataset.replace("/", "_"), subdir)
+    output_path = os.path.join(output_dir, dataset.removeprefix("/").replace("/", "_"), subdir).removeprefix("simplecache::")
 
     with fsspec.open(os.path.join(output_path, f"{filename}.pkl"), "wb") as f:
         pickle.dump(hist_dict, f)
@@ -229,13 +223,10 @@ def save_histogram_dict_to_pickle(hist_dict, output_dir, dataset, subdir, filena
 
 def save_report_to_json(report, output_dir, dataset, subdir):
     """Helper function to save a report to a JSON file."""
-    if dataset.startswith("/"):
-        dataset = dataset[1:]
-
     if output_dir is None:
         output_dir = os.getcwd()
 
-    output_path = os.path.join(output_dir, dataset.replace("/", "_"), subdir)
+    output_path = os.path.join(output_dir, dataset.removeprefix("/").replace("/", "_"), subdir).removeprefix("simplecache::")
     ak.to_json(report, os.path.join(output_path, "report.json"), num_readability_spaces=1, num_indent_spaces=4)
 
 

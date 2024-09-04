@@ -135,7 +135,7 @@ def main():
     print("Visualizing task graph")  # noqa: T201
     # dask.visualize(to_compute, filename="/tmp/graph-unoptimized.pdf", optimize_graph=False)
     # dask.visualize(to_compute, filename="/tmp/graph-optimized.pdf", optimize_graph=True)
-
+    print("Computing")  # noqa: T201
     if client:
         with performance_report(filename="/tmp/dask-report.html"):
             (out,) = dask.compute(to_compute, scheduler="distributed")

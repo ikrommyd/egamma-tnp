@@ -164,7 +164,7 @@ def main():
 
     logger.info(f"Calculating task graph for methods: {config['methods']} on workflow: {instance}")
     to_compute = runner_utils.run_methods(instance, config["methods"])
-    to_compute = runner_utils.process_to_compute(to_compute, args.output)
+    to_compute = runner_utils.process_to_compute(to_compute, args.output, args.repartition_n_to_one)
     logger.info(f"Object to compute is:\n{to_compute}")
     if args.print_necessary_columns:
         import dask_awkward as dak

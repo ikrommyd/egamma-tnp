@@ -4,9 +4,15 @@ import getpass
 import json
 import os
 
+from egamma_tnp.utils.logger_utils import setup_logger
+
+logger = setup_logger(level="INFO")
+
 
 class Binning:
     def __init__(self):
+        logger.info(f"Default binning is located at {os.path.join(os.path.dirname(__file__), 'default_binning.json')}")
+        logger.info(f"Current binning is located at {os.path.join(os.path.dirname(__file__), f'/tmp/runtime_binning_{getpass.getuser()}.json')}")
         self.runtime_filename = os.path.join(os.path.dirname(__file__), f"/tmp/runtime_binning_{getpass.getuser()}.json")
         self.default_filename = os.path.join(os.path.dirname(__file__), "default_binning.json")
 

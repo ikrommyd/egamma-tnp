@@ -5,6 +5,10 @@ import os
 
 import awkward as ak
 
+from egamma_tnp.utils.logger_utils import setup_logger
+
+logger = setup_logger(level="INFO")
+
 
 def generate(files):
     for f in files:
@@ -19,9 +23,11 @@ def main():
     parser.add_argument("--target", type=str, required=True, help="Target parquet file location.")
     args = parser.parse_args()
 
+    logger.info(f"Merging parquet files from {args.source} to {args.target}")
     files = [os.path.join(args.source, f) for f in os.listdir(args.source) if f.endswith(".parquet")]
 
-    ak.to_parquet_row_groups(generate(files), args.output)
+    ak.to_parquet_row_groups(generate(files), args.target)
+    logger.info("Done.")
 
 
 if __name__ == "__main__":

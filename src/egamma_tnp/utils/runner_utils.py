@@ -20,6 +20,9 @@ from egamma_tnp import (
     PhotonTagNProbeFromNanoAOD,
     PhotonTagNProbeFromNTuples,
 )
+from egamma_tnp.utils.logger_utils import setup_logger
+
+logger = setup_logger(level="INFO")
 
 
 def load_json(file_path):
@@ -42,6 +45,7 @@ def load_settings(settings_path):
         settings_path = os.path.join(os.path.dirname(__file__), "default_runner_settings.json")
 
     if not os.path.exists(settings_path):
+        logger.error(f"Settings file not found: {settings_path}")
         raise FileNotFoundError(f"Settings file not found: {settings_path}")
 
     return load_json(settings_path)
@@ -100,6 +104,7 @@ def initialize_class(config, args, fileset):
     workflow = class_map[class_name]
     class_args = config["workflow_args"] | filter_class_args(workflow, vars(args))
     class_args.pop("fileset")
+    logger.info(f"Initializing workflow {workflow} with args: {class_args}")
     return workflow(fileset=fileset, **class_args)
 
 
@@ -122,8 +127,10 @@ def run_methods(instance, methods):
             new_method_args = method_args.copy()
             del new_method_args["filter"]
             modified_filters = [method_args["filter"]] if isinstance(method_args["filter"], str) else method_args["filter"]
+            logger.info(f"Running method {method_name} with args {{filter: {modified_filters}, **{new_method_args}}}")
             result = {f: method_to_call(compute=False, filter=f, **new_method_args) for f in modified_filters}
         else:
+            logger.info(f"Running method {method_name} with args {method_args}")
             result = method_to_call(compute=False, **method_args)
 
         # Append the result, method name, and args to the results list
@@ -144,6 +151,7 @@ def save_array_to_parquet(array, output_dir, dataset, subdir, prefix=None, repar
     if repartition_n:
         array = array.repartition(n_to_one=repartition_n)
 
+    logger.info(f"Saving array from dataset {dataset} to Parquet file in {output_path}")
     return dak.to_parquet(array, output_path, compute=False, prefix=prefix)
 
 
@@ -217,6 +225,7 @@ def save_histogram_dict_to_pickle(hist_dict, output_dir, dataset, subdir, filena
 
     output_path = os.path.join(output_dir, dataset.removeprefix("/").replace("/", "_"), subdir).removeprefix("simplecache::")
 
+    logger.info(f"Saving histogram dict from dataset {dataset} to Pickle file in {os.path.join(output_path, f'{filename}.pkl')}")
     with fsspec.open(os.path.join(output_path, f"{filename}.pkl"), "wb") as f:
         pickle.dump(hist_dict, f)
 
@@ -227,6 +236,7 @@ def save_report_to_json(report, output_dir, dataset, subdir):
         output_dir = os.getcwd()
 
     output_path = os.path.join(output_dir, dataset.removeprefix("/").replace("/", "_"), subdir).removeprefix("simplecache::")
+    logger.info(f"Saving report from dataset {dataset} to JSON file in {os.path.join(output_path, 'report.json')}")
     ak.to_json(report, os.path.join(output_path, "report.json"), num_readability_spaces=1, num_indent_spaces=4)
 
 
@@ -267,6 +277,19 @@ def process_out(out, output_dir):
     return out
 
 
+def check_port(port):
+    import socket
+
+    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    try:
+        sock.bind(("0.0.0.0", port))
+        available = True
+    except Exception:
+        available = False
+    sock.close()
+    return available
+
+
 def get_proxy():
     """
     Use voms-proxy-info to check if a proxy is available.
@@ -279,15 +302,18 @@ def get_proxy():
     :rtype: str
     """
     if subprocess.getstatusoutput("voms-proxy-info")[0] != 0:
+        logger.error("voms-proxy-init not found, You need a valid certificate to access data over xrootd.")
         warnings.warn("voms-proxy-init not found, You need a valid certificate to access data over xrootd.", stacklevel=1)
     else:
         stat, out = subprocess.getstatusoutput("voms-proxy-info -e -p")
         # stat is 0 if the proxy is valid
         if stat != 0:
+            logger.error("No valid proxy found. Please create one.")
             raise RuntimeError("No valid proxy found. Please create one.")
 
         _x509_localpath = out
         _x509_path = os.environ["HOME"] + f'/.{_x509_localpath.split("/")[-1]}'
+        logger.info(f"Copying proxy from {_x509_localpath} to {_x509_path}")
         os.system(f"cp {_x509_localpath} {_x509_path}")
 
         return _x509_path
@@ -328,8 +354,9 @@ def get_main_parser():
         Path to the VOMS proxy. The default is None. If not specified, it will try to find if there is a valid proxy available.
     --port: int, optional
         Port for the Dask scheduler. The default is 8786.
-    --dashboard_address: str, optional
-        Address for the Dask dashboard. The default is ":8787".
+    --dashboard_address: int or None, optional
+        Address for the Dask dashboard. The default is 8787.
+        Use None to disable the dashboard.
     --jobflavour: str, optional
         Job flavour for job submission. The default is "longlunch".
     --queue: str, optional
@@ -367,5 +394,7 @@ def get_main_parser():
     parser.add_argument("--queue", type=str, help="Queue for job submission")
     parser.add_argument("--walltime", type=str, help="Walltime for job execution")
     parser.add_argument("--log_directory", type=str, help="Directory to save dask worker logs")
+    parser.add_argument("--debug", type=bool, default=False, help="Log in DEBUG level")
+    parser.add_argument("--print_necessary_columns", type=bool, default=False, help="Print necessary columns for the workflow")
 
     return parser

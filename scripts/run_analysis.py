@@ -8,11 +8,17 @@ from dask.diagnostics import ProgressBar
 from dask.distributed import Client, LocalCluster, performance_report
 
 from egamma_tnp.utils import runner_utils
+from egamma_tnp.utils.logger_utils import setup_logger
 
 
 def main():
     parser = runner_utils.get_main_parser()
     args = parser.parse_args()
+    if args.debug:
+        logger = setup_logger(level="DEBUG")
+    else:
+        logger = setup_logger(level="INFO")
+
     if args.executor != "distributed":
         if args.scaleout is None:
             args.scaleout = 100
@@ -27,12 +33,21 @@ def main():
             args.memory = "auto"
 
     config = runner_utils.load_json(args.config)
+    logger.info(f"Loaded config from {args.config}")
     settings = runner_utils.load_settings(args.settings)
+    logger.info(f"Loaded settings from {args.settings}")
     args = runner_utils.merge_settings_with_args(args, settings)
     if args.binning:
+        logger.info(f"Overwriting default binning with {args.binning}")
         runner_utils.set_binning(runner_utils.load_json(args.binning))
     fileset = runner_utils.load_json(args.fileset)
+    logger.info(f"Loaded fileset from {args.fileset}")
     instance = runner_utils.initialize_class(config, args, fileset)
+
+    if args.port is not None:
+        if not runner_utils.check_port(args.port):
+            logger.error(f"Port {args.port} is occupied in this node. Try another one.")
+            raise ValueError(f"Port {args.port} is occupied in this node. Try another one.")
 
     if args.voms is not None:
         _x509_path = args.voms
@@ -43,12 +58,20 @@ def main():
     client = None
     scheduler = None
     if args.executor in ["multiprocessing", "processes", "single-threaded", "sync", "synchronous", "threading", "threads"]:
+        logger.info(f"Running locally with {args.executor} scheduler")
         scheduler = args.executor
     elif args.executor == "distributed":
-        cluster = LocalCluster(n_workers=args.scaleout, threads_per_worker=args.cores, memory_limit=args.memory, dashboard_address=args.dashboard_address)
+        logger.info("Running using LocalCluster")
+        cluster = LocalCluster(
+            n_workers=args.scaleout,
+            threads_per_worker=args.cores,
+            memory_limit=args.memory,
+            dashboard_address=args.dashboard_address,
+        )
     elif args.executor == "dask/lpc":
         from lpcjobqueue import LPCCondorCluster
 
+        logger.info("Running using LPCCondorCluster")
         cluster = LPCCondorCluster(
             ship_env=True,
             scheduler_options={"dashboard_address": args.dashboard_address},
@@ -61,6 +84,7 @@ def main():
     elif args.executor == "dask/lxplus":
         from dask_lxplus import CernCluster
 
+        logger.info("Running using CernCluster")
         cluster = CernCluster(
             cores=args.cores,
             memory=args.memory,
@@ -88,6 +112,7 @@ def main():
     elif args.executor == "dask/slurm":
         from dask_jobqueue import SLURMCluster
 
+        logger.info("Running using SLURMCluster")
         cluster = SLURMCluster(
             queue=args.queue,
             cores=args.cores,
@@ -105,6 +130,7 @@ def main():
     elif args.executor == "dask/condor":
         from dask_jobqueue import HTCondorCluster
 
+        logger.info("Running using HTCondorCluster")
         cluster = HTCondorCluster(
             cores=args.cores,
             memory=args.memory,
@@ -119,6 +145,7 @@ def main():
         )
         scheduler = "distributed"
     else:
+        logger.error(f"Unknown executor `{args.executor}`")
         raise ValueError(f"Unknown executor `{args.executor}`")
 
     if cluster:
@@ -126,29 +153,30 @@ def main():
             cluster.adapt(minimum=0, maximum=args.scaleout)
         elif not args.adaptive and args.executor != "distributed":
             cluster.scale(args.scaleout)
+        logger.info(f"Set up cluster {cluster}")
         client = Client(cluster)
+        logger.info(f"Set up client {client}")
 
-    print("Calculating task graph")  # noqa: T201
-    print("METHODS:\n", config["methods"])  # noqa: T201
+    logger.info(f"Calculating task graph for methods: {config['methods']} on workflow: {instance}")
     to_compute = runner_utils.run_methods(instance, config["methods"])
-    print("TO COMPUTE:\n", to_compute)  # noqa: T201
     to_compute = runner_utils.process_to_compute(to_compute, args.output)
-    print("TO COMPUTE:\n", to_compute)  # noqa: T201
-    print("Calculating necessary columns")  # noqa: T201
-    # print("NECESSARY COLUMNS:\n", dak.necessary_columns(to_compute))
-    print("Visualizing task graph")  # noqa: T201
-    # dask.visualize(to_compute, filename="/tmp/graph-unoptimized.pdf", optimize_graph=False)
-    # dask.visualize(to_compute, filename="/tmp/graph-optimized.pdf", optimize_graph=True)
-    print("Computing")  # noqa: T201
+    logger.info(f"Object to compute is:\n{to_compute}")
+    if args.print_necessary_columns:
+        import dask_awkward as dak
+
+        necessary_columns = dak.neccessary_columns(to_compute)
+        logger.info(f"The necessary columns are:\n{necessary_columns}")
+    logger.info("Computing the task graph")
     if client:
         with performance_report(filename="/tmp/dask-report.html"):
+            logger.info("The performance report will be saved in /tmp/dask-report.html")
             (out,) = dask.compute(to_compute, scheduler="distributed")
     else:
         with ProgressBar():
             (out,) = dask.compute(to_compute, scheduler=scheduler)
-    print(out)  # noqa: T201
+    logger.info(f"Computed object is:\n{out}")
     out = runner_utils.process_out(out, args.output)
-    print(out)  # noqa: T201
+    logger.info(f"Final output after post-processing:\n{out}")
 
 
 if __name__ == "__main__":

@@ -54,6 +54,7 @@ dev = [
 [project.scripts]
 run_analysis = "scripts.run_analysis:main"
 dataset_query = "scripts.dataset_query:main"
+merge_parquet = "scripts.merge_parquet:main"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/egamma_tnp", "scripts"]

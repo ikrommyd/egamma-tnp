@@ -127,8 +127,11 @@ def run_methods(instance, methods):
             new_method_args = method_args.copy()
             del new_method_args["filter"]
             modified_filters = [method_args["filter"]] if isinstance(method_args["filter"], str) else method_args["filter"]
-            logger.info(f"Running method {method_name} with args {{filter: {modified_filters}, **{new_method_args}}}")
-            result = {f: method_to_call(compute=False, filter=f, **new_method_args) for f in modified_filters}
+            result = {}
+            for f in modified_filters:
+                total_args = {"filter": f} | new_method_args
+                logger.info(f"Running method {method_name} with args {total_args}")
+                result[f] = method_to_call(compute=False, **total_args)
         else:
             logger.info(f"Running method {method_name} with args {method_args}")
             result = method_to_call(compute=False, **method_args)

@@ -155,7 +155,7 @@ def save_array_to_parquet(array, output_dir, dataset, subdir, prefix=None, repar
         array = array.repartition(n_to_one=repartition_n)
 
     logger.info(f"Saving array from dataset {dataset} to Parquet file in {output_path}")
-    return dak.to_parquet(array, output_path, compute=False, prefix=prefix)
+    return dak.to_parquet(array, output_path, compute=False, prefix=prefix, extensionarray=True)
 
 
 def process_to_compute(to_compute, output_dir, repartition_n=5):
@@ -202,7 +202,7 @@ def process_to_compute(to_compute, output_dir, repartition_n=5):
                 for dataset, arr_dict in datasets.items():
                     processed_result[filter_name][dataset] = {}
                     for key in arr_dict:  # 'passing' and 'failing'
-                        prefix = f"{key}_{filter_name.replace(' ', '_').replace('>=', 'gte').replace('<=', 'lte').replace('>','gt').replace('<','lt')}_histos"
+                        prefix = f"{key}_{filter_name.replace(' ', '_').replace('>=', 'gte').replace('<=', 'lte').replace('>','gt').replace('<','lt')}_NTuples"
                         processed_result[filter_name][dataset][key] = save_array_to_parquet(
                             arr_dict[key], output_dir, dataset, subdir_name, prefix=prefix, repartition_n=repartition_n
                         )

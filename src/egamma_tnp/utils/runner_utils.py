@@ -368,6 +368,10 @@ def get_main_parser():
         Walltime for job execution. The default is None.
     --log_directory: str, optional
         Directory to save dask worker logs. The default is None.
+    --debug: bool, optional
+        Log in DEBUG level. The default is False.
+    --print_necessary_columns: bool, optional
+        Calculate and print necessary columns for the workflow. The default is False.
 
     Returns
     -------
@@ -398,6 +402,6 @@ def get_main_parser():
     parser.add_argument("--walltime", type=str, help="Walltime for job execution")
     parser.add_argument("--log_directory", type=str, help="Directory to save dask worker logs")
     parser.add_argument("--debug", type=bool, default=False, help="Log in DEBUG level")
-    parser.add_argument("--print_necessary_columns", type=bool, default=False, help="Print necessary columns for the workflow")
+    parser.add_argument("--print_necessary_columns", type=bool, default=False, help="Calculate and print necessary columns for the workflow")
 
     return parser

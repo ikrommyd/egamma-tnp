@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import os
+import pickle
 import subprocess
 
 import awkward as ak
@@ -10,6 +11,7 @@ import numpy as np
 from dask.diagnostics import ProgressBar
 from dask_awkward.lib.testutils import assert_eq
 
+import egamma_tnp
 from egamma_tnp import ElectronTagNProbeFromNanoAOD
 
 
@@ -35,6 +37,8 @@ def test_cli():
 
     with open("tests/example_fileset.json") as f:
         fileset = json.load(f)
+
+    egamma_tnp.binning.set("el_eta_bins", [-2.5, -2.0, -1.566, -1.4442, -1.0, 0.0, 1.0, 1.4442, 1.566, 2.0, 2.5])
 
     workflow = ElectronTagNProbeFromNanoAOD(
         fileset=fileset,
@@ -154,4 +158,120 @@ def test_cli():
     assert_eq(
         out["get_passing_and_failing_probes_1_hlt"]["sample/2"]["failing"],
         ak.from_parquet("tests/output/sample_2/get_passing_and_failing_probes_1/failing_HLT_Ele30_WPTight_Gsf_NTuples-part0.parquet"),
+    )
+
+    with open("tests/output/sample_1/get_1d_pt_eta_phi_tnp_histograms_1/HLT_Ele30_WPTight_Gsf_histos.pkl", "rb") as f:
+        histos = pickle.load(f)
+    assert_histograms_equal(
+        out["get_1d_pt_eta_phi_tnp_histograms_1_hlt"]["sample/1"]["pt"]["barrel"]["passing"],
+        histos["pt"]["barrel"]["passing"],
+        flow=True,
+    )
+    assert_histograms_equal(
+        out["get_1d_pt_eta_phi_tnp_histograms_1_hlt"]["sample/1"]["pt"]["barrel"]["failing"],
+        histos["pt"]["barrel"]["failing"],
+        flow=True,
+    )
+    assert_histograms_equal(
+        out["get_1d_pt_eta_phi_tnp_histograms_1_hlt"]["sample/1"]["eta"]["entire"]["passing"],
+        histos["eta"]["entire"]["passing"],
+        flow=True,
+    )
+    assert_histograms_equal(
+        out["get_1d_pt_eta_phi_tnp_histograms_1_hlt"]["sample/1"]["eta"]["entire"]["failing"],
+        histos["eta"]["entire"]["failing"],
+        flow=True,
+    )
+    assert_histograms_equal(
+        out["get_1d_pt_eta_phi_tnp_histograms_1_hlt"]["sample/1"]["phi"]["entire"]["passing"],
+        histos["phi"]["entire"]["passing"],
+        flow=True,
+    )
+    assert_histograms_equal(
+        out["get_1d_pt_eta_phi_tnp_histograms_1_hlt"]["sample/1"]["phi"]["entire"]["failing"],
+        histos["phi"]["entire"]["failing"],
+        flow=True,
+    )
+
+    with open("tests/output/sample_2/get_1d_pt_eta_phi_tnp_histograms_1/HLT_Ele30_WPTight_Gsf_histos.pkl", "rb") as f:
+        histos = pickle.load(f)
+    assert_histograms_equal(
+        out["get_1d_pt_eta_phi_tnp_histograms_1_hlt"]["sample/2"]["pt"]["barrel"]["passing"],
+        histos["pt"]["barrel"]["passing"],
+        flow=True,
+    )
+    assert_histograms_equal(
+        out["get_1d_pt_eta_phi_tnp_histograms_1_hlt"]["sample/2"]["pt"]["barrel"]["failing"],
+        histos["pt"]["barrel"]["failing"],
+        flow=True,
+    )
+    assert_histograms_equal(
+        out["get_1d_pt_eta_phi_tnp_histograms_1_hlt"]["sample/2"]["eta"]["entire"]["passing"],
+        histos["eta"]["entire"]["passing"],
+        flow=True,
+    )
+    assert_histograms_equal(
+        out["get_1d_pt_eta_phi_tnp_histograms_1_hlt"]["sample/2"]["eta"]["entire"]["failing"],
+        histos["eta"]["entire"]["failing"],
+        flow=True,
+    )
+    assert_histograms_equal(
+        out["get_1d_pt_eta_phi_tnp_histograms_1_hlt"]["sample/2"]["phi"]["entire"]["passing"],
+        histos["phi"]["entire"]["passing"],
+        flow=True,
+    )
+    assert_histograms_equal(
+        out["get_1d_pt_eta_phi_tnp_histograms_1_hlt"]["sample/2"]["phi"]["entire"]["failing"],
+        histos["phi"]["entire"]["failing"],
+        flow=True,
+    )
+
+    with open("tests/output/sample_1/get_nd_tnp_histograms_1/HLT_Ele30_WPTight_Gsf_histos.pkl", "rb") as f:
+        histos = pickle.load(f)
+    assert_histograms_equal(
+        out["get_nd_tnp_histograms_1_hlt"]["sample/1"]["passing"],
+        histos["passing"],
+        flow=True,
+    )
+    assert_histograms_equal(
+        out["get_nd_tnp_histograms_1_hlt"]["sample/1"]["failing"],
+        histos["failing"],
+        flow=True,
+    )
+    with open("tests/output/sample_1/get_nd_tnp_histograms_1/cutBased_gte_2_histos.pkl", "rb") as f:
+        histos = pickle.load(f)
+    assert_histograms_equal(
+        out["get_nd_tnp_histograms_1_id"]["sample/1"]["passing"],
+        histos["passing"],
+        flow=True,
+    )
+    assert_histograms_equal(
+        out["get_nd_tnp_histograms_1_id"]["sample/1"]["failing"],
+        histos["failing"],
+        flow=True,
+    )
+
+    with open("tests/output/sample_2/get_nd_tnp_histograms_1/HLT_Ele30_WPTight_Gsf_histos.pkl", "rb") as f:
+        histos = pickle.load(f)
+    assert_histograms_equal(
+        out["get_nd_tnp_histograms_1_hlt"]["sample/2"]["passing"],
+        histos["passing"],
+        flow=True,
+    )
+    assert_histograms_equal(
+        out["get_nd_tnp_histograms_1_hlt"]["sample/2"]["failing"],
+        histos["failing"],
+        flow=True,
+    )
+    with open("tests/output/sample_2/get_nd_tnp_histograms_1/cutBased_gte_2_histos.pkl", "rb") as f:
+        histos = pickle.load(f)
+    assert_histograms_equal(
+        out["get_nd_tnp_histograms_1_id"]["sample/2"]["passing"],
+        histos["passing"],
+        flow=True,
+    )
+    assert_histograms_equal(
+        out["get_nd_tnp_histograms_1_id"]["sample/2"]["failing"],
+        histos["failing"],
+        flow=True,
     )

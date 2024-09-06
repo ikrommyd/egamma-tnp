@@ -403,7 +403,7 @@ def get_main_parser():
     )
     parser.add_argument("--port", type=int, default=8786, help="Port for the Dask scheduler")
     parser.add_argument("--dashboard_address", type=str, default=":8787", help="Address for the Dask dashboard")
-    parser.add_argument("--jobflavour", type=str, default="longlunch", help="Job flavour for lxplus condor job submission")
+    parser.add_argument("--jobflavour", type=str, default="microcentury", help="Job flavour for lxplus condor job submission")
     parser.add_argument("--queue", type=str, help="Queue for job submission")
     parser.add_argument("--walltime", type=str, help="Walltime for job execution")
     parser.add_argument("--log_directory", type=str, help="Directory to save dask worker logs")

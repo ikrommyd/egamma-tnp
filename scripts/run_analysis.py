@@ -1,8 +1,11 @@
 from __future__ import annotations
 
 import getpass
+import gzip
+import json
 import os
 import socket
+import warnings
 
 import dask
 from dask.diagnostics import ProgressBar
@@ -14,6 +17,7 @@ from egamma_tnp.utils.logger_utils import setup_logger
 
 
 def main():
+    warnings.filterwarnings("ignore", category=FutureWarning, module="coffea.*")
     parser = runner_utils.get_main_parser()
     args = parser.parse_args()
     if args.debug:
@@ -47,6 +51,18 @@ def main():
         runner_utils.set_binning(runner_utils.load_json(args.binning))
     fileset = runner_utils.load_json(args.fileset)
     logger.info(f"Loaded fileset from {args.fileset}")
+    if args.preprocess:
+        from coffea.dataset_tools import preprocess
+
+        client = Client(dashboard_address=args.dashboard_address)
+        logger.info(f"Preprocessing the fileset with client: {client}")
+        fileset = preprocess(fileset, step_size=100_000, skip_bad_files=True, scheduler=None)[0]
+        logger.info("Done preprocessing the fileset")
+        client.shutdown()
+
+        with gzip.open("/tmp/preprocessed_fileset.json.gz", "wt") as f:
+            logger.info("Saving the preprocessed fileset to /tmp/preprocessed_fileset.json.gz")
+            json.dump(fileset, f, indent=2)
     instance = runner_utils.initialize_class(config, args, fileset)
 
     if args.port is not None:
@@ -149,6 +165,8 @@ def main():
             scheduler_options={"dashboard_address": args.dashboard_address},
         )
         scheduler = "distributed"
+    elif args.executor.startswith("tls:://") or args.executor.startswith("tcp://") or args.executor.startswith("ucx://"):
+        logger.info(f"Will use dask scheduler at {args.executor}")
     else:
         logger.error(f"Unknown executor `{args.executor}`")
         raise ValueError(f"Unknown executor `{args.executor}`")
@@ -160,6 +178,9 @@ def main():
             cluster.scale(args.scaleout)
         logger.info(f"Set up cluster {cluster}")
         client = Client(cluster)
+        logger.info(f"Set up client {client}")
+    if args.executor.startswith("tls://") or args.executor.startswith("tcp://") or args.executor.startswith("ucx://"):
+        client = Client(args.executor)
         logger.info(f"Set up client {client}")
 
     logger.info(f"Calculating task graph for methods: {config['methods']} on workflow: {instance}")

@@ -343,6 +343,8 @@ def get_main_parser():
         Path to the output directory. The default is the current working directory.
     --executor: str, optional
         The executor to use for the computations. The default is None and lets dask decide.
+    --preprocess: bool, optional
+        Preprocess the fileset before running the workflow. The default is False.
     --repartition_n_to_one: int, optional
         The number of partitions to merge during saving. The default is 5.
     --cores: int, optional
@@ -389,6 +391,7 @@ def get_main_parser():
     parser.add_argument("--binning", type=str, help="Path to a JSON file specifying the binning. Default is None.")
     parser.add_argument("--output", type=str, help="Path to the output directory. Default is None.")
     parser.add_argument("--executor", type=str, help="The executor to use for the computations. Default is None and lets dask decide.")
+    parser.add_argument("--preprocess", type=bool, default=False, help="Preprocess the fileset before running the workflow. Default is False.")
     parser.add_argument("--repartition_n_to_one", type=int, default=5, help="The number of partitions to merge during saving. Default is 5.")
     parser.add_argument("--cores", type=int, help="Number of cores for each worker")
     parser.add_argument("--memory", type=str, help="Memory allocation for each worker")

@@ -1,0 +1,12 @@
+{
+    "sample/1": {
+        "files": {
+            "tests/samples/DYto2E.root": "Events"
+        }
+    },
+    "sample/2": {
+        "files": {
+            "tests/samples/DYto2E.root": "Events"
+        }
+    }
+}

@@ -52,7 +52,9 @@ dev = [
 ]
 
 [project.scripts]
+run_analysis = "scripts.run_analysis:main"
 dataset_query = "scripts.dataset_query:main"
+merge_parquet = "scripts.merge_parquet:main"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/egamma_tnp", "scripts"]
@@ -108,6 +110,7 @@ extend-select = [
 ignore = [
     "PLR",     # Design related pylint codes
     "ISC001",  # Conflicts with the formatter in 0.1.2
+    "G004",    # Logging f-string
 ]
 unfixable = [
     "T20",  # Removes print statements

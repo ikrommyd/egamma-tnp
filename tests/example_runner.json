@@ -1,0 +1,71 @@
+{
+  "workflow": "ElectronTagNProbeFromNanoAOD",
+  "workflow_args":
+    {"filters":
+        ["HLT_Ele30_WPTight_Gsf",
+        "cutBased >= 2"],
+    "filterbit":
+        [1,
+        null],
+    "trigger_pt":
+        [30,
+        null]
+    },
+  "methods": [
+    {
+      "name": "get_tnp_arrays",
+      "args": {
+        "cut_and_count": false,
+        "mass_range": null,
+        "vars": "all",
+        "flat": true,
+        "uproot_options": {"allow_read_errors_with_report": true, "timeout": 120}
+      }
+    },
+    {
+      "name": "get_tnp_arrays",
+      "args": {
+        "cut_and_count": true,
+        "mass_range": null,
+        "vars": ["el_pt", "el_eta", "Jet_pt", "MET_sumEt"],
+        "flat": false,
+        "uproot_options": {"allow_read_errors_with_report": ["OSError", "ValueError"]}
+      }
+    },
+    {
+      "name": "get_passing_and_failing_probes",
+      "args": {
+        "filter": ["HLT_Ele30_WPTight_Gsf"],
+        "cut_and_count": true,
+        "mass_range": null,
+        "vars": "all",
+        "flat": true,
+        "uproot_options": null
+      }
+    },
+    {
+      "name": "get_1d_pt_eta_phi_tnp_histograms",
+      "args": {
+        "filter": "HLT_Ele30_WPTight_Gsf",
+        "cut_and_count": true,
+        "mass_range": null,
+        "plateau_cut": null,
+        "eta_regions_pt": null,
+        "phi_regions_eta": null,
+        "eta_regions_phi": null,
+        "vars": ["el_pt", "el_eta", "el_phi"],
+        "uproot_options": null
+      }
+    },
+    {
+      "name": "get_nd_tnp_histograms",
+      "args": {
+        "filter": ["HLT_Ele30_WPTight_Gsf", "cutBased >= 2"],
+        "cut_and_count": true,
+        "mass_range": null,
+        "vars": ["el_pt", "el_eta", "el_phi"],
+        "uproot_options": null
+      }
+    }
+  ]
+}

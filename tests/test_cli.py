@@ -9,7 +9,6 @@ import awkward as ak
 import dask
 import numpy as np
 from dask.diagnostics import ProgressBar
-from dask_awkward.lib.testutils import assert_eq
 
 import egamma_tnp
 from egamma_tnp import ElectronTagNProbeFromNanoAOD
@@ -121,41 +120,41 @@ def test_cli():
     with ProgressBar():
         (out,) = dask.compute(to_compute)
 
-    assert_eq(
+    assert_arrays_equal(
         out["get_tnp_arrays_1"][0]["sample/1"],
         ak.from_parquet("tests/output/sample_1/get_tnp_arrays_1/NTuples-part0.parquet"),
     )
     assert os.path.exists("tests/output/sample_1/get_tnp_arrays_1/report.json")
-    assert_eq(
+    assert_arrays_equal(
         out["get_tnp_arrays_1"][0]["sample/2"],
         ak.from_parquet("tests/output/sample_2/get_tnp_arrays_1/NTuples-part0.parquet"),
     )
     assert os.path.exists("tests/output/sample_2/get_tnp_arrays_1/report.json")
 
-    assert_eq(
+    assert_arrays_equal(
         out["get_tnp_arrays_2"][0]["sample/1"],
         ak.from_parquet("tests/output/sample_1/get_tnp_arrays_2/NTuples-part0.parquet"),
     )
     assert os.path.exists("tests/output/sample_1/get_tnp_arrays_2/report.json")
-    assert_eq(
+    assert_arrays_equal(
         out["get_tnp_arrays_2"][0]["sample/2"],
         ak.from_parquet("tests/output/sample_2/get_tnp_arrays_2/NTuples-part0.parquet"),
     )
     assert os.path.exists("tests/output/sample_2/get_tnp_arrays_2/report.json")
 
-    assert_eq(
+    assert_arrays_equal(
         out["get_passing_and_failing_probes_1_hlt"]["sample/1"]["passing"],
         ak.from_parquet("tests/output/sample_1/get_passing_and_failing_probes_1/passing_HLT_Ele30_WPTight_Gsf_NTuples-part0.parquet"),
     )
-    assert_eq(
+    assert_arrays_equal(
         out["get_passing_and_failing_probes_1_hlt"]["sample/1"]["failing"],
         ak.from_parquet("tests/output/sample_1/get_passing_and_failing_probes_1/failing_HLT_Ele30_WPTight_Gsf_NTuples-part0.parquet"),
     )
-    assert_eq(
+    assert_arrays_equal(
         out["get_passing_and_failing_probes_1_hlt"]["sample/2"]["passing"],
         ak.from_parquet("tests/output/sample_2/get_passing_and_failing_probes_1/passing_HLT_Ele30_WPTight_Gsf_NTuples-part0.parquet"),
     )
-    assert_eq(
+    assert_arrays_equal(
         out["get_passing_and_failing_probes_1_hlt"]["sample/2"]["failing"],
         ak.from_parquet("tests/output/sample_2/get_passing_and_failing_probes_1/failing_HLT_Ele30_WPTight_Gsf_NTuples-part0.parquet"),
     )

@@ -155,7 +155,9 @@ def save_array_to_parquet(array, output_dir, dataset, subdir, prefix=None, repar
         array = array.repartition(n_to_one=repartition_n)
 
     logger.info(f"Saving array from dataset {dataset} to Parquet file in {output_path}")
-    return dak.to_parquet(array, output_path, compute=False, prefix=prefix, extensionarray=True)
+    return dak.to_parquet(
+        array, output_path, compute=False, prefix=prefix, extensionarray=False
+    )  # TODO: extensionarray=True when it's able to write empty arrays
 
 
 def process_to_compute(to_compute, output_dir, repartition_n=5):

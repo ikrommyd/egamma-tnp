@@ -1,13 +1,12 @@
 from __future__ import annotations
 
 import argparse
+import logging
 import os
 
 import awkward as ak
 
-from egamma_tnp.utils.logger_utils import setup_logger
-
-logger = setup_logger(level="INFO")
+logger = logging.getLogger(__name__)
 
 
 def generate(files):

@@ -4,6 +4,7 @@ import argparse
 import gzip
 import inspect
 import json
+import logging
 import os
 import pickle
 import subprocess
@@ -20,9 +21,8 @@ from egamma_tnp import (
     PhotonTagNProbeFromNanoAOD,
     PhotonTagNProbeFromNTuples,
 )
-from egamma_tnp.utils.logger_utils import setup_logger
 
-logger = setup_logger(level="INFO")
+logger = logging.getLogger(__name__)
 
 
 def load_json(file_path):
@@ -393,7 +393,7 @@ def get_main_parser():
     parser.add_argument("--binning", type=str, help="Path to a JSON file specifying the binning. Default is None.")
     parser.add_argument("--output", type=str, help="Path to the output directory. Default is None.")
     parser.add_argument("--executor", type=str, help="The executor to use for the computations. Default is None and lets dask decide.")
-    parser.add_argument("--preprocess", type=bool, default=False, help="Preprocess the fileset before running the workflow. Default is False.")
+    parser.add_argument("--preprocess", action="store_true", default=False, help="Preprocess the fileset before running the workflow. Default is False.")
     parser.add_argument("--repartition_n_to_one", type=int, default=5, help="The number of partitions to merge during saving. Default is 5.")
     parser.add_argument("--cores", type=int, help="Number of cores for each worker")
     parser.add_argument("--memory", type=str, help="Memory allocation for each worker")
@@ -409,7 +409,7 @@ def get_main_parser():
     parser.add_argument("--queue", type=str, help="Queue for job submission")
     parser.add_argument("--walltime", type=str, help="Walltime for job execution")
     parser.add_argument("--log_directory", type=str, help="Directory to save dask worker logs")
-    parser.add_argument("--debug", type=bool, default=False, help="Log in DEBUG level")
-    parser.add_argument("--print_necessary_columns", type=bool, default=False, help="Calculate and print necessary columns for the workflow")
+    parser.add_argument("--debug", action="store_true", default=False, help="Log in DEBUG level")
+    parser.add_argument("--print_necessary_columns", action="store_true", default=False, help="Calculate and print necessary columns for the workflow")
 
     return parser

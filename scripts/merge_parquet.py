@@ -34,7 +34,7 @@ def main():
         files = paths
 
     final_files = [fs.unstrip_protocol(f) for f in files]
-    ak.to_parquet_row_groups(generate(final_files), args.target)
+    ak.to_parquet_row_groups(generate(final_files), args.target, extensionarray=False)  # TODO: extensionarray=True when it's able to write empty arrays
     logger.info("Done.")
 
 

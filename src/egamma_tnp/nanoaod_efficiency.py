@@ -6,6 +6,7 @@ import numpy as np  # noqa: F401
 from coffea.analysis_tools import Weights
 from coffea.lumi_tools import LumiMask
 from coffea.nanoevents import NanoAODSchema
+from coffea.nanoevents.methods import nanoaod
 
 from egamma_tnp._base_tagnprobe import BaseTagNProbe
 from egamma_tnp.utils import calculate_photon_SC_eta, custom_delta_r
@@ -512,6 +513,13 @@ class PhotonTagNProbeFromNanoAOD(BaseTagNProbe):
         return f"PhotonTagNProbeFromNanoAOD(Filters: {self.filters}, Number of files: {n_of_files})"
 
     def find_probes(self, events, cut_and_count, mass_range, vars):
+        # TODO: remove this temporary fix when https://github.com/scikit-hep/vector/issues/498 is resolved
+        photon_dict = {field: events.Photon[field] for field in events.Photon.fields} | {
+            "mass": dak.zeros_like(events.Photon.pt),
+            "charge": dak.zeros_like(events.Photon.pt),
+        }
+        events["Photon"] = dak.zip(photon_dict, with_name="Photon", behavior=nanoaod.behavior)
+
         if self.use_sc_eta:
             if "superclusterEta" not in events.Photon.fields:
                 events["Photon", "superclusterEta"] = calculate_photon_SC_eta(events.Photon, events.PV)

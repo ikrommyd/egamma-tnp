@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import awkward as ak
-from coffea.nanoevents.methods import candidate
+from coffea.nanoevents.methods import nanoaod
 
 from egamma_tnp.utils import custom_delta_r
 
@@ -128,7 +128,7 @@ def tag_and_probe_photons(events, start_from_diphotons, is_id):
         "charge": ak.zeros_like(events.Photon.pt),
     }
 
-    events["Photon"] = ak.zip(photon_dict, with_name="Photon", behavior=candidate.behavior)
+    events["Photon"] = ak.zip(photon_dict, with_name="Photon", behavior=nanoaod.behavior)
 
     events["Photon", "eta_to_use"] = events.Photon.eta
     events["Photon", "phi_to_use"] = events.Photon.phi

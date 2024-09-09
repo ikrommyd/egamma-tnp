@@ -6,7 +6,7 @@ import numpy as np  # noqa: F401
 from coffea.analysis_tools import Weights
 from coffea.lumi_tools import LumiMask
 from coffea.nanoevents import NanoAODSchema
-from coffea.nanoevents.methods import candidate
+from coffea.nanoevents.methods import nanoaod
 
 from egamma_tnp._base_tagnprobe import BaseTagNProbe
 from egamma_tnp.utils import calculate_photon_SC_eta, custom_delta_r
@@ -518,7 +518,7 @@ class PhotonTagNProbeFromNanoAOD(BaseTagNProbe):
             "mass": dak.zeros_like(events.Photon.pt),
             "charge": dak.zeros_like(events.Photon.pt),
         }
-        events["Photon"] = dak.zip(photon_dict, with_name="Photon", behavior=candidate.behavior)
+        events["Photon"] = dak.zip(photon_dict, with_name="Photon", behavior=nanoaod.behavior)
 
         if self.use_sc_eta:
             if "superclusterEta" not in events.Photon.fields:

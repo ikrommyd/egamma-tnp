@@ -47,7 +47,7 @@
       "name": "get_1d_pt_eta_phi_tnp_histograms",
       "args": {
         "filter": "HLT_Ele30_WPTight_Gsf",
-        "cut_and_count": true,
+        "cut_and_count": false,
         "mass_range": null,
         "plateau_cut": null,
         "eta_regions_pt": null,
@@ -61,7 +61,7 @@
       "name": "get_nd_tnp_histograms",
       "args": {
         "filter": ["HLT_Ele30_WPTight_Gsf", "cutBased >= 2"],
-        "cut_and_count": true,
+        "cut_and_count": false,
         "mass_range": null,
         "vars": ["el_pt", "el_eta", "el_phi"],
         "uproot_options": null

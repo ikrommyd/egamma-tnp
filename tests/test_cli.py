@@ -84,7 +84,7 @@ def test_cli():
     )
     get_1d_pt_eta_phi_tnp_histograms_1_hlt = workflow.get_1d_pt_eta_phi_tnp_histograms(
         filter="HLT_Ele30_WPTight_Gsf",
-        cut_and_count=True,
+        cut_and_count=False,
         mass_range=None,
         plateau_cut=None,
         eta_regions_pt=None,
@@ -95,14 +95,14 @@ def test_cli():
     )
     get_nd_tnp_histograms_1_hlt = workflow.get_nd_tnp_histograms(
         filter="HLT_Ele30_WPTight_Gsf",
-        cut_and_count=True,
+        cut_and_count=False,
         mass_range=None,
         vars=["el_pt", "el_eta", "el_phi"],
         uproot_options=None,
     )
     get_nd_tnp_histograms_1_id = workflow.get_nd_tnp_histograms(
         filter="cutBased >= 2",
-        cut_and_count=True,
+        cut_and_count=False,
         mass_range=None,
         vars=["el_pt", "el_eta", "el_phi"],
         uproot_options=None,

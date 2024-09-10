@@ -2,6 +2,7 @@ ARG FROM_IMAGE=gitlab-registry.cern.ch/batch-team/dask-lxplus/lxdask-cc7:latest
 FROM ${FROM_IMAGE}
 
 ARG CLUSTER=lxplus-cc7
+ARG LPCJQ_VERSION=0.3.1
 
 ADD . .
 
@@ -17,5 +18,7 @@ RUN echo "=======================================" && \
     elif [[ ${CLUSTER} == "lxplus-el9" ]]; then \
         echo "Installing on alma9"; \
     fi && \
+    echo "Installing lpcjobqueue" && \
+    python -m pip install git+https://github.com/CoffeaTeam/lpcjobqueue.git@v${LPCJQ_VERSION} && \
     echo "Installing egamma-tnp" && \
     python -m pip install . --verbose

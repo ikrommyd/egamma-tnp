@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import awkward as ak
+import fsspec
 import numpy as np
 import uproot
 from hist import intervals
@@ -632,6 +633,8 @@ def convert_2d_mll_hists_to_1d_hists(hist_dict):
         for region_name, hists in region_dict.items():
             histograms[var][region_name] = {}  # Initialize region dictionary
             for histname, h in hists.items():
+                if h.ndim != 2:
+                    raise ValueError("Input histograms must be 2D.")
                 hs, binning = _convert_2d_mll_hist_to_1d_hists(h)
                 histograms[var][region_name][histname] = hs  # Populate with new histograms
                 histograms[var][region_name]["binning"] = binning  # Set binning for this region
@@ -673,6 +676,8 @@ def convert_nd_mll_hists_to_1d_hists(hists, axes=None):
 
     histograms = {}
     for key, h4d in hists.items():
+        if h4d.axes[-1].name != "mll":
+            raise ValueError("The last axis must be an invariant mass axis.")
         hists, binning = _convert_nd_mll_hist_to_1d_hists(h4d, axes=axes)
         histograms[key] = hists
 
@@ -731,7 +736,7 @@ def create_hists_root_file_for_fitter(hists, root_path, binning_path, axes=None)
                 f[f"bin{counter_str}_{name}_Fail"] = failing_hists[name]
                 counter += 1
 
-        with open(binning_path, "wb") as f:
+        with fsspec.open(binning_path, "wb") as f:
             pickle.dump(binning, f, protocol=2)
 
     elif isinstance(hists, dict) and "pt" in hists and "eta" in hists and "phi" in hists:
@@ -752,7 +757,7 @@ def create_hists_root_file_for_fitter(hists, root_path, binning_path, axes=None)
                         f[f"bin{counter_str}_{name}_Fail"] = failing_hists[name]
                         counter += 1
 
-                with open(new_binning_path, "wb") as f:
+                with fsspec.open(new_binning_path, "wb") as f:
                     pickle.dump(hists["binning"], f, protocol=2)
 
     else:

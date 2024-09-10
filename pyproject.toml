@@ -55,6 +55,7 @@ dev = [
 run_analysis = "scripts.run_analysis:main"
 dataset_query = "scripts.dataset_query:main"
 merge_parquet = "scripts.merge_parquet:main"
+prepare_histograms = "scripts.prepare_histograms:main"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/egamma_tnp", "scripts"]
@@ -121,3 +122,4 @@ isort.required-imports = ["from __future__ import annotations"]
 [tool.ruff.lint.per-file-ignores]
 "**.ipynb" = ["B008", "T20", "I002", "E402", "E703", "B018"]
 "src/egamma_tnp/nanoaod_efficiency.py" = ["PLW2901"]
+"src/egamma_tnp/__init__.py" = ["E402"]

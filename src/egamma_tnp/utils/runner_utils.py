@@ -92,6 +92,37 @@ def filter_class_args(class_, args):
     return {k: v for k, v in args.items() if k in sig.parameters}
 
 
+def load_function_from_file(function_path):
+    """Load a function from a file and return it."""
+    # Split the file path and function name
+    if "::" in function_path:
+        file_path, function_name = function_path.split("::")
+    else:
+        logger.error(f"Function name not provided in the format 'path::function': {function_path}")
+        raise ValueError(f"Function name not provided in the format 'path::function': {function_path}")
+
+    # Check if the file exists
+    if not os.path.exists(file_path):
+        logger.error(f"Function file not found: {file_path}")
+        raise FileNotFoundError(f"Function file not found: {file_path}")
+
+    # Load and execute the file content
+    with open(file_path) as file:
+        code = compile(file.read(), file_path, "exec")
+        local_scope = {}  # Use a restricted local scope
+        exec(code, {}, local_scope)  # Execute code in isolated scope
+
+        # Return the function if a name is provided, otherwise return all loaded objects
+        if function_name:
+            if function_name in local_scope:
+                return local_scope[function_name]
+            else:
+                logger.error(f"Function '{function_name}' not found in {file_path}")
+                raise ValueError(f"Function '{function_name}' not found in {file_path}")
+        else:
+            return local_scope
+
+
 def initialize_class(config, args, fileset):
     """Initialize the appropriate Tag and Probe class based on the workflow specified in the config."""
     class_map = {
@@ -104,6 +135,9 @@ def initialize_class(config, args, fileset):
     workflow = class_map[class_name]
     class_args = config["workflow_args"] | filter_class_args(workflow, vars(args))
     class_args.pop("fileset")
+    if args.extra_filter:
+        extra_filter = load_function_from_file(args.extra_filter)
+        class_args["extra_filter"] = extra_filter
     logger.info(f"Initializing workflow {workflow} with args: {class_args}")
     return workflow(fileset=fileset, **class_args)
 

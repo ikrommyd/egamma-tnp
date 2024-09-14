@@ -2,8 +2,8 @@ from __future__ import annotations
 
 import os
 
+import awkward as ak
 from coffea.nanoevents import BaseSchema, NanoEventsFactory
-from dask_awkward.lib.testutils import assert_eq
 from dummy_tag_and_probe_ntuples import tag_and_probe_electrons, tag_and_probe_photons
 
 from egamma_tnp import ElectronTagNProbeFromNTuples, PhotonTagNProbeFromNTuples
@@ -27,8 +27,8 @@ def test_tag_and_probe_electrons():
     result = tag_n_probe.get_passing_and_failing_probes(
         "passingCutBasedTight122XV1", cut_and_count=False, vars=["el_pt", "el_eta", "truePU", "tag_Ele_eta"], compute=True
     )["sample"]
-    assert_eq(result["passing"], solution[0])
-    assert_eq(result["failing"], solution[1])
+    ak.array_equal(result["passing"], solution[0])
+    ak.array_equal(result["failing"], solution[1])
     assert len(result["passing"]) == 414
     assert len(result["failing"]) == 113
     assert len(solution[0]) == 414
@@ -53,8 +53,8 @@ def test_tag_and_probe_photons():
     result = tag_n_probe.get_passing_and_failing_probes(
         "passingCutBasedTight122XV1", cut_and_count=False, vars=["ph_et", "ph_eta", "truePU", "tag_Ele_eta"], compute=True
     )["sample"]
-    assert_eq(result["passing"], solution[0])
-    assert_eq(result["failing"], solution[1])
+    ak.array_equal(result["passing"], solution[0])
+    ak.array_equal(result["failing"], solution[1])
     assert len(result["passing"]) == 372
     assert len(result["failing"]) == 73
     assert len(solution[0]) == 372

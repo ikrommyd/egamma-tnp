@@ -2,9 +2,9 @@ from __future__ import annotations
 
 import os
 
+import awkward as ak
 import pytest
 from coffea.nanoevents import NanoEventsFactory
-from dask_awkward.lib.testutils import assert_eq
 from dummy_tag_and_probe_nanoaod import tag_and_probe_electrons, tag_and_probe_photons
 
 from egamma_tnp import ElectronTagNProbeFromNanoAOD, PhotonTagNProbeFromNanoAOD
@@ -31,8 +31,8 @@ def test_tag_and_probe_electrons_trigger():
     result = tag_n_probe.get_passing_and_failing_probes(
         "HLT_Ele32_WPTight_Gsf", cut_and_count=False, vars=["Electron_pt", "tag_Ele_eta", "el_pt", "el_eta", "MET_pt", "event"], compute=True
     )["sample"]
-    assert_eq(result["passing"], solution[0])
-    assert_eq(result["failing"], solution[1])
+    ak.array_equal(result["passing"], solution[0])
+    ak.array_equal(result["failing"], solution[1])
     assert len(result["passing"]) == 467
     assert len(result["failing"]) == 183
     assert len(solution[0]) == 467
@@ -59,8 +59,8 @@ def test_tag_and_probe_electrons_id():
     result = tag_n_probe.get_passing_and_failing_probes(
         "cutBased >= 4", cut_and_count=False, vars=["Electron_pt", "tag_Ele_eta", "el_pt", "el_eta", "MET_pt", "event"], compute=True
     )["sample"]
-    assert_eq(result["passing"], solution[0])
-    assert_eq(result["failing"], solution[1])
+    ak.array_equal(result["passing"], solution[0])
+    ak.array_equal(result["failing"], solution[1])
     assert len(result["passing"]) == 649
     assert len(result["failing"]) == 0
     assert len(solution[0]) == 649
@@ -91,8 +91,8 @@ def test_tag_and_probe_photons_trigger(start_from_diphotons):
     result = tag_n_probe.get_passing_and_failing_probes(
         "HLT_Ele32_WPTight_Gsf", cut_and_count=False, vars=["Photon_pt", "tag_Ele_eta", "ph_pt", "ph_eta", "MET_pt", "event"], compute=True
     )["sample"]
-    assert_eq(result["passing"], solution[0])
-    assert_eq(result["failing"], solution[1])
+    ak.array_equal(result["passing"], solution[0])
+    ak.array_equal(result["failing"], solution[1])
     if start_from_diphotons:
         assert len(result["passing"]) == 336
         assert len(result["failing"]) == 101
@@ -128,8 +128,8 @@ def test_tag_and_probe_photons_id(start_from_diphotons):
     result = tag_n_probe.get_passing_and_failing_probes(
         "cutBased >= 3", cut_and_count=False, vars=["Photon_pt", "tag_Ele_eta", "ph_pt", "ph_eta", "MET_pt", "event"], compute=True
     )["sample"]
-    assert_eq(result["passing"], solution[0])
-    assert_eq(result["failing"], solution[1])
+    ak.array_equal(result["passing"], solution[0])
+    ak.array_equal(result["failing"], solution[1])
     if start_from_diphotons:
         assert len(result["passing"]) == 436
         assert len(result["failing"]) == 146

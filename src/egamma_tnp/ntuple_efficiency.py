@@ -10,7 +10,7 @@ from egamma_tnp._base_tagnprobe import BaseTagNProbe
 from egamma_tnp.utils.pileup import create_correction, get_pileup_weight, load_correction
 
 
-class ElectronTagNProbeFromNTuples(BaseTagNProbe):
+class ElectronTagNProbeFromMiniNTuples(BaseTagNProbe):
     def __init__(
         self,
         fileset,
@@ -29,7 +29,7 @@ class ElectronTagNProbeFromNTuples(BaseTagNProbe):
         avoid_ecal_transition_tags=True,
         avoid_ecal_transition_probes=False,
     ):
-        """Electron Tag and Probe efficiency from E/Gamma NTuples
+        """Electron Tag and Probe efficiency from E/Gamma NTuples from MiniAOD.
 
         Parameters
         ----------
@@ -88,7 +88,7 @@ class ElectronTagNProbeFromNTuples(BaseTagNProbe):
         n_of_files = 0
         for dataset in self.fileset.values():
             n_of_files += len(dataset["files"])
-        return f"ElectronTagNProbeFromNTuples(Filters: {self.filters}, Number of files: {n_of_files})"
+        return f"ElectronTagNProbeFromMiniNTuples(Filters: {self.filters}, Number of files: {n_of_files})"
 
     def _find_passing_events(self, events, cut_and_count, mass_range):
         pass_pt_probes = events.el_pt > self.probes_pt_cut
@@ -177,7 +177,7 @@ class ElectronTagNProbeFromNTuples(BaseTagNProbe):
         return probes
 
 
-class PhotonTagNProbeFromNTuples(BaseTagNProbe):
+class PhotonTagNProbeFromMiniNTuples(BaseTagNProbe):
     def __init__(
         self,
         fileset,
@@ -196,7 +196,7 @@ class PhotonTagNProbeFromNTuples(BaseTagNProbe):
         avoid_ecal_transition_tags=True,
         avoid_ecal_transition_probes=False,
     ):
-        """Photon Tag and Probe efficiency from E/Gamma NTuples
+        """Photon Tag and Probe efficiency from E/Gamma NTuples from MiniAOD
 
         Parameters
         ----------
@@ -255,7 +255,7 @@ class PhotonTagNProbeFromNTuples(BaseTagNProbe):
         n_of_files = 0
         for dataset in self.fileset.values():
             n_of_files += len(dataset["files"])
-        return f"PhotonTagNProbeFromNTuples(Filters: {self.filters}, Number of files: {n_of_files})"
+        return f"PhotonTagNProbeFromMiniNTuples(Filters: {self.filters}, Number of files: {n_of_files})"
 
     def _find_passing_events(self, events, cut_and_count, mass_range):
         pass_pt_probes = events.ph_et > self.probes_pt_cut
@@ -341,3 +341,11 @@ class PhotonTagNProbeFromNTuples(BaseTagNProbe):
                 probes["weight"] = pileup_weight
 
         return probes
+
+
+class ElectronTagNProbeFromNanoNTuples(BaseTagNProbe):
+    pass
+
+
+class PhotonTagNProbeFromNanoNTuples(BaseTagNProbe):
+    pass

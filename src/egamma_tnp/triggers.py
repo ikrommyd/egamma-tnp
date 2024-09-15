@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from egamma_tnp import ElectronTagNProbeFromNanoAOD, ElectronTagNProbeFromNTuples
+from egamma_tnp import ElectronTagNProbeFromMiniNTuples, ElectronTagNProbeFromNanoAOD
 
 
 class ElePt_WPTight_Gsf:
@@ -52,7 +52,7 @@ class ElePt_WPTight_Gsf:
         extra_filter_args=None,
     ):
         if from_ntuples:
-            instance = ElectronTagNProbeFromNTuples(
+            instance = ElectronTagNProbeFromMiniNTuples(
                 fileset=fileset,
                 filters=[f"passHltEle{trigger_pt}WPTightGsf"],
                 tags_pt_cut=tags_pt_cut,
@@ -137,7 +137,7 @@ class ElePt_CaloIdVT_GsfTrkIdT:
         extra_filter_args=None,
     ):
         if from_ntuples:
-            instance = ElectronTagNProbeFromNTuples(
+            instance = ElectronTagNProbeFromMiniNTuples(
                 fileset=fileset,
                 filters=[f"passHltEle{trigger_pt}CaloIdVTGsfTrkIdTGsf"],
                 tags_pt_cut=tags_pt_cut,
@@ -225,7 +225,7 @@ class ElePt1_ElePt2_CaloIdL_TrackIdL_IsoVL_Leg1:
         extra_filter_args=None,
     ):
         if from_ntuples:
-            instance = ElectronTagNProbeFromNTuples(
+            instance = ElectronTagNProbeFromMiniNTuples(
                 fileset=fileset,
                 filters=[f"passHltEle{trigger_pt1}Ele{trigger_pt2}CaloIdLTrackIdLIsoVLLeg1L1match"],
                 tags_pt_cut=tags_pt_cut,
@@ -313,7 +313,7 @@ class ElePt1_ElePt2_CaloIdL_TrackIdL_IsoVL_Leg2:
         extra_filter_args=None,
     ):
         if from_ntuples:
-            instance = ElectronTagNProbeFromNTuples(
+            instance = ElectronTagNProbeFromMiniNTuples(
                 fileset=fileset,
                 filters=[f"passHltEle{trigger_pt1}Ele{trigger_pt2}CaloIdLTrackIdLIsoVLLeg2"],
                 tags_pt_cut=tags_pt_cut,
@@ -398,7 +398,7 @@ class DoubleElePt_CaloIdL_MW_SeededLeg:
         extra_filter_args=None,
     ):
         if from_ntuples:
-            instance = ElectronTagNProbeFromNTuples(
+            instance = ElectronTagNProbeFromMiniNTuples(
                 fileset=fileset,
                 filters=[f"passHltDoubleEle{trigger_pt}CaloIdLMWSeedLegL1match"],
                 tags_pt_cut=tags_pt_cut,
@@ -483,7 +483,7 @@ class DoubleElePt_CaloIdL_MW_UnseededLeg:
         extra_filter_args=None,
     ):
         if from_ntuples:
-            instance = ElectronTagNProbeFromNTuples(
+            instance = ElectronTagNProbeFromMiniNTuples(
                 fileset=fileset,
                 filters=[f"passHltDoubleEle{trigger_pt}CaloIdLMWUnsLeg"],
                 tags_pt_cut=tags_pt_cut,

@@ -6,13 +6,13 @@ import awkward as ak
 from coffea.nanoevents import BaseSchema, NanoEventsFactory
 from dummy_tag_and_probe_ntuples import tag_and_probe_electrons, tag_and_probe_photons
 
-from egamma_tnp import ElectronTagNProbeFromNTuples, PhotonTagNProbeFromNTuples
+from egamma_tnp import ElectronTagNProbeFromMiniNTuples, PhotonTagNProbeFromMiniNTuples
 
 
 def test_tag_and_probe_electrons():
     fileset = {"sample": {"files": {os.path.abspath("tests/samples/TnPNTuples_el.root"): "fitter_tree"}}}
 
-    tag_n_probe = ElectronTagNProbeFromNTuples(
+    tag_n_probe = ElectronTagNProbeFromMiniNTuples(
         fileset,
         ["passingCutBasedTight122XV1"],
         cutbased_id="passingCutBasedLoose122XV1",
@@ -38,7 +38,7 @@ def test_tag_and_probe_electrons():
 def test_tag_and_probe_photons():
     fileset = {"sample": {"files": {os.path.abspath("tests/samples/TnPNTuples_ph.root"): "fitter_tree"}}}
 
-    tag_n_probe = PhotonTagNProbeFromNTuples(
+    tag_n_probe = PhotonTagNProbeFromMiniNTuples(
         fileset,
         ["passingCutBasedTight122XV1"],
         cutbased_id="passingCutBasedLoose122XV1",

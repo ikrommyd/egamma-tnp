@@ -16,10 +16,10 @@ import fsspec
 
 import egamma_tnp
 from egamma_tnp import (
+    ElectronTagNProbeFromMiniNTuples,
     ElectronTagNProbeFromNanoAOD,
-    ElectronTagNProbeFromNTuples,
+    PhotonTagNProbeFromMiniNTuples,
     PhotonTagNProbeFromNanoAOD,
-    PhotonTagNProbeFromNTuples,
 )
 
 logger = logging.getLogger(__name__)
@@ -127,9 +127,9 @@ def initialize_class(config, args, fileset):
     """Initialize the appropriate Tag and Probe class based on the workflow specified in the config."""
     class_map = {
         "ElectronTagNProbeFromNanoAOD": ElectronTagNProbeFromNanoAOD,
-        "ElectronTagNProbeFromNTuples": ElectronTagNProbeFromNTuples,
+        "ElectronTagNProbeFromMiniNTuples": ElectronTagNProbeFromMiniNTuples,
         "PhotonTagNProbeFromNanoAOD": PhotonTagNProbeFromNanoAOD,
-        "PhotonTagNProbeFromNTuples": PhotonTagNProbeFromNTuples,
+        "PhotonTagNProbeFromMiniNTuples": PhotonTagNProbeFromMiniNTuples,
     }
     class_name = config["workflow"]
     workflow = class_map[class_name]

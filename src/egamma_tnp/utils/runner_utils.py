@@ -135,9 +135,10 @@ def initialize_class(config, args, fileset):
     workflow = class_map[class_name]
     class_args = config["workflow_args"] | filter_class_args(workflow, vars(args))
     class_args.pop("fileset")
-    if args.extra_filter:
-        extra_filter = load_function_from_file(args.extra_filter)
-        class_args["extra_filter"] = extra_filter
+    if hasattr(args, "extra_filter"):
+        if args.extra_filter is not None:
+            extra_filter = load_function_from_file(args.extra_filter)
+            class_args["extra_filter"] = extra_filter
     logger.info(f"Initializing workflow {workflow} with args: {class_args}")
     return workflow(fileset=fileset, **class_args)
 

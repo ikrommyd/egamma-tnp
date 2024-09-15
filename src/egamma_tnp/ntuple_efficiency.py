@@ -21,8 +21,7 @@ class ElectronTagNProbeFromNTuples(BaseTagNProbe):
         tags_abseta_cut=2.5,
         probes_abseta_cut=2.5,
         cutbased_id=None,
-        extra_tags_mask=None,
-        extra_probes_mask=None,
+        extra_zcands_mask=None,
         extra_filter=None,
         extra_filter_args=None,
         use_sc_eta=False,
@@ -49,12 +48,9 @@ class ElectronTagNProbeFromNTuples(BaseTagNProbe):
             cutbased_id: str, optional
                 The name of the cutbased ID to apply to the probes.
                 If None, no cutbased ID is applied. The default is None.
-            extra_tags_mask: str, optional
-                An extra mask to apply to the tags. The default is None.
-                Must be of the form "events.<mask> & events.<mask> & ...".
-            extra_probes_mask: str, optional
-                An extra mask to apply to the probes. The default is None.
-                Must be of the form "events.<mask> & events.<mask> & ...".
+            extra_zcands_mask: str, optional
+                An extra mask to apply to the Z candidates. The default is None.
+                Must be of the form `events.<mask> & events.<mask> & ...`.
             extra_filter : Callable, optional
                 An extra function to filter the events. The default is None.
                 Must take in a coffea NanoEventsArray and return a filtered NanoEventsArray of the events you want to keep.
@@ -77,8 +73,7 @@ class ElectronTagNProbeFromNTuples(BaseTagNProbe):
             tags_abseta_cut=tags_abseta_cut,
             probes_abseta_cut=probes_abseta_cut,
             cutbased_id=cutbased_id,
-            extra_tags_mask=extra_tags_mask,
-            extra_probes_mask=extra_probes_mask,
+            extra_zcands_mask=extra_zcands_mask,
             extra_filter=extra_filter,
             extra_filter_args=extra_filter_args,
             use_sc_eta=use_sc_eta,
@@ -148,15 +143,11 @@ class ElectronTagNProbeFromNTuples(BaseTagNProbe):
         pass_abseta_tags = abs(events.tag_Ele_eta_to_use) < self.tags_abseta_cut
         pass_abseta_probes = abs(events.el_eta_to_use) < self.probes_abseta_cut
         opposite_charge = events.tag_Ele_q * events.el_q == -1
-        if self.extra_tags_mask is not None:
-            pass_tag_mask = eval(self.extra_tags_mask)
+        if self.extra_zcands_mask is not None:
+            pass_zcands_mask = eval(self.extra_zcands_mask)
         else:
-            pass_tag_mask = True
-        if self.extra_probes_mask is not None:
-            pass_probe_mask = eval(self.extra_probes_mask)
-        else:
-            pass_probe_mask = True
-        events = events[pass_pt_tags & pass_abseta_tags & pass_abseta_probes & opposite_charge & pass_tag_mask & pass_probe_mask]
+            pass_zcands_mask = True
+        events = events[pass_pt_tags & pass_abseta_tags & pass_abseta_probes & opposite_charge & pass_zcands_mask]
 
         passing_locs, all_probe_events = self._find_passing_events(events, cut_and_count=cut_and_count, mass_range=mass_range)
 
@@ -197,8 +188,7 @@ class PhotonTagNProbeFromNTuples(BaseTagNProbe):
         tags_abseta_cut=2.5,
         probes_abseta_cut=2.5,
         cutbased_id=None,
-        extra_tags_mask=None,
-        extra_probes_mask=None,
+        extra_zcands_mask=None,
         extra_filter=None,
         extra_filter_args=None,
         use_sc_eta=False,
@@ -225,12 +215,9 @@ class PhotonTagNProbeFromNTuples(BaseTagNProbe):
             cutbased_id: str, optional
                 The name of the cutbased ID to apply to the probes.
                 If None, no cutbased ID is applied. The default is None.
-            extra_tags_mask: str, optional
-                An extra mask to apply to the tags. The default is None.
-                Must be of the form "events.<mask> & events.<mask> & ...".
-            extra_probes_mask: str, optional
-                An extra mask to apply to the probes. The default is None.
-                Must be of the form "events.<mask> & events.<mask> & ...".
+            extra_zcands_mask: str, optional
+                An extra mask to apply to the Z candidates. The default is None.
+                Must be of the form `events.<mask> & events.<mask> & ...`.
             extra_filter : Callable, optional
                 An extra function to filter the events. The default is None.
                 Must take in a coffea NanoEventsArray and return a filtered NanoEventsArray of the events you want to keep.
@@ -253,8 +240,7 @@ class PhotonTagNProbeFromNTuples(BaseTagNProbe):
             tags_abseta_cut=tags_abseta_cut,
             probes_abseta_cut=probes_abseta_cut,
             cutbased_id=cutbased_id,
-            extra_tags_mask=extra_tags_mask,
-            extra_probes_mask=extra_probes_mask,
+            extra_zcands_mask=extra_zcands_mask,
             extra_filter=extra_filter,
             extra_filter_args=extra_filter_args,
             use_sc_eta=use_sc_eta,
@@ -323,15 +309,11 @@ class PhotonTagNProbeFromNTuples(BaseTagNProbe):
         pass_pt_tags = events.tag_Ele_pt > self.tags_pt_cut
         pass_abseta_tags = abs(events.tag_Ele_eta_to_use) < self.tags_abseta_cut
         pass_abseta_probes = abs(events.ph_eta_to_use) < self.probes_abseta_cut
-        if self.extra_tags_mask is not None:
-            pass_tag_mask = eval(self.extra_tags_mask)
+        if self.extra_zcands_mask is not None:
+            pass_zcands_mask = eval(self.extra_zcands_mask)
         else:
-            pass_tag_mask = True
-        if self.extra_probes_mask is not None:
-            pass_probe_mask = eval(self.extra_probes_mask)
-        else:
-            pass_probe_mask = True
-        events = events[pass_pt_tags & pass_abseta_tags & pass_abseta_probes & pass_tag_mask & pass_probe_mask]
+            pass_zcands_mask = True
+        events = events[pass_pt_tags & pass_abseta_tags & pass_abseta_probes & pass_zcands_mask]
 
         passing_locs, all_probe_events = self._find_passing_events(events, cut_and_count=cut_and_count, mass_range=mass_range)
 

@@ -153,7 +153,7 @@ class ElectronTagNProbeFromNanoAOD(BaseTagNProbe):
                 events["Electron", "eta_to_use"] = events.Electron.superclusterEta
             else:
                 events["Electron", "superclusterEta"] = events.Electron.eta + events.Electron.deltaEtaSC
-                events["Electron", "eta_to_use"] = events.superclusterEta
+                events["Electron", "eta_to_use"] = events.Electron.superclusterEta
         else:
             events["Electron", "eta_to_use"] = events.Electron.eta
         if self.use_sc_phi:

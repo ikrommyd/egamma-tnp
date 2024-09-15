@@ -165,8 +165,10 @@ def main():
             scheduler_options={"dashboard_address": args.dashboard_address},
         )
         scheduler = "distributed"
-    elif args.executor.startswith("tls:://") or args.executor.startswith("tcp://") or args.executor.startswith("ucx://"):
+    elif args.executor is not None and (args.executor.startswith("tls:://") or args.executor.startswith("tcp://") or args.executor.startswith("ucx://")):
         logger.info(f"Will use dask scheduler at {args.executor}")
+    elif args.executor is None:
+        logger.info("Running with default dask scheduler")
     else:
         logger.error(f"Unknown executor `{args.executor}`")
         raise ValueError(f"Unknown executor `{args.executor}`")
@@ -179,7 +181,7 @@ def main():
         logger.info(f"Set up cluster {cluster}")
         client = Client(cluster)
         logger.info(f"Set up client {client}")
-    if args.executor.startswith("tls://") or args.executor.startswith("tcp://") or args.executor.startswith("ucx://"):
+    if args.executor is not None and (args.executor.startswith("tls://") or args.executor.startswith("tcp://") or args.executor.startswith("ucx://")):
         client = Client(args.executor)
         logger.info(f"Set up client {client}")
 

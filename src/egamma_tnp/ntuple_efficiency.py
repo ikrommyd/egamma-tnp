@@ -449,8 +449,14 @@ class ElectronTagNProbeFromNanoNTuples(BaseTagNProbe):
 
     def find_probes(self, events, cut_and_count, mass_range, vars):
         if self.use_sc_eta:
-            events["el_eta_to_use"] = events.el_superclusterEta
-            events["tag_Ele_eta_to_use"] = events.tag_Ele_superclusterEta
+            if "el_superclusterEta" in events.fields:
+                events["el_eta_to_use"] = events.el_superclusterEta
+            else:
+                events["el_eta_to_use"] = events.el_eta + events.el_deltaEtaSC
+            if "tag_Ele_superclusterEta" in events.fields:
+                events["tag_Ele_eta_to_use"] = events.tag_Ele_superclusterEta
+            else:
+                events["tag_Ele_eta_to_use"] = events.tag_Ele_eta + events.tag_Ele_deltaEtaSC
         else:
             events["el_eta_to_use"] = events.el_eta
             events["tag_Ele_eta_to_use"] = events.tag_Ele_eta

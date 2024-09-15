@@ -6,7 +6,7 @@ import awkward as ak
 from coffea.nanoevents import BaseSchema, NanoEventsFactory
 from dummy_tag_and_probe_ntuples import mini_tag_and_probe_electrons, mini_tag_and_probe_photons, nano_tag_and_probe_electrons, nano_tag_and_probe_photons
 
-from egamma_tnp import ElectronTagNProbeFromMiniNTuples, PhotonTagNProbeFromMiniNTuples
+from egamma_tnp import ElectronTagNProbeFromMiniNTuples, ElectronTagNProbeFromNanoNTuples, PhotonTagNProbeFromMiniNTuples, PhotonTagNProbeFromNanoNTuples
 
 
 def test_mini_tag_and_probe_electrons():
@@ -62,52 +62,52 @@ def test_mini_tag_and_probe_photons():
 
 
 def test_nano_tag_and_probe_electrons():
-    fileset = {"sample": {"files": {os.path.abspath("tests/samples/NanoNTuples_el.root"): "fitter_tree"}}}
+    fileset = {"sample": {"files": {os.path.abspath("tests/samples/NanoNTuples_el.root"): "Events"}}}
 
-    tag_n_probe = ElectronTagNProbeFromMiniNTuples(
+    tag_n_probe = ElectronTagNProbeFromNanoNTuples(
         fileset,
-        ["passingCutBasedTight122XV1"],
-        cutbased_id="passingCutBasedLoose122XV1",
+        ["cutBased >= 4"],
+        cutbased_id="cutBased >= 2",
         use_sc_eta=True,
         tags_pt_cut=35,
         probes_pt_cut=27,
         tags_abseta_cut=2.17,
     )
 
-    events = NanoEventsFactory.from_root({os.path.abspath("tests/samples/NanoNTuples_el.root"): "fitter_tree"}, schemaclass=BaseSchema, delayed=False).events()
+    events = NanoEventsFactory.from_root({os.path.abspath("tests/samples/NanoNTuples_el.root"): "Events"}, schemaclass=BaseSchema, delayed=False).events()
     solution = nano_tag_and_probe_electrons(events)
-    result = tag_n_probe.get_passing_and_failing_probes(
-        "passingCutBasedTight122XV1", cut_and_count=False, vars=["el_pt", "el_eta", "truePU", "tag_Ele_eta"], compute=True
-    )["sample"]
+    result = tag_n_probe.get_passing_and_failing_probes("cutBased >= 4", cut_and_count=False, vars=["el_pt", "el_eta", "PV_npvs", "tag_Ele_eta"], compute=True)[
+        "sample"
+    ]
     ak.array_equal(result["passing"], solution[0])
     ak.array_equal(result["failing"], solution[1])
-    assert len(result["passing"]) == 414
-    assert len(result["failing"]) == 113
-    assert len(solution[0]) == 414
-    assert len(solution[1]) == 113
+    assert len(result["passing"]) == 978
+    assert len(result["failing"]) == 0
+    assert len(solution[0]) == 978
+    assert len(solution[1]) == 0
 
 
 def test_nano_tag_and_probe_photons():
-    fileset = {"sample": {"files": {os.path.abspath("tests/samples/NanoNTuples_ph.root"): "fitter_tree"}}}
+    fileset = {"sample": {"files": {os.path.abspath("tests/samples/NanoNTuples_ph.root"): "Events"}}}
 
-    tag_n_probe = PhotonTagNProbeFromMiniNTuples(
+    tag_n_probe = PhotonTagNProbeFromNanoNTuples(
         fileset,
-        ["passingCutBasedTight122XV1"],
-        cutbased_id="passingCutBasedLoose122XV1",
+        ["cutBased >= 3"],
+        cutbased_id="cutBased >= 1",
         use_sc_eta=True,
         tags_pt_cut=35,
         probes_pt_cut=27,
         tags_abseta_cut=2.17,
     )
 
-    events = NanoEventsFactory.from_root({os.path.abspath("tests/samples/NanoNTuples_ph.root"): "fitter_tree"}, schemaclass=BaseSchema, delayed=False).events()
+    events = NanoEventsFactory.from_root({os.path.abspath("tests/samples/NanoNTuples_ph.root"): "Events"}, schemaclass=BaseSchema, delayed=False).events()
     solution = nano_tag_and_probe_photons(events)
-    result = tag_n_probe.get_passing_and_failing_probes(
-        "passingCutBasedTight122XV1", cut_and_count=False, vars=["ph_et", "ph_eta", "truePU", "tag_Ele_eta"], compute=True
-    )["sample"]
+    result = tag_n_probe.get_passing_and_failing_probes("cutBased >= 3", cut_and_count=False, vars=["ph_pt", "ph_eta", "PV_npvs", "tag_Ele_eta"], compute=True)[
+        "sample"
+    ]
     ak.array_equal(result["passing"], solution[0])
     ak.array_equal(result["failing"], solution[1])
-    assert len(result["passing"]) == 372
-    assert len(result["failing"]) == 73
-    assert len(solution[0]) == 372
-    assert len(solution[1]) == 73
+    assert len(result["passing"]) == 669
+    assert len(result["failing"]) == 135
+    assert len(solution[0]) == 669
+    assert len(solution[1]) == 135

@@ -36,7 +36,7 @@ def test_without_compute(do_preprocess, allow_read_errors_with_report):
     tag_n_probe_leg1 = DoubleElePt_CaloIdL_MW_SeededLeg(
         fileset,
         trigger_pt=33,
-        from_ntuples=True,
+        mode="from_mini_ntuples",
         tags_pt_cut=35,
         probes_pt_cut=5,
         use_sc_eta=False,
@@ -45,7 +45,7 @@ def test_without_compute(do_preprocess, allow_read_errors_with_report):
     tag_n_probe_leg2 = DoubleElePt_CaloIdL_MW_UnseededLeg(
         fileset,
         trigger_pt=33,
-        from_ntuples=True,
+        mode="from_mini_ntuples",
         tags_pt_cut=35,
         probes_pt_cut=5,
         use_sc_eta=False,
@@ -111,7 +111,7 @@ def test_local_compute(do_preprocess, allow_read_errors_with_report):
     tag_n_probe_leg1 = DoubleElePt_CaloIdL_MW_SeededLeg(
         fileset,
         trigger_pt=33,
-        from_ntuples=True,
+        mode="from_mini_ntuples",
         tags_pt_cut=35,
         probes_pt_cut=5,
         use_sc_eta=False,
@@ -120,7 +120,7 @@ def test_local_compute(do_preprocess, allow_read_errors_with_report):
     tag_n_probe_leg2 = DoubleElePt_CaloIdL_MW_UnseededLeg(
         fileset,
         trigger_pt=33,
-        from_ntuples=True,
+        mode="from_mini_ntuples",
         tags_pt_cut=35,
         probes_pt_cut=5,
         use_sc_eta=False,
@@ -191,7 +191,7 @@ def test_distributed_compute(do_preprocess, allow_read_errors_with_report):
     tag_n_probe_leg1 = DoubleElePt_CaloIdL_MW_SeededLeg(
         fileset,
         trigger_pt=33,
-        from_ntuples=True,
+        mode="from_mini_ntuples",
         tags_pt_cut=35,
         probes_pt_cut=5,
         use_sc_eta=False,
@@ -200,7 +200,7 @@ def test_distributed_compute(do_preprocess, allow_read_errors_with_report):
     tag_n_probe_leg2 = DoubleElePt_CaloIdL_MW_UnseededLeg(
         fileset,
         trigger_pt=33,
-        from_ntuples=True,
+        mode="from_mini_ntuples",
         tags_pt_cut=35,
         probes_pt_cut=5,
         use_sc_eta=False,

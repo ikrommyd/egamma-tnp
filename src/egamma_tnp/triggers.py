@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from egamma_tnp import ElectronTagNProbeFromNanoAOD, ElectronTagNProbeFromNTuples
+from egamma_tnp import ElectronTagNProbeFromMiniNTuples, ElectronTagNProbeFromNanoAOD, ElectronTagNProbeFromNanoNTuples
 
 
 class ElePt_WPTight_Gsf:
@@ -12,8 +12,9 @@ class ElePt_WPTight_Gsf:
             The fileset to calculate the trigger efficiencies for.
         trigger_pt : int or float
             The Pt threshold of the trigger.
-        from_ntuples : bool, optional
-            Whether the fileset is E/Gamma NTuples or NanoAOD. The default is False.
+        mode: str, optional
+            Can be `"from_nanoaod"`, `"from_mini_ntuples"` or `"from_nano_ntuples"`. The default is `"from_nanoaod"`.
+            The default is `"from_nanoaod"`.
         tags_pt_cut: int or float, optional
             The Pt cut to apply to the tag electrons. The default is 30.
         probes_pt_cut: int or float, optional
@@ -41,7 +42,7 @@ class ElePt_WPTight_Gsf:
         fileset,
         trigger_pt,
         *,
-        from_ntuples=False,
+        mode="from_nanoaod",
         tags_pt_cut=30,
         probes_pt_cut=27,
         use_sc_eta=False,
@@ -51,8 +52,8 @@ class ElePt_WPTight_Gsf:
         extra_filter=None,
         extra_filter_args=None,
     ):
-        if from_ntuples:
-            instance = ElectronTagNProbeFromNTuples(
+        if mode == "from_mini_ntuples":
+            instance = ElectronTagNProbeFromMiniNTuples(
                 fileset=fileset,
                 filters=[f"passHltEle{trigger_pt}WPTightGsf"],
                 tags_pt_cut=tags_pt_cut,
@@ -66,7 +67,22 @@ class ElePt_WPTight_Gsf:
                 avoid_ecal_transition_tags=avoid_ecal_transition_tags,
                 avoid_ecal_transition_probes=avoid_ecal_transition_probes,
             )
-        else:
+        elif mode == "from_nano_ntuples":
+            instance = ElectronTagNProbeFromNanoNTuples(
+                fileset=fileset,
+                filters=[f"HLT_Ele{trigger_pt}_WPTight_Gsf"],
+                tags_pt_cut=tags_pt_cut,
+                probes_pt_cut=probes_pt_cut,
+                tags_abseta_cut=2.5,
+                cutbased_id="cutBased >= 4",
+                extra_filter=extra_filter,
+                extra_filter_args=extra_filter_args,
+                use_sc_eta=use_sc_eta,
+                use_sc_phi=use_sc_phi,
+                avoid_ecal_transition_tags=avoid_ecal_transition_tags,
+                avoid_ecal_transition_probes=avoid_ecal_transition_probes,
+            )
+        elif mode == "from_nanoaod":
             instance = ElectronTagNProbeFromNanoAOD(
                 fileset=fileset,
                 filters=[f"HLT_Ele{trigger_pt}_WPTight_Gsf"],
@@ -84,6 +100,8 @@ class ElePt_WPTight_Gsf:
                 avoid_ecal_transition_probes=avoid_ecal_transition_probes,
                 require_event_to_pass_hlt_filter=True,
             )
+        else:
+            raise ValueError(f"Invalid mode: {mode}")
 
         return instance
 
@@ -97,8 +115,9 @@ class ElePt_CaloIdVT_GsfTrkIdT:
             The fileset to calculate the trigger efficiencies for.
         trigger_pt : int or float
             The Pt threshold of the trigger.
-        from_ntuples : bool, optional
-            Whether the fileset is E/Gamma NTuples or NanoAOD. The default is False.
+        mode : str, optional
+            Can be `"from_nanoaod"`, `"from_mini_ntuples"` or `"from_nano_ntuples"`. The default is `"from_nanoaod"`.
+            The default is `"from_nanoaod"`.
         tags_pt_cut: int or float, optional
             The Pt cut to apply to the tag electrons. The default is 30.
         probes_pt_cut: int or float, optional
@@ -126,7 +145,7 @@ class ElePt_CaloIdVT_GsfTrkIdT:
         fileset,
         trigger_pt,
         *,
-        from_ntuples=False,
+        mode="from_nanoaod",
         tags_pt_cut=30,
         probes_pt_cut=112,
         use_sc_eta=False,
@@ -136,8 +155,8 @@ class ElePt_CaloIdVT_GsfTrkIdT:
         extra_filter=None,
         extra_filter_args=None,
     ):
-        if from_ntuples:
-            instance = ElectronTagNProbeFromNTuples(
+        if mode == "from_mini_ntuples":
+            instance = ElectronTagNProbeFromMiniNTuples(
                 fileset=fileset,
                 filters=[f"passHltEle{trigger_pt}CaloIdVTGsfTrkIdTGsf"],
                 tags_pt_cut=tags_pt_cut,
@@ -151,7 +170,22 @@ class ElePt_CaloIdVT_GsfTrkIdT:
                 avoid_ecal_transition_tags=avoid_ecal_transition_tags,
                 avoid_ecal_transition_probes=avoid_ecal_transition_probes,
             )
-        else:
+        elif mode == "from_nano_ntuples":
+            instance = ElectronTagNProbeFromNanoNTuples(
+                fileset=fileset,
+                filters=[f"HLT_Ele{trigger_pt}_CaloIdVT_GsfTrkIdT"],
+                tags_pt_cut=tags_pt_cut,
+                probes_pt_cut=probes_pt_cut,
+                tags_abseta_cut=2.5,
+                cutbased_id="cutBased >= 4",
+                extra_filter=extra_filter,
+                extra_filter_args=extra_filter_args,
+                use_sc_eta=use_sc_eta,
+                use_sc_phi=use_sc_phi,
+                avoid_ecal_transition_tags=avoid_ecal_transition_tags,
+                avoid_ecal_transition_probes=avoid_ecal_transition_probes,
+            )
+        elif mode == "from_nanoaod":
             instance = ElectronTagNProbeFromNanoAOD(
                 fileset=fileset,
                 filters=[f"HLT_Ele{trigger_pt}_CaloIdVT_GsfTrkIdT"],
@@ -169,6 +203,8 @@ class ElePt_CaloIdVT_GsfTrkIdT:
                 avoid_ecal_transition_probes=avoid_ecal_transition_probes,
                 require_event_to_pass_hlt_filter=True,
             )
+        else:
+            raise ValueError(f"Invalid mode: {mode}")
 
         return instance
 
@@ -184,8 +220,9 @@ class ElePt1_ElePt2_CaloIdL_TrackIdL_IsoVL_Leg1:
             The Pt threshold of the high-Pt leg of the trigger.
         trigger_pt2 : int or float
             The Pt threshold of the low-Pt leg of the trigger.
-        from_ntuples : bool, optional
-            Whether the fileset is E/Gamma NTuples or NanoAOD. The default is False.
+        mode: str, optional
+            Can be `"from_nanoaod"`, `"from_mini_ntuples"` or `"from_nano_ntuples"`. The default is `"from_nanoaod"`.
+            The default is `"from_nanoaod"`.
         tags_pt_cut: int or float, optional
             The Pt cut to apply to the tag electrons. The default is 30.
         probes_pt_cut: int or float, optional
@@ -214,7 +251,7 @@ class ElePt1_ElePt2_CaloIdL_TrackIdL_IsoVL_Leg1:
         trigger_pt1,
         trigger_pt2,
         *,
-        from_ntuples=False,
+        mode="from_nanoaod",
         tags_pt_cut=30,
         probes_pt_cut=20,
         use_sc_eta=False,
@@ -224,8 +261,8 @@ class ElePt1_ElePt2_CaloIdL_TrackIdL_IsoVL_Leg1:
         extra_filter=None,
         extra_filter_args=None,
     ):
-        if from_ntuples:
-            instance = ElectronTagNProbeFromNTuples(
+        if mode == "from_mini_ntuples":
+            instance = ElectronTagNProbeFromMiniNTuples(
                 fileset=fileset,
                 filters=[f"passHltEle{trigger_pt1}Ele{trigger_pt2}CaloIdLTrackIdLIsoVLLeg1L1match"],
                 tags_pt_cut=tags_pt_cut,
@@ -239,7 +276,22 @@ class ElePt1_ElePt2_CaloIdL_TrackIdL_IsoVL_Leg1:
                 avoid_ecal_transition_tags=avoid_ecal_transition_tags,
                 avoid_ecal_transition_probes=avoid_ecal_transition_probes,
             )
-        else:
+        elif mode == "from_nano_ntuples":
+            instance = ElectronTagNProbeFromNanoNTuples(
+                fileset=fileset,
+                filters=[f"HLT_Ele{trigger_pt1}_Ele{trigger_pt2}_CaloIdL_TrackIdL_IsoVL_Leg1"],
+                tags_pt_cut=tags_pt_cut,
+                probes_pt_cut=probes_pt_cut,
+                tags_abseta_cut=2.5,
+                cutbased_id="cutBased >= 4",
+                extra_filter=extra_filter,
+                extra_filter_args=extra_filter_args,
+                use_sc_eta=use_sc_eta,
+                use_sc_phi=use_sc_phi,
+                avoid_ecal_transition_tags=avoid_ecal_transition_tags,
+                avoid_ecal_transition_probes=avoid_ecal_transition_probes,
+            )
+        elif mode == "from_nanoaod":
             instance = ElectronTagNProbeFromNanoAOD(
                 fileset=fileset,
                 filters=[f"HLT_Ele{trigger_pt1}_Ele{trigger_pt2}_CaloIdL_TrackIdL_IsoVL_Leg1"],
@@ -257,6 +309,8 @@ class ElePt1_ElePt2_CaloIdL_TrackIdL_IsoVL_Leg1:
                 avoid_ecal_transition_probes=avoid_ecal_transition_probes,
                 require_event_to_pass_hlt_filter=True,
             )
+        else:
+            raise ValueError(f"Invalid mode: {mode}")
 
         return instance
 
@@ -272,8 +326,9 @@ class ElePt1_ElePt2_CaloIdL_TrackIdL_IsoVL_Leg2:
             The Pt threshold of the high-Pt leg of the trigger.
         trigger_pt2 : int or float
             The Pt threshold of the low-Pt leg of the trigger.
-        from_ntuples : bool, optional
-            Whether the fileset is E/Gamma NTuples or NanoAOD. The default is False.
+        mode: str, optional
+            Can be `"from_nanoaod"`, `"from_mini_ntuples"` or `"from_nano_ntuples"`. The default is `"from_nanoaod"`.
+            The default is `"from_nanoaod"`.
         tags_pt_cut: int or float, optional
             The Pt cut to apply to the tag electrons. The default is 30.
         probes_pt_cut: int or float, optional
@@ -302,7 +357,7 @@ class ElePt1_ElePt2_CaloIdL_TrackIdL_IsoVL_Leg2:
         trigger_pt1,
         trigger_pt2,
         *,
-        from_ntuples=False,
+        mode="from_nanoaod",
         tags_pt_cut=30,
         probes_pt_cut=9,
         use_sc_eta=False,
@@ -312,8 +367,8 @@ class ElePt1_ElePt2_CaloIdL_TrackIdL_IsoVL_Leg2:
         extra_filter=None,
         extra_filter_args=None,
     ):
-        if from_ntuples:
-            instance = ElectronTagNProbeFromNTuples(
+        if mode == "from_mini_ntuples":
+            instance = ElectronTagNProbeFromMiniNTuples(
                 fileset=fileset,
                 filters=[f"passHltEle{trigger_pt1}Ele{trigger_pt2}CaloIdLTrackIdLIsoVLLeg2"],
                 tags_pt_cut=tags_pt_cut,
@@ -327,7 +382,22 @@ class ElePt1_ElePt2_CaloIdL_TrackIdL_IsoVL_Leg2:
                 avoid_ecal_transition_tags=avoid_ecal_transition_tags,
                 avoid_ecal_transition_probes=avoid_ecal_transition_probes,
             )
-        else:
+        elif mode == "from_nano_ntuples":
+            instance = ElectronTagNProbeFromNanoNTuples(
+                fileset=fileset,
+                filters=[f"HLT_Ele{trigger_pt1}_Ele{trigger_pt2}_CaloIdL_TrackIdL_IsoVL_Leg2"],
+                tags_pt_cut=tags_pt_cut,
+                probes_pt_cut=probes_pt_cut,
+                tags_abseta_cut=2.5,
+                cutbased_id="cutBased >= 4",
+                extra_filter=extra_filter,
+                extra_filter_args=extra_filter_args,
+                use_sc_eta=use_sc_eta,
+                use_sc_phi=use_sc_phi,
+                avoid_ecal_transition_tags=avoid_ecal_transition_tags,
+                avoid_ecal_transition_probes=avoid_ecal_transition_probes,
+            )
+        elif mode == "from_nanoaod":
             instance = ElectronTagNProbeFromNanoAOD(
                 fileset=fileset,
                 filters=[f"HLT_Ele{trigger_pt1}_Ele{trigger_pt2}_CaloIdL_TrackIdL_IsoVL_Leg2"],
@@ -345,6 +415,8 @@ class ElePt1_ElePt2_CaloIdL_TrackIdL_IsoVL_Leg2:
                 avoid_ecal_transition_probes=avoid_ecal_transition_probes,
                 require_event_to_pass_hlt_filter=True,
             )
+        else:
+            raise ValueError(f"Invalid mode: {mode}")
 
         return instance
 
@@ -358,8 +430,9 @@ class DoubleElePt_CaloIdL_MW_SeededLeg:
             The fileset to calculate the trigger efficiencies for.
         trigger_pt : int or float
             The Pt threshold of the trigger.
-        from_ntuples : bool, optional
-            Whether the fileset is E/Gamma NTuples or NanoAOD. The default is False.
+        mode: str, optional
+            Can be `"from_nanoaod"`, `"from_mini_ntuples"` or `"from_nano_ntuples"`. The default is `"from_nanoaod"`.
+            The default is `"from_nanoaod"`.
         tags_pt_cut: int or float, optional
             The Pt cut to apply to the tag electrons. The default is 35.
         probes_pt_cut: int or float, optional
@@ -387,7 +460,7 @@ class DoubleElePt_CaloIdL_MW_SeededLeg:
         fileset,
         trigger_pt,
         *,
-        from_ntuples=False,
+        mode="from_nanoaod",
         tags_pt_cut=35,
         probes_pt_cut=30,
         use_sc_eta=False,
@@ -397,8 +470,8 @@ class DoubleElePt_CaloIdL_MW_SeededLeg:
         extra_filter=None,
         extra_filter_args=None,
     ):
-        if from_ntuples:
-            instance = ElectronTagNProbeFromNTuples(
+        if mode == "from_mini_ntuples":
+            instance = ElectronTagNProbeFromMiniNTuples(
                 fileset=fileset,
                 filters=[f"passHltDoubleEle{trigger_pt}CaloIdLMWSeedLegL1match"],
                 tags_pt_cut=tags_pt_cut,
@@ -412,7 +485,22 @@ class DoubleElePt_CaloIdL_MW_SeededLeg:
                 avoid_ecal_transition_tags=avoid_ecal_transition_tags,
                 avoid_ecal_transition_probes=avoid_ecal_transition_probes,
             )
-        else:
+        elif mode == "from_nano_ntuples":
+            instance = ElectronTagNProbeFromNanoNTuples(
+                fileset=fileset,
+                filters=[f"HLT_DoubleEle{trigger_pt}_CaloIdL_MW_SeededLeg"],
+                tags_pt_cut=tags_pt_cut,
+                probes_pt_cut=probes_pt_cut,
+                tags_abseta_cut=2.5,
+                cutbased_id="cutBased >= 4",
+                extra_filter=extra_filter,
+                extra_filter_args=extra_filter_args,
+                use_sc_eta=use_sc_eta,
+                use_sc_phi=use_sc_phi,
+                avoid_ecal_transition_tags=avoid_ecal_transition_tags,
+                avoid_ecal_transition_probes=avoid_ecal_transition_probes,
+            )
+        elif mode == "from_nanoaod":
             instance = ElectronTagNProbeFromNanoAOD(
                 fileset=fileset,
                 filters=[f"HLT_DoubleEle{trigger_pt}_CaloIdL_MW_SeededLeg"],
@@ -430,6 +518,8 @@ class DoubleElePt_CaloIdL_MW_SeededLeg:
                 avoid_ecal_transition_probes=avoid_ecal_transition_probes,
                 require_event_to_pass_hlt_filter=True,
             )
+        else:
+            raise ValueError(f"Invalid mode: {mode}")
 
         return instance
 
@@ -443,8 +533,9 @@ class DoubleElePt_CaloIdL_MW_UnseededLeg:
             The fileset to calculate the trigger efficiencies for.
         trigger_pt : int or float
             The Pt threshold of the trigger.
-        from_ntuples : bool, optional
-            Whether the fileset is E/Gamma NTuples or NanoAOD. The default is False.
+        mode : str, optional
+            Can be `"from_nanoaod"`, `"from_mini_ntuples"` or `"from_nano_ntuples"`. The default is `"from_nanoaod"`.
+            The default is `"from_nanoaod"`.
         tags_pt_cut: int or float, optional
             The Pt cut to apply to the tag electrons. The default is 35.
         probes_pt_cut: int or float, optional
@@ -472,7 +563,7 @@ class DoubleElePt_CaloIdL_MW_UnseededLeg:
         fileset,
         trigger_pt,
         *,
-        from_ntuples=False,
+        mode="from_nanoaod",
         tags_pt_cut=35,
         probes_pt_cut=30,
         use_sc_eta=False,
@@ -482,8 +573,8 @@ class DoubleElePt_CaloIdL_MW_UnseededLeg:
         extra_filter=None,
         extra_filter_args=None,
     ):
-        if from_ntuples:
-            instance = ElectronTagNProbeFromNTuples(
+        if mode == "from_mini_ntuples":
+            instance = ElectronTagNProbeFromMiniNTuples(
                 fileset=fileset,
                 filters=[f"passHltDoubleEle{trigger_pt}CaloIdLMWUnsLeg"],
                 tags_pt_cut=tags_pt_cut,
@@ -497,7 +588,22 @@ class DoubleElePt_CaloIdL_MW_UnseededLeg:
                 avoid_ecal_transition_tags=avoid_ecal_transition_tags,
                 avoid_ecal_transition_probes=avoid_ecal_transition_probes,
             )
-        else:
+        elif mode == "from_nano_ntuples":
+            instance = ElectronTagNProbeFromNanoNTuples(
+                fileset=fileset,
+                filters=[f"HLT_DoubleEle{trigger_pt}_CaloIdL_MW_UnseededLeg"],
+                tags_pt_cut=tags_pt_cut,
+                probes_pt_cut=probes_pt_cut,
+                tags_abseta_cut=2.5,
+                cutbased_id="cutBased >= 4",
+                extra_filter=extra_filter,
+                extra_filter_args=extra_filter_args,
+                use_sc_eta=use_sc_eta,
+                use_sc_phi=use_sc_phi,
+                avoid_ecal_transition_tags=avoid_ecal_transition_tags,
+                avoid_ecal_transition_probes=avoid_ecal_transition_probes,
+            )
+        elif mode == "from_nanoaod":
             instance = ElectronTagNProbeFromNanoAOD(
                 fileset=fileset,
                 filters=[f"HLT_DoubleEle{trigger_pt}_CaloIdL_MW_UnseededLeg"],
@@ -515,5 +621,7 @@ class DoubleElePt_CaloIdL_MW_UnseededLeg:
                 avoid_ecal_transition_probes=avoid_ecal_transition_probes,
                 require_event_to_pass_hlt_filter=True,
             )
+        else:
+            raise ValueError(f"Invalid mode: {mode}")
 
         return instance

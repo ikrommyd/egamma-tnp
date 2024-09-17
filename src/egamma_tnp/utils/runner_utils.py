@@ -214,6 +214,7 @@ def process_to_compute(to_compute, output_dir, repartition_n=5):
         args = entry["args"]
         result = entry["result"]
         processed_result = {}
+        report_dict = None
 
         # Track how many times each method is called
         method_counts[method] = method_counts.get(method, 0) + 1
@@ -248,14 +249,17 @@ def process_to_compute(to_compute, output_dir, repartition_n=5):
                                 arr_dict[key], output_dir, dataset, subdir_name, prefix=prefix, repartition_n=repartition_n
                             )
                         if reports is not None:
-                            report_dict[dataset] = {}
+                            if dataset not in report_dict:
+                                report_dict[dataset] = {}
                             report_dict[dataset][filter_name] = reports[dataset]
                 else:
                     for dataset, hist_dict in arrays_or_hists.items():
-                        processed_result[dataset] = {}
+                        if dataset not in processed_result:
+                            processed_result[dataset] = {}
                         processed_result[dataset][filter_name] = hist_dict
                         if reports is not None:
-                            report_dict[dataset] = {}
+                            if dataset not in report_dict:
+                                report_dict[dataset] = {}
                             report_dict[dataset][filter_name] = reports[dataset]
 
         # Append to the list of processed tasks

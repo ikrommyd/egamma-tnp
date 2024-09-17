@@ -236,6 +236,7 @@ def test_cli():
         histos["failing"],
         flow=True,
     )
+    assert os.path.exists("tests/output/sample_1/get_nd_tnp_histograms_1/HLT_Ele30_WPTight_Gsf_report.json")
     with open("tests/output/sample_1/get_nd_tnp_histograms_1/cutBased_gte_2_histos.pkl", "rb") as f:
         histos = pickle.load(f)
     assert_histograms_equal(
@@ -248,6 +249,7 @@ def test_cli():
         histos["failing"],
         flow=True,
     )
+    assert os.path.exists("tests/output/sample_1/get_nd_tnp_histograms_1/cutBased_gte_2_report.json")
 
     with open("tests/output/sample_2/get_nd_tnp_histograms_1/HLT_Ele30_WPTight_Gsf_histos.pkl", "rb") as f:
         histos = pickle.load(f)
@@ -261,6 +263,7 @@ def test_cli():
         histos["failing"],
         flow=True,
     )
+    assert os.path.exists("tests/output/sample_2/get_nd_tnp_histograms_1/HLT_Ele30_WPTight_Gsf_report.json")
     with open("tests/output/sample_2/get_nd_tnp_histograms_1/cutBased_gte_2_histos.pkl", "rb") as f:
         histos = pickle.load(f)
     assert_histograms_equal(
@@ -273,3 +276,4 @@ def test_cli():
         histos["failing"],
         flow=True,
     )
+    assert os.path.exists("tests/output/sample_2/get_nd_tnp_histograms_1/cutBased_gte_2_report.json")

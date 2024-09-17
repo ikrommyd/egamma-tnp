@@ -118,7 +118,7 @@ jobs:
     - name: Generate artifact attestation for sdist and wheel
       uses: actions/attest-build-provenance@1c608d11d69870c2092266b3f9a6f3abbf17002c # v1.4.3
       with:
-        subject-path: "dist/egammt_tnp-*"
+        subject-path: "dist/egamma_tnp-*"
     - name: Publish package to PyPI
       uses: pypa/gh-action-pypi-publish@v1.10.1
       with:

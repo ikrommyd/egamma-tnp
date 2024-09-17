@@ -229,6 +229,9 @@ def process_to_compute(to_compute, output_dir, repartition_n=5):
             for dataset, array in arrays.items():
                 processed_result[dataset] = save_array_to_parquet(array, output_dir, dataset, subdir_name, prefix="NTuples", repartition_n=repartition_n)
 
+            if reports is not None:
+                report_dict = reports
+
         else:
             report_dict = {}
             for filter_name, filter_result in result.items():
@@ -318,6 +321,7 @@ def process_out(out, output_dir):
                 for filter_name, hist_dict in histograms.items():
                     filename = f"{filter_name.replace(' ', '_').replace('>=', 'gte').replace('<=', 'lte').replace('>','gt').replace('<','lt')}_histos"
                     save_histogram_dict_to_pickle(hist_dict, output_dir, dataset, subdir_name, filename)
+
         if reports:
             if method == "get_tnp_arrays":
                 for dataset, report in reports.items():

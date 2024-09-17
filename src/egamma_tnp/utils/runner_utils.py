@@ -149,7 +149,8 @@ def run_methods(instance, methods):
     for method in methods:
         method_name = method["name"]
         method_args = method["args"]
-        method_args["uproot_options"] = parse_uproot_options(method_args["uproot_options"])
+        if "uproot_options" in method_args:
+            method_args["uproot_options"] = parse_uproot_options(method_args["uproot_options"])
         method_to_call = getattr(instance, method_name)
 
         # Check for disallowed arguments in the JSON configuration
@@ -213,45 +214,62 @@ def process_to_compute(to_compute, output_dir, repartition_n=5):
         args = entry["args"]
         result = entry["result"]
         processed_result = {}
+        report_dict = None
 
         # Track how many times each method is called
         method_counts[method] = method_counts.get(method, 0) + 1
         subdir_name = f"{method}_{method_counts[method]}"
 
-        # Separate arrays and reports if present
-        if isinstance(result, tuple):
-            arrays, reports = result
-        else:
-            arrays = result
-            reports = None
-
-        # Handle 'get_tnp_arrays' method
         if method == "get_tnp_arrays":
+            if isinstance(result, tuple):
+                arrays, reports = result
+            else:
+                arrays, reports = result, None
+
             for dataset, array in arrays.items():
                 processed_result[dataset] = save_array_to_parquet(array, output_dir, dataset, subdir_name, prefix="NTuples", repartition_n=repartition_n)
 
-        # Handle 'get_passing_and_failing_probes' method
-        elif method == "get_passing_and_failing_probes":
-            for filter_name, datasets in arrays.items():
-                processed_result[filter_name] = {}
-                for dataset, arr_dict in datasets.items():
-                    processed_result[filter_name][dataset] = {}
-                    for key in arr_dict:  # 'passing' and 'failing'
-                        prefix = f"{key}_{filter_name.replace(' ', '_').replace('>=', 'gte').replace('<=', 'lte').replace('>','gt').replace('<','lt')}_NTuples"
-                        processed_result[filter_name][dataset][key] = save_array_to_parquet(
-                            arr_dict[key], output_dir, dataset, subdir_name, prefix=prefix, repartition_n=repartition_n
-                        )
+            if reports is not None:
+                report_dict = reports
 
-        # For other methods, just keep the result as is
         else:
-            processed_result = arrays
+            report_dict = {}
+            for filter_name, filter_result in result.items():
+                if isinstance(filter_result, tuple):
+                    arrays_or_hists, reports = filter_result
+                else:
+                    arrays_or_hists, reports = filter_result, None
 
-        # Add reports if present
-        if reports is not None:
-            processed_result["reports"] = reports
+                if method == "get_passing_and_failing_probes":
+                    for dataset, arr_dict in arrays_or_hists.items():
+                        processed_result[dataset] = {}
+                        processed_result[dataset][filter_name] = {}
+                        for key in arr_dict:
+                            prefix = (
+                                f"{key}_{filter_name.replace(' ', '_').replace('>=', 'gte').replace('<=', 'lte').replace('>','gt').replace('<','lt')}_NTuples"
+                            )
+                            processed_result[dataset][filter_name][key] = save_array_to_parquet(
+                                arr_dict[key], output_dir, dataset, subdir_name, prefix=prefix, repartition_n=repartition_n
+                            )
+                        if reports is not None:
+                            if dataset not in report_dict:
+                                report_dict[dataset] = {}
+                            report_dict[dataset][filter_name] = reports[dataset]
+                else:
+                    for dataset, hist_dict in arrays_or_hists.items():
+                        if dataset not in processed_result:
+                            processed_result[dataset] = {}
+                        processed_result[dataset][filter_name] = hist_dict
+                        if reports is not None:
+                            if dataset not in report_dict:
+                                report_dict[dataset] = {}
+                            report_dict[dataset][filter_name] = reports[dataset]
 
         # Append to the list of processed tasks
-        processed_to_compute.append({"method": method, "args": args, "result": processed_result})
+        to_append = {"method": method, "args": args, "result": processed_result}
+        if report_dict:
+            to_append["report"] = report_dict
+        processed_to_compute.append(to_append)
 
     return processed_to_compute
 
@@ -268,14 +286,14 @@ def save_histogram_dict_to_pickle(hist_dict, output_dir, dataset, subdir, filena
         pickle.dump(hist_dict, f)
 
 
-def save_report_to_json(report, output_dir, dataset, subdir):
+def save_report_to_json(report, output_dir, dataset, subdir, filename="report.json"):
     """Helper function to save a report to a JSON file."""
     if output_dir is None:
         output_dir = os.getcwd()
 
     output_path = os.path.join(output_dir, dataset.removeprefix("/").replace("/", "_"), subdir).removeprefix("simplecache::")
-    logger.info(f"Saving report from dataset {dataset} to JSON file in {os.path.join(output_path, 'report.json')}")
-    ak.to_json(report, os.path.join(output_path, "report.json"), num_readability_spaces=1, num_indent_spaces=4)
+    logger.info(f"Saving report from dataset {dataset} to JSON file in {os.path.join(output_path, filename)}")
+    ak.to_json(report, os.path.join(output_path, filename), num_readability_spaces=1, num_indent_spaces=4)
 
 
 def process_out(out, output_dir):
@@ -292,25 +310,32 @@ def process_out(out, output_dir):
     for entry in out:
         method = entry["method"]
         result = entry["result"]
+        reports = entry.get("report", None)
 
         # Track how many times each method is called
         method_counts[method] = method_counts.get(method, 0) + 1
         subdir_name = f"{method}_{method_counts[method]}"
 
-        # Handle the report saving
-        reports = result.pop("reports", None)
-        if reports:
-            for dataset, report in reports.items():
-                save_report_to_json(report, output_dir, dataset, subdir_name)
-
         if method in ["get_1d_pt_eta_phi_tnp_histograms", "get_nd_tnp_histograms"]:
-            for filter_name, datasets in result.items():
-                for dataset, hist_dict in datasets.items():
+            for dataset, histograms in result.items():
+                for filter_name, hist_dict in histograms.items():
                     filename = f"{filter_name.replace(' ', '_').replace('>=', 'gte').replace('<=', 'lte').replace('>','gt').replace('<','lt')}_histos"
                     save_histogram_dict_to_pickle(hist_dict, output_dir, dataset, subdir_name, filename)
 
-        else:
-            continue
+        if reports:
+            if method == "get_tnp_arrays":
+                for dataset, report in reports.items():
+                    save_report_to_json(report, output_dir, dataset, subdir_name)
+            else:
+                for dataset, report_dict in reports.items():
+                    for filter_name, report in report_dict.items():
+                        save_report_to_json(
+                            report,
+                            output_dir,
+                            dataset,
+                            subdir_name,
+                            filename=f"{filter_name.replace(' ', '_').replace('>=', 'gte').replace('<=', 'lte')}_report.json",
+                        )
 
     return out
 

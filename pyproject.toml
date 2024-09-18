@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "egamma-tnp"
-description = "E/Gamma HLT efficiency from NanoAOD using Tag and Probe."
+description = "E/Gamma Tag & Probe framework."
 readme = "README.md"
 license = {text = "BSD-3-Clause"}
 requires-python = ">=3.8"

@@ -9,6 +9,13 @@ from dummy_tag_and_probe_ntuples import mini_tag_and_probe_electrons, mini_tag_a
 from egamma_tnp import ElectronTagNProbeFromMiniNTuples, ElectronTagNProbeFromNanoNTuples, PhotonTagNProbeFromMiniNTuples, PhotonTagNProbeFromNanoNTuples
 
 
+def assert_arrays_equal(a1, a2):
+    for i in a1.fields:
+        assert ak.all(a1[i] == a2[i])
+    for j in a2.fields:
+        assert ak.all(a1[j] == a2[j])
+
+
 def test_mini_tag_and_probe_electrons():
     fileset = {"sample": {"files": {os.path.abspath("tests/samples/TnPNTuples_el.root"): "fitter_tree"}}}
 
@@ -27,8 +34,8 @@ def test_mini_tag_and_probe_electrons():
     result = tag_n_probe.get_passing_and_failing_probes(
         "passingCutBasedTight122XV1", cut_and_count=False, vars=["el_pt", "el_eta", "truePU", "tag_Ele_eta"], compute=True
     )["sample"]
-    ak.array_equal(result["passing"], solution[0])
-    ak.array_equal(result["failing"], solution[1])
+    assert_arrays_equal(result["passing"], solution[0])
+    assert_arrays_equal(result["failing"], solution[1])
     assert len(result["passing"]) == 414
     assert len(result["failing"]) == 113
     assert len(solution[0]) == 414
@@ -53,8 +60,8 @@ def test_mini_tag_and_probe_photons():
     result = tag_n_probe.get_passing_and_failing_probes(
         "passingCutBasedTight122XV1", cut_and_count=False, vars=["ph_et", "ph_eta", "truePU", "tag_Ele_eta"], compute=True
     )["sample"]
-    ak.array_equal(result["passing"], solution[0])
-    ak.array_equal(result["failing"], solution[1])
+    assert_arrays_equal(result["passing"], solution[0])
+    assert_arrays_equal(result["failing"], solution[1])
     assert len(result["passing"]) == 372
     assert len(result["failing"]) == 73
     assert len(solution[0]) == 372
@@ -79,8 +86,8 @@ def test_nano_tag_and_probe_electrons():
     result = tag_n_probe.get_passing_and_failing_probes("cutBased >= 4", cut_and_count=False, vars=["el_pt", "el_eta", "PV_npvs", "tag_Ele_eta"], compute=True)[
         "sample"
     ]
-    ak.array_equal(result["passing"], solution[0])
-    ak.array_equal(result["failing"], solution[1])
+    assert_arrays_equal(result["passing"], solution[0])
+    assert_arrays_equal(result["failing"], solution[1])
     assert len(result["passing"]) == 978
     assert len(result["failing"]) == 0
     assert len(solution[0]) == 978
@@ -105,8 +112,8 @@ def test_nano_tag_and_probe_photons():
     result = tag_n_probe.get_passing_and_failing_probes("cutBased >= 3", cut_and_count=False, vars=["ph_pt", "ph_eta", "PV_npvs", "tag_Ele_eta"], compute=True)[
         "sample"
     ]
-    ak.array_equal(result["passing"], solution[0])
-    ak.array_equal(result["failing"], solution[1])
+    assert_arrays_equal(result["passing"], solution[0])
+    assert_arrays_equal(result["failing"], solution[1])
     assert len(result["passing"]) == 669
     assert len(result["failing"]) == 135
     assert len(solution[0]) == 669

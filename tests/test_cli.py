@@ -20,7 +20,7 @@ def assert_histograms_equal(h1, h2, flow):
     assert h1.sum(flow=flow).variance == h2.sum(flow=flow).variance
 
 
-def asert_arrays_equal(a1, a2):
+def assert_arrays_equal(a1, a2):
     for i in a1.fields:
         assert ak.all(a1[i] == a2[i])
     for j in a2.fields:
@@ -119,41 +119,41 @@ def test_cli():
     with ProgressBar():
         (out,) = dask.compute(to_compute)
 
-    ak.array_equal(
+    assert_arrays_equal(
         out["get_tnp_arrays_1"][0]["sample/1"],
         ak.from_parquet("tests/output/sample_1/get_tnp_arrays_1/NTuples-part0.parquet"),
     )
     assert os.path.exists("tests/output/sample_1/get_tnp_arrays_1/report.json")
-    ak.array_equal(
+    assert_arrays_equal(
         out["get_tnp_arrays_1"][0]["sample/2"],
         ak.from_parquet("tests/output/sample_2/get_tnp_arrays_1/NTuples-part0.parquet"),
     )
     assert os.path.exists("tests/output/sample_2/get_tnp_arrays_1/report.json")
 
-    ak.array_equal(
+    assert_arrays_equal(
         out["get_tnp_arrays_2"][0]["sample/1"],
         ak.from_parquet("tests/output/sample_1/get_tnp_arrays_2/NTuples-part0.parquet"),
     )
     assert os.path.exists("tests/output/sample_1/get_tnp_arrays_2/report.json")
-    ak.array_equal(
+    assert_arrays_equal(
         out["get_tnp_arrays_2"][0]["sample/2"],
         ak.from_parquet("tests/output/sample_2/get_tnp_arrays_2/NTuples-part0.parquet"),
     )
     assert os.path.exists("tests/output/sample_2/get_tnp_arrays_2/report.json")
 
-    ak.array_equal(
+    assert_arrays_equal(
         out["get_passing_and_failing_probes_1_hlt"]["sample/1"]["passing"],
         ak.from_parquet("tests/output/sample_1/get_passing_and_failing_probes_1/passing_HLT_Ele30_WPTight_Gsf_NTuples-part0.parquet"),
     )
-    ak.array_equal(
+    assert_arrays_equal(
         out["get_passing_and_failing_probes_1_hlt"]["sample/1"]["failing"],
         ak.from_parquet("tests/output/sample_1/get_passing_and_failing_probes_1/failing_HLT_Ele30_WPTight_Gsf_NTuples-part0.parquet"),
     )
-    ak.array_equal(
+    assert_arrays_equal(
         out["get_passing_and_failing_probes_1_hlt"]["sample/2"]["passing"],
         ak.from_parquet("tests/output/sample_2/get_passing_and_failing_probes_1/passing_HLT_Ele30_WPTight_Gsf_NTuples-part0.parquet"),
     )
-    ak.array_equal(
+    assert_arrays_equal(
         out["get_passing_and_failing_probes_1_hlt"]["sample/2"]["failing"],
         ak.from_parquet("tests/output/sample_2/get_passing_and_failing_probes_1/failing_HLT_Ele30_WPTight_Gsf_NTuples-part0.parquet"),
     )

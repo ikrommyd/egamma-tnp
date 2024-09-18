@@ -332,7 +332,7 @@ class ElectronTagNProbeFromNanoAOD(BaseTagNProbe):
                 doclist = [x for x in good_events.TrigObj.filterBits.__doc__.split(";") if x.endswith("for Electron")]
                 eledoc = doclist[0] if doclist else None
                 if eledoc is not None:
-                    if bit == 12 and "Leg 1" not in eledoc and "Leg 2" not in eledoc:
+                    if (bit == 12) and (trigger_pt in [115, 135]) and ("Leg 1" not in eledoc) and ("Leg 2" not in eledoc):
                         import warnings
 
                         warnings.warn(

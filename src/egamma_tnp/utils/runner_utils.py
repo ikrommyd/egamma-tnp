@@ -186,6 +186,8 @@ def save_array_to_parquet(array, output_dir, dataset, subdir, prefix=None, repar
 
     output_path = os.path.join(output_dir, dataset.removeprefix("/").replace("/", "_"), subdir)
 
+    # Trick to reduce node multiplicity before to_parquet until it's fixed.
+    # TODO: remove this when the issue is fixed
     array = array[array.run > -999.0]
 
     # Repartition the array if needed

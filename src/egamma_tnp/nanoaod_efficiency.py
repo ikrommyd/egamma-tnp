@@ -626,9 +626,6 @@ class PhotonTagNProbeFromNanoAOD(BaseTagNProbe):
         final_probe_dict = {k: v for k, v in probe_dict.items() if "to_use" not in k}
         probes = dak.zip(final_probe_dict, depth_limit=1)
 
-        final_probe_dict = {k: v for k, v in probe_dict.items() if "to_use" not in k}
-        probes = dak.zip(final_probe_dict, depth_limit=1)
-
         return probes
 
     @staticmethod

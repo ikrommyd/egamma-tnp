@@ -195,7 +195,7 @@ def save_array_to_parquet(array, output_dir, dataset, subdir, prefix=None, repar
     return dak.to_parquet(array, output_path, compute=False, prefix=prefix, extensionarray=False)
 
 
-def process_to_compute(to_compute, output_dir, repartition_n=5):
+def process_to_compute(to_compute, output_dir, repartition_n=5, skip_report=False):
     """
     Process the task graph (to_compute) to save arrays to Parquet files and keep track of reports.
 
@@ -268,7 +268,7 @@ def process_to_compute(to_compute, output_dir, repartition_n=5):
 
         # Append to the list of processed tasks
         to_append = {"method": method, "args": args, "result": processed_result}
-        if report_dict:
+        if report_dict and not skip_report:
             to_append["report"] = report_dict
         processed_to_compute.append(to_append)
 
@@ -406,8 +406,10 @@ def get_main_parser():
         The executor to use for the computations. The default is None and lets dask decide.
     --preprocess: bool, optional
         Preprocess the fileset before running the workflow. The default is False.
+    --skip_report: bool, optional
+        Skip computing and saving the report. The default is False.
     --repartition_n_to_one: int, optional
-        The number of partitions to merge during saving. The default is 5.
+        The number of partitions to merge during saving. The default is None.
     --cores: int, optional
         Number of cores for each worker. The default is None.
     --memory: str, optional
@@ -453,7 +455,8 @@ def get_main_parser():
     parser.add_argument("--output", type=str, help="Path to the output directory. Default is None.")
     parser.add_argument("--executor", type=str, help="The executor to use for the computations. Default is None and lets dask decide.")
     parser.add_argument("--preprocess", action="store_true", default=False, help="Preprocess the fileset before running the workflow. Default is False.")
-    parser.add_argument("--repartition_n_to_one", type=int, default=5, help="The number of partitions to merge during saving. Default is 5.")
+    parser.add_argument("--skip_report", action="store_true", default=False, help="Skip computing and saving the report. Default is False.")
+    parser.add_argument("--repartition_n_to_one", type=int, help="The number of partitions to merge during saving. Default is None.")
     parser.add_argument("--cores", type=int, help="Number of cores for each worker")
     parser.add_argument("--memory", type=str, help="Memory allocation for each worker")
     parser.add_argument("--disk", type=str, help="Disk allocation for each worker")

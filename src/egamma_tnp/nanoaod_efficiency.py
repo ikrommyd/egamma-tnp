@@ -214,9 +214,10 @@ class ElectronTagNProbeFromNanoAOD(BaseTagNProbe):
             vars_tags = [f"tag_Ele_{var}" for var in all_probe_events.tag_Ele.fields]
             vars_probes = [f"el_{var}" for var in all_probe_events.el.fields]
             extra_vars = ["PV_npvs", "Rho_fixedGridRhoAll", "Rho_fixedGridRhoFastjetAll"]
-            vars = vars_tags + vars_probes + extra_vars + ["event", "run", "luminosityBlock"]
+            vars = vars_tags + vars_probes + extra_vars
             if all_probe_events.metadata.get("isMC"):
                 vars = [*vars, "Pileup_nTrueInt"]
+        vars = [*vars, "event", "run", "luminosityBlock"]
 
         probe_dict = {}
         for var in vars:
@@ -231,8 +232,7 @@ class ElectronTagNProbeFromNanoAOD(BaseTagNProbe):
                 else:
                     probe_dict[var] = all_probe_events[var]
         probe_dict.update(passing_locs)
-        if not cut_and_count:
-            probe_dict["pair_mass"] = all_probe_events.pair_mass
+        probe_dict["pair_mass"] = all_probe_events.pair_mass
 
         if all_probe_events.metadata.get("isMC"):
             weights = Weights(size=None, storeIndividual=True)
@@ -578,9 +578,10 @@ class PhotonTagNProbeFromNanoAOD(BaseTagNProbe):
             vars_tags = [f"tag_Ele_{var}" for var in all_probe_events.tag_Ele.fields]
             vars_probes = [f"ph_{var}" for var in all_probe_events.ph.fields]
             extra_vars = ["PV_npvs", "Rho_fixedGridRhoAll", "Rho_fixedGridRhoFastjetAll"]
-            vars = vars_tags + vars_probes + extra_vars + ["event", "run", "luminosityBlock"]
+            vars = vars_tags + vars_probes + extra_vars
             if all_probe_events.metadata.get("isMC"):
                 vars = [*vars, "Pileup_nTrueInt"]
+        vars = [*vars, "event", "run", "luminosityBlock"]
 
         probe_dict = {}
         for var in vars:
@@ -595,8 +596,7 @@ class PhotonTagNProbeFromNanoAOD(BaseTagNProbe):
                 else:
                     probe_dict[var] = all_probe_events[var]
         probe_dict.update(passing_locs)
-        if not cut_and_count:
-            probe_dict["pair_mass"] = all_probe_events.pair_mass
+        probe_dict["pair_mass"] = all_probe_events.pair_mass
 
         if all_probe_events.metadata.get("isMC"):
             weights = Weights(size=None, storeIndividual=True)

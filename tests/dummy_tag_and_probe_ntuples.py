@@ -32,7 +32,7 @@ def mini_tag_and_probe_electrons(events):
     passing_probe_events = all_probe_events[passing_locs]
     failing_probe_events = all_probe_events[~passing_locs]
 
-    vars = ["el_pt", "el_eta", "truePU", "tag_Ele_eta"]
+    vars = ["el_pt", "el_eta", "truePU", "tag_Ele_eta", "event", "run", "lumi"]
     if cut_and_count:
         passing_probes = ak.zip({var: passing_probe_events[var] for var in vars})
         failing_probes = ak.zip({var: failing_probe_events[var] for var in vars})
@@ -75,7 +75,7 @@ def mini_tag_and_probe_photons(events):
     passing_probe_events = all_probe_events[passing_locs]
     failing_probe_events = all_probe_events[~passing_locs]
 
-    vars = ["ph_et", "ph_eta", "truePU", "tag_Ele_eta"]
+    vars = ["ph_et", "ph_eta", "truePU", "tag_Ele_eta", "event", "run", "lumi"]
     if cut_and_count:
         passing_probes = ak.zip({var: passing_probe_events[var] for var in vars})
         failing_probes = ak.zip({var: failing_probe_events[var] for var in vars})
@@ -119,7 +119,7 @@ def nano_tag_and_probe_electrons(events):
     passing_probe_events = all_probe_events[passing_locs]
     failing_probe_events = all_probe_events[~passing_locs]
 
-    vars = ["el_pt", "el_eta", "PV_npvs", "tag_Ele_eta"]
+    vars = ["el_pt", "el_eta", "PV_npvs", "tag_Ele_eta", "event", "run", "luminosityBlock"]
     if cut_and_count:
         passing_probes = ak.zip({var: passing_probe_events[var] for var in vars})
         failing_probes = ak.zip({var: failing_probe_events[var] for var in vars})
@@ -162,7 +162,7 @@ def nano_tag_and_probe_photons(events):
     passing_probe_events = all_probe_events[passing_locs]
     failing_probe_events = all_probe_events[~passing_locs]
 
-    vars = ["ph_pt", "ph_eta", "PV_npvs", "tag_Ele_eta"]
+    vars = ["ph_pt", "ph_eta", "PV_npvs", "tag_Ele_eta", "event", "run", "luminosityBlock"]
     if cut_and_count:
         passing_probes = ak.zip({var: passing_probe_events[var] for var in vars})
         failing_probes = ak.zip({var: failing_probe_events[var] for var in vars})

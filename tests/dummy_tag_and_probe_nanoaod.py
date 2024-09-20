@@ -96,7 +96,7 @@ def tag_and_probe_electrons(events, is_id):
 
     passing_probe_dict = {}
     failing_probe_dict = {}
-    vars = ["Electron_pt", "tag_Ele_eta", "el_pt", "el_eta", "MET_pt", "event"]
+    vars = ["Electron_pt", "tag_Ele_eta", "el_pt", "el_eta", "MET_pt", "event", "run", "luminosityBlock"]
     for var in vars:
         if var.startswith("el_"):
             passing_probe_dict[var] = passing_probe_events["el", var.removeprefix("el_")]
@@ -222,7 +222,7 @@ def tag_and_probe_photons(events, start_from_diphotons, is_id):
 
     passing_probe_dict = {}
     failing_probe_dict = {}
-    vars = ["Photon_pt", "tag_Ele_eta", "ph_pt", "ph_eta", "MET_pt", "event"]
+    vars = ["Photon_pt", "tag_Ele_eta", "ph_pt", "ph_eta", "MET_pt", "event", "run", "luminosityBlock"]
     for var in vars:
         if var.startswith("ph_"):
             passing_probe_dict[var] = passing_probe_events["ph", var.removeprefix("ph_")]

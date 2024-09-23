@@ -154,14 +154,14 @@ class ElectronTagNProbeFromMiniNTuples(BaseTagNProbe):
         if vars == "all":
             vars_tags = [v for v in all_probe_events.fields if v.startswith("tag_Ele_")]
             vars_probes = [v for v in all_probe_events.fields if v.startswith("el_")]
-            vars = vars_tags + vars_probes + ["event", "run", "lumi"] + [x for x in all_probe_events.fields if "weight" in x or "Weight" in x]
-            if all_probe_events.metadata.get("isMC"):
-                vars = [*vars, "truePU"]
+            vars = vars_tags + vars_probes
 
-        if cut_and_count:
-            probes = dak.zip({var: all_probe_events[var] for var in vars if "to_use" not in var} | passing_locs)
-        else:
-            probes = dak.zip({var: all_probe_events[var] for var in vars if "to_use" not in var} | passing_locs | {"pair_mass": all_probe_events["pair_mass"]})
+        vars = vars + ["event", "run", "lumi"] + [x for x in all_probe_events.fields if "weight" in x or "Weight" in x]
+
+        if all_probe_events.metadata.get("isMC"):
+            vars = [*vars, "truePU"]
+
+        probes = dak.zip({var: all_probe_events[var] for var in vars if "to_use" not in var} | passing_locs | {"pair_mass": all_probe_events["pair_mass"]})
 
         if all_probe_events.metadata.get("isMC"):
             if "pileupJSON" in all_probe_events.metadata:
@@ -320,14 +320,14 @@ class PhotonTagNProbeFromMiniNTuples(BaseTagNProbe):
         if vars == "all":
             vars_tags = [v for v in all_probe_events.fields if v.startswith("tag_Ele_")]
             vars_probes = [v for v in all_probe_events.fields if v.startswith("el_")]
-            vars = vars_tags + vars_probes + ["event", "run", "lumi"] + [x for x in all_probe_events.fields if "weight" in x or "Weight" in x]
-            if all_probe_events.metadata.get("isMC"):
-                vars = [*vars, "truePU"]
+            vars = vars_tags + vars_probes
 
-        if cut_and_count:
-            probes = dak.zip({var: all_probe_events[var] for var in vars if "to_use" not in var} | passing_locs)
-        else:
-            probes = dak.zip({var: all_probe_events[var] for var in vars if "to_use" not in var} | passing_locs | {"pair_mass": all_probe_events["pair_mass"]})
+        vars = vars + ["event", "run", "lumi"] + [x for x in all_probe_events.fields if "weight" in x or "Weight" in x]
+
+        if all_probe_events.metadata.get("isMC"):
+            vars = [*vars, "truePU"]
+
+        probes = dak.zip({var: all_probe_events[var] for var in vars if "to_use" not in var} | passing_locs | {"pair_mass": all_probe_events["pair_mass"]})
 
         if all_probe_events.metadata.get("isMC"):
             if "pileupJSON" in all_probe_events.metadata:
@@ -496,20 +496,15 @@ class ElectronTagNProbeFromNanoNTuples(BaseTagNProbe):
             vars = (
                 vars_tags
                 + vars_probes
-                + ["event", "run", "luminosityBlock"]
-                + [
-                    x
-                    for x in all_probe_events.fields
-                    if "weight" in x or "Weight" in x or x == "PV_npvs" or x == "Rho_fixedGridRhoAll" or x == "Rho_fixedGridRhoFastjetAll"
-                ]
+                + [x for x in all_probe_events.fields if x == "PV_npvs" or x == "Rho_fixedGridRhoAll" or x == "Rho_fixedGridRhoFastjetAll"]
             )
-            if all_probe_events.metadata.get("isMC"):
-                vars = [*vars, "Pileup_nTrueInt"]
 
-        if cut_and_count:
-            probes = dak.zip({var: all_probe_events[var] for var in vars if "to_use" not in var} | passing_locs)
-        else:
-            probes = dak.zip({var: all_probe_events[var] for var in vars if "to_use" not in var} | passing_locs | {"pair_mass": all_probe_events["pair_mass"]})
+        vars = vars + ["event", "run", "luminosityBlock"] + [x for x in all_probe_events.fields if "weight" in x or "Weight" in x]
+
+        if all_probe_events.metadata.get("isMC"):
+            vars = [*vars, "Pileup_nTrueInt"]
+
+        probes = dak.zip({var: all_probe_events[var] for var in vars if "to_use" not in var} | passing_locs | {"pair_mass": all_probe_events["pair_mass"]})
 
         if all_probe_events.metadata.get("isMC") and "weight" not in vars:
             if "pileupJSON" in all_probe_events.metadata:
@@ -667,24 +662,19 @@ class PhotonTagNProbeFromNanoNTuples(BaseTagNProbe):
 
         if vars == "all":
             vars_tags = [v for v in all_probe_events.fields if v.startswith("tag_Ele_")]
-            vars_probes = [v for v in all_probe_events.fields if v.startswith("ph_")]
+            vars_probes = [v for v in all_probe_events.fields if v.startswith("el_")]
             vars = (
                 vars_tags
                 + vars_probes
-                + ["event", "run", "luminosityBlock"]
-                + [
-                    x
-                    for x in all_probe_events.fields
-                    if "weight" in x or "Weight" in x or x == "PV_npvs" or x == "Rho_fixedGridRhoAll" or x == "Rho_fixedGridRhoFastjetAll"
-                ]
+                + [x for x in all_probe_events.fields if x == "PV_npvs" or x == "Rho_fixedGridRhoAll" or x == "Rho_fixedGridRhoFastjetAll"]
             )
-            if all_probe_events.metadata.get("isMC"):
-                vars = [*vars, "Pileup_nTrueInt"]
 
-        if cut_and_count:
-            probes = dak.zip({var: all_probe_events[var] for var in vars if "to_use" not in var} | passing_locs)
-        else:
-            probes = dak.zip({var: all_probe_events[var] for var in vars if "to_use" not in var} | passing_locs | {"pair_mass": all_probe_events["pair_mass"]})
+        vars = vars + ["event", "run", "luminosityBlock"] + [x for x in all_probe_events.fields if "weight" in x or "Weight" in x]
+
+        if all_probe_events.metadata.get("isMC"):
+            vars = [*vars, "Pileup_nTrueInt"]
+
+        probes = dak.zip({var: all_probe_events[var] for var in vars if "to_use" not in var} | passing_locs | {"pair_mass": all_probe_events["pair_mass"]})
 
         if all_probe_events.metadata.get("isMC") and "weight" not in vars:
             if "pileupJSON" in all_probe_events.metadata:

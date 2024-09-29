@@ -1,0 +1,26 @@
+{
+  "workflow": "ElectronTagNProbeFromNanoAOD",
+  "workflow_args": {
+    "filters": [
+      "cutBased >= 0",
+      "cutBased >= 1",
+      "cutBased >= 2",
+      "cutBased >= 3",
+      "cutBased >= 4"
+    ]
+  },
+  "methods": [
+    {
+      "name": "get_tnp_arrays",
+      "args": {
+        "cut_and_count": false,
+        "vars": "all",
+        "flat": true,
+        "uproot_options": {
+          "allow_read_errors_with_report": ["OSError", "ValueError"],
+          "timeout": 120
+        }
+      }
+    }
+  ]
+}

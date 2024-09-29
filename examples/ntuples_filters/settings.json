@@ -1,0 +1,9 @@
+{
+    "tags_pt_cut": 35,
+    "probes_pt_cut": 5,
+    "tags_abseta_cut": 2.5,
+    "probes_abseta_cut": 2.5,
+    "cutbased_id": "passingCutBasedTight122XV1",
+    "extra_filter": "runfilter.py::runfilter",
+    "use_sc_eta": true
+}

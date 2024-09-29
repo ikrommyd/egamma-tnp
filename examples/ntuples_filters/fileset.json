@@ -1,0 +1,47 @@
+{
+  "data_EGamma_Run2024F": {
+    "files": {
+      "../../tnptuples/data_EGamma0_Run2024F.root": "tnpEleTrig/fitter_tree",
+      "../../tnptuples/data_EGamma1_Run2024F.root": "tnpEleTrig/fitter_tree"
+    },
+    "metadata": {
+      "goldenJSON": "../../json/steam_august_2024.json"
+    }
+  },
+  "data_EGamma_Run2024F_after_HCAL": {
+    "files": {
+      "../../tnptuples/data_EGamma0_Run2024F.root": "tnpEleTrig/fitter_tree",
+      "../../tnptuples/data_EGamma1_Run2024F.root": "tnpEleTrig/fitter_tree"
+    },
+    "metadata": {
+      "goldenJSON": "../../json/steam_august_2024.json"
+    }
+  },
+  "data_EGamma_Run2024G": {
+    "files": {
+      "../../tnptuples/data_EGamma0_Run2024G.root": "tnpEleTrig/fitter_tree",
+      "../../tnptuples/data_EGamma1_Run2024G.root": "tnpEleTrig/fitter_tree"
+    },
+    "metadata": {
+      "goldenJSON": "../../json/steam_august_2024.json"
+    }
+  },
+  "data_EGamma_Run2024G_before_MD": {
+    "files": {
+      "../../tnptuples/data_EGamma0_Run2024G.root": "tnpEleTrig/fitter_tree",
+      "../../tnptuples/data_EGamma1_Run2024G.root": "tnpEleTrig/fitter_tree"
+    },
+    "metadata": {
+      "goldenJSON": "../../json/steam_august_2024.json"
+    }
+  },
+  "data_EGamma_Run2024G_after_MD": {
+    "files": {
+      "../../tnptuples/data_EGamma0_Run2024G.root": "tnpEleTrig/fitter_tree",
+      "../../tnptuples/data_EGamma1_Run2024G.root": "tnpEleTrig/fitter_tree"
+    },
+    "metadata": {
+      "goldenJSON": "../../json/steam_august_2024.json"
+    }
+  }
+}

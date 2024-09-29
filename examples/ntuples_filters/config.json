@@ -1,0 +1,30 @@
+{
+  "workflow": "ElectronTagNProbeFromMiniNTuples",
+  "workflow_args": {
+    "filters": [
+      "passHLTEle30WPTightGsfTrackIsoFilter",
+      "passHLTEle115CaloIdVTGsfTrkIdTGsfDphiFilter",
+      "passHLTEle23Ele12CaloIdLTrackIdLIsoVLTrackIsoLeg1Filter",
+      "passHLTEle23Ele12CaloIdLTrackIdLIsoVLTrackIsoLeg2Filter",
+      "passHLTEle33CaloIdLMWPMS2Filter",
+      "passHLTDiEle33CaloIdLMWPMS2UnseededFilter"
+    ]
+  },
+  "methods": [
+    {
+      "name": "get_nd_tnp_histograms",
+      "args": {
+        "filter": [
+          "passHLTEle30WPTightGsfTrackIsoFilter",
+          "passHLTEle115CaloIdVTGsfTrkIdTGsfDphiFilter",
+          "passHLTEle23Ele12CaloIdLTrackIdLIsoVLTrackIsoLeg1Filter",
+          "passHLTEle23Ele12CaloIdLTrackIdLIsoVLTrackIsoLeg2Filter",
+          "passHLTEle33CaloIdLMWPMS2Filter",
+          "passHLTDiEle33CaloIdLMWPMS2UnseededFilter"
+        ],
+        "cut_and_count": true,
+        "vars": ["el_pt", "el_eta", "el_phi"]
+      }
+    }
+  ]
+}

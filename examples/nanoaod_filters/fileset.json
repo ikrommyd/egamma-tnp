@@ -1,0 +1,14 @@
+{
+    "EGMnano_140X_mcRun3_2024_realistic_EGamma_v1_ext1":{
+        "files":
+            {
+                "root://eoscms.cern.ch:1094//eos/cms/store/group/phys_egamma/ec/nkasarag/EGM_comm/DYto2L-2Jets_MLL-50_TuneCP5_13p6TeV_amcatnloFXFX-pythia8/EGMnano_140X_mcRun3_2024_realistic_EGamma_v1_ext1/240827_171424/0000/egmNano_1.root": "Events"
+            }
+        },
+    "EGMnano_140X_mcRun3_2024_realistic_EGamma_v1_ext2":{
+        "files":
+            {
+                "root://eoscms.cern.ch:1094//eos/cms/store/group/phys_egamma/ec/nkasarag/EGM_comm/DYto2L-2Jets_MLL-50_TuneCP5_13p6TeV_amcatnloFXFX-pythia8/EGMnano_140X_mcRun3_2024_realistic_EGamma_v1_ext2/240827_171504/0000/egmNano_1.root": "Events"
+            }
+        }
+}

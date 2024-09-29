@@ -1,0 +1,5 @@
+{
+    "probes_pt_cut": 5,
+    "use_sc_eta": true,
+    "require_event_to_pass_hlt_filter": false
+}

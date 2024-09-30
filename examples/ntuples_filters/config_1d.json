@@ -1,0 +1,93 @@
+{
+  "workflow": "ElectronTagNProbeFromMiniNTuples",
+  "workflow_args": {
+    "filters": [
+      "passHLTEle30WPTightGsfTrackIsoFilter",
+      "passHLTEle115CaloIdVTGsfTrkIdTGsfDphiFilter",
+      "passHLTEle23Ele12CaloIdLTrackIdLIsoVLTrackIsoLeg1Filter",
+      "passHLTEle23Ele12CaloIdLTrackIdLIsoVLTrackIsoLeg2Filter",
+      "passHLTEle33CaloIdLMWPMS2Filter",
+      "passHLTDiEle33CaloIdLMWPMS2UnseededFilter"
+    ]
+  },
+  "methods": [
+    {
+      "name": "get_1d_pt_eta_phi_tnp_histograms",
+      "args": {
+        "filter": "passHLTEle30WPTightGsfTrackIsoFilter",
+        "cut_and_count": true,
+        "eta_regions_pt": {
+            "barrel": [0.0, 1.4442],
+            "endcap_loweta": [1.566, 2.0],
+            "endcap_higheta": [2.0, 2.5]
+        },
+        "plateau_cut": 35
+      }
+    },
+    {
+      "name": "get_1d_pt_eta_phi_tnp_histograms",
+      "args": {
+        "filter": "passHLTEle115CaloIdVTGsfTrkIdTGsfDphiFilter",
+        "cut_and_count": true,
+        "eta_regions_pt": {
+            "barrel": [0.0, 1.4442],
+            "endcap_loweta": [1.566, 2.0],
+            "endcap_higheta": [2.0, 2.5]
+        },
+        "plateau_cut": 120
+      }
+    },
+    {
+      "name": "get_1d_pt_eta_phi_tnp_histograms",
+      "args": {
+        "filter": "passHLTEle23Ele12CaloIdLTrackIdLIsoVLTrackIsoLeg1Filter",
+        "cut_and_count": true,
+        "eta_regions_pt": {
+            "barrel": [0.0, 1.4442],
+            "endcap_loweta": [1.566, 2.0],
+            "endcap_higheta": [2.0, 2.5]
+        },
+        "plateau_cut": 25
+      }
+    },
+    {
+      "name": "get_1d_pt_eta_phi_tnp_histograms",
+      "args": {
+        "filter": "passHLTEle23Ele12CaloIdLTrackIdLIsoVLTrackIsoLeg2Filter",
+        "cut_and_count": true,
+        "eta_regions_pt": {
+            "barrel": [0.0, 1.4442],
+            "endcap_loweta": [1.566, 2.0],
+            "endcap_higheta": [2.0, 2.5]
+        },
+        "plateau_cut": 15
+      }
+    },
+    {
+      "name": "get_1d_pt_eta_phi_tnp_histograms",
+      "args": {
+        "filter": "passHLTEle33CaloIdLMWPMS2Filter",
+        "cut_and_count": true,
+        "eta_regions_pt": {
+            "barrel": [0.0, 1.4442],
+            "endcap_loweta": [1.566, 2.0],
+            "endcap_higheta": [2.0, 2.5]
+        },
+        "plateau_cut": 35
+      }
+    },
+    {
+      "name": "get_1d_pt_eta_phi_tnp_histograms",
+      "args": {
+        "filter": "passHLTDiEle33CaloIdLMWPMS2UnseededFilter",
+        "cut_and_count": true,
+        "eta_regions_pt": {
+            "barrel": [0.0, 1.4442],
+            "endcap_loweta": [1.566, 2.0],
+            "endcap_higheta": [2.0, 2.5]
+        },
+        "plateau_cut": 35
+      }
+    }
+  ]
+}

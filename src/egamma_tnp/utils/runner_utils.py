@@ -376,8 +376,8 @@ def get_proxy():
         stat, out = subprocess.getstatusoutput("voms-proxy-info -e -p")
         # stat is 0 if the proxy is valid
         if stat != 0:
-            logger.error("No valid proxy found. Please create one.")
-            raise RuntimeError("No valid proxy found. Please create one.")
+            logger.warning("No valid proxy found. Please create one.")
+            warnings.warn("No valid proxy found. Please create one.", stacklevel=1)
 
         _x509_localpath = out
         _x509_path = os.environ["HOME"] + f'/.{_x509_localpath.split("/")[-1]}'

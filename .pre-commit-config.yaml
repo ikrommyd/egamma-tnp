@@ -31,7 +31,7 @@ repos:
     args: ["--py38-plus"]
 
 - repo: https://github.com/astral-sh/ruff-pre-commit
-  rev: v0.6.7
+  rev: v0.6.8
   hooks:
   - id: ruff
     args: ["--fix", "--show-fixes"]
@@ -46,6 +46,6 @@ repos:
     args: ["--skip=*.ipynb","-L hist,Hist,nd,SubJet,subjet,Subjet,PTD,ptd,fPt,fpt,Ser,ser,hda"]
 
 - repo: https://github.com/abravalheri/validate-pyproject
-  rev: v0.19
+  rev: v0.20.2
   hooks:
     - id: validate-pyproject

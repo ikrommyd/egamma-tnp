@@ -9,7 +9,7 @@ import warnings
 
 import dask
 from dask.diagnostics import ProgressBar
-from dask.distributed import Client, LocalCluster, performance_report, progress
+from dask.distributed import Client, LocalCluster, performance_report
 
 from egamma_tnp.config import binning_manager
 from egamma_tnp.utils import runner_utils
@@ -198,9 +198,7 @@ def main():
     if client:
         with performance_report(filename="/tmp/dask-report.html"):
             logger.info("The performance report will be saved in /tmp/dask-report.html")
-            futures = client.compute(to_compute)
-            progress(futures)
-            out = client.gather(futures)
+            (out,) = dask.compute(to_compute, scheduler="distributed")
     else:
         with ProgressBar():
             (out,) = dask.compute(to_compute, scheduler=scheduler)

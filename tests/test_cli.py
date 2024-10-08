@@ -29,7 +29,7 @@ def assert_arrays_equal(a1, a2):
 
 def test_cli():
     subprocess.run(
-        "run_analysis --config tests/example_runner.json --settings tests/example_settings.json --fileset tests/example_fileset.json --binning tests/example_binning.json --output tests/output --executor distributed --cores 1 --dashboard_address 8786",
+        "run_analysis --config tests/example_runner.json --settings tests/example_settings.json --fileset tests/example_fileset.json --binning tests/example_binning.json --output tests/output --executor threads",
         shell=True,
         check=True,
     )

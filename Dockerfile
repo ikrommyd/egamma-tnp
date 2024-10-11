@@ -1,7 +1,7 @@
-ARG FROM_IMAGE=gitlab-registry.cern.ch/batch-team/dask-lxplus/lxdask-cc7:latest
+ARG FROM_IMAGE=gitlab-registry.cern.ch/batch-team/dask-lxplus/lxdask-al9:latest
 FROM ${FROM_IMAGE}
 
-ARG CLUSTER=lxplus-cc7
+ARG CLUSTER=lxplus-el9
 
 ADD . .
 

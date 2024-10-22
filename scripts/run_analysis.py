@@ -51,18 +51,6 @@ def main():
         runner_utils.set_binning(runner_utils.load_json(args.binning))
     fileset = runner_utils.load_json(args.fileset)
     logger.info(f"Loaded fileset from {args.fileset}")
-    if args.preprocess:
-        from coffea.dataset_tools import preprocess
-
-        client = Client(dashboard_address=args.dashboard_address)
-        logger.info(f"Preprocessing the fileset with client: {client}")
-        fileset = preprocess(fileset, step_size=100_000, skip_bad_files=True, scheduler=None)[0]
-        logger.info("Done preprocessing the fileset")
-        client.shutdown()
-
-        with gzip.open("/tmp/preprocessed_fileset.json.gz", "wt") as f:
-            logger.info("Saving the preprocessed fileset to /tmp/preprocessed_fileset.json.gz")
-            json.dump(fileset, f, indent=2)
 
     if args.executor == "dask/casa" or args.executor.startswith("tls://"):
         # use xcache for coffea-casa
@@ -75,6 +63,19 @@ def main():
                 newpath = path.replace(path[xrd_pfx_len : xrd_pfx_len + path[xrd_pfx_len:].find("/store")], "xcache/")
                 newfiles[newpath] = value
             fileset[dataset]["files"] = newfiles
+
+    if args.preprocess:
+        from coffea.dataset_tools import preprocess
+
+        client = Client(dashboard_address=args.dashboard_address)
+        logger.info(f"Preprocessing the fileset with client: {client}")
+        fileset = preprocess(fileset, step_size=100_000, skip_bad_files=True, scheduler=None)[0]
+        logger.info("Done preprocessing the fileset")
+        client.shutdown()
+
+        with gzip.open("/tmp/preprocessed_fileset.json.gz", "wt") as f:
+            logger.info("Saving the preprocessed fileset to /tmp/preprocessed_fileset.json.gz")
+            json.dump(fileset, f, indent=2)
 
     instance = runner_utils.initialize_class(config, args, fileset)
 

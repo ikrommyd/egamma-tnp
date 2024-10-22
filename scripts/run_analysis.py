@@ -63,6 +63,10 @@ def main():
         with gzip.open("/tmp/preprocessed_fileset.json.gz", "wt") as f:
             logger.info("Saving the preprocessed fileset to /tmp/preprocessed_fileset.json.gz")
             json.dump(fileset, f, indent=2)
+    if args.executor == "dask/casa" or args.executor.startswith("tls://"):
+        # use xcache for coffea-casa
+        pass
+
     instance = runner_utils.initialize_class(config, args, fileset)
 
     if args.port is not None:
@@ -130,6 +134,18 @@ def main():
             ],
         )
         scheduler = "distributed"
+    elif args.executor == "dask/casa":
+        from coffea_casa import CoffeaCasaCluster
+
+        logger.info("Running using CoffeaCasaCluster")
+        cluster = CoffeaCasaCluster(
+            cores=args.cores,
+            memory=args.memory,
+            disk=args.disk,
+            scheduler_options={"port": args.port, "dashboard_address": args.dashboard_address},
+            log_directory=args.log_directory,
+        )
+        scheduler = "distributed"
     elif args.executor == "dask/slurm":
         from dask_jobqueue import SLURMCluster
 
@@ -180,6 +196,11 @@ def main():
             cluster.scale(args.scaleout)
         logger.info(f"Set up cluster {cluster}")
         client = Client(cluster)
+        if args.executor == "dask/casa":
+            from dask.distributed import PipInstall
+
+            plugin = PipInstall(packages=["https://github.com/ikrommyd/egamma-tnp.git@master"])
+            client.register_worker_plugin(plugin)
         logger.info(f"Set up client {client}")
     if args.executor is not None and (args.executor.startswith("tls://") or args.executor.startswith("tcp://") or args.executor.startswith("ucx://")):
         client = Client(args.executor)
@@ -208,6 +229,11 @@ def main():
     out = runner_utils.process_out(out, args.output)
     logger.info(f"Final output after post-processing:\n{out}")
     logger.info("Finished the E/Gamma Tag and Probe workflow")
+    logger.info("Shutting down the client and cluster if any")
+    if client:
+        client.shutdown()
+    if cluster:
+        cluster.close()
 
 
 if __name__ == "__main__":

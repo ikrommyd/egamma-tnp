@@ -63,9 +63,18 @@ def main():
         with gzip.open("/tmp/preprocessed_fileset.json.gz", "wt") as f:
             logger.info("Saving the preprocessed fileset to /tmp/preprocessed_fileset.json.gz")
             json.dump(fileset, f, indent=2)
+
     if args.executor == "dask/casa" or args.executor.startswith("tls://"):
         # use xcache for coffea-casa
-        pass
+        xrootd_pfx = "root://"
+        xrd_pfx_len = len(xrootd_pfx)
+        for dataset in fileset.keys():
+            files = fileset[dataset]["files"]
+            newfiles = {}
+            for path, value in files.items():
+                newpath = path.replace(path[xrd_pfx_len : xrd_pfx_len + path[xrd_pfx_len:].find("/store")], "xcache/")
+                newfiles[newpath] = value
+            fileset[dataset]["files"] = newfiles
 
     instance = runner_utils.initialize_class(config, args, fileset)
 

@@ -206,7 +206,7 @@ def main():
             cluster.scale(args.scaleout)
         logger.info(f"Set up cluster {cluster}")
         client = Client(cluster)
-        if args.executor == "dask/casa":
+        if args.executor == "dask/casa" or args.executor.startswith("tls://"):
             from dask.distributed import PipInstall
 
             plugin = PipInstall(packages=["https://github.com/ikrommyd/egamma-tnp.git@master"])

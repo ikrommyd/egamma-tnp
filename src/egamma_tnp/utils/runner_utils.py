@@ -188,7 +188,7 @@ def save_array_to_parquet(array, output_dir, dataset, subdir, prefix=None, repar
 
     # Trick to reduce node multiplicity before to_parquet until it's fixed.
     # TODO: remove this when the issue is fixed
-    array = array[array.run > -999.0]
+    array = array[0:]
 
     # Repartition the array if needed
     if repartition_n:

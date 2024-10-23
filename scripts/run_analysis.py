@@ -79,7 +79,7 @@ def main():
 
     instance = runner_utils.initialize_class(config, args, fileset)
 
-    if args.port is not None:
+    if args.port is not None and (not args.executor.startswith("tls://") and not args.executor.startswith("tcp://") and not args.executor.startswith("ucx://")):
         if not runner_utils.check_port(args.port):
             logger.error(f"Port {args.port} is occupied in this node. Try another one.")
             raise ValueError(f"Port {args.port} is occupied in this node. Try another one.")

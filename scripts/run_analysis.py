@@ -209,8 +209,8 @@ def main():
         if args.executor == "dask/casa" or args.executor.startswith("tls://"):
             from dask.distributed import PipInstall
 
-            plugin = PipInstall(packages=["https://github.com/ikrommyd/egamma-tnp.git@master"])
-            client.register_worker_plugin(plugin)
+            plugin = PipInstall(packages=["egamma-tnp@git+https://${TOKEN}@github.com/ikrommyd/egamma-tnp.git@master"])
+            client.register_plugin(plugin)
         logger.info(f"Set up client {client}")
     if args.executor is not None and (args.executor.startswith("tls://") or args.executor.startswith("tcp://") or args.executor.startswith("ucx://")):
         client = Client(args.executor)

@@ -191,7 +191,7 @@ def main():
             scheduler_options={"dashboard_address": args.dashboard_address},
         )
         scheduler = "distributed"
-    elif args.executor is not None and (args.executor.startswith("tls:://") or args.executor.startswith("tcp://") or args.executor.startswith("ucx://")):
+    elif args.executor is not None and (args.executor.startswith("tls://") or args.executor.startswith("tcp://") or args.executor.startswith("ucx://")):
         logger.info(f"Will use dask scheduler at {args.executor}")
     elif args.executor is None:
         logger.info("Running with default dask scheduler")

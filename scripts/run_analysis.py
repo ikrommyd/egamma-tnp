@@ -223,7 +223,7 @@ def main():
     if args.print_necessary_columns:
         import dask_awkward as dak
 
-        necessary_columns = dak.neccessary_columns(to_compute)
+        necessary_columns = dak.necessary_columns(to_compute)
         logger.info(f"The necessary columns are:\n{necessary_columns}")
     logger.info("Computing the task graph")
     if client:

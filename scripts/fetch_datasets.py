@@ -113,7 +113,7 @@ def get_dataset_dict_grid(fset: Iterable[Iterable[str]], xrd: str, dbs_instance:
         logger.info(f"Fetching files for dataset '{name}': '{dataset}'")
         private_appendix = "" if not dataset.endswith("/USER") else " instance=prod/phys03"
         try:
-            cmd = f"~/fun/dasgoclient/dasgoclient_osx_aarch64 -query='instance={dbs_instance} file dataset={dataset}{private_appendix}'"
+            cmd = f"/cvmfs/cms.cern.ch/common/dasgoclient -query='instance={dbs_instance} file dataset={dataset}{private_appendix}'"
             logger.debug(f"Executing command: {cmd}")
             flist = subprocess.check_output(cmd, shell=True, text=True).splitlines()
             flist = [xrd + f for f in flist if f.strip()]

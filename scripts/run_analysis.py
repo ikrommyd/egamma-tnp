@@ -52,6 +52,14 @@ def main():
     fileset = runner_utils.load_json(args.fileset)
     logger.info(f"Loaded fileset from {args.fileset}")
 
+    if args.limit == 0:
+        raise ValueError("Limit cannot be 0")
+    if args.limit is not None:
+        logger.info(f"Limiting each dataset of the fileset to the first {args.limit} files")
+        for dataset in fileset.keys():
+            files = fileset[dataset]["files"]
+            fileset[dataset]["files"] = dict(list(files.items())[: args.limit])
+
     if args.executor == "dask/casa" or args.executor.startswith("tls://"):
         # use xcache for coffea-casa
         xrootd_pfx = "root://"
@@ -239,11 +247,6 @@ def main():
     out = runner_utils.process_out(out, args.output)
     logger.info(f"Final output after post-processing:\n{out}")
     logger.info("Finished the E/Gamma Tag and Probe workflow")
-    logger.info("Shutting down the client and cluster if any")
-    if client:
-        client.shutdown()
-    if cluster:
-        cluster.close()
 
 
 if __name__ == "__main__":

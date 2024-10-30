@@ -67,84 +67,6 @@ def get_fetcher_args() -> argparse.Namespace:
     return parser.parse_args()
 
 
-def get_dataset_dict_grid(fset: Iterable[Iterable[str]], xrd: str, dbs_instance: str, logger) -> dict[str, list[str]]:
-    """
-    Fetch file lists for grid datasets using dasgoclient.
-
-    :param fset: Iterable of tuples (dataset-short-name, dataset-path)
-    :param xrd: xrootd prefix
-    :param dbs_instance: DBS instance for dasgoclient
-    :param logger: Logger instance
-    :return: Dictionary mapping dataset names to list of file paths
-    """
-    fdict = {}
-
-    for name, dataset in fset:
-        logger.info(f"Fetching files for dataset '{name}': '{dataset}'")
-        # Handle private samples
-        private_appendix = "" if not dataset.endswith("/USER") else " instance=prod/phys03"
-        try:
-            # Construct dasgoclient command
-            cmd = f"dasgoclient -query='instance={dbs_instance} file dataset={dataset}{private_appendix}'"
-            logger.debug(f"Executing command: {cmd}")
-            # Execute the command and capture output
-            flist = subprocess.check_output(cmd, shell=True, text=True).splitlines()
-            # Filter out empty lines and prepend xrootd prefix
-            flist = [xrd + f for f in flist if f.strip()]
-            if name not in fdict:
-                fdict[name] = flist
-            else:
-                fdict[name].extend(flist)
-            logger.info(f"Found {len(flist)} files for dataset '{name}'.")
-        except subprocess.CalledProcessError as e:
-            logger.error(f"dasgoclient command failed for dataset '{dataset}': {e}")
-        except Exception as e:
-            logger.error(f"Unexpected error while fetching files for dataset '{dataset}': {e}")
-
-    return fdict
-
-
-def get_dataset_dict_local(fset: Iterable[Iterable[str]], recursive: bool, extensions: list[str], logger) -> dict[str, list[str]]:
-    """
-    Collect file lists for local directories.
-
-    :param fset: Iterable of tuples (dataset-short-name, directory-path)
-    :param recursive: Whether to search directories recursively
-    :param extensions: List of file extensions to filter (case-insensitive)
-    :param logger: Logger instance
-    :return: Dictionary mapping dataset names to list of local file paths
-    """
-    fdict = {}
-
-    for name, dir_path in fset:
-        logger.info(f"Collecting files for local dataset '{name}': '{dir_path}'")
-        directory = Path(dir_path)
-        if not directory.is_dir():
-            logger.error(f"Directory '{dir_path}' does not exist or is not a directory.")
-            continue
-
-        # Choose the appropriate glob method
-        pattern = "**/*" if recursive else "*"
-        try:
-            files = []
-            for file in directory.glob(pattern):
-                if file.is_file():
-                    if extensions:
-                        if file.suffix.lower() in [ext.lower() for ext in extensions]:
-                            files.append(str(file.resolve()))
-                    else:
-                        files.append(str(file.resolve()))
-            if name not in fdict:
-                fdict[name] = files
-            else:
-                fdict[name].extend(files)
-            logger.info(f"Found {len(files)} files for local dataset '{name}'.")
-        except Exception as e:
-            logger.error(f"Error while collecting files from directory '{dir_path}': {e}")
-
-    return fdict
-
-
 def read_input_file(input_txt: str, mode: str, logger) -> list[tuple]:
     """
     Read the input text file and parse dataset names and paths.
@@ -173,6 +95,74 @@ def read_input_file(input_txt: str, mode: str, logger) -> list[tuple]:
                 pass
             fset.append((name, path))
     return fset
+
+
+def get_dataset_dict_grid(fset: Iterable[Iterable[str]], xrd: str, dbs_instance: str, logger) -> dict[str, dict]:
+    """
+    Fetch file lists for grid datasets using dasgoclient.
+
+    :param fset: Iterable of tuples (dataset-short-name, dataset-path)
+    :param xrd: xrootd prefix
+    :param dbs_instance: DBS instance for dasgoclient
+    :param logger: Logger instance
+    :return: Dictionary with the required nested structure
+    """
+    fdict = {}
+
+    for name, dataset in fset:
+        logger.info(f"Fetching files for dataset '{name}': '{dataset}'")
+        private_appendix = "" if not dataset.endswith("/USER") else " instance=prod/phys03"
+        try:
+            cmd = f"~/fun/dasgoclient/dasgoclient_osx_aarch64 -query='instance={dbs_instance} file dataset={dataset}{private_appendix}'"
+            logger.debug(f"Executing command: {cmd}")
+            flist = subprocess.check_output(cmd, shell=True, text=True).splitlines()
+            flist = [xrd + f for f in flist if f.strip()]
+
+            # Store in the desired JSON format
+            fdict[name] = {"files": {file_path: "Events" for file_path in flist}}
+            logger.info(f"Found {len(flist)} files for dataset '{name}'.")
+
+        except subprocess.CalledProcessError as e:
+            logger.error(f"dasgoclient command failed for dataset '{dataset}': {e}")
+        except Exception as e:
+            logger.error(f"Unexpected error while fetching files for dataset '{dataset}': {e}")
+
+    return fdict
+
+
+def get_dataset_dict_local(fset: Iterable[Iterable[str]], recursive: bool, extensions: list[str], logger) -> dict[str, dict]:
+    """
+    Collect file lists for local directories.
+
+    :param fset: Iterable of tuples (dataset-short-name, directory-path)
+    :param recursive: Whether to search directories recursively
+    :param extensions: List of file extensions to filter (case-insensitive)
+    :param logger: Logger instance
+    :return: Dictionary with the required nested structure
+    """
+    fdict = {}
+
+    for name, dir_path in fset:
+        logger.info(f"Collecting files for local dataset '{name}': '{dir_path}'")
+        directory = Path(dir_path)
+        if not directory.is_dir():
+            logger.error(f"Directory '{dir_path}' does not exist or is not a directory.")
+            continue
+
+        pattern = "**/*" if recursive else "*"
+        try:
+            files = [
+                str(file.resolve())
+                for file in directory.glob(pattern)
+                if file.is_file() and (not extensions or file.suffix.lower() in [ext.lower() for ext in extensions])
+            ]
+            fdict[name] = {"files": {file_path: "Events" for file_path in files}}
+            logger.info(f"Found {len(files)} files for local dataset '{name}'.")
+
+        except Exception as e:
+            logger.error(f"Error while collecting files from directory '{dir_path}': {e}")
+
+    return fdict
 
 
 def main():

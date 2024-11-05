@@ -116,17 +116,20 @@ def get_dataset_dict_grid(fset: Iterable[Iterable[str]], xrd: str, dbs_instance:
             cmd = f"/cvmfs/cms.cern.ch/common/dasgoclient -query='instance={dbs_instance} file dataset={dataset}{private_appendix}'"
             logger.debug(f"Executing command: {cmd}")
             flist = subprocess.check_output(cmd, shell=True, text=True).splitlines()
-        except subprocess.CalledProcessError:
-            logger.warning("Failed with /cvmfs/cms.cern.ch/common/dasgoclient; attempting with dasgoclient in PATH.")
+        except subprocess.CalledProcessError as e:
+            logger.warning(f"Failed with /cvmfs/cms.cern.ch/common/dasgoclient for dataset '{dataset}': {e}")
+            logger.info("Trying with dasgoclient in PATH.")
             try:
                 cmd = f"dasgoclient -query='instance={dbs_instance} file dataset={dataset}{private_appendix}'"
                 logger.debug(f"Executing command: {cmd}")
                 flist = subprocess.check_output(cmd, shell=True, text=True).splitlines()
             except subprocess.CalledProcessError as e:
                 logger.error(f"dasgoclient command failed for dataset '{dataset}': {e}")
+                raise e
 
         except Exception as e:
             logger.error(f"Unexpected error while fetching files for dataset '{dataset}': {e}")
+            raise e
 
         # Append xrootd prefix to each file path
         flist = [xrd + f for f in flist if f.strip()]

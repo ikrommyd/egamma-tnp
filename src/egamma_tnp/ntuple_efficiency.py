@@ -156,7 +156,7 @@ class ElectronTagNProbeFromMiniNTuples(BaseTagNProbe):
             vars_probes = [v for v in all_probe_events.fields if v.startswith("el_")]
             vars = vars_tags + vars_probes
 
-        vars = vars + ["event", "run", "lumi"] + [x for x in all_probe_events.fields if "weight" in x or "Weight" in x and x != "psWeight"]
+        vars = vars + ["event", "run", "lumi"] + [x for x in all_probe_events.fields if "weight" in x or ("Weight" in x and x != "psWeight")]
 
         if all_probe_events.metadata.get("isMC"):
             vars = [*vars, "truePU"]
@@ -322,7 +322,7 @@ class PhotonTagNProbeFromMiniNTuples(BaseTagNProbe):
             vars_probes = [v for v in all_probe_events.fields if v.startswith("el_")]
             vars = vars_tags + vars_probes
 
-        vars = vars + ["event", "run", "lumi"] + [x for x in all_probe_events.fields if "weight" in x or "Weight" in x and x != "psWeight"]
+        vars = vars + ["event", "run", "lumi"] + [x for x in all_probe_events.fields if "weight" in x or ("Weight" in x and x != "psWeight")]
 
         if all_probe_events.metadata.get("isMC"):
             vars = [*vars, "truePU"]

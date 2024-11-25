@@ -18,13 +18,13 @@ from . import _version
 warnings.filterwarnings("ignore", category=FutureWarning, module="coffea.*")
 __version__ = _version.__version__
 __all__ = (
-    "binning",
     "ElectronTagNProbeFromMiniNTuples",
     "ElectronTagNProbeFromNanoAOD",
+    "ElectronTagNProbeFromNanoNTuples",
     "PhotonTagNProbeFromMiniNTuples",
     "PhotonTagNProbeFromNanoAOD",
-    "ElectronTagNProbeFromNanoNTuples",
     "PhotonTagNProbeFromNanoNTuples",
+    "binning",
 )
 
 

@@ -20,7 +20,7 @@
         "xlabel": "$\\phi$ [rad]",
         "ylabel": "Events per bin",
         "hist_range": [-3.2, 3.2],
-        "n_bins": 60,
+        "n_bins": 50,
         "custom_bin_edges": null
     },
     "el_pt": {
@@ -107,7 +107,7 @@
         "name": "el_eInvMinusPInv",
         "xlabel": "$1/E - 1/p$",
         "ylabel": "Events per bin",
-        "hist_range": [0, 100],
+        "hist_range": [-0.15, 0.15],
         "n_bins": 60,
         "custom_bin_edges": null
     },
@@ -223,12 +223,28 @@
         "n_bins": 60,
         "custom_bin_edges": null
     },
+    "el_dr03EcalRecHitSumEt": {
+        "name": "el_dr03EcalRecHitSumEt",
+        "xlabel": "dr03EcalRecHitSumEt [GeV]",
+        "ylabel": "Events per bin",
+        "hist_range": [0, 10],
+        "n_bins": 60,
+        "custom_bin_edges": null
+    },
+    "el_dr03HcalDepth1TowerSumEt": {
+        "name": "el_dr03HcalDepth1TowerSumEt",
+        "xlabel": "dr03HcalDepth1TowerSumEt [GeV]",
+        "ylabel": "Events per bin",
+        "hist_range": [0, 10],
+        "n_bins": 60,
+        "custom_bin_edges": null
+    },
     "el_r9": {
         "name": "el_r9",
         "xlabel": "$R_{9}$",
         "ylabel": "Events per bin",
-        "hist_range": [0.2, 1.2],
-        "n_bins": 120,
+        "hist_range": [0.2, 1.5],
+        "n_bins": 60,
         "custom_bin_edges": null
     },
     "el_rawEnergy": {
@@ -287,6 +303,30 @@
         "n_bins": 60,
         "custom_bin_edges": null
     },
+    "el_mvaHZZIso": {
+        "name": "el_mvaHZZIso",
+        "xlabel": "HZZ MVA Iso ID score",
+        "ylabel": "Events per bin",
+        "hist_range": [-1, 1],
+        "n_bins": 60,
+        "custom_bin_edges": null
+    },
+    "el_mvaIso": {
+        "name": "el_mvaIso",
+        "xlabel": "MVA Iso ID score",
+        "ylabel": "Events per bin",
+        "hist_range": [-1, 1],
+        "n_bins": 60,
+        "custom_bin_edges": null
+    },
+    "el_mvaNoIso": {
+        "name": "el_mvaNoIso",
+        "xlabel": "MVA noIso ID score",
+        "ylabel": "Events per bin",
+        "hist_range": [-1, 1],
+        "n_bins": 60,
+        "custom_bin_edges": null
+    },
     "tag_Ele_eta": {
         "name": "tag_Ele_eta",
         "xlabel": "Tag $\\eta$",
@@ -324,7 +364,7 @@
         "xlabel": "$SC \\phi$ [rad]",
         "ylabel": "Events per bin",
         "hist_range": [-3.2, 3.2],
-        "n_bins": 60,
+        "n_bins": 50,
         "custom_bin_edges": null
     },
     "PV_npvs": {

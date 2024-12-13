@@ -131,11 +131,12 @@ def get_dataset_dict_grid(fset: Iterable[Iterable[str]], xrd: str, dbs_instance:
             logger.error(f"Unexpected error while fetching files for dataset '{dataset}': {e}")
             raise e
 
-        # Append xrootd prefix to each file path
         flist = [xrd + f for f in flist if f.strip()]
 
-        # Store in the desired JSON format
-        fdict[name] = {"files": {file_path: "Events" for file_path in flist}}
+        if name not in fdict:
+            fdict[name] = {"files": {file_path: "Events" for file_path in flist}}
+        else:
+            fdict[name]["files"].update({file_path: "Events" for file_path in flist})
         logger.info(f"Found {len(flist)} files for dataset '{name}'.")
 
     return fdict
@@ -167,7 +168,10 @@ def get_dataset_dict_local(fset: Iterable[Iterable[str]], recursive: bool, exten
                 for file in directory.glob(pattern)
                 if file.is_file() and (not extensions or file.suffix.lower() in [ext.lower() for ext in extensions])
             ]
-            fdict[name] = {"files": {file_path: "Events" for file_path in files}}
+            if name not in fdict:
+                fdict[name] = {"files": {file_path: "Events" for file_path in files}}
+            else:
+                fdict[name]["files"].update({file_path: "Events" for file_path in files})
             logger.info(f"Found {len(files)} files for local dataset '{name}'.")
 
         except Exception as e:

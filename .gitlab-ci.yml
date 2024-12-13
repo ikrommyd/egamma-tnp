@@ -23,25 +23,11 @@ variables:
     - pushes
     - master
 
-build_docker_lxplus_cc7:
-  extends: .build_docker_template
-  variables:
-    BUILD_ARGS: "FROM_IMAGE=gitlab-registry.cern.ch/batch-team/dask-lxplus/lxdask-cc7:latest CLUSTER=lxplus-cc7"
-    REGISTRY_IMAGE_PATH: ${CI_REGISTRY_IMAGE}:lxplus-cc7-${CI_COMMIT_SHORT_SHA}
-
 build_docker_lxplus_el9:
   extends: .build_docker_template
   variables:
     BUILD_ARGS: "FROM_IMAGE=gitlab-registry.cern.ch/batch-team/dask-lxplus/lxdask-al9:latest CLUSTER=lxplus-el9"
     REGISTRY_IMAGE_PATH: ${CI_REGISTRY_IMAGE}:lxplus-el9-${CI_COMMIT_SHORT_SHA}
-
-build_docker_lxplus_cc7_latest:
-  extends: .tag_skopeo
-  rules:
-   - if: '$CI_COMMIT_REF_NAME == "master"'
-  variables:
-    IMAGE_ORIGIN_TAG: ${CI_REGISTRY_IMAGE}:lxplus-cc7-${CI_COMMIT_SHORT_SHA}
-    IMAGE_DESTINATION_TAG: ${CI_REGISTRY_IMAGE}:lxplus-cc7-latest
 
 build_docker_lxplus_el9_latest:
   extends: .tag_skopeo

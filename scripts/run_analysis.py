@@ -122,6 +122,7 @@ def main():
             disk=args.disk,
             cores=args.cores,
             log_directory=args.log_directory,
+            job_script_prologue=["export LD_LIBRARY_PATH=/usr/local/lib:$LD_LIBRARY_PATH"],
         )
         scheduler = "distributed"
     elif args.executor == "dask/lxplus":

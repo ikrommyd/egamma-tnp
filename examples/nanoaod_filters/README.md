@@ -8,7 +8,7 @@ run_analysis \
     --executor dask/lpc \
     --memory 3.9GB \
     --scaleout 200 \
-    --dashboard_address 8003 \
-    --log_directory ~/dask_logs \
-    --skip_report
+    --dashboard-address 8003 \
+    --log-directory ~/dask_logs \
+    --skip-report
 ```

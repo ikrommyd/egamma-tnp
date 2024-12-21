@@ -7,8 +7,8 @@ run_analysis \
     --executor dask/lpc \
     --memory 6GB \
     --scaleout 200 \
-    --dashboard_address 8003 \
-    --log_directory ~/dask_logs \
-    --repartition_n_to_one 5 \
+    --dashboard-address 8003 \
+    --log-directory ~/dask_logs \
+    --repartition-n-to-one 5 \
     --skip_report
 ```

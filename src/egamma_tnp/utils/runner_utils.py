@@ -412,9 +412,9 @@ def get_main_parser():
         Limit to the first N files of each dataset in the filset. The default is None.
     --preprocess: bool, optional
         Preprocess the fileset before running the workflow. The default is False.
-    --skip_report: bool, optional
+    --skip-report: bool, optional
         Skip computing and saving the report. The default is False.
-    --repartition_n_to_one: int, optional
+    --repartition-n-to-one: int, optional
         The number of partitions to merge during saving. The default is None.
     --cores: int, optional
         Number of cores for each worker. The default is None.
@@ -430,7 +430,7 @@ def get_main_parser():
         Path to the VOMS proxy. The default is None. If not specified, it will try to find if there is a valid proxy available.
     --port: int, optional
         Port for the Dask scheduler. The default is 8786.
-    --dashboard_address: int or None, optional
+    --dashboard-address: int or None, optional
         Address for the Dask dashboard. The default is 8787.
         Use None to disable the dashboard.
     --jobflavour: str, optional
@@ -439,11 +439,11 @@ def get_main_parser():
         Queue for job submission. The default is None.
     --walltime: str, optional
         Walltime for job execution. The default is None.
-    --log_directory: str, optional
+    --log-directory: str, optional
         Directory to save dask worker logs. The default is None.
     --debug: bool, optional
         Log in DEBUG level. The default is False.
-    --print_necessary_columns: bool, optional
+    --print-necessary-columns: bool, optional
         Calculate and print necessary columns for the workflow. The default is False.
 
     Returns
@@ -462,8 +462,8 @@ def get_main_parser():
     parser.add_argument("--executor", type=str, help="The executor to use for the computations. Default is None and lets dask decide.")
     parser.add_argument("--limit", type=int, help="Limit to the first N files of each dataset in the filset. Default is None.")
     parser.add_argument("--preprocess", action="store_true", default=False, help="Preprocess the fileset before running the workflow. Default is False.")
-    parser.add_argument("--skip_report", action="store_true", default=False, help="Skip computing and saving the report. Default is False.")
-    parser.add_argument("--repartition_n_to_one", type=int, help="The number of partitions to merge during saving. Default is None.")
+    parser.add_argument("--skip-report", action="store_true", default=False, help="Skip computing and saving the report. Default is False.")
+    parser.add_argument("--repartition-n-to-one", type=int, help="The number of partitions to merge during saving. Default is None.")
     parser.add_argument("--cores", type=int, help="Number of cores for each worker")
     parser.add_argument("--memory", type=str, help="Memory allocation for each worker")
     parser.add_argument("--disk", type=str, help="Disk allocation for each worker")
@@ -473,12 +473,12 @@ def get_main_parser():
         "--voms", type=str, help="Path to the VOMS proxy. Default is None. If not specified, it will try to find if there is a valid proxy available."
     )
     parser.add_argument("--port", type=int, default=8786, help="Port for the Dask scheduler")
-    parser.add_argument("--dashboard_address", type=str, default=":8787", help="Address for the Dask dashboard")
+    parser.add_argument("--dashboard-address", type=str, default=":8787", help="Address for the Dask dashboard")
     parser.add_argument("--jobflavour", type=str, default="microcentury", help="Job flavour for lxplus condor job submission")
     parser.add_argument("--queue", type=str, help="Queue for job submission")
     parser.add_argument("--walltime", type=str, help="Walltime for job execution")
-    parser.add_argument("--log_directory", type=str, help="Directory to save dask worker logs")
+    parser.add_argument("--log-directory", type=str, help="Directory to save dask worker logs")
     parser.add_argument("--debug", action="store_true", default=False, help="Log in DEBUG level")
-    parser.add_argument("--print_necessary_columns", action="store_true", default=False, help="Calculate and print necessary columns for the workflow")
+    parser.add_argument("--print-necessary-columns", action="store_true", default=False, help="Calculate and print necessary columns for the workflow")
 
     return parser

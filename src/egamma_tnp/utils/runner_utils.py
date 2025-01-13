@@ -251,7 +251,7 @@ def process_to_compute(to_compute, output_dir, repartition_n=5, skip_report=Fals
                         processed_result[dataset][filter_name] = {}
                         for key in arr_dict:
                             prefix = (
-                                f"{key}_{filter_name.replace(' ', '_').replace('>=', 'gte').replace('<=', 'lte').replace('>','gt').replace('<','lt')}_NTuples"
+                                f"{key}_{filter_name.replace(' ', '_').replace('>=', 'gte').replace('<=', 'lte').replace('>', 'gt').replace('<', 'lt')}_NTuples"
                             )
                             processed_result[dataset][filter_name][key] = save_array_to_parquet(
                                 arr_dict[key], output_dir, dataset, subdir_name, prefix=prefix, repartition_n=repartition_n
@@ -324,7 +324,7 @@ def process_out(out, output_dir):
         if method in ["get_1d_pt_eta_phi_tnp_histograms", "get_nd_tnp_histograms"]:
             for dataset, histograms in result.items():
                 for filter_name, hist_dict in histograms.items():
-                    filename = f"{filter_name.replace(' ', '_').replace('>=', 'gte').replace('<=', 'lte').replace('>','gt').replace('<','lt')}_histos"
+                    filename = f"{filter_name.replace(' ', '_').replace('>=', 'gte').replace('<=', 'lte').replace('>', 'gt').replace('<', 'lt')}_histos"
                     save_histogram_dict_to_pickle(hist_dict, output_dir, dataset, subdir_name, filename)
 
         if reports:
@@ -380,7 +380,7 @@ def get_proxy():
             warnings.warn("No valid proxy found. Please create one.", stacklevel=1)
 
         _x509_localpath = out
-        _x509_path = os.environ["HOME"] + f'/.{_x509_localpath.split("/")[-1]}'
+        _x509_path = os.environ["HOME"] + f"/.{_x509_localpath.split('/')[-1]}"
         logger.info(f"Copying proxy from {_x509_localpath} to {_x509_path}")
         os.system(f"cp {_x509_localpath} {_x509_path}")
 

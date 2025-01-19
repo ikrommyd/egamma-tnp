@@ -7,6 +7,7 @@ from coffea.lumi_tools import LumiMask
 from coffea.nanoevents import BaseSchema
 
 from egamma_tnp._base_tagnprobe import BaseTagNProbe
+from egamma_tnp.utils.misc import safe_eval
 from egamma_tnp.utils.pileup import create_correction, get_pileup_weight, load_correction
 
 
@@ -144,7 +145,7 @@ class ElectronTagNProbeFromMiniNTuples(BaseTagNProbe):
         pass_abseta_probes = abs(events.el_eta_to_use) < self.probes_abseta_cut
         opposite_charge = events.tag_Ele_q * events.el_q == -1
         if self.extra_zcands_mask is not None:
-            pass_zcands_mask = eval(self.extra_zcands_mask)
+            pass_zcands_mask = safe_eval(self.extra_zcands_mask, events, "events")
         else:
             pass_zcands_mask = True
         events = events[pass_pt_tags & pass_abseta_tags & pass_abseta_probes & opposite_charge & pass_zcands_mask]
@@ -310,7 +311,7 @@ class PhotonTagNProbeFromMiniNTuples(BaseTagNProbe):
         pass_abseta_tags = abs(events.tag_Ele_eta_to_use) < self.tags_abseta_cut
         pass_abseta_probes = abs(events.ph_eta_to_use) < self.probes_abseta_cut
         if self.extra_zcands_mask is not None:
-            pass_zcands_mask = eval(self.extra_zcands_mask)
+            pass_zcands_mask = safe_eval(self.extra_zcands_mask, events, "events")
         else:
             pass_zcands_mask = True
         events = events[pass_pt_tags & pass_abseta_tags & pass_abseta_probes & pass_zcands_mask]
@@ -483,7 +484,7 @@ class ElectronTagNProbeFromNanoNTuples(BaseTagNProbe):
         pass_abseta_probes = abs(events.el_eta_to_use) < self.probes_abseta_cut
         opposite_charge = events.tag_Ele_charge * events.el_charge == -1
         if self.extra_zcands_mask is not None:
-            pass_zcands_mask = eval(self.extra_zcands_mask)
+            pass_zcands_mask = safe_eval(self.extra_zcands_mask, events, "events")
         else:
             pass_zcands_mask = True
         events = events[pass_pt_tags & pass_abseta_tags & pass_abseta_probes & opposite_charge & pass_zcands_mask]
@@ -653,7 +654,7 @@ class PhotonTagNProbeFromNanoNTuples(BaseTagNProbe):
         pass_abseta_tags = abs(events.tag_Ele_eta_to_use) < self.tags_abseta_cut
         pass_abseta_probes = abs(events.ph_eta_to_use) < self.probes_abseta_cut
         if self.extra_zcands_mask is not None:
-            pass_zcands_mask = eval(self.extra_zcands_mask)
+            pass_zcands_mask = safe_eval(self.extra_zcands_mask, events, "events")
         else:
             pass_zcands_mask = True
         events = events[pass_pt_tags & pass_abseta_tags & pass_abseta_probes & pass_zcands_mask]

@@ -10,6 +10,7 @@ from coffea.nanoevents.methods import nanoaod
 
 from egamma_tnp._base_tagnprobe import BaseTagNProbe
 from egamma_tnp.utils import calculate_photon_SC_eta, custom_delta_r
+from egamma_tnp.utils.misc import safe_eval
 from egamma_tnp.utils.pileup import create_correction, get_pileup_weight, load_correction
 
 
@@ -176,11 +177,11 @@ class ElectronTagNProbeFromNanoAOD(BaseTagNProbe):
 
         pass_tight_id_tags = zcands.tag.cutBased >= 4
         if self.cutbased_id is not None:
-            pass_cutbased_id_probes = eval(f"zcands.probe.{self.cutbased_id}")
+            pass_cutbased_id_probes = safe_eval(f"zcands.probe.{self.cutbased_id}", zcands, "zcands")
         else:
             pass_cutbased_id_probes = True
         if self.extra_zcands_mask is not None:
-            pass_zcands_mask = eval(self.extra_zcands_mask)
+            pass_zcands_mask = safe_eval(self.extra_zcands_mask, zcands, "zcands")
         else:
             pass_zcands_mask = True
         zcands = zcands[pass_tight_id_tags & pass_cutbased_id_probes & pass_zcands_mask]
@@ -336,7 +337,7 @@ class ElectronTagNProbeFromNanoAOD(BaseTagNProbe):
                 if filter.startswith("HLT_"):
                     is_passing_probe = ElectronTagNProbeFromNanoAOD._trigger_match(zcands.probe, trigobjs, trigobj_pdgid, pt, bit)
                 else:
-                    is_passing_probe = eval(f"zcands.probe.{filter}")
+                    is_passing_probe = safe_eval(f"zcands.probe.{filter}", zcands, "zcands")
                 if filter.startswith("HLT_") and require_event_to_pass_hlt_filter:
                     hlt_filter = filter.rsplit("_", 1)[0].split("HLT_")[1] if filter.split("HLT_")[1] not in good_events.HLT.fields else filter.split("HLT_")[1]
                     passing_locs[filter] = is_passing_probe & getattr(good_events.HLT, hlt_filter)
@@ -539,11 +540,11 @@ class PhotonTagNProbeFromNanoAOD(BaseTagNProbe):
             pass_tight_id_tags = zcands.tag.cutBased >= 4
 
         if self.cutbased_id is not None:
-            pass_cutbased_id_probes = eval(f"zcands.probe.{self.cutbased_id}")
+            pass_cutbased_id_probes = safe_eval(f"zcands.probe.{self.cutbased_id}", zcands, "zcands")
         else:
             pass_cutbased_id_probes = True
         if self.extra_zcands_mask is not None:
-            pass_zcands_mask = eval(self.extra_zcands_mask)
+            pass_zcands_mask = safe_eval(self.extra_zcands_mask, zcands, "zcands")
         else:
             pass_zcands_mask = True
         zcands = zcands[pass_tight_id_tags & pass_cutbased_id_probes & pass_zcands_mask]
@@ -708,7 +709,7 @@ class PhotonTagNProbeFromNanoAOD(BaseTagNProbe):
                 if filter.startswith("HLT_"):
                     is_passing_probe = PhotonTagNProbeFromNanoAOD._trigger_match(zcands.probe, trigobjs, trigobj_pdgid, pt, bit)
                 else:
-                    is_passing_probe = eval(f"zcands.probe.{filter}")
+                    is_passing_probe = safe_eval(f"zcands.probe.{filter}", zcands, "zcands")
                 if filter.startswith("HLT_") and require_event_to_pass_hlt_filter:
                     hlt_filter = filter.rsplit("_", 1)[0].split("HLT_")[1] if filter.split("HLT_")[1] not in good_events.HLT.fields else filter.split("HLT_")[1]
                     passing_locs[filter] = is_passing_probe & getattr(good_events.HLT, hlt_filter)

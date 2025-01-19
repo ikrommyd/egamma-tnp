@@ -256,3 +256,20 @@ def replace_nans(arr):
     arr[after_first_float & np.isnan(arr)] = 1
 
     return arr
+
+
+def safe_eval(expression, array, array_name):
+    """Safely evaluate an expression using the provided zcands.
+
+    Parameters
+    ----------
+        expression : str
+            The expression to evaluate.
+        array : ak.Array or dak.Array
+            The array to include in the evaluation.
+        array_name : str
+            The name of the array in the expression.
+    """
+    safe_globals = {"__builtins__": {}}
+    safe_locals = {array_name: array, "np": np, "ak": ak}
+    return eval(expression, safe_globals, safe_locals)

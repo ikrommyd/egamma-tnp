@@ -43,7 +43,7 @@ repos:
   rev: v2.4.0
   hooks:
   - id: codespell
-    args: ["--skip=*.ipynb","-L hist,Hist,nd,SubJet,subjet,Subjet,PTD,ptd,fPt,fpt,Ser,ser,hda"]
+    args: ["--skip=*.ipynb","-L hist,Hist,nd,SubJet,subjet,Subjet,PTD,ptd,fPt,fpt,Ser,ser,hda,hep"]
 
 - repo: https://github.com/abravalheri/validate-pyproject
   rev: v0.23

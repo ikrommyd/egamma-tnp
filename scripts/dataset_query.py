@@ -661,7 +661,7 @@ Some basic commands:
         if step_size is None:
             step_size = IntPrompt.ask("[yellow bold]Step size", default=None)
         if align_to_clusters is None:
-            align_to_clusters = Confirm.ask("[yellow bold]Align to clusters", default=True)
+            align_to_clusters = Confirm.ask("[yellow bold]Align to clusters", default=False)
         if recalculate_steps is None:
             recalculate_steps = Confirm.ask("[yellow bold]Recalculate steps", default=False)
         if files_per_batch is None:

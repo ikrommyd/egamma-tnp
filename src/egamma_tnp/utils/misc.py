@@ -1,11 +1,17 @@
 from __future__ import annotations
 
 import json
+import logging
+import os
 import re
+import subprocess
+import warnings
 
 import awkward as ak
 import numba
 import numpy as np
+
+logger = logging.getLogger(__name__)
 
 
 @numba.vectorize(
@@ -273,3 +279,45 @@ def safe_eval(expression, array, array_name):
     safe_globals = {"__builtins__": {}}
     safe_locals = {array_name: array, "np": np, "ak": ak}
     return eval(expression, safe_globals, safe_locals)
+
+
+def check_port(port):
+    import socket
+
+    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    try:
+        sock.bind(("0.0.0.0", port))
+        available = True
+    except Exception:
+        available = False
+    sock.close()
+    return available
+
+
+def get_proxy():
+    """
+    Use voms-proxy-info to check if a proxy is available.
+    If so, copy it to $HOME/.proxy and return the path.
+    An exception is raised in the following cases:
+    - voms-proxy-info is not installed
+    - the proxy is not valid
+
+    :return: Path to proxy
+    :rtype: str
+    """
+    if subprocess.getstatusoutput("voms-proxy-info")[0] != 0:
+        logger.error("voms-proxy-init not found, You need a valid certificate to access data over xrootd.")
+        warnings.warn("voms-proxy-init not found, You need a valid certificate to access data over xrootd.", stacklevel=1)
+    else:
+        stat, out = subprocess.getstatusoutput("voms-proxy-info -e -p")
+        # stat is 0 if the proxy is valid
+        if stat != 0:
+            logger.warning("No valid proxy found. Please create one.")
+            warnings.warn("No valid proxy found. Please create one.", stacklevel=1)
+
+        _x509_localpath = out
+        _x509_path = os.environ["HOME"] + f"/.{_x509_localpath.split('/')[-1]}"
+        logger.info(f"Copying proxy from {_x509_localpath} to {_x509_path}")
+        os.system(f"cp {_x509_localpath} {_x509_path}")
+
+        return _x509_path

@@ -35,6 +35,7 @@ classifiers = [
   "Topic :: Utilities",
 ]
 dependencies = [
+  "click>=8.0.4",
   "coffea[dask,rucio]>=2024.5.0",
   "dask<2025",
   "distributed<2025",
@@ -54,11 +55,11 @@ dev = [
 ]
 
 [project.scripts]
-run_analysis = "scripts.run_analysis:main"
-dataset_query = "scripts.dataset_query:main"
-merge_parquet = "scripts.merge_parquet:main"
-prepare_histograms = "scripts.prepare_histograms:main"
-fetch_datasets = "scripts.fetch_datasets:main"
+run-analysis = "scripts.run_analysis:main"
+dataset-query = "scripts.dataset_query:main"
+merge-parquet = "scripts.merge_parquet:main"
+prepare-histograms = "scripts.prepare_histograms:main"
+fetch-datasets = "scripts.fetch_datasets:main"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/egamma_tnp", "scripts"]
@@ -127,3 +128,4 @@ isort.required-imports = ["from __future__ import annotations"]
 "src/egamma_tnp/nanoaod_efficiency.py" = ["PLW2901"]
 "src/egamma_tnp/__init__.py" = ["E402"]
 "tests/example_extra_filter.py" = ["T201"]
+"src/egamma_tnp/utils/rucio_utils.py" = ["T201"]

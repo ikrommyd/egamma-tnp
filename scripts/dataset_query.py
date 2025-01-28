@@ -10,7 +10,6 @@ from collections import defaultdict
 import click
 import requests
 import yaml
-from coffea.dataset_tools import preprocess
 from distributed import Client
 from rich import print
 from rich.console import Console
@@ -21,7 +20,6 @@ from rich.tree import Tree
 from egamma_tnp.utils import rucio_utils
 
 
-# from pocket_coffea.parameters.xsection import xsection
 def print_dataset_query(query, dataset_list, console, selected=None):
     if selected is None:
         selected = []
@@ -117,6 +115,7 @@ class DataDiscoveryCLI:
             "list-replicas",
             "save",
             "clear",
+            "preprocess",
             "allow-sites",
             "block-sites",
             "regex-sites",
@@ -144,6 +143,7 @@ Some basic commands:
   - [bold cyan]regex-sites[/]: Select sites with a regex for replica queries: e.g.  "T[123]_(FR|IT|BE|CH|DE)_\w+"
   - [bold cyan]save[/]: Save the selected datasets as a dataset definition file and also the replicas query results to file (json or yaml) for further processing
   - [bold cyan]clear[/]: Clear the selected datasets and replicas
+  - [bold cyan]preprocess[/]: Preprocess the replicas with dask and save the fileset for further processing with uproot/coffea
   - [bold cyan]help[/]: Print this help message
             """
                 )
@@ -168,6 +168,8 @@ Some basic commands:
                 self.do_save()
             elif command == "clear":
                 self.do_clear()
+            elif command == "preprocess":
+                self.do_preprocess()
             elif command == "allow-sites":
                 self.do_allowlist_sites()
             elif command == "block-sites":
@@ -650,6 +652,8 @@ Some basic commands:
             scheduler_url: str | None, default None
                 Dask scheduler URL where the preprocessing should take place
         """
+        from coffea.dataset_tools import preprocess
+
         if uproot_options is None:
             uproot_options = {}
         if not output_file:

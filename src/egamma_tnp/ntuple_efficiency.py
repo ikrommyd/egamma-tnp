@@ -128,6 +128,8 @@ class ElectronTagNProbeFromMiniNTuples(BaseTagNProbe):
             events["el_phi_to_use"] = events.el_phi
         if self.extra_filter is not None:
             events = self.extra_filter(events, **self.extra_filter_args)
+        if events.metadata.get("isMC") is None:
+            events.metadata["isMC"] = hasattr(events, "truePU")
         if events.metadata.get("goldenJSON") and not events.metadata.get("isMC"):
             lumimask = LumiMask(events.metadata["goldenJSON"])
             mask = lumimask(events.run, events.lumi)
@@ -295,6 +297,8 @@ class PhotonTagNProbeFromMiniNTuples(BaseTagNProbe):
             events["ph_phi_to_use"] = events.ph_phi
         if self.extra_filter is not None:
             events = self.extra_filter(events, **self.extra_filter_args)
+        if events.metadata.get("isMC") is None:
+            events.metadata["isMC"] = hasattr(events, "truePU")
         if events.metadata.get("goldenJSON") and not events.metadata.get("isMC"):
             lumimask = LumiMask(events.metadata["goldenJSON"])
             mask = lumimask(events.run, events.lumi)
@@ -467,6 +471,8 @@ class ElectronTagNProbeFromNanoNTuples(BaseTagNProbe):
             events["el_phi_to_use"] = events.el_phi
         if self.extra_filter is not None:
             events = self.extra_filter(events, **self.extra_filter_args)
+        if events.metadata.get("isMC") is None:
+            events.metadata["isMC"] = hasattr(events, "Pileup_nTrueInt")
         if events.metadata.get("goldenJSON") and not events.metadata.get("isMC"):
             lumimask = LumiMask(events.metadata["goldenJSON"])
             mask = lumimask(events.run, events.lumi)
@@ -638,6 +644,8 @@ class PhotonTagNProbeFromNanoNTuples(BaseTagNProbe):
             events["ph_phi_to_use"] = events.ph_phi
         if self.extra_filter is not None:
             events = self.extra_filter(events, **self.extra_filter_args)
+        if events.metadata.get("isMC") is None:
+            events.metadata["isMC"] = hasattr(events, "Pileup_nTrueInt")
         if events.metadata.get("goldenJSON") and not events.metadata.get("isMC"):
             lumimask = LumiMask(events.metadata["goldenJSON"])
             mask = lumimask(events.run, events.lumi)

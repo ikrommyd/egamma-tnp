@@ -14,6 +14,7 @@ from dask.distributed import Client, LocalCluster, performance_report, progress
 from egamma_tnp.config import binning_manager
 from egamma_tnp.utils import runner_utils
 from egamma_tnp.utils.logger_utils import setup_logger
+from egamma_tnp.utils.misc import check_port, get_proxy
 
 
 def main():
@@ -88,14 +89,14 @@ def main():
     instance = runner_utils.initialize_class(config, args, fileset)
 
     if args.port is not None and (not args.executor.startswith("tls://") and not args.executor.startswith("tcp://") and not args.executor.startswith("ucx://")):
-        if not runner_utils.check_port(args.port):
+        if not check_port(args.port):
             logger.error(f"Port {args.port} is occupied in this node. Try another one.")
             raise ValueError(f"Port {args.port} is occupied in this node. Try another one.")
 
     if args.voms is not None:
         _x509_path = args.voms
     else:
-        _x509_path = runner_utils.get_proxy()
+        _x509_path = get_proxy()
 
     cluster = None
     client = None

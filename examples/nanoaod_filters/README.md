@@ -1,5 +1,5 @@
 ```
-run_analysis \
+run-analysis \
     --config config.json \
     --settings settings.json \
     --fileset fileset.json \

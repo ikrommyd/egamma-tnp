@@ -60,6 +60,7 @@ dataset-query = "scripts.dataset_query:main"
 merge-parquet = "scripts.merge_parquet:main"
 prepare-histograms = "scripts.prepare_histograms:main"
 fetch-datasets = "scripts.fetch_datasets:main"
+get-unprocessed-files = "scripts.get_unprocessed_files:main"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/egamma_tnp", "scripts"]

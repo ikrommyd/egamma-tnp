@@ -163,6 +163,8 @@ class ElectronTagNProbeFromNanoAOD(BaseTagNProbe):
             events["Electron", "phi_to_use"] = events.Electron.phi
         if self.extra_filter is not None:
             events = self.extra_filter(events, **self.extra_filter_args)
+        if events.metadata.get("isMC") is None:
+            events.metadata["isMC"] = hasattr(events, "GenPart")
         if events.metadata.get("goldenJSON") and not events.metadata.get("isMC"):
             lumimask = LumiMask(events.metadata["goldenJSON"])
             mask = lumimask(events.run, events.luminosityBlock)
@@ -516,6 +518,8 @@ class PhotonTagNProbeFromNanoAOD(BaseTagNProbe):
             events["Electron", "phi_to_use"] = events.Electron.phi
         if self.extra_filter is not None:
             events = self.extra_filter(events, **self.extra_filter_args)
+        if events.metadata.get("isMC") is None:
+            events.metadata["isMC"] = hasattr(events, "GenPart")
         if events.metadata.get("goldenJSON") and not events.metadata.get("isMC"):
             lumimask = LumiMask(events.metadata["goldenJSON"])
             mask = lumimask(events.run, events.luminosityBlock)

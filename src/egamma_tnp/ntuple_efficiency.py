@@ -129,7 +129,7 @@ class ElectronTagNProbeFromMiniNTuples(BaseTagNProbe):
         if self.extra_filter is not None:
             events = self.extra_filter(events, **self.extra_filter_args)
         if events.metadata.get("isMC") is None:
-            events.metadata["isMC"] = hasattr(events, "truePU")
+            events.metadata["isMC"] = hasattr(events, "mcTrue")
         if events.metadata.get("goldenJSON") and not events.metadata.get("isMC"):
             lumimask = LumiMask(events.metadata["goldenJSON"])
             mask = lumimask(events.run, events.lumi)
@@ -298,7 +298,7 @@ class PhotonTagNProbeFromMiniNTuples(BaseTagNProbe):
         if self.extra_filter is not None:
             events = self.extra_filter(events, **self.extra_filter_args)
         if events.metadata.get("isMC") is None:
-            events.metadata["isMC"] = hasattr(events, "truePU")
+            events.metadata["isMC"] = hasattr(events, "mcTrue")
         if events.metadata.get("goldenJSON") and not events.metadata.get("isMC"):
             lumimask = LumiMask(events.metadata["goldenJSON"])
             mask = lumimask(events.run, events.lumi)

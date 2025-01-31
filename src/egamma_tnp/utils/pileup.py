@@ -19,6 +19,7 @@ def load_correction(correction_file, name=None):
 
 
 def create_correction(pu_data_histogram, pu_mc_array, outfile=None, normalize_pu_mc_array=False):
+    pu_mc_array[pu_mc_array == 0.0] = 1e-10
     pu_data = uproot.open(pu_data_histogram)["pileup"].to_hist().density()
     pu_mc = pu_mc_array / np.sum(pu_mc_array) if normalize_pu_mc_array else pu_mc_array
     assert len(pu_data) == len(pu_mc), "Data and MC pileup distributions have different lengths"

@@ -66,15 +66,6 @@ get-unprocessed-partitions = "egamma_tnp.scripts.get_unprocessed_partitions:main
 version.source = "vcs"
 build.hooks.vcs.version-file = "src/egamma_tnp/_version.py"
 
-[tool.hatch.build.targets.wheel]
-packages = ["src/egamma_tnp"]
-
-[tool.hatch.build.targets.sdist]
-include = ["src/egamma_tnp/**"]
-
-[tool.hatch.metadata]
-allow-direct-references = true
-
 [tool.pytest.ini_options]
 minversion = "6.0"
 testpaths = ["tests"]

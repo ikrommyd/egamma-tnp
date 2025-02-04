@@ -3,7 +3,8 @@ from __future__ import annotations
 import os
 
 import pytest
-from scripts.get_unprocessed_partitions import find_missing_partitions
+
+from egamma_tnp.scripts.get_unprocessed_partitions import find_missing_partitions
 
 
 @pytest.fixture

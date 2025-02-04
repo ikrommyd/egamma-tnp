@@ -62,13 +62,10 @@ prepare-histograms = "scripts.prepare_histograms:main"
 fetch-datasets = "scripts.fetch_datasets:main"
 
 [tool.hatch.build.targets.wheel]
-packages = ["src/egamma_tnp", "scripts"]
+packages = ["src/egamma_tnp"]
 
 [tool.hatch.build.targets.sdist]
-include = [
-    "src/egamma_tnp/**",
-    "scripts/**",
-]
+include = ["src/egamma_tnp/**"]
 
 [tool.hatch]
 version.source = "vcs"

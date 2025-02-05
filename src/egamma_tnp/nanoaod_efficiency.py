@@ -275,8 +275,7 @@ class ElectronTagNProbeFromNanoAOD(BaseTagNProbe):
         trigger_cands = trigobjs[pass_pt & pass_id & pass_filterbit]
         delta_r = leptons.metric_table(trigger_cands, metric=custom_delta_r)
         pass_delta_r = delta_r < 0.1
-        n_of_trigger_matches = dak.sum(pass_delta_r, axis=2)
-        trig_matched_locs = n_of_trigger_matches >= 1
+        trig_matched_locs = dak.any(pass_delta_r, axis=2)
 
         return trig_matched_locs
 
@@ -641,8 +640,7 @@ class PhotonTagNProbeFromNanoAOD(BaseTagNProbe):
         trigger_cands = trigobjs[pass_pt & pass_id & pass_filterbit]
         delta_r = leptons.metric_table(trigger_cands, metric=custom_delta_r)
         pass_delta_r = delta_r < 0.1
-        n_of_trigger_matches = dak.sum(pass_delta_r, axis=2)
-        trig_matched_locs = n_of_trigger_matches >= 1
+        trig_matched_locs = dak.any(pass_delta_r, axis=2)
 
         return trig_matched_locs
 

@@ -1,14 +1,14 @@
 ```
 run-analysis \
-    --config config1/2.json \
+    --config config.json \
     --settings settings.json \
     --fileset fileset.json \
+    --binning binning.json \
     --output simplecache::root://cmseos.fnal.gov//store/user/ikrommyd/dummy/ \
     --executor dask/lpc \
-    --memory 6GB \
+    --memory 3.9GB \
     --scaleout 200 \
     --dashboard-address 8003 \
     --log-directory ~/dask_logs \
-    --repartition-n-to-one 5 \
-    --skip_report
+    --skip-report
 ```

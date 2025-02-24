@@ -37,7 +37,7 @@ class BaseTagNProbe:
             if probes_pt_cut is None and len(filters) == 1:
                 from egamma_tnp.utils.misc import find_pt_threshold
 
-                self.probes_pt_cut = find_pt_threshold(filters[next(iter(filters))], tags_pt_cut)
+                self.probes_pt_cut = find_pt_threshold(filters[next(iter(filters))]) - 3
             elif probes_pt_cut is None and len(filters) > 1:
                 self.probes_pt_cut = 5
             else:

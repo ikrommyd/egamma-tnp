@@ -277,3 +277,5 @@ def test_cli():
         flow=True,
     )
     assert os.path.exists("tests/output/sample_2/get_nd_tnp_histograms_1/cutBased_gte_2_report.json")
+
+    os.system("rm -r tests/output")

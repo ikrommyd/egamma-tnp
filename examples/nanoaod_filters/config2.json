@@ -1,0 +1,21 @@
+{
+  "workflow": "ElectronTagNProbeFromNanoAOD",
+  "workflow_args": {
+    "filters": {"Ele30": "HLT_Ele30_WPTight_Gsf"},
+    "filterbit": {"Ele30": 1},
+    "trigger_pt":{"Ele30": 30}
+  },
+  "methods": [
+    {
+      "name": "get_1d_pt_eta_phi_tnp_histograms",
+      "args": {
+        "filter": "Ele30",
+        "cut_and_count": true,
+        "uproot_options": {
+          "allow_read_errors_with_report": ["OSError", "ValueError"],
+          "timeout": 120
+        }
+      }
+    }
+  ]
+}

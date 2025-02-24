@@ -111,8 +111,9 @@ class ElectronTagNProbeFromMiniNTuples(BaseTagNProbe):
         passing_locs = {}
         if self.filters is not None:
             for filter, filter_expression in self.filters.items():
-                if filter_expression.startswith("events."):
-                    mask = safe_eval(filter_expression, all_probe_events, "all_probe_events")
+                if "events" in filter_expression:
+                    new_expression = filter_expression.replace("events", "all_probe_events.")
+                    mask = safe_eval(new_expression, all_probe_events, "all_probe_events")
                 else:
                     mask = all_probe_events[filter_expression] == 1
                 passing_locs[filter] = mask
@@ -284,8 +285,9 @@ class PhotonTagNProbeFromMiniNTuples(BaseTagNProbe):
         passing_locs = {}
         if self.filters is not None:
             for filter, filter_expression in self.filters.items():
-                if filter_expression.startswith("events."):
-                    mask = safe_eval(filter_expression, all_probe_events, "all_probe_events")
+                if "events" in filter_expression:
+                    new_expression = filter_expression.replace("events", "all_probe_events.")
+                    mask = safe_eval(new_expression, all_probe_events, "all_probe_events")
                 else:
                     mask = all_probe_events[filter_expression] == 1
                 passing_locs[filter] = mask

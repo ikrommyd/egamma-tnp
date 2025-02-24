@@ -332,7 +332,7 @@ class ElectronTagNProbeFromNanoAOD(BaseTagNProbe):
                     is_passing_probe = ElectronTagNProbeFromNanoAOD._trigger_match(
                         zcands.probe, trigobjs, trigobj_pdgid, trigger_pt[filter_name], filterbit[filter_name]
                     )
-                elif filter.startswith("zcands"):
+                elif "zcands" in filter:
                     is_passing_probe = safe_eval(filter, zcands, "zcands")
                 else:
                     is_passing_probe = safe_eval(f"zcands.probe.{filter}", zcands, "zcands")
@@ -704,7 +704,7 @@ class PhotonTagNProbeFromNanoAOD(BaseTagNProbe):
                     is_passing_probe = PhotonTagNProbeFromNanoAOD._trigger_match(
                         zcands.probe, trigobjs, trigobj_pdgid, trigger_pt[filter_name], filterbit[filter_name]
                     )
-                elif filter.startswith("zcands"):
+                elif "zcands" in filter:
                     is_passing_probe = safe_eval(filter, zcands, "zcands")
                 else:
                     is_passing_probe = safe_eval(f"zcands.probe.{filter}", zcands, "zcands")

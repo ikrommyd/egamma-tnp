@@ -28,23 +28,22 @@ class BaseTagNProbe:
         schemaclass,
         default_vars,
     ):
+        assert isinstance(filters, dict) or filters is None, (
+            "filters must be a dictionary with filter names as keys and filter expressions as values all represented as strings or None"
+        )
         if extra_filter_args is None:
             extra_filter_args = {}
         if filters is not None:
             if probes_pt_cut is None and len(filters) == 1:
                 from egamma_tnp.utils.misc import find_pt_threshold
 
-                self.probes_pt_cut = find_pt_threshold(filters[0]) - 3
+                self.probes_pt_cut = find_pt_threshold(filters[next(iter(filters))], tags_pt_cut)
             elif probes_pt_cut is None and len(filters) > 1:
                 self.probes_pt_cut = 5
             else:
                 self.probes_pt_cut = probes_pt_cut
         else:
             self.probes_pt_cut = 5
-        if not isinstance(filters, list) and filters is not None:
-            raise ValueError("filters must be a list of strings or None.")
-            if not all(isinstance(f, str) for f in filters):
-                raise ValueError("filters must be a list of strings or None.")
 
         self.fileset = fileset
         self.filters = filters

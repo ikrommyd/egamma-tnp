@@ -41,9 +41,9 @@ def test_cli():
 
     workflow = ElectronTagNProbeFromNanoAOD(
         fileset=fileset,
-        filters=["HLT_Ele30_WPTight_Gsf", "cutBased >= 2"],
-        filterbit=[1, None],
-        trigger_pt=[30, None],
+        filters={"HLT_Ele30_WPTight_Gsf": "HLT_Ele30_WPTight_Gsf", "cutBased >= 2": "cutBased >= 2"},
+        filterbit={"HLT_Ele30_WPTight_Gsf": 1, "cutBased >= 2": None},
+        trigger_pt={"HLT_Ele30_WPTight_Gsf": 30, "cutBased >= 2": None},
         tags_pt_cut=35,
         probes_pt_cut=27,
         tags_abseta_cut=2.17,

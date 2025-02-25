@@ -8,8 +8,7 @@ import socket
 import warnings
 
 import dask
-from dask.diagnostics import ProgressBar
-from dask.distributed import Client, LocalCluster, performance_report, progress
+from dask.distributed import Client, LocalCluster
 
 from egamma_tnp.config import binning_manager
 from egamma_tnp.utils import runner_utils
@@ -236,18 +235,15 @@ def main():
         necessary_columns = dak.necessary_columns(to_compute)
         logger.info(f"The necessary columns are:\n{necessary_columns}")
     logger.info("Computing the task graph")
+    import time
+
+    t0 = time.time()
     if client:
-        with performance_report(filename="/tmp/dask-report.html"):
-            logger.info("The performance report will be saved in /tmp/dask-report.html")
-            (futures,) = dask.persist(to_compute)
-            progress(futures)
-            (out,) = dask.compute(futures)
+        (out,) = dask.optimize(to_compute)
     else:
-        with ProgressBar():
-            (out,) = dask.compute(to_compute, scheduler=scheduler)
-    logger.info(f"Computed object is:\n{out}")
-    out = runner_utils.process_out(out, args.output)
-    logger.info(f"Final output after post-processing:\n{out}")
+        (out,) = dask.optimize(to_compute)
+    t1 = time.time()
+    logger.info(f"Optimized task graph in {t1 - t0:.2f} seconds")
     logger.info("Finished the E/Gamma Tag and Probe workflow")
 
 

@@ -98,7 +98,7 @@ class ElectronTagNProbeFromMiniNTuples(BaseTagNProbe):
         else:
             pass_cutbased_id = True
         if mass_range is not None:
-            if cut_and_count:
+            if isinstance(mass_range, (int, float)):
                 in_mass_window = abs(events.pair_mass - 91.1876) < mass_range
             else:
                 in_mass_window = (events.pair_mass > mass_range[0]) & (events.pair_mass < mass_range[1])
@@ -267,7 +267,7 @@ class PhotonTagNProbeFromMiniNTuples(BaseTagNProbe):
         else:
             pass_cutbased_id = True
         if mass_range is not None:
-            if cut_and_count:
+            if isinstance(mass_range, (int, float)):
                 in_mass_window = abs(events.pair_mass - 91.1876) < mass_range
             else:
                 in_mass_window = (events.pair_mass > mass_range[0]) & (events.pair_mass < mass_range[1])
@@ -435,7 +435,7 @@ class ElectronTagNProbeFromNanoNTuples(BaseTagNProbe):
         else:
             pass_cutbased_id = True
         if mass_range is not None:
-            if cut_and_count:
+            if isinstance(mass_range, (int, float)):
                 in_mass_window = abs(events.pair_mass - 91.1876) < mass_range
             else:
                 in_mass_window = (events.pair_mass > mass_range[0]) & (events.pair_mass < mass_range[1])
@@ -614,7 +614,7 @@ class PhotonTagNProbeFromNanoNTuples(BaseTagNProbe):
         else:
             pass_cutbased_id = True
         if mass_range is not None:
-            if cut_and_count:
+            if isinstance(mass_range, (int, float)):
                 in_mass_window = abs(events.pair_mass - 91.1876) < mass_range
             else:
                 in_mass_window = (events.pair_mass > mass_range[0]) & (events.pair_mass < mass_range[1])

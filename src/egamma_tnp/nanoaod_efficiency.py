@@ -315,7 +315,7 @@ class ElectronTagNProbeFromNanoAOD(BaseTagNProbe):
             else:
                 in_mass_window = (mass > 50) & (mass < 130)
         else:
-            if cut_and_count:
+            if isinstance(mass_range, (int, float)):
                 in_mass_window = abs(mass - 91.1876) < mass_range
             else:
                 in_mass_window = (mass > mass_range[0]) & (mass < mass_range[1])
@@ -686,7 +686,7 @@ class PhotonTagNProbeFromNanoAOD(BaseTagNProbe):
             else:
                 in_mass_window = (mass > 50) & (mass < 130)
         else:
-            if cut_and_count:
+            if isinstance(mass_range, (int, float)):
                 in_mass_window = abs(mass - 91.1876) < mass_range
             else:
                 in_mass_window = (mass > mass_range[0]) & (mass < mass_range[1])

@@ -1,6 +1,6 @@
 ```
 run-analysis \
-    --config config.json \
+    --config config1/2.json \
     --settings settings.json \
     --fileset fileset.json \
     --binning binning.json \

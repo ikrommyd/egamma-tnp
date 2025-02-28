@@ -1,14 +1,14 @@
 {
   "workflow": "ElectronTagNProbeFromMiniNTuples",
   "workflow_args": {
-    "filters": [
-      "passHLTEle30WPTightGsfTrackIsoFilter",
-      "passHLTEle115CaloIdVTGsfTrkIdTGsfDphiFilter",
-      "passHLTEle23Ele12CaloIdLTrackIdLIsoVLTrackIsoLeg1Filter",
-      "passHLTEle23Ele12CaloIdLTrackIdLIsoVLTrackIsoLeg2Filter",
-      "passHLTEle33CaloIdLMWPMS2Filter",
-      "passHLTDiEle33CaloIdLMWPMS2UnseededFilter"
-    ]
+    "filters": {
+      "passHLTEle30WPTightGsfTrackIsoFilter": "passHLTEle30WPTightGsfTrackIsoFilter",
+      "passHLTEle115CaloIdVTGsfTrkIdTGsfDphiFilter": "passHLTEle115CaloIdVTGsfTrkIdTGsfDphiFilter",
+      "passHLTEle23Ele12CaloIdLTrackIdLIsoVLTrackIsoLeg1Filter": "passHLTEle23Ele12CaloIdLTrackIdLIsoVLTrackIsoLeg1Filter",
+      "passHLTEle23Ele12CaloIdLTrackIdLIsoVLTrackIsoLeg2Filter": "passHLTEle23Ele12CaloIdLTrackIdLIsoVLTrackIsoLeg2Filter",
+      "passHLTEle33CaloIdLMWPMS2Filter": "passHLTEle33CaloIdLMWPMS2Filter",
+      "passHLTDiEle33CaloIdLMWPMS2UnseededFilter": "passHLTDiEle33CaloIdLMWPMS2UnseededFilter"
+    }
   },
   "methods": [
     {

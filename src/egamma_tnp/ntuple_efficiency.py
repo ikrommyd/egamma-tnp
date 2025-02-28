@@ -36,7 +36,7 @@ class ElectronTagNProbeFromMiniNTuples(BaseTagNProbe):
         ----------
             fileset: dict
                 The fileset to calculate the trigger efficiencies for.
-            filters: list of str or None
+            filters: dict or None
                 The name of the filters to calculate the efficiencies for.
             tags_pt_cut: int or float, optional
                 The Pt cut to apply to the tag electrons. The default is 35.
@@ -108,10 +108,15 @@ class ElectronTagNProbeFromMiniNTuples(BaseTagNProbe):
             else:
                 in_mass_window = (events.pair_mass > 50) & (events.pair_mass < 130)
         all_probe_events = events[pass_cutbased_id & in_mass_window & pass_pt_probes]
+        passing_locs = {}
         if self.filters is not None:
-            passing_locs = {filter: (all_probe_events[filter] == 1) for filter in self.filters}
-        else:
-            passing_locs = {}
+            for filter, filter_expression in self.filters.items():
+                if "events" in filter_expression:
+                    new_expression = filter_expression.replace("events", "all_probe_events.")
+                    mask = safe_eval(new_expression, all_probe_events, "all_probe_events")
+                else:
+                    mask = all_probe_events[filter_expression] == 1
+                passing_locs[filter] = mask
 
         return passing_locs, all_probe_events
 
@@ -205,7 +210,7 @@ class PhotonTagNProbeFromMiniNTuples(BaseTagNProbe):
         ----------
             fileset: dict
                 The fileset to calculate the trigger efficiencies for.
-            filters: list of str or None
+            filters: dict or None
                 The name of the filters to calculate the efficiencies for.
             tags_pt_cut: int or float, optional
                 The Pt cut to apply to the tag photons. The default is 35.
@@ -277,10 +282,15 @@ class PhotonTagNProbeFromMiniNTuples(BaseTagNProbe):
             else:
                 in_mass_window = (events.pair_mass > 50) & (events.pair_mass < 130)
         all_probe_events = events[pass_cutbased_id & in_mass_window & pass_pt_probes]
+        passing_locs = {}
         if self.filters is not None:
-            passing_locs = {filter: (all_probe_events[filter] == 1) for filter in self.filters}
-        else:
-            passing_locs = {}
+            for filter, filter_expression in self.filters.items():
+                if "events" in filter_expression:
+                    new_expression = filter_expression.replace("events", "all_probe_events.")
+                    mask = safe_eval(new_expression, all_probe_events, "all_probe_events")
+                else:
+                    mask = all_probe_events[filter_expression] == 1
+                passing_locs[filter] = mask
 
         return passing_locs, all_probe_events
 
@@ -373,7 +383,7 @@ class ElectronTagNProbeFromNanoNTuples(BaseTagNProbe):
         ----------
             fileset: dict
                 The fileset to calculate the trigger efficiencies for.
-            filters: list of str or None
+            filters: dict or None
                 The name of the filters to calculate the efficiencies for.
             tags_pt_cut: int or float, optional
                 The Pt cut to apply to the tag electrons. The default is 35.
@@ -445,10 +455,14 @@ class ElectronTagNProbeFromNanoNTuples(BaseTagNProbe):
             else:
                 in_mass_window = (events.pair_mass > 50) & (events.pair_mass < 130)
         all_probe_events = events[pass_cutbased_id & in_mass_window & pass_pt_probes]
+        passing_locs = {}
         if self.filters is not None:
-            passing_locs = {filter: (all_probe_events[filter] == 1) for filter in self.filters}
-        else:
-            passing_locs = {}
+            for filter, filter_expression in self.filters.items():
+                if filter_expression.startswith("events."):
+                    mask = safe_eval(filter_expression, all_probe_events, "all_probe_events")
+                else:
+                    mask = all_probe_events[filter_expression] == 1
+                passing_locs[filter] = mask
 
         return passing_locs, all_probe_events
 
@@ -552,7 +566,7 @@ class PhotonTagNProbeFromNanoNTuples(BaseTagNProbe):
         ----------
             fileset: dict
                 The fileset to calculate the trigger efficiencies for.
-            filters: list of str or None
+            filters: dict or None
                 The name of the filters to calculate the efficiencies for.
             tags_pt_cut: int or float, optional
                 The Pt cut to apply to the tag photons. The default is 35.
@@ -624,10 +638,14 @@ class PhotonTagNProbeFromNanoNTuples(BaseTagNProbe):
             else:
                 in_mass_window = (events.pair_mass > 50) & (events.pair_mass < 130)
         all_probe_events = events[pass_cutbased_id & in_mass_window & pass_pt_probes]
+        passing_locs = {}
         if self.filters is not None:
-            passing_locs = {filter: (all_probe_events[filter] == 1) for filter in self.filters}
-        else:
-            passing_locs = {}
+            for filter, filter_expression in self.filters.items():
+                if filter_expression.startswith("events."):
+                    mask = safe_eval(filter_expression, all_probe_events, "all_probe_events")
+                else:
+                    mask = all_probe_events[filter_expression] == 1
+                passing_locs[filter] = mask
 
         return passing_locs, all_probe_events
 

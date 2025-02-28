@@ -41,9 +41,9 @@ def test_cli():
 
     workflow = ElectronTagNProbeFromNanoAOD(
         fileset=fileset,
-        filters=["HLT_Ele30_WPTight_Gsf", "cutBased >= 2"],
-        filterbit=[1, None],
-        trigger_pt=[30, None],
+        filters={"HLT_Ele30_WPTight_Gsf": "HLT_Ele30_WPTight_Gsf", "cutBased >= 2": "cutBased >= 2"},
+        filterbit={"HLT_Ele30_WPTight_Gsf": 1, "cutBased >= 2": None},
+        trigger_pt={"HLT_Ele30_WPTight_Gsf": 30, "cutBased >= 2": None},
         tags_pt_cut=35,
         probes_pt_cut=27,
         tags_abseta_cut=2.17,
@@ -277,3 +277,5 @@ def test_cli():
         flow=True,
     )
     assert os.path.exists("tests/output/sample_2/get_nd_tnp_histograms_1/cutBased_gte_2_report.json")
+
+    os.system("rm -r tests/output")

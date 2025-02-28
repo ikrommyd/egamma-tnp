@@ -297,6 +297,14 @@ class ElectronTagNProbeFromNanoAOD(BaseTagNProbe):
         zcands = zcands[trig_matched_tag & pt_cond_tags & pt_cond_probes & eta_cond_tags & eta_cond_probes]
         events_with_tags = dak.num(zcands.tag, axis=1) >= 1
         zcands = zcands[events_with_tags]
+        if good_events.metadata.get("isMC"):
+            genmatch_mask = (
+                (zcands.tag.matched_gen.distinctParentIdxG == zcands.probe.matched_gen.distinctParentIdxG)
+                & (zcands.tag.matched_gen.distinctParent.pdgId == 23)
+                & (zcands.probe.matched_gen.distinctParent.pdgId == 23)
+            )
+            genpartflav_mask = (zcands.tag.genPartFlav == 1) & (zcands.probe.genPartFlav == 1)
+            zcands = zcands[dak.fill_none(genmatch_mask, False) & genpartflav_mask]
         trigobjs = trigobjs[events_with_tags]
         tags = zcands.tag
         probes = zcands.probe
@@ -308,7 +316,7 @@ class ElectronTagNProbeFromNanoAOD(BaseTagNProbe):
             else:
                 in_mass_window = (mass > 50) & (mass < 130)
         else:
-            if cut_and_count:
+            if isinstance(mass_range, (int, float)):
                 in_mass_window = abs(mass - 91.1876) < mass_range
             else:
                 in_mass_window = (mass > mass_range[0]) & (mass < mass_range[1])
@@ -667,6 +675,14 @@ class PhotonTagNProbeFromNanoAOD(BaseTagNProbe):
         zcands = zcands[has_matched_electron_tags & trig_matched_tag & pt_cond_tags & pt_cond_probes & eta_cond_tags & eta_cond_probes]
         events_with_tags = dak.num(zcands.tag, axis=1) >= 1
         zcands = zcands[events_with_tags]
+        if good_events.metadata.get("isMC"):
+            genmatch_mask = (
+                (zcands.tag.matched_gen.distinctParentIdxG == zcands.probe.matched_gen.distinctParentIdxG)
+                & (zcands.tag.matched_gen.distinctParent.pdgId == 23)
+                & (zcands.probe.matched_gen.distinctParent.pdgId == 23)
+            )
+            genpartflav_mask = (zcands.tag.genPartFlav == 11) & (zcands.probe.genPartFlav == 11)
+            zcands = zcands[dak.fill_none(genmatch_mask, False) & genpartflav_mask]
         trigobjs = trigobjs[events_with_tags]
         tags = zcands.tag
         probes = zcands.probe
@@ -678,7 +694,7 @@ class PhotonTagNProbeFromNanoAOD(BaseTagNProbe):
             else:
                 in_mass_window = (mass > 50) & (mass < 130)
         else:
-            if cut_and_count:
+            if isinstance(mass_range, (int, float)):
                 in_mass_window = abs(mass - 91.1876) < mass_range
             else:
                 in_mass_window = (mass > mass_range[0]) & (mass < mass_range[1])

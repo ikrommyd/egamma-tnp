@@ -1,9 +1,9 @@
 {
   "workflow": "ElectronTagNProbeFromNanoAOD",
   "workflow_args": {
-    "filters": ["HLT_Ele30_WPTight_Gsf"],
-    "filterbit": [1],
-    "trigger_pt":[30]
+    "filters": {"HLT_Ele30_WPTight_Gsf": "HLT_Ele30_WPTight_Gsf"},
+    "filterbit": {"HLT_Ele30_WPTight_Gsf": 1},
+    "trigger_pt":{"HLT_Ele30_WPTight_Gsf": 30}
   },
   "methods": [
     {

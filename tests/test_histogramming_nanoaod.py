@@ -20,13 +20,13 @@ def assert_histograms_equal(h1, h2, flow):
 def test_histogramming_default_vars(tag_n_probe_class):
     tag_n_probe = tag_n_probe_class(
         fileset,
-        ["HLT_Ele30_WPTight_Gsf"],
-        filterbit=[1],
+        {"HLT_Ele30_WPTight_Gsf": "HLT_Ele30_WPTight_Gsf"},
+        filterbit={"HLT_Ele30_WPTight_Gsf": 1},
         tags_pt_cut=30,
         use_sc_eta=True,
         tags_abseta_cut=2.50,
         probes_pt_cut=27,
-        trigger_pt=[30],
+        trigger_pt={"HLT_Ele30_WPTight_Gsf": 30},
     )
     hcnc1d = tag_n_probe.get_1d_pt_eta_phi_tnp_histograms(
         "HLT_Ele30_WPTight_Gsf",
@@ -98,13 +98,13 @@ def test_histogramming_custom_vars(tag_n_probe_class):
 
     tag_n_probe = tag_n_probe_class(
         fileset,
-        ["HLT_Ele30_WPTight_Gsf"],
-        filterbit=[1],
+        {"HLT_Ele30_WPTight_Gsf": "HLT_Ele30_WPTight_Gsf"},
+        filterbit={"HLT_Ele30_WPTight_Gsf": 1},
         tags_pt_cut=30,
         use_sc_eta=True,
         tags_abseta_cut=2.50,
         probes_pt_cut=27,
-        trigger_pt=[30],
+        trigger_pt={"HLT_Ele30_WPTight_Gsf": 30},
     )
 
     egamma_tnp.binning.set("el_r9_bins", np.linspace(0.1, 1.05, 100).tolist())
@@ -139,13 +139,13 @@ def test_histogramming_non_probe_vars(tag_n_probe_class):
 
     tag_n_probe = tag_n_probe_class(
         fileset,
-        ["HLT_Ele30_WPTight_Gsf"],
-        filterbit=[1],
+        {"HLT_Ele30_WPTight_Gsf": "HLT_Ele30_WPTight_Gsf"},
+        filterbit={"HLT_Ele30_WPTight_Gsf": 1},
         tags_pt_cut=30,
         use_sc_eta=True,
         tags_abseta_cut=2.50,
         probes_pt_cut=27,
-        trigger_pt=[30],
+        trigger_pt={"HLT_Ele30_WPTight_Gsf": 30},
     )
 
     egamma_tnp.binning.set("MET_pt_bins", np.linspace(0, 200, 10).tolist())

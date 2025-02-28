@@ -21,7 +21,7 @@ def test_mini_tag_and_probe_electrons():
 
     tag_n_probe = ElectronTagNProbeFromMiniNTuples(
         fileset,
-        ["passingCutBasedTight122XV1"],
+        {"passingCutBasedTight122XV1": "passingCutBasedTight122XV1"},
         cutbased_id="passingCutBasedLoose122XV1",
         use_sc_eta=True,
         tags_pt_cut=35,
@@ -47,7 +47,7 @@ def test_mini_tag_and_probe_photons():
 
     tag_n_probe = PhotonTagNProbeFromMiniNTuples(
         fileset,
-        ["passingCutBasedTight122XV1"],
+        {"passingCutBasedTight122XV1": "passingCutBasedTight122XV1"},
         cutbased_id="passingCutBasedLoose122XV1",
         use_sc_eta=True,
         tags_pt_cut=35,
@@ -73,7 +73,7 @@ def test_nano_tag_and_probe_electrons():
 
     tag_n_probe = ElectronTagNProbeFromNanoNTuples(
         fileset,
-        ["cutBased >= 4"],
+        {"cutBased >= 4": "cutBased >= 4"},
         cutbased_id="cutBased >= 2",
         use_sc_eta=True,
         tags_pt_cut=35,
@@ -99,7 +99,7 @@ def test_nano_tag_and_probe_photons():
 
     tag_n_probe = PhotonTagNProbeFromNanoNTuples(
         fileset,
-        ["cutBased >= 3"],
+        {"cutBased >= 3": "cutBased >= 3"},
         cutbased_id="cutBased >= 1",
         use_sc_eta=True,
         tags_pt_cut=35,

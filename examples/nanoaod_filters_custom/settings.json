@@ -1,0 +1,6 @@
+{
+    "probes_pt_cut": 25,
+    "use_sc_eta": true,
+    "cutbased_id": "cutBased >= 4",
+    "require_event_to_pass_hlt_filter": true
+}

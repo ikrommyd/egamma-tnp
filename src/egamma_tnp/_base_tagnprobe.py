@@ -80,8 +80,8 @@ class BaseTagNProbe:
                 and add it to the returned probes as a `pair_mass` field.
             mass_range: int or float or tuple of two ints or floats, optional
                 The allowed mass range of the tag-probe pairs.
-                For cut and count efficiencies, it is a single value representing the mass window around the Z mass.
-                For invariant masses to be fit with a Sig+Bkg model, it is a tuple of two values representing the mass range.
+                If it is a single value, it represents the mass window around the Z mass.
+                If it is a tuple of two values, it represents the upper and lower bounds of the mass range.
             vars : list
                 The list of variables of the probes to return.
 
@@ -115,8 +115,8 @@ class BaseTagNProbe:
                 The default is True.
             mass_range: int or float or tuple of two ints or floats, optional
                 The allowed mass range of the tag-probe pairs.
-                For cut and count efficiencies, it is a single value representing the mass window around the Z mass.
-                For invariant masses to be fit with a Sig+Bkg model, it is a tuple of two values representing the mass range.
+                If it is a single value, it represents the mass window around the Z mass.
+                If it is a tuple of two values, it represents the upper and lower bounds of the mass range.
                 If None, the default is 30 GeV around the Z mass for cut and count efficiencies and 50-130 GeV range otherwise.
                 The default is None.
             vars: list, optional
@@ -151,12 +151,6 @@ class BaseTagNProbe:
                 mass_range = 30
             else:
                 mass_range = (50, 130)
-        if cut_and_count and isinstance(mass_range, tuple):
-            raise ValueError("For cut and count efficiencies, mass_range must be a single value representing the mass window around the Z mass.")
-        if not cut_and_count and not isinstance(mass_range, tuple):
-            raise ValueError(
-                "For invariant masses to be fit with a Sig+Bkg model, mass_range must be a tuple of two values representing the bounds of the mass range."
-            )
         if vars is None:
             vars = self.default_vars
 
@@ -216,8 +210,8 @@ class BaseTagNProbe:
                 The default is True.
             mass_range: int or float or tuple of two ints or floats, optional
                 The allowed mass range of the tag-probe pairs.
-                For cut and count efficiencies, it is a single value representing the mass window around the Z mass.
-                For invariant masses to be fit with a Sig+Bkg model, it is a tuple of two values representing the mass range.
+                If it is a single value, it represents the mass window around the Z mass.
+                If it is a tuple of two values, it represents the upper and lower bounds of the mass range.
                 If None, the default is 30 GeV around the Z mass for cut and count efficiencies and 50-130 GeV range otherwise.
                 The default is None.
             vars: list, optional
@@ -255,12 +249,6 @@ class BaseTagNProbe:
                 mass_range = 30
             else:
                 mass_range = (50, 130)
-        if cut_and_count and isinstance(mass_range, tuple):
-            raise ValueError("For cut and count efficiencies, mass_range must be a single value representing the mass window around the Z mass.")
-        if not cut_and_count and not isinstance(mass_range, tuple):
-            raise ValueError(
-                "For invariant masses to be fit with a Sig+Bkg model, mass_range must be a tuple of two values representing the bounds of the mass range."
-            )
         if vars is None:
             vars = self.default_vars
 
@@ -329,8 +317,8 @@ class BaseTagNProbe:
                 The default is True.
             mass_range: int or float or tuple of two ints or floats, optional
                 The allowed mass range of the tag-probe pairs.
-                For cut and count efficiencies, it is a single value representing the mass window around the Z mass.
-                For invariant masses to be fit with a Sig+Bkg model, it is a tuple of two values representing the mass range.
+                If it is a single value, it represents the mass window around the Z mass.
+                If it is a tuple of two values, it represents the upper and lower bounds of the mass range.
                 If None, the default is 30 GeV around the Z mass for cut and count efficiencies and 50-130 GeV range otherwise.
                 The default is None.
             plateau_cut : int or float, optional
@@ -387,12 +375,6 @@ class BaseTagNProbe:
                 mass_range = 30
             else:
                 mass_range = (50, 130)
-        if cut_and_count and isinstance(mass_range, tuple):
-            raise ValueError("For cut and count efficiencies, mass_range must be a single value representing the mass window around the Z mass.")
-        if not cut_and_count and not isinstance(mass_range, tuple):
-            raise ValueError(
-                "For invariant masses to be fit with a Sig+Bkg model, mass_range must be a tuple of two values representing the bounds of the mass range."
-            )
         if vars is None:
             vars = self.default_vars
 
@@ -467,8 +449,8 @@ class BaseTagNProbe:
                 The default is True.
             mass_range: int or float or tuple of two ints or floats, optional
                 The allowed mass range of the tag-probe pairs.
-                For cut and count efficiencies, it is a single value representing the mass window around the Z mass.
-                For invariant masses to be fit with a Sig+Bkg model, it is a tuple of two values representing the mass range.
+                If it is a single value, it represents the mass window around the Z mass.
+                If it is a tuple of two values, it represents the upper and lower bounds of the mass range.
                 If None, the default is 30 GeV around the Z mass for cut and count efficiencies and 50-130 GeV range otherwise.
                 The default is None.
             vars: list, optional
@@ -505,12 +487,6 @@ class BaseTagNProbe:
                 mass_range = 30
             else:
                 mass_range = (50, 130)
-        if cut_and_count and isinstance(mass_range, tuple):
-            raise ValueError("For cut and count efficiencies, mass_range must be a single value representing the mass window around the Z mass.")
-        if not cut_and_count and not isinstance(mass_range, tuple):
-            raise ValueError(
-                "For invariant masses to be fit with a Sig+Bkg model, mass_range must be a tuple of two values representing the bounds of the mass range."
-            )
         if vars is None:
             vars = self.default_vars
 

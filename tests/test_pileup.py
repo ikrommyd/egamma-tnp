@@ -84,6 +84,7 @@ def test_pileup_ntuples(do_preprocess, allow_read_errors_with_report):
 
 @pytest.mark.parametrize("do_preprocess", [True, False])
 @pytest.mark.parametrize("allow_read_errors_with_report", [True, False])
+@pytest.mark.skip("I need to find a real MC sample that contains the GenPart collection")
 def test_pileup_nanoaod(do_preprocess, allow_read_errors_with_report):
     if allow_read_errors_with_report:
         fileset = {

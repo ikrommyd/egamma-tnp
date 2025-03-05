@@ -20,7 +20,7 @@ def test_histogramming_default_vars(tag_n_probe_class):
         fileset = {"sample": {"files": {os.path.abspath("tests/samples/TnPNTuples_el.root"): "fitter_tree"}}}
         tag_n_probe = tag_n_probe_class(
             fileset,
-            ["passHltEle30WPTightGsf"],
+            {"passHltEle30WPTightGsf": "passHltEle30WPTightGsf"},
             cutbased_id="passingCutBasedTight122XV1",
             use_sc_eta=True,
             tags_pt_cut=30,
@@ -30,7 +30,7 @@ def test_histogramming_default_vars(tag_n_probe_class):
         fileset = {"sample": {"files": {os.path.abspath("tests/samples/TnPNTuples_ph.root"): "fitter_tree"}}}
         tag_n_probe = tag_n_probe_class(
             fileset,
-            ["passingCutBasedTight122XV1"],
+            {"passingCutBasedTight122XV1": "passingCutBasedLoose122XV1"},
             cutbased_id="passingCutBasedLoose122XV1",
             use_sc_eta=True,
             tags_pt_cut=30,
@@ -116,7 +116,7 @@ def test_histogramming_custom_vars(tag_n_probe_class):
         fileset = {"sample": {"files": {os.path.abspath("tests/samples/TnPNTuples_el.root"): "fitter_tree"}}}
         tag_n_probe = tag_n_probe_class(
             fileset,
-            ["passHltEle30WPTightGsf"],
+            {"passHltEle30WPTightGsf": "passHltEle30WPTightGsf"},
             cutbased_id="passingCutBasedTight122XV1",
             use_sc_eta=True,
             tags_pt_cut=30,
@@ -125,7 +125,7 @@ def test_histogramming_custom_vars(tag_n_probe_class):
         fileset = {"sample": {"files": {os.path.abspath("tests/samples/TnPNTuples_ph.root"): "fitter_tree"}}}
         tag_n_probe = tag_n_probe_class(
             fileset,
-            ["passingCutBasedTight122XV1"],
+            {"passingCutBasedTight122XV1": "passingCutBasedTight122XV1"},
             cutbased_id="passingCutBasedLoose122XV1",
             use_sc_eta=True,
             tags_pt_cut=30,
@@ -175,7 +175,7 @@ def test_histogramming_non_probe_vars(tag_n_probe_class):
         fileset = {"sample": {"files": {os.path.abspath("tests/samples/TnPNTuples_el.root"): "fitter_tree"}}}
         tag_n_probe = tag_n_probe_class(
             fileset,
-            ["passHltEle30WPTightGsf"],
+            {"passHltEle30WPTightGsf": "passHltEle30WPTightGsf"},
             cutbased_id="passingCutBasedTight122XV1",
             use_sc_eta=True,
             tags_pt_cut=30,
@@ -184,7 +184,7 @@ def test_histogramming_non_probe_vars(tag_n_probe_class):
         fileset = {"sample": {"files": {os.path.abspath("tests/samples/TnPNTuples_ph.root"): "fitter_tree"}}}
         tag_n_probe = tag_n_probe_class(
             fileset,
-            ["passingCutBasedTight122XV1"],
+            {"passingCutBasedTight122XV1": "passingCutBasedTight122XV1"},
             cutbased_id="passingCutBasedLoose122XV1",
             use_sc_eta=True,
             tags_pt_cut=30,

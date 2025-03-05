@@ -43,11 +43,11 @@ class ElectronTagNProbeFromNanoAOD(BaseTagNProbe):
         ----------
         fileset: dict
             The fileset to calculate the trigger efficiencies for.
-        filters: list of str or None
+        filters: dict
             The names of the filters to calculate the efficiencies for.
-        is_photon_filter: list of bools, optional
+        is_photon_filter: dict or None, optional
             Whether the filters to calculate the efficiencies are photon filters. The default is all False.
-        trigger_pt: int or float, optional
+        trigger_pt: dict or None, optional
             The Pt threshold of the trigger to calculate the efficiencies over that threshold. Required for trigger efficiencies.
             The default is None.
         tags_pt_cut: int or float, optional
@@ -60,7 +60,7 @@ class ElectronTagNProbeFromNanoAOD(BaseTagNProbe):
             The absolute Eta cut to apply to the probe electrons. The default is 2.5.
         probes_abseta_cut: int or float, optional
             The absolute Eta cut to apply to the probe electrons. The default is 2.5.
-        filterbit: int, optional
+        filterbit: dict or None, optional
             The filterbit used to match probes with trigger objects. Required for trigger efficiencies.
             The default is None.
         cutbased_id: str, optional
@@ -69,46 +69,47 @@ class ElectronTagNProbeFromNanoAOD(BaseTagNProbe):
         extra_zcands_mask: str, optional
             An extra mask to apply to the Z candidates. The default is None.
             Must be of the form `zcands.tag/probe.<mask> & zcands.tag/probe.<mask> & ...`.
-        extra_filter : Callable, optional
+        extra_filter: Callable, optional
             An extra function to filter the events. The default is None.
             Must take in a coffea NanoEventsArray and return a filtered NanoEventsArray of the events you want to keep.
-        extra_filter_args : dict, optional
+        extra_filter_args: dict, optional
             Extra arguments to pass to extra_filter. The default is {}.
-        use_sc_eta : bool, optional
+        use_sc_eta: bool, optional
             Use the supercluster Eta instead of the Eta from the primary vertex. The default is False.
-        use_sc_phi : bool, optional
+        use_sc_phi: bool, optional
             Use the supercluster Phi instead of the Phi from the primary vertex. The default is False.
-        avoid_ecal_transition_tags : bool, optional
+        avoid_ecal_transition_tags: bool, optional
             Whether to avoid the ECAL transition region for the tags with an eta cut. The default is True.
-        avoid_ecal_transition_probes : bool, optional
+        avoid_ecal_transition_probes: bool, optional
             Whether to avoid the ECAL transition region for the probes with an eta cut. The default is False.
-        require_event_to_pass_hlt_filter : bool, optional
+        require_event_to_pass_hlt_filter: bool, optional
             Also require the event to have passed the filter HLT filter under study to consider a probe belonging to that event as passing.
             The default is True.
         """
+        assert isinstance(filters, dict) or filters is None, (
+            "filters must be a dictionary with filter names as keys and filter expressions as values all represented as strings or None"
+        )
         if filters is not None:
             if trigger_pt is None:
-                from egamma_tnp.utils.misc import find_pt_threshold
-
-                self.trigger_pt = [find_pt_threshold(filter) for filter in filters]
-            else:
-                self.trigger_pt = trigger_pt
-                if len(self.trigger_pt) != len(filters):
-                    raise ValueError("The trigger_pt list must have the same length as the filters list.")
-
+                trigger_pt = {filter: 0 for filter in filters}
             if is_photon_filter is None:
-                self.is_photon_filter = [False for _ in filters]
-            else:
-                self.is_photon_filter = is_photon_filter
-                if len(self.is_photon_filter) != len(filters):
-                    raise ValueError("The is_photon_filter list must have the same length as the filters list.")
-
+                is_photon_filter = {filter: False for filter in filters}
             if filterbit is None:
-                self.filterbit = [None for _ in filters]
-            else:
-                self.filterbit = filterbit
-                if len(self.filterbit) != len(filters):
-                    raise ValueError("The filterbit list must have the same length as the filters list.")
+                filterbit = {filter: None for filter in filters}
+            assert len(filters) == len(trigger_pt), "The filters and trigger_pt dictionaries must have the same length."
+            assert len(filters) == len(is_photon_filter), "The filters and is_photon_filter dictionaries must have the same length."
+            assert len(filters) == len(filterbit), "The filters and filterbit dictionaries must have the same length."
+            for filter, filter_expression in filters.items():
+                assert isinstance(filter, str) and isinstance(filter_expression, str), (
+                    "filters must be a dictionary with filter names as keys and filter expressions as values all represented as strings"
+                )
+                assert filter in trigger_pt, f"The trigger_pt dictionary must have the same keys as the filters dictionary. Missing key: {filter}"
+                assert filter in is_photon_filter, f"The is_photon_filter dictionary must have the same keys as the filters dictionary. Missing key: {filter}"
+                assert filter in filterbit, f"The filterbit dictionary must have the same keys as the filters dictionary. Missing key: {filter}"
+
+            self.trigger_pt = trigger_pt
+            self.is_photon_filter = is_photon_filter
+            self.filterbit = filterbit
         else:
             self.trigger_pt = None
             self.is_photon_filter = None
@@ -133,14 +134,6 @@ class ElectronTagNProbeFromNanoAOD(BaseTagNProbe):
             default_vars=["el_pt", "el_eta", "el_phi"],
         )
         self.require_event_to_pass_hlt_filter = require_event_to_pass_hlt_filter
-
-        if filters is not None:
-            for filter, bit, pt in zip(self.filters, self.filterbit, self.trigger_pt):
-                if filter.startswith("HLT_"):
-                    if bit is None:
-                        raise ValueError("TrigObj filerbit must be provided for all trigger filters.")
-                    if pt == 0:
-                        raise ValueError("A trigger Pt threshold must be provided for all trigger filters.")
 
     def __repr__(self):
         n_of_files = 0
@@ -304,6 +297,14 @@ class ElectronTagNProbeFromNanoAOD(BaseTagNProbe):
         zcands = zcands[trig_matched_tag & pt_cond_tags & pt_cond_probes & eta_cond_tags & eta_cond_probes]
         events_with_tags = dak.num(zcands.tag, axis=1) >= 1
         zcands = zcands[events_with_tags]
+        if good_events.metadata.get("isMC"):
+            genmatch_mask = (
+                (zcands.tag.matched_gen.distinctParentIdxG == zcands.probe.matched_gen.distinctParentIdxG)
+                & (zcands.tag.matched_gen.distinctParent.pdgId == 23)
+                & (zcands.probe.matched_gen.distinctParent.pdgId == 23)
+            )
+            genpartflav_mask = (zcands.tag.genPartFlav == 1) & (zcands.probe.genPartFlav == 1)
+            zcands = zcands[dak.fill_none(genmatch_mask, False) & genpartflav_mask]
         trigobjs = trigobjs[events_with_tags]
         tags = zcands.tag
         probes = zcands.probe
@@ -315,7 +316,7 @@ class ElectronTagNProbeFromNanoAOD(BaseTagNProbe):
             else:
                 in_mass_window = (mass > 50) & (mass < 130)
         else:
-            if cut_and_count:
+            if isinstance(mass_range, (int, float)):
                 in_mass_window = abs(mass - 91.1876) < mass_range
             else:
                 in_mass_window = (mass > mass_range[0]) & (mass < mass_range[1])
@@ -330,20 +331,24 @@ class ElectronTagNProbeFromNanoAOD(BaseTagNProbe):
         good_events = good_events[has_pair]
         passing_locs = {}
         if filters is not None:
-            for filter, isphotonfilter, bit, pt in zip(filters, is_photon_filter, filterbit, trigger_pt):
-                if isphotonfilter:
+            for filter_name, filter in filters.items():
+                if is_photon_filter[filter_name]:
                     trigobj_pdgid = 22
                 else:
                     trigobj_pdgid = 11
                 if filter.startswith("HLT_"):
-                    is_passing_probe = ElectronTagNProbeFromNanoAOD._trigger_match(zcands.probe, trigobjs, trigobj_pdgid, pt, bit)
+                    is_passing_probe = ElectronTagNProbeFromNanoAOD._trigger_match(
+                        zcands.probe, trigobjs, trigobj_pdgid, trigger_pt[filter_name], filterbit[filter_name]
+                    )
+                elif "zcands" in filter:
+                    is_passing_probe = safe_eval(filter, zcands, "zcands")
                 else:
                     is_passing_probe = safe_eval(f"zcands.probe.{filter}", zcands, "zcands")
                 if filter.startswith("HLT_") and require_event_to_pass_hlt_filter:
                     hlt_filter = filter.rsplit("_", 1)[0].split("HLT_")[1] if filter.split("HLT_")[1] not in good_events.HLT.fields else filter.split("HLT_")[1]
-                    passing_locs[filter] = is_passing_probe & getattr(good_events.HLT, hlt_filter)
+                    passing_locs[filter_name] = is_passing_probe & getattr(good_events.HLT, hlt_filter)
                 else:
-                    passing_locs[filter] = is_passing_probe
+                    passing_locs[filter_name] = is_passing_probe
         all_probe_events = good_events
         all_probe_events["el"] = zcands.probe
         all_probe_events["tag_Ele"] = zcands.tag
@@ -382,16 +387,16 @@ class PhotonTagNProbeFromNanoAOD(BaseTagNProbe):
         ----------
         fileset: dict
             The fileset to calculate the trigger efficiencies for.
-        filters: list of str or None
+        filters: dict
             The names of the filters to calculate the efficiencies for.
-        is_electron_filter: list of bools, optional
+        is_electron_filter: dict or None, optional
             Whether the filters to calculate the efficiencies are electron filters. The default is False.
         start_from_diphotons: bool, optional
             Whether to consider photon-photon pairs as tag-probe pairs.
             If True, it will consider photon-photon pairs as tag-probe pairs and request that the tag has an associated electron and pixel seed.
             If False, it will consider electron-photon pairs as tag-probe pairs and request that they are not associated with each other and dR > 0.1 between them.
             The default is True.
-        trigger_pt: int or float, optional
+        trigger_pt: dict or None, optional
             The Pt threshold of the trigger to calculate the efficiencies over that threshold.
         tags_pt_cut: int or float, optional
             The Pt cut to apply to the tag photons. The default is 35.
@@ -401,7 +406,7 @@ class PhotonTagNProbeFromNanoAOD(BaseTagNProbe):
             The absolute Eta cut to apply to the tag photons. The default is 2.5.
         probes_abseta_cut: int or float, optional
             The absolute Eta cut to apply to the probe photons. The default is 2.5.
-        filterbit: int, optional
+        filterbit: dict or None, optional
             The filterbit used to match probes with trigger objects. Required for trigger efficiencies.
             The default is None.
         cutbased_id: str, optional
@@ -410,46 +415,49 @@ class PhotonTagNProbeFromNanoAOD(BaseTagNProbe):
         extra_zcands_mask: str, optional
             An extra mask to apply to the Z candidates. The default is None.
             Must be of the form `zcands.tag/probe.<mask> & zcands.tag/probe.<mask> & ...`.
-        extra_filter : Callable, optional
+        extra_filter: Callable, optional
             An extra function to filter the events. The default is None.
             Must take in a coffea NanoEventsArray and return a filtered NanoEventsArray of the events you want to keep.
-        extra_filter_args : dict, optional
+        extra_filter_args: dict, optional
             Extra arguments to pass to extra_filter. The default is {}.
-        use_sc_eta : bool, optional
+        use_sc_eta: bool, optional
             Use the supercluster Eta instead of the Eta from the primary vertex. The default is False.
-        use_sc_phi : bool, optional
+        use_sc_phi: bool, optional
             Use the supercluster Phi instead of the Phi from the primary vertex. The default is False.
-        avoid_ecal_transition_tags : bool, optional
+        avoid_ecal_transition_tags: bool, optional
             Whether to avoid the ECAL transition region for the tags with an eta cut. The default is True.
-        avoid_ecal_transition_probes : bool, optional
+        avoid_ecal_transition_probes: bool, optional
             Whether to avoid the ECAL transition region for the probes with an eta cut. The default is False.
-        require_event_to_pass_hlt_filter : bool, optional
+        require_event_to_pass_hlt_filter: bool, optional
             Also require the event to have passed the filter HLT filter under study to consider a probe belonging to that event as passing.
             The default is True.
         """
+        assert isinstance(filters, dict) or filters is None, (
+            "filters must be a dictionary with filter names as keys and filter expressions as values all represented as strings or None"
+        )
         if filters is not None:
             if trigger_pt is None:
-                from egamma_tnp.utils.misc import find_pt_threshold
-
-                self.trigger_pt = [find_pt_threshold(filter) for filter in filters]
-            else:
-                self.trigger_pt = trigger_pt
-                if len(self.trigger_pt) != len(filters):
-                    raise ValueError("The trigger_pt list must have the same length as the filters list.")
-
+                trigger_pt = {filter: 0 for filter in filters}
             if is_electron_filter is None:
-                self.is_electron_filter = [False for _ in filters]
-            else:
-                self.is_electron_filter = is_electron_filter
-                if len(self.is_electron_filter) != len(filters):
-                    raise ValueError("The is_electron_filter list must have the same length as the filters list.")
-
+                is_electron_filter = {filter: False for filter in filters}
             if filterbit is None:
-                self.filterbit = [None for _ in filters]
-            else:
-                self.filterbit = filterbit
-                if len(self.filterbit) != len(filters):
-                    raise ValueError("The filterbit list must have the same length as the filters list.")
+                filterbit = {filter: None for filter in filters}
+            assert len(filters) == len(trigger_pt), "The filters and trigger_pt dictionaries must have the same length."
+            assert len(filters) == len(is_electron_filter), "The filters and is_electron_filter dictionaries must have the same length."
+            assert len(filters) == len(filterbit), "The filters and filterbit dictionaries must have the same length."
+            for filter, filter_expression in filters.items():
+                assert isinstance(filter, str) and isinstance(filter_expression, str), (
+                    "filters must be a dictionary with filter names as keys and filter expressions as values all represented as strings"
+                )
+                assert filter in trigger_pt, f"The trigger_pt dictionary must have the same keys as the filters dictionary. Missing key: {filter}"
+                assert filter in is_electron_filter, (
+                    f"The is_electron_filter dictionary must have the same keys as the filters dictionary. Missing key: {filter}"
+                )
+                assert filter in filterbit, f"The filterbit dictionary must have the same keys as the filters dictionary. Missing key: {filter}"
+
+            self.trigger_pt = trigger_pt
+            self.is_electron_filter = is_electron_filter
+            self.filterbit = filterbit
         else:
             self.trigger_pt = None
             self.is_electron_filter = None
@@ -475,14 +483,6 @@ class PhotonTagNProbeFromNanoAOD(BaseTagNProbe):
         )
         self.start_from_diphotons = start_from_diphotons
         self.require_event_to_pass_hlt_filter = require_event_to_pass_hlt_filter
-
-        if filters is not None:
-            for filter, bit, pt in zip(self.filters, self.filterbit, self.trigger_pt):
-                if filter.startswith("HLT_"):
-                    if bit is None:
-                        raise ValueError("TrigObj filerbit must be provided for all trigger filters.")
-                    if pt == 0:
-                        raise ValueError("A trigger Pt threshold must be provided for all trigger filters.")
 
     def __repr__(self):
         n_of_files = 0
@@ -675,6 +675,14 @@ class PhotonTagNProbeFromNanoAOD(BaseTagNProbe):
         zcands = zcands[has_matched_electron_tags & trig_matched_tag & pt_cond_tags & pt_cond_probes & eta_cond_tags & eta_cond_probes]
         events_with_tags = dak.num(zcands.tag, axis=1) >= 1
         zcands = zcands[events_with_tags]
+        if good_events.metadata.get("isMC"):
+            genmatch_mask = (
+                (zcands.tag.matched_gen.distinctParentIdxG == zcands.probe.matched_gen.distinctParentIdxG)
+                & (zcands.tag.matched_gen.distinctParent.pdgId == 23)
+                & (zcands.probe.matched_gen.distinctParent.pdgId == 23)
+            )
+            genpartflav_mask = (zcands.tag.genPartFlav == 11) & (zcands.probe.genPartFlav == 11)
+            zcands = zcands[dak.fill_none(genmatch_mask, False) & genpartflav_mask]
         trigobjs = trigobjs[events_with_tags]
         tags = zcands.tag
         probes = zcands.probe
@@ -686,7 +694,7 @@ class PhotonTagNProbeFromNanoAOD(BaseTagNProbe):
             else:
                 in_mass_window = (mass > 50) & (mass < 130)
         else:
-            if cut_and_count:
+            if isinstance(mass_range, (int, float)):
                 in_mass_window = abs(mass - 91.1876) < mass_range
             else:
                 in_mass_window = (mass > mass_range[0]) & (mass < mass_range[1])
@@ -703,20 +711,24 @@ class PhotonTagNProbeFromNanoAOD(BaseTagNProbe):
         good_events = good_events[has_pair]
         passing_locs = {}
         if filters is not None:
-            for filter, iselectronfilter, bit, pt in zip(filters, is_electron_filter, filterbit, trigger_pt):
-                if iselectronfilter:
+            for filter_name, filter in filters.items():
+                if is_electron_filter[filter_name]:
                     trigobj_pdgid = 11
                 else:
                     trigobj_pdgid = 22
                 if filter.startswith("HLT_"):
-                    is_passing_probe = PhotonTagNProbeFromNanoAOD._trigger_match(zcands.probe, trigobjs, trigobj_pdgid, pt, bit)
+                    is_passing_probe = PhotonTagNProbeFromNanoAOD._trigger_match(
+                        zcands.probe, trigobjs, trigobj_pdgid, trigger_pt[filter_name], filterbit[filter_name]
+                    )
+                elif "zcands" in filter:
+                    is_passing_probe = safe_eval(filter, zcands, "zcands")
                 else:
                     is_passing_probe = safe_eval(f"zcands.probe.{filter}", zcands, "zcands")
                 if filter.startswith("HLT_") and require_event_to_pass_hlt_filter:
                     hlt_filter = filter.rsplit("_", 1)[0].split("HLT_")[1] if filter.split("HLT_")[1] not in good_events.HLT.fields else filter.split("HLT_")[1]
-                    passing_locs[filter] = is_passing_probe & getattr(good_events.HLT, hlt_filter)
+                    passing_locs[filter_name] = is_passing_probe & getattr(good_events.HLT, hlt_filter)
                 else:
-                    passing_locs[filter] = is_passing_probe
+                    passing_locs[filter_name] = is_passing_probe
         all_probe_events = good_events
         all_probe_events["ph"] = zcands.probe
         all_probe_events["tag_Ele"] = zcands.tag

@@ -22,9 +22,9 @@ def test_tag_and_probe_electrons_trigger():
 
     tag_n_probe = ElectronTagNProbeFromNanoAOD(
         fileset,
-        ["HLT_Ele32_WPTight_Gsf"],
-        trigger_pt=[32],
-        filterbit=[1],
+        {"HLT_Ele32_WPTight_Gsf": "HLT_Ele32_WPTight_Gsf"},
+        trigger_pt={"HLT_Ele32_WPTight_Gsf": 32},
+        filterbit={"HLT_Ele32_WPTight_Gsf": 1},
         cutbased_id="cutBased >= 4",
         tags_pt_cut=35,
         probes_pt_cut=27,
@@ -51,9 +51,9 @@ def test_tag_and_probe_electrons_id():
 
     tag_n_probe = ElectronTagNProbeFromNanoAOD(
         fileset,
-        ["cutBased >= 4"],
-        trigger_pt=[32],
-        filterbit=[1],
+        {"cutBased >= 4": "cutBased >= 4"},
+        trigger_pt=None,
+        filterbit=None,
         cutbased_id=None,
         tags_pt_cut=35,
         probes_pt_cut=27,
@@ -80,12 +80,12 @@ def test_tag_and_probe_photons_trigger(start_from_diphotons):
 
     tag_n_probe = PhotonTagNProbeFromNanoAOD(
         fileset,
-        ["HLT_Ele32_WPTight_Gsf"],
-        is_electron_filter=[True],
+        {"HLT_Ele32_WPTight_Gsf": "HLT_Ele32_WPTight_Gsf"},
+        is_electron_filter={"HLT_Ele32_WPTight_Gsf": True},
         start_from_diphotons=start_from_diphotons,
         cutbased_id="cutBased >= 3",
-        trigger_pt=[32],
-        filterbit=[1],
+        trigger_pt={"HLT_Ele32_WPTight_Gsf": 32},
+        filterbit={"HLT_Ele32_WPTight_Gsf": 1},
         tags_pt_cut=35,
         probes_pt_cut=27,
         tags_abseta_cut=2.17,
@@ -118,12 +118,12 @@ def test_tag_and_probe_photons_id(start_from_diphotons):
 
     tag_n_probe = PhotonTagNProbeFromNanoAOD(
         fileset,
-        ["cutBased >= 3"],
-        is_electron_filter=[True],
+        {"cutBased >= 3": "cutBased >= 3"},
+        is_electron_filter=None,
         start_from_diphotons=start_from_diphotons,
         cutbased_id=None,
-        trigger_pt=[32],
-        filterbit=[1],
+        trigger_pt=None,
+        filterbit=None,
         tags_pt_cut=35,
         probes_pt_cut=27,
         tags_abseta_cut=2.17,

@@ -238,10 +238,13 @@ def main():
     import time
 
     t0 = time.time()
-    if client:
-        (out,) = dask.optimize(to_compute)
-    else:
-        (out,) = dask.optimize(to_compute)
+    (out,) = dask.optimize(to_compute)
+    os.system("mv input input_bak")
+    import cProfile
+
+    with cProfile.Profile() as pr:
+        (out,) = dask.compute(out, optimize_graph=False)
+    pr.dump_stats("profile.prof")
     t1 = time.time()
     logger.info(f"Optimized task graph in {t1 - t0:.2f} seconds")
     logger.info("Finished the E/Gamma Tag and Probe workflow")

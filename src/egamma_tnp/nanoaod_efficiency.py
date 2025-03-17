@@ -91,11 +91,11 @@ class ElectronTagNProbeFromNanoAOD(BaseTagNProbe):
         )
         if filters is not None:
             if trigger_pt is None:
-                trigger_pt = {filter: 0 for filter in filters}
+                trigger_pt = dict.fromkeys(filters, 0)
             if is_photon_filter is None:
-                is_photon_filter = {filter: False for filter in filters}
+                is_photon_filter = dict.fromkeys(filters, False)
             if filterbit is None:
-                filterbit = {filter: None for filter in filters}
+                filterbit = dict.fromkeys(filters)
             assert len(filters) == len(trigger_pt), "The filters and trigger_pt dictionaries must have the same length."
             assert len(filters) == len(is_photon_filter), "The filters and is_photon_filter dictionaries must have the same length."
             assert len(filters) == len(filterbit), "The filters and filterbit dictionaries must have the same length."
@@ -437,11 +437,11 @@ class PhotonTagNProbeFromNanoAOD(BaseTagNProbe):
         )
         if filters is not None:
             if trigger_pt is None:
-                trigger_pt = {filter: 0 for filter in filters}
+                trigger_pt = dict.fromkeys(filters, 0)
             if is_electron_filter is None:
-                is_electron_filter = {filter: False for filter in filters}
+                is_electron_filter = dict.fromkeys(filters, False)
             if filterbit is None:
-                filterbit = {filter: None for filter in filters}
+                filterbit = dict.fromkeys(filters)
             assert len(filters) == len(trigger_pt), "The filters and trigger_pt dictionaries must have the same length."
             assert len(filters) == len(is_electron_filter), "The filters and is_electron_filter dictionaries must have the same length."
             assert len(filters) == len(filterbit), "The filters and filterbit dictionaries must have the same length."

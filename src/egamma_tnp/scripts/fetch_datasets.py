@@ -134,9 +134,9 @@ def get_dataset_dict_grid(fset: Iterable[Iterable[str]], xrd: str, dbs_instance:
         flist = [xrd + f for f in flist if f.strip()]
 
         if name not in fdict:
-            fdict[name] = {"files": {file_path: "Events" for file_path in flist}}
+            fdict[name] = {"files": dict.fromkeys(flist, "Events")}
         else:
-            fdict[name]["files"].update({file_path: "Events" for file_path in flist})
+            fdict[name]["files"].update(dict.fromkeys(flist, "Events"))
         logger.info(f"Found {len(flist)} files for dataset '{name}'.")
 
     return fdict
@@ -169,9 +169,9 @@ def get_dataset_dict_local(fset: Iterable[Iterable[str]], recursive: bool, exten
                 if file.is_file() and (not extensions or file.suffix.lower() in [ext.lower() for ext in extensions])
             ]
             if name not in fdict:
-                fdict[name] = {"files": {file_path: "Events" for file_path in files}}
+                fdict[name] = {"files": dict.fromkeys(files, "Events")}
             else:
-                fdict[name]["files"].update({file_path: "Events" for file_path in files})
+                fdict[name]["files"].update(dict.fromkeys(files, "Events"))
             logger.info(f"Found {len(files)} files for local dataset '{name}'.")
 
         except Exception as e:

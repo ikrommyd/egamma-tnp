@@ -169,7 +169,9 @@ class ElectronTagNProbeFromMiniNTuples(BaseTagNProbe):
         if all_probe_events.metadata.get("isMC"):
             vars = [*vars, "truePU"]
 
-        probes = dak.zip({var: all_probe_events[var] for var in vars if "to_use" not in var} | passing_locs | {"pair_mass": all_probe_events["pair_mass"]})
+        probes = dak.zip(
+            {var: all_probe_events[var] for var in vars if "to_use" not in var} | passing_locs | {"pair_mass": all_probe_events["pair_mass"]}, depth_limit=1
+        )
 
         if all_probe_events.metadata.get("isMC"):
             if "pileupJSON" in all_probe_events.metadata:
@@ -342,7 +344,9 @@ class PhotonTagNProbeFromMiniNTuples(BaseTagNProbe):
         if all_probe_events.metadata.get("isMC"):
             vars = [*vars, "truePU"]
 
-        probes = dak.zip({var: all_probe_events[var] for var in vars if "to_use" not in var} | passing_locs | {"pair_mass": all_probe_events["pair_mass"]})
+        probes = dak.zip(
+            {var: all_probe_events[var] for var in vars if "to_use" not in var} | passing_locs | {"pair_mass": all_probe_events["pair_mass"]}, depth_limit=1
+        )
 
         if all_probe_events.metadata.get("isMC"):
             if "pileupJSON" in all_probe_events.metadata:
@@ -525,7 +529,9 @@ class ElectronTagNProbeFromNanoNTuples(BaseTagNProbe):
         if all_probe_events.metadata.get("isMC"):
             vars = [*vars, "Pileup_nTrueInt"]
 
-        probes = dak.zip({var: all_probe_events[var] for var in vars if "to_use" not in var} | passing_locs | {"pair_mass": all_probe_events["pair_mass"]})
+        probes = dak.zip(
+            {var: all_probe_events[var] for var in vars if "to_use" not in var} | passing_locs | {"pair_mass": all_probe_events["pair_mass"]}, depth_limit=1
+        )
 
         if all_probe_events.metadata.get("isMC") and "weight" not in vars:
             if "pileupJSON" in all_probe_events.metadata:
@@ -701,7 +707,9 @@ class PhotonTagNProbeFromNanoNTuples(BaseTagNProbe):
         if all_probe_events.metadata.get("isMC"):
             vars = [*vars, "Pileup_nTrueInt"]
 
-        probes = dak.zip({var: all_probe_events[var] for var in vars if "to_use" not in var} | passing_locs | {"pair_mass": all_probe_events["pair_mass"]})
+        probes = dak.zip(
+            {var: all_probe_events[var] for var in vars if "to_use" not in var} | passing_locs | {"pair_mass": all_probe_events["pair_mass"]}, depth_limit=1
+        )
 
         if all_probe_events.metadata.get("isMC") and "weight" not in vars:
             if "pileupJSON" in all_probe_events.metadata:

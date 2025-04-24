@@ -681,7 +681,10 @@ class PhotonTagNProbeFromNanoAOD(BaseTagNProbe):
                 & (zcands.tag.matched_gen.distinctParent.pdgId == 23)
                 & (zcands.probe.matched_gen.distinctParent.pdgId == 23)
             )
-            genpartflav_mask = (zcands.tag.genPartFlav == 11) & (zcands.probe.genPartFlav == 11)
+            if start_from_diphotons:
+                genpartflav_mask = (zcands.tag.genPartFlav == 11) & (zcands.probe.genPartFlav == 11)
+            else:
+                genpartflav_mask = (zcands.tag.genPartFlav == 1) & (zcands.probe.genPartFlav == 11)
             zcands = zcands[dak.fill_none(genmatch_mask, False) & genpartflav_mask]
         trigobjs = trigobjs[events_with_tags]
         tags = zcands.tag

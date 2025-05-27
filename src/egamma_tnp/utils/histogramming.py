@@ -132,7 +132,8 @@ def fill_pt_eta_phi_cutncount_histograms(
         plateau_cut = 0
     if eta_regions_pt is None:
         eta_regions_pt = {
-            "barrel": [0.0, 1.4442],
+            "barrel_1": [0.0, 0.8],
+            "barrel_2": [0.8001, 1.4442],
             "endcap": [1.566, 2.5],
         }
     if phi_regions_eta is None:
@@ -287,7 +288,8 @@ def fill_pt_eta_phi_mll_histograms(
         plateau_cut = 0
     if eta_regions_pt is None:
         eta_regions_pt = {
-            "barrel": [0.0, 1.4442],
+            "barrel_1": [0.0, 0.8],
+            "barrel_2": [0.8001, 1.4442],
             "endcap": [1.566, 2.5],
         }
     if phi_regions_eta is None:

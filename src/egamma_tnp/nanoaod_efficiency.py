@@ -12,7 +12,8 @@ from egamma_tnp._base_tagnprobe import BaseTagNProbe
 from egamma_tnp.utils import calculate_photon_SC_eta, custom_delta_r
 from egamma_tnp.utils.misc import safe_eval
 from egamma_tnp.utils.pileup import create_correction, get_pileup_weight, load_correction
-
+from egamma_tnp.utils.vid_unpacked import veto_minus_iso_hoe 
+from egamma_tnp.utils.ele_categories import electron_categories
 
 class ElectronTagNProbeFromNanoAOD(BaseTagNProbe):
     def __init__(
@@ -91,11 +92,11 @@ class ElectronTagNProbeFromNanoAOD(BaseTagNProbe):
         )
         if filters is not None:
             if trigger_pt is None:
-                trigger_pt = dict.fromkeys(filters, 0)
+                trigger_pt = {filter: 0 for filter in filters}
             if is_photon_filter is None:
-                is_photon_filter = dict.fromkeys(filters, False)
+                is_photon_filter = {filter: False for filter in filters}
             if filterbit is None:
-                filterbit = dict.fromkeys(filters)
+                filterbit = {filter: None for filter in filters}
             assert len(filters) == len(trigger_pt), "The filters and trigger_pt dictionaries must have the same length."
             assert len(filters) == len(is_photon_filter), "The filters and is_photon_filter dictionaries must have the same length."
             assert len(filters) == len(filterbit), "The filters and filterbit dictionaries must have the same length."
@@ -142,6 +143,13 @@ class ElectronTagNProbeFromNanoAOD(BaseTagNProbe):
         return f"ElectronTagNProbeFromNanoAOD(Filters: {self.filters}, Number of files: {n_of_files})"
 
     def find_probes(self, events, cut_and_count, mass_range, vars):
+        events["Electron", "mask_veto_iso"] = veto_minus_iso_hoe(events.Electron)
+        categories = electron_categories(events.Electron)
+        events["Electron", "gold"] = categories["gold"]
+        events["Electron", "silver"] = categories["silver"]
+        events["Electron", "bronze"] = categories["bronze"]
+        events["Electron", "blp"] = categories["baselinep"]
+        
         if self.use_sc_eta:
             if "superclusterEta" in events.Electron.fields:
                 events["Electron", "eta_to_use"] = events.Electron.superclusterEta
@@ -189,6 +197,7 @@ class ElectronTagNProbeFromNanoAOD(BaseTagNProbe):
             probes = zcands.probe
             pass_eta_ebeegap_probes = (abs(probes.eta_to_use) < 1.4442) | (abs(probes.eta_to_use) > 1.566)
             zcands = zcands[pass_eta_ebeegap_probes]
+
 
         passing_locs, all_probe_events = ElectronTagNProbeFromNanoAOD._process_zcands(
             zcands=zcands,
@@ -297,14 +306,6 @@ class ElectronTagNProbeFromNanoAOD(BaseTagNProbe):
         zcands = zcands[trig_matched_tag & pt_cond_tags & pt_cond_probes & eta_cond_tags & eta_cond_probes]
         events_with_tags = dak.num(zcands.tag, axis=1) >= 1
         zcands = zcands[events_with_tags]
-        if good_events.metadata.get("isMC"):
-            genmatch_mask = (
-                (zcands.tag.matched_gen.distinctParentIdxG == zcands.probe.matched_gen.distinctParentIdxG)
-                & (zcands.tag.matched_gen.distinctParent.pdgId == 23)
-                & (zcands.probe.matched_gen.distinctParent.pdgId == 23)
-            )
-            genpartflav_mask = (zcands.tag.genPartFlav == 1) & (zcands.probe.genPartFlav == 1)
-            zcands = zcands[dak.fill_none(genmatch_mask, False) & genpartflav_mask]
         trigobjs = trigobjs[events_with_tags]
         tags = zcands.tag
         probes = zcands.probe
@@ -316,7 +317,7 @@ class ElectronTagNProbeFromNanoAOD(BaseTagNProbe):
             else:
                 in_mass_window = (mass > 50) & (mass < 130)
         else:
-            if isinstance(mass_range, (int, float)):
+            if cut_and_count:
                 in_mass_window = abs(mass - 91.1876) < mass_range
             else:
                 in_mass_window = (mass > mass_range[0]) & (mass < mass_range[1])
@@ -437,11 +438,11 @@ class PhotonTagNProbeFromNanoAOD(BaseTagNProbe):
         )
         if filters is not None:
             if trigger_pt is None:
-                trigger_pt = dict.fromkeys(filters, 0)
+                trigger_pt = {filter: 0 for filter in filters}
             if is_electron_filter is None:
-                is_electron_filter = dict.fromkeys(filters, False)
+                is_electron_filter = {filter: False for filter in filters}
             if filterbit is None:
-                filterbit = dict.fromkeys(filters)
+                filterbit = {filter: None for filter in filters}
             assert len(filters) == len(trigger_pt), "The filters and trigger_pt dictionaries must have the same length."
             assert len(filters) == len(is_electron_filter), "The filters and is_electron_filter dictionaries must have the same length."
             assert len(filters) == len(filterbit), "The filters and filterbit dictionaries must have the same length."
@@ -675,14 +676,6 @@ class PhotonTagNProbeFromNanoAOD(BaseTagNProbe):
         zcands = zcands[has_matched_electron_tags & trig_matched_tag & pt_cond_tags & pt_cond_probes & eta_cond_tags & eta_cond_probes]
         events_with_tags = dak.num(zcands.tag, axis=1) >= 1
         zcands = zcands[events_with_tags]
-        if good_events.metadata.get("isMC"):
-            genmatch_mask = (
-                (zcands.tag.matched_gen.distinctParentIdxG == zcands.probe.matched_gen.distinctParentIdxG)
-                & (zcands.tag.matched_gen.distinctParent.pdgId == 23)
-                & (zcands.probe.matched_gen.distinctParent.pdgId == 23)
-            )
-            genpartflav_mask = (zcands.tag.genPartFlav == 11) & (zcands.probe.genPartFlav == 11)
-            zcands = zcands[dak.fill_none(genmatch_mask, False) & genpartflav_mask]
         trigobjs = trigobjs[events_with_tags]
         tags = zcands.tag
         probes = zcands.probe
@@ -694,7 +687,7 @@ class PhotonTagNProbeFromNanoAOD(BaseTagNProbe):
             else:
                 in_mass_window = (mass > 50) & (mass < 130)
         else:
-            if isinstance(mass_range, (int, float)):
+            if cut_and_count:
                 in_mass_window = abs(mass - 91.1876) < mass_range
             else:
                 in_mass_window = (mass > mass_range[0]) & (mass < mass_range[1])

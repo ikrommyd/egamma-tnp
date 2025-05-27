@@ -1,7 +1,7 @@
 {
   "workflow": "ElectronTagNProbeFromNanoAOD",
   "workflow_args": {
-    "filters": {"MyCustomFilter": "(zcands.probe.cutBased >= 4) & (zcands.probe.pfRelIso03_chg > 0.5)"},
+    "filters": {"MyCustomFilter": "(zcands.probe.blp == True)"},
     "filterbit": null,
     "trigger_pt": null
   },
@@ -10,7 +10,7 @@
       "name": "get_1d_pt_eta_phi_tnp_histograms",
       "args": {
         "filter": "MyCustomFilter",
-        "cut_and_count": true,
+        "cut_and_count": false,
         "uproot_options": {
           "allow_read_errors_with_report": ["OSError", "ValueError"],
           "timeout": 120

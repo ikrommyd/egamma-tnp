@@ -676,6 +676,17 @@ class PhotonTagNProbeFromNanoAOD(BaseTagNProbe):
         zcands = zcands[has_matched_electron_tags & trig_matched_tag & pt_cond_tags & pt_cond_probes & eta_cond_tags & eta_cond_probes]
         events_with_tags = dak.num(zcands.tag, axis=1) >= 1
         zcands = zcands[events_with_tags]
+        if good_events.metadata.get("isMC"):
+            genmatch_mask = (
+                (zcands.tag.matched_gen.distinctParentIdxG == zcands.probe.matched_gen.distinctParentIdxG)
+                & (zcands.tag.matched_gen.distinctParent.pdgId == 23)
+                & (zcands.probe.matched_gen.distinctParent.pdgId == 23)
+            )
+            if start_from_diphotons:
+                genpartflav_mask = (zcands.tag.genPartFlav == 11) & (zcands.probe.genPartFlav == 11)
+            else:
+                genpartflav_mask = (zcands.tag.genPartFlav == 1) & (zcands.probe.genPartFlav == 11)
+            zcands = zcands[dak.fill_none(genmatch_mask, False) & genpartflav_mask]
         trigobjs = trigobjs[events_with_tags]
         tags = zcands.tag
         probes = zcands.probe

@@ -5,8 +5,11 @@ stages:
 include:
   - project: 'cms-analysis/general/container-image-ci-templates'
     file:
-      - 'kaniko-image.gitlab-ci.yml'
       - 'skopeo.gitlab-ci.yml'
+  - project: 'ci-tools/container-image-ci-templates'
+    file:
+      - 'kaniko-image.gitlab-ci.yml'
+    ref: master
 
 variables:
     CONTEXT_DIR: ""

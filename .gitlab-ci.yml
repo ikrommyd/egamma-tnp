@@ -27,20 +27,20 @@ build_docker_lxplus_el9:
   extends: .build_docker_template
   variables:
     BUILD_ARGS: "FROM_IMAGE=gitlab-registry.cern.ch/batch-team/dask-lxplus/lxdask-al9:latest CLUSTER=lxplus-el9"
-    REGISTRY_IMAGE_PATH: ${CI_REGISTRY_IMAGE}:lxplus-el9-${CI_COMMIT_SHORT_SHA}
+    REGISTRY_IMAGE_PATH: "registry.cern.ch/${CI_PROJECT_PATH}:lxplus-el9-${CI_COMMIT_SHORT_SHA}"
 
 build_docker_lxplus_el9_latest:
   extends: .tag_skopeo
   rules:
    - if: '$CI_COMMIT_REF_NAME == "master"'
   variables:
-    IMAGE_ORIGIN_TAG: ${CI_REGISTRY_IMAGE}:lxplus-el9-${CI_COMMIT_SHORT_SHA}
-    IMAGE_DESTINATION_TAG: ${CI_REGISTRY_IMAGE}:lxplus-el9-latest
+    IMAGE_ORIGIN_TAG: "registry.cern.ch/${CI_PROJECT_PATH}:lxplus-el9-${CI_COMMIT_SHORT_SHA}"
+    IMAGE_DESTINATION_TAG: "registry.cern.ch/${CI_PROJECT_PATH}:lxplus-el9-latest"
 
 build_docker_lxplus_tagged:
   extends: .tag_skopeo
   rules:
     - if: $CI_COMMIT_TAG
   variables:
-    IMAGE_ORIGIN_TAG: ${CI_REGISTRY_IMAGE}:lxplus-el9-${CI_COMMIT_SHORT_SHA}
-    IMAGE_DESTINATION_TAG: ${CI_REGISTRY_IMAGE}:lxplus-el9-${CI_COMMIT_TAG}
+    IMAGE_ORIGIN_TAG: "registry.cern.ch/${CI_PROJECT_PATH}:lxplus-el9-${CI_COMMIT_SHORT_SHA}"
+    IMAGE_DESTINATION_TAG: "registry.cern.ch/${CI_PROJECT_PATH}:lxplus-el9-${CI_COMMIT_TAG}"

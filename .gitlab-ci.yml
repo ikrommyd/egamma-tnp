@@ -23,6 +23,16 @@ variables:
     - pushes
     - master
 
+debug_login:
+  image: docker:20.10.17
+  stage: .pre
+  script:
+    - echo "REGISTRY_USER='${REGISTRY_USER}'"
+    - echo "REGISTRY_PASSWORD length=${#REGISTRY_PASSWORD}"
+    - echo "$REGISTRY_PASSWORD" | docker login registry.cern.ch -u "$REGISTRY_USER" --password-stdin
+  rules:
+    - when: always
+
 build_docker_lxplus_el9:
   extends: .build_docker_template
   variables:

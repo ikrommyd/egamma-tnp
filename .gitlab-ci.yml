@@ -3,13 +3,9 @@ stages:
   - tag
 
 include:
-  - project: 'cms-analysis/general/container-image-ci-templates'
-    file:
-      - 'skopeo.gitlab-ci.yml'
-  - project: 'ci-tools/container-image-ci-templates'
-    file:
-      - 'kaniko-image.gitlab-ci.yml'
-    ref: master
+- project: 'ci-tools/container-image-ci-templates'
+  file: 'kaniko-image.gitlab-ci.yml'
+  ref: master
 
 variables:
     CONTEXT_DIR: ""
@@ -19,6 +15,19 @@ variables:
     ACCELERATED_IMAGE: "true"
     BUILD_ARGS: ""
     SCAN_IMAGE: "false"
+
+.tag_skopeo:
+  stage: tag
+  image: registry.cern.ch/docker.io/library/alpine
+  rules:
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+  script:
+    - apk add --no-cache skopeo
+    - skopeo login --username "$REGISTRY_USER" --password "$REGISTRY_PASSWORD" registry.cern.ch
+    - skopeo copy "docker://${IMAGE_ORIGIN_TAG}" "docker://${IMAGE_DESTINATION_TAG}"
+  variables:
+    IMAGE_ORIGIN_TAG: registry.cern.ch/${CI_PROJECT_PATH}:${CI_COMMIT_SHORT_SHA}
+    IMAGE_DESTINATION_TAG: registry.cern.ch/${CI_PROJECT_PATH}:latest
 
 .build_docker_template:
   extends: .build_kaniko

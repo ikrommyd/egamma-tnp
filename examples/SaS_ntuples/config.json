@@ -1,0 +1,32 @@
+{
+  "workflow": "ScaleAndSmearingNtupleFromNanoAOD",
+  "workflow_args": {
+    "lead_pt_cut": 20.0,
+    "sublead_pt_cut": 10.0,
+    "eta_cut": 2.5,
+    "avoid_ecal_transition": false,
+    "trigger_paths": [
+      "Ele23_Ele12_CaloIdL_TrackIdL_IsoVL_DZ",
+      "Ele23_Ele12_CaloIdL_TrackIdL_IsoVL"
+    ]
+  },
+  "methods": [
+    {
+      "name": "get_sas_ntuples",
+      "args": {
+        "vars": {"Photon": ["pt", "eta", "phi", "seedGain", "superclusterEta", "r9", "sieie", "hoe",
+                             "cutBased", "mvaID", "mvaID_WP80", "mvaID_WP90"],
+                 "Electron": ["pt", "eta", "phi", "seedGain", "charge", "superclusterEta", "r9", "sieie", "hoe",
+                              "cutBased", "cutBased_HEEP", "mvaIso", "mvaIso_WP80", "mvaIso_WP90", "mvaNoIso", "mvaNoIso_WP80", "mvaNoIso_WP90"],
+                 "PuppiMET": ["pt", "phi", "sumEt"],
+                 "Rho": "all"},
+        "mass_range": [50.0, 130.0],
+        "flat": true,
+        "uproot_options": {
+          "allow_read_errors_with_report": ["OSError", "ValueError"],
+          "timeout": 120
+        }
+      }
+    }
+  ]
+}

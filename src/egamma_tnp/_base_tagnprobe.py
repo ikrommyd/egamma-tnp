@@ -634,3 +634,124 @@ class BaseTagNProbe:
                 failing_probes,
                 vars=vars,
             )
+
+class BaseSaSNtuples:
+    """Base class for Tag and Probe classes."""
+
+    def __init__(
+        self,
+        fileset,
+        lead_pt_cut,
+        sublead_pt_cut,
+        eta_cut,
+        trigger_paths,
+        extra_zcands_mask,
+        extra_filter,
+        extra_filter_args,
+        avoid_ecal_transition,
+        schemaclass,
+    ):
+        if extra_filter_args is None:
+            extra_filter_args = {}
+        
+
+        self.fileset = fileset
+        self.lead_pt_cut = lead_pt_cut
+        self.sublead_pt_cut = sublead_pt_cut
+        self.eta_cut = eta_cut
+        self.trigger_paths = trigger_paths
+        self.extra_zcands_mask = extra_zcands_mask
+        self.extra_filter = extra_filter
+        self.extra_filter_args = extra_filter_args
+        self.avoid_ecal_transition = avoid_ecal_transition
+        self.schemaclass = schemaclass
+        self.default_vars = None 
+
+
+    def get_sas_ntuples(
+        self,
+        mass_range=None,
+        vars=None,
+        flat=False,
+        uproot_options=None,
+        compute=False,
+        scheduler=None,
+        progress=False,
+    ):
+        """Get arrays of tag, probe and event-level variables.
+        WARNING: Not recommended to be used for large datasets as the arrays can be very large.
+
+        Parameters
+        ----------
+            cut_and_count: bool, optional
+                Whether to use the cut and count method to find the probes coming from a Z boson.
+                If False, invariant mass histograms of the tag-probe pairs will be filled to be fit by a Signal+Background model.
+                The default is True.
+            mass_range: int or float or tuple of two ints or floats, optional
+                The allowed mass range of the dilepton pairs.
+                If it is a single value, it represents the mass window around the Z mass.
+                If it is a tuple of two values, it represents the upper and lower bounds of the mass range.
+                If None, the default is 30 GeV around the Z mass for cut and count efficiencies and 50-130 GeV range otherwise.
+                The default is None.
+            vars: list, optional
+                The list of variables of the probes to return. The default is ["el_pt", "el_eta", "el_phi"].
+            flat: bool, optional
+                Whether to return flat arrays. The otherwise output needs to be flattenable.
+                The default is False.
+            uproot_options : dict, optional
+                Options to pass to uproot. Pass at least {"allow_read_errors_with_report": True} to turn on file access reports.
+            compute : bool, optional
+                Whether to return the computed arrays or the delayed arrays.
+                The default is False.
+            scheduler : str, optional
+                The dask scheduler to use. The default is None.
+                Only used if compute is True.
+            progress : bool, optional
+                Whether to show a progress bar if `compute` is True. The default is False.
+                Only meaningful if compute is True and no distributed Client is used.
+
+        Returns
+        -------
+            A tuple of the form (array, report) if `allow_read_errors_with_report` is True, otherwise just arrays.
+            arrays: a zip object containing the fields specified in `vars` and a field with a boolean array for each filter.
+                It will also contain the `pair_mass` field if cut_and_count is False.
+            report: dict of awkward arrays of the same form as fileset.
+                For each dataset an awkward array that contains information about the file access is present.
+        """
+        if uproot_options is None:
+            uproot_options = {}
+        if mass_range is None:
+            mass_range = (50, 130)
+        if vars is None:
+            vars = self.default_vars
+
+        if flat:
+            from egamma_tnp.utils.histogramming import flatten_array
+
+            def data_manipulation(events):
+                return flatten_array(self.find_lepton_pairs(events, mass_range=mass_range, vars=vars))
+        else:
+            data_manipulation = partial(self.find_lepton_pairs, mass_range=mass_range, vars=vars)
+
+        to_compute = apply_to_fileset(
+            data_manipulation=data_manipulation,
+            fileset=self.fileset,
+            schemaclass=self.schemaclass,
+            uproot_options=uproot_options,
+        )
+        if compute:
+            import dask
+            from dask.diagnostics import ProgressBar
+
+            if progress:
+                pbar = ProgressBar()
+                pbar.register()
+
+            computed = dask.compute(to_compute, scheduler=scheduler)
+
+            if progress:
+                pbar.unregister()
+
+            return computed[0]
+
+        return to_compute

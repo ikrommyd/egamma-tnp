@@ -6,6 +6,7 @@ import subprocess
 import sys
 from pathlib import Path
 from typing import Iterable
+import yaml
 
 from egamma_tnp.utils.logger_utils import setup_logger
 
@@ -93,7 +94,35 @@ def read_input_file(input_txt: str, mode: str, logger) -> list[tuple]:
             elif mode == "grid":
                 # Optionally, validate grid dataset paths
                 pass
-            fset.append((name, path))
+            fset.append((name, path, {}))
+    return fset
+
+def read_input_yaml(input_yaml: str, mode: str, logger) -> list[tuple]:
+    """
+    Read the input text file and parse dataset names and paths.
+
+    :param input_txt: Path to the input text file
+    :param mode: Mode of operation ('grid' or 'local') for validation
+    :param logger: Logger instance
+    :return: List of tuples (dataset-name, dataset-path)
+    """
+    fset = []
+    with open(input_yaml) as fp:
+        config = yaml.safe_load(fp)
+        try:
+            datasets = config["datasets"]
+        except KeyError:
+            logger.error(f"Input YAML file '{input_yaml}' does not contain 'datasets' key.")
+            sys.exit(1)
+        for dataset in datasets:
+            name = dataset.get("name", "")
+            if not name:
+                logger.error(f"Dataset entry in '{input_yaml}' is missing 'name': {dataset}")
+            paths = dataset.get("dataset", [])
+            if not paths:
+                logger.error(f"Dataset entry in '{input_yaml}' is missing 'dataset' paths: {dataset}")
+            metadata = dataset.get("metadata", {})
+            fset.append((name, paths, metadata))
     return fset
 
 
@@ -109,35 +138,39 @@ def get_dataset_dict_grid(fset: Iterable[Iterable[str]], xrd: str, dbs_instance:
     """
     fdict = {}
 
-    for name, dataset in fset:
-        logger.info(f"Fetching files for dataset '{name}': '{dataset}'")
-        private_appendix = "" if not dataset.endswith("/USER") else " instance=prod/phys03"
-        try:
-            cmd = f"/cvmfs/cms.cern.ch/common/dasgoclient -query='instance={dbs_instance} file dataset={dataset}{private_appendix}'"
-            logger.debug(f"Executing command: {cmd}")
-            flist = subprocess.check_output(cmd, shell=True, text=True).splitlines()
-        except subprocess.CalledProcessError as e:
-            logger.warning(f"Failed with /cvmfs/cms.cern.ch/common/dasgoclient for dataset '{dataset}': {e}")
-            logger.info("Trying with dasgoclient in PATH.")
+    for name, datasets, meta in fset:
+        if isinstance(datasets, str):
+            datasets = [datasets]
+        for dataset in datasets:
+            logger.info(f"Fetching files for dataset '{name}': '{dataset}'")
+            private_appendix = "" if not dataset.endswith("/USER") else " instance=prod/phys03"
             try:
-                cmd = f"dasgoclient -query='instance={dbs_instance} file dataset={dataset}{private_appendix}'"
+                cmd = f"/cvmfs/cms.cern.ch/common/dasgoclient -query='instance={dbs_instance} file dataset={dataset}{private_appendix}'"
                 logger.debug(f"Executing command: {cmd}")
                 flist = subprocess.check_output(cmd, shell=True, text=True).splitlines()
             except subprocess.CalledProcessError as e:
-                logger.error(f"dasgoclient command failed for dataset '{dataset}': {e}")
+                logger.warning(f"Failed with /cvmfs/cms.cern.ch/common/dasgoclient for dataset '{dataset}': {e}")
+                logger.info("Trying with dasgoclient in PATH.")
+                try:
+                    cmd = f"dasgoclient -query='instance={dbs_instance} file dataset={dataset}{private_appendix}'"
+                    logger.debug(f"Executing command: {cmd}")
+                    flist = subprocess.check_output(cmd, shell=True, text=True).splitlines()
+                except subprocess.CalledProcessError as e:
+                    logger.error(f"dasgoclient command failed for dataset '{dataset}': {e}")
+                    raise e
+
+            except Exception as e:
+                logger.error(f"Unexpected error while fetching files for dataset '{dataset}': {e}")
                 raise e
 
-        except Exception as e:
-            logger.error(f"Unexpected error while fetching files for dataset '{dataset}': {e}")
-            raise e
+            flist = [xrd + f for f in flist if f.strip()]
 
-        flist = [xrd + f for f in flist if f.strip()]
-
-        if name not in fdict:
-            fdict[name] = {"files": dict.fromkeys(flist, "Events")}
-        else:
-            fdict[name]["files"].update(dict.fromkeys(flist, "Events"))
-        logger.info(f"Found {len(flist)} files for dataset '{name}'.")
+            if name not in fdict:
+                fdict[name] = {"files": dict.fromkeys(flist, "Events")}
+            else:
+                fdict[name]["files"].update(dict.fromkeys(flist, "Events"))
+            logger.info(f"Found {len(flist)} files for dataset '{name}'.")
+        fdict[name]["metadata"] = meta
 
     return fdict
 
@@ -154,28 +187,34 @@ def get_dataset_dict_local(fset: Iterable[Iterable[str]], recursive: bool, exten
     """
     fdict = {}
 
-    for name, dir_path in fset:
-        logger.info(f"Collecting files for local dataset '{name}': '{dir_path}'")
-        directory = Path(dir_path)
-        if not directory.is_dir():
-            logger.error(f"Directory '{dir_path}' does not exist or is not a directory.")
-            continue
+    for name, dir_paths, meta in fset:
+        if isinstance(dir_paths, str):
+            dir_paths = [dir_paths]
+        
+        for dir_path in dir_paths:
+            logger.info(f"Collecting files for local dataset '{name}': '{dir_path}'")
+            directory = Path(dir_path)
+            if not directory.is_dir():
+                logger.error(f"Directory '{dir_path}' does not exist or is not a directory.")
+                continue
 
-        pattern = "**/*" if recursive else "*"
-        try:
-            files = [
-                str(file.resolve())
-                for file in directory.glob(pattern)
-                if file.is_file() and (not extensions or file.suffix.lower() in [ext.lower() for ext in extensions])
-            ]
-            if name not in fdict:
-                fdict[name] = {"files": dict.fromkeys(files, "Events")}
-            else:
-                fdict[name]["files"].update(dict.fromkeys(files, "Events"))
-            logger.info(f"Found {len(files)} files for local dataset '{name}'.")
+            pattern = "**/*" if recursive else "*"
+            try:
+                files = [
+                    str(file.resolve())
+                    for file in directory.glob(pattern)
+                    if file.is_file() and (not extensions or file.suffix.lower() in [ext.lower() for ext in extensions])
+                ]
+                if name not in fdict:
+                    fdict[name] = {"files": dict.fromkeys(files, "Events")}
+                else:
+                    fdict[name]["files"].update(dict.fromkeys(files, "Events"))
+                logger.info(f"Found {len(files)} files for local dataset '{name}'.")
 
-        except Exception as e:
-            logger.error(f"Error while collecting files from directory '{dir_path}': {e}")
+            except Exception as e:
+                logger.error(f"Error while collecting files from directory '{dir_path}': {e}")
+        
+        fdict[name]["metadata"] = meta
 
     return fdict
 
@@ -185,12 +224,17 @@ def main():
 
     logger = setup_logger(level="INFO")
 
-    if not args.input.endswith(".txt"):
-        logger.error("Input file must have a '.txt' extension and be a text file!")
+    if args.input.endswith(".txt"):
+        # Read and parse the input file
+        fset = read_input_file(args.input, args.mode, logger)
+    elif args.input.endswith(".yaml") or args.input.endswith(".yml"):
+        # Read and parse the input YAML file
+        fset = read_input_yaml(args.input, args.mode, logger)
+    else:
+        logger.error("Input file must have a '.txt' ot '.yaml' extension and be a text file!")
         sys.exit(1)
 
-    # Read and parse the input file
-    fset = read_input_file(args.input, args.mode, logger)
+    
     if not fset:
         logger.error(f"No valid entries found in '{args.input}'. Exiting.")
         sys.exit(1)

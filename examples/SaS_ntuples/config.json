@@ -6,8 +6,7 @@
     "eta_cut": 2.5,
     "avoid_ecal_transition": false,
     "trigger_paths": [
-      "Ele23_Ele12_CaloIdL_TrackIdL_IsoVL_DZ",
-      "Ele23_Ele12_CaloIdL_TrackIdL_IsoVL"
+      "Ele23_Ele12_CaloIdL_TrackIdL_IsoVL*"
     ]
   },
   "methods": [

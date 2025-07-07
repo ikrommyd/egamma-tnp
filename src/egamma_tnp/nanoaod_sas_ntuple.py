@@ -103,27 +103,19 @@ class ScaleAndSmearingNtupleFromNanoAOD(BaseSaSNtuples):
     
     
     def find_lepton_pairs(self, events, mass_range=(50,130), vars=None):
-        
-        if self.extra_filter is not None:
-            events = self.extra_filter(events, **self.extra_filter_args)
         if events.metadata.get("isMC") is None:
             events.metadata["isMC"] = hasattr(events, "GenPart")
+            if events.metadata["isMC"]:
+                events.metadata["sum_genw_presel"] = str(dak.sum(events.genWeight))
+        if self.extra_filter is not None:
+            events = self.extra_filter(events, **self.extra_filter_args)
         if events.metadata.get("goldenJSON") and not events.metadata.get("isMC"):
             lumimask = LumiMask(events.metadata["goldenJSON"])
             mask = lumimask(events.run, events.luminosityBlock)
             events = events[mask]
 
         # apply the trigger path filter if specified
-        if self.trigger_paths is not None:
-            if isinstance(self.trigger_paths, str):
-                self.trigger_paths = [self.trigger_paths]
-            trigger_mask = events.run < 0
-            for path in self.trigger_paths:
-                trigger_mask = trigger_mask | getattr(events.HLT, path)
-
-            good_events = events[trigger_mask]
-        else:
-            good_events = events
+        good_events = apply_trigger_paths(events, self.trigger_paths)
 
         # add superclusterEta to the Photon and Electron objects if not already present
         if "superclusterEta" not in good_events.Photon.fields:
@@ -173,6 +165,8 @@ class ScaleAndSmearingNtupleFromNanoAOD(BaseSaSNtuples):
 
         dielectrons = process_zcands(events=good_events, leptons=sorted_electrons, mass_range=mass_range, lead_pt_cut=self.lead_pt_cut, prefixes=("ele_lead", "ele_sublead"))
         dielectrons = save_event_variables(good_events, dielectrons, vars=vars)
+        dielectrons = apply_pileup_weights(dielectrons, good_events)
+        
 
         # flatten the output
         output = {}
@@ -309,16 +303,7 @@ class ZmumuNtupleFromNanoAOD(BaseSaSNtuples):
             events = events[mask]
 
         # apply the trigger path filter if specified
-        if self.trigger_paths is not None:
-            if isinstance(self.trigger_paths, str):
-                self.trigger_paths = [self.trigger_paths]
-            trigger_mask = events.run < 0
-            for path in self.trigger_paths:
-                trigger_mask = trigger_mask | getattr(events.HLT, path)
-
-            good_events = events[trigger_mask]
-        else:
-            good_events = events
+        good_events = apply_trigger_paths(events, self.trigger_paths)
 
         # selecting electrons with a photn matching and passing the pt and eta cuts
         good_events["Muon"] = good_events.Muon[(good_events.Muon.pt > self.sublead_pt_cut) & (np.abs(good_events.Muon.eta) < self.eta_cut)]
@@ -428,3 +413,49 @@ def save_event_variables(events, dileptons,vars=None):
                 dileptons[f"{collection}_{var}"] = events[collection][var]
 
     return dileptons
+
+def apply_pileup_weights(dileptons, events):
+    if events.metadata.get("isMC"):
+        if "pileupJSON" in events.metadata:
+            pileup_corr = load_correction(events.metadata["pileupJSON"])
+        elif "pileupData" in events.metadata and "pileupMC" in events.metadata:
+            pileup_corr = create_correction(events.metadata["pileupData"], events.metadata["pileupMC"])
+        else:
+            pileup_corr = None
+        if pileup_corr is not None:
+            pileup_weight_nom, pileup_weight_up, pileup_weight_down = get_pileup_weight(dileptons.nTrueInt, pileup_corr, syst=True)
+            dileptons["weight_central"] = pileup_weight_nom
+            dileptons["weight_central_PileupUp"] = pileup_weight_up
+            dileptons["weight_central_PileupDown"] = pileup_weight_down
+
+            dileptons["weight"] = pileup_weight_nom * dileptons["genWeight"]
+            dileptons["weight_PileupUp"] = pileup_weight_up * dileptons["genWeight"]
+            dileptons["weight_PileupDown"] = pileup_weight_down * dileptons["genWeight"]
+        
+        else:
+            dileptons["weight_central"] = ak.ones_like(dileptons.pt)
+            dileptons["weight"] = dileptons["genWeight"]
+
+    return dileptons
+
+def apply_trigger_paths(events, trigger_paths):
+    if trigger_paths is not None:
+        trigger_names = []
+        if isinstance(trigger_paths, str):
+            trigger_paths = [trigger_paths]
+        # Remove wildcards from trigger paths and find the corresponding fields in events.HLT
+        for trigger in trigger_paths:
+            actual_trigger = trigger.replace('*', '')
+            for field in events.HLT.fields:
+                if field.startswith(actual_trigger):
+                        trigger_names.append(field)
+        # Select events that pass any of the specified trigger paths
+        trigger_mask = events.run < 0
+        for trigger in trigger_names:
+            trigger_mask = trigger_mask | getattr(events.HLT, trigger)
+
+        good_events = events[trigger_mask]
+    else:
+        good_events = events
+
+    return good_events

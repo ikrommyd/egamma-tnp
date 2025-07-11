@@ -315,16 +315,17 @@ class ZmumuNtupleFromNanoAOD(BaseSaSNtuples):
             if "Muon" not in vars or vars["Muon"] == "all":
                 vars["Muon"] = good_events.Muon.fields
 
-        # add GenPart information if available
-        if good_events.metadata.get("isMC"): 
-            good_events.Muon["gen_pt"] = good_events.GenPart[good_events.Muon.genPartIdx].pt
-            vars["Muon"] += ["gen_pt"]
+        # # add GenPart information if available
+        # if good_events.metadata.get("isMC"): 
+        #     good_events.Muon["gen_pt"] = good_events.GenPart[good_events.Muon.genPartIdx].pt
+        #     vars["Muon"] += ["gen_pt"]
 
 
         sorted_muons = good_events.Muon[ak.argsort(good_events.Muon.pt, ascending=False)]
 
         dimuons = process_zcands(events=good_events, leptons=sorted_muons, mass_range=mass_range, lead_pt_cut=self.lead_pt_cut, prefixes=("muon_lead", "muon_sublead"))
         dimuons = save_event_variables(good_events, dimuons, vars=vars)
+        dimuons = apply_pileup_weights(dimuons, good_events)
         
         # flatten the output
         output = {}

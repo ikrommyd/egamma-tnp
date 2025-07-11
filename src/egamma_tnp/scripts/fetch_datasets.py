@@ -64,7 +64,13 @@ def get_fetcher_args() -> argparse.Namespace:
         nargs="*",
         help="Filter files by extensions (e.g., .root .txt) (only for local mode). If not specified, all files are included.",
     )
-
+    parser.add_argument(
+        "-l",
+        "--limit",
+        type=int,
+        default=-1,
+        help="Filter files by extensions (e.g., .root .txt) (only for local mode). If not specified, all files are included.",
+    )
     return parser.parse_args()
 
 
@@ -126,7 +132,7 @@ def read_input_yaml(input_yaml: str, mode: str, logger) -> list[tuple]:
     return fset
 
 
-def get_dataset_dict_grid(fset: Iterable[Iterable[str]], xrd: str, dbs_instance: str, logger) -> dict[str, dict]:
+def get_dataset_dict_grid(fset: Iterable[Iterable[str]], xrd: str, dbs_instance: str, logger, limit) -> dict[str, dict]:
     """
     Fetch file lists for grid datasets using dasgoclient.
 
@@ -163,7 +169,7 @@ def get_dataset_dict_grid(fset: Iterable[Iterable[str]], xrd: str, dbs_instance:
                 logger.error(f"Unexpected error while fetching files for dataset '{dataset}': {e}")
                 raise e
 
-            flist = [xrd + f for f in flist if f.strip()]
+            flist = [xrd + f for f in flist if f.strip()][:limit]
 
             if name not in fdict:
                 fdict[name] = {"files": dict.fromkeys(flist, "Events")}
@@ -175,7 +181,7 @@ def get_dataset_dict_grid(fset: Iterable[Iterable[str]], xrd: str, dbs_instance:
     return fdict
 
 
-def get_dataset_dict_local(fset: Iterable[Iterable[str]], recursive: bool, extensions: list[str], logger) -> dict[str, dict]:
+def get_dataset_dict_local(fset: Iterable[Iterable[str]], recursive: bool, extensions: list[str], logger, limit) -> dict[str, dict]:
     """
     Collect file lists for local directories.
 
@@ -204,7 +210,7 @@ def get_dataset_dict_local(fset: Iterable[Iterable[str]], recursive: bool, exten
                     str(file.resolve())
                     for file in directory.glob(pattern)
                     if file.is_file() and (not extensions or file.suffix.lower() in [ext.lower() for ext in extensions])
-                ]
+                ][:limit]
                 if name not in fdict:
                     fdict[name] = {"files": dict.fromkeys(files, "Events")}
                 else:
@@ -249,11 +255,11 @@ def main():
         logger.info(f"Using xrootd prefix: '{xrd}'")
 
         # Fetch grid file paths
-        fdict = get_dataset_dict_grid(fset, xrd, args.instance, logger)
+        fdict = get_dataset_dict_grid(fset, xrd, args.instance, logger, args.limit)
 
     elif args.mode == "local":
         # Fetch local file paths
-        fdict = get_dataset_dict_local(fset, args.recursive, args.file_extension, logger)
+        fdict = get_dataset_dict_local(fset, args.recursive, args.file_extension, logger, args.limit)
 
     # Check if any data was collected
     if not fdict:

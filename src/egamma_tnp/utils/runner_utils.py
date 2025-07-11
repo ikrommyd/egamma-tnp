@@ -330,7 +330,7 @@ def process_out(out, output_dir):
                     save_histogram_dict_to_pickle(hist_dict, output_dir, dataset, subdir_name, filename)
 
         if reports:
-            if method == "get_tnp_arrays":
+            if method in ["get_tnp_arrays", "get_sas_ntuples"]:
                 for dataset, report in reports.items():
                     save_report_to_json(report, output_dir, dataset, subdir_name)
             else:

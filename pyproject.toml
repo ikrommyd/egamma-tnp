@@ -36,10 +36,9 @@ classifiers = [
 ]
 dependencies = [
   "click>=8.0.4",
-  "coffea[dask,rucio]>=2024.5.0",
+  "coffea[dask,rucio]>=2025.7.0",
   "dask<2025",
   "distributed<2025",
-  "scipy<1.16",
 ]
 dynamic = ["version"]
 

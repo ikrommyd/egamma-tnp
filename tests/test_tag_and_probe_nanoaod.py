@@ -33,7 +33,7 @@ def test_tag_and_probe_electrons_trigger():
         require_event_to_pass_hlt_filter=True,
     )
 
-    events = NanoEventsFactory.from_root({os.path.abspath("tests/samples/DYto2E.root"): "Events"}, delayed=False).events()
+    events = NanoEventsFactory.from_root({os.path.abspath("tests/samples/DYto2E.root"): "Events"}, mode="virtual").events()
     solution = tag_and_probe_electrons(events, is_id=False)
     result = tag_n_probe.get_passing_and_failing_probes(
         "HLT_Ele32_WPTight_Gsf", cut_and_count=False, vars=["Electron_pt", "tag_Ele_eta", "el_pt", "el_eta", "MET_pt", "event"], compute=True
@@ -61,7 +61,7 @@ def test_tag_and_probe_electrons_id():
         use_sc_eta=True,
     )
 
-    events = NanoEventsFactory.from_root({os.path.abspath("tests/samples/DYto2E.root"): "Events"}, delayed=False).events()
+    events = NanoEventsFactory.from_root({os.path.abspath("tests/samples/DYto2E.root"): "Events"}, mode="virtual").events()
     solution = tag_and_probe_electrons(events, is_id=True)
     result = tag_n_probe.get_passing_and_failing_probes(
         "cutBased >= 4", cut_and_count=False, vars=["Electron_pt", "tag_Ele_eta", "el_pt", "el_eta", "MET_pt", "event"], compute=True
@@ -93,7 +93,7 @@ def test_tag_and_probe_photons_trigger(start_from_diphotons):
         require_event_to_pass_hlt_filter=True,
     )
 
-    events = NanoEventsFactory.from_root({os.path.abspath("tests/samples/DYto2E.root"): "Events"}, delayed=False).events()
+    events = NanoEventsFactory.from_root({os.path.abspath("tests/samples/DYto2E.root"): "Events"}, mode="virtual").events()
     solution = tag_and_probe_photons(events, start_from_diphotons, is_id=False)
     result = tag_n_probe.get_passing_and_failing_probes(
         "HLT_Ele32_WPTight_Gsf", cut_and_count=False, vars=["Photon_pt", "tag_Ele_eta", "ph_pt", "ph_eta", "MET_pt", "event"], compute=True
@@ -130,7 +130,7 @@ def test_tag_and_probe_photons_id(start_from_diphotons):
         use_sc_eta=False,
     )
 
-    events = NanoEventsFactory.from_root({os.path.abspath("tests/samples/DYto2E.root"): "Events"}, delayed=False).events()
+    events = NanoEventsFactory.from_root({os.path.abspath("tests/samples/DYto2E.root"): "Events"}, mode="virtual").events()
     solution = tag_and_probe_photons(events, start_from_diphotons, is_id=True)
     result = tag_n_probe.get_passing_and_failing_probes(
         "cutBased >= 3", cut_and_count=False, vars=["Photon_pt", "tag_Ele_eta", "ph_pt", "ph_eta", "MET_pt", "event"], compute=True

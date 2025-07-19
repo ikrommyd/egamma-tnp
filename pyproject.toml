@@ -39,6 +39,7 @@ dependencies = [
   "coffea[dask,rucio]>=2025.7.0",
   "dask<2025",
   "distributed<2025",
+  "pyarrow<21.0.0",
 ]
 dynamic = ["version"]
 

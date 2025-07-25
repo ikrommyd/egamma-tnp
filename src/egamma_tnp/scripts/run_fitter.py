@@ -57,7 +57,7 @@ def main():
 
     if root_files_DATA:
         for root_file_path in root_files_DATA:
-            print(f"\nProcessing file: {root_file_path}")
+            print(f"\nProcessing file: {root_file_path}\n")
 
             with uproot.open(root_file_path) as f:
                 hist_pass = load_histogram(f, hist_pass_name, "DATA")
@@ -67,7 +67,7 @@ def main():
                 print(f"Warning: Failed to load histograms from {root_file_path}")
                 continue
 
-            print("Fitting...")
+            print("\nFitting...")
 
             results = fit_function(
                 fit_type,
@@ -113,7 +113,7 @@ def main():
 
     if root_files_MC:
         for root_file_path in root_files_MC:
-            print(f"\nProcessing file: {root_file_path}")
+            print(f"\nProcessing file: {root_file_path}\n")
 
             with uproot.open(root_file_path) as f:
                 hist_pass = load_histogram(f, hist_pass_name, "MC")
@@ -123,7 +123,7 @@ def main():
                 print(f"Warning: Failed to load histograms from {root_file_path}")
                 continue
 
-            print("Fitting...")
+            print("\nFitting...")
 
             results = fit_function(
                 fit_type,

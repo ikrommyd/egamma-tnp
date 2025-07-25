@@ -1,0 +1,27 @@
+{
+  "mass": "Z",
+  "input": {
+    "root_files_DATA": [
+      "/uscms/home/hortua/nobackup/egamma-tnp/examples/nanoaod_filters_custom/gold_blp_big/DATA_NEW_2_2023D/get_1d_pt_eta_phi_tnp_histograms_1/DATA_NEW_2_23D_histos_pt_barrel_1.root"
+    ],
+    "root_files_MC": [
+      "/uscms/home/hortua/nobackup/egamma-tnp/examples/nanoaod_filters_custom/gold_blp_big/MC_DY2_2L_2J_2023/get_1d_pt_eta_phi_tnp_histograms_1/MC_DY2_2L_2J_23D_histos_pt_barrel_1.root"
+    ]
+  },
+  "fit": {
+    "fit_type": "dcb_cms",
+    "use_cdf": false,
+    "sigmoid_eff": false,
+    "bin": "bin4",
+    "interactive": true,
+    "x_min": 70,
+    "x_max": 110,
+    "abseta": 1,
+    "numerator": "gold",
+    "denominator": "baselineplus"
+  },
+  "output": {
+    "plot_dir": "plots/",
+    "results_file": ""
+  }
+}

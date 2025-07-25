@@ -24,9 +24,9 @@
 #       "interactive": true,     < ----- Turns on interactive window for fitting (very useful for difficult fits)
 #       "x_min": 70,             < ----- x range minimum for plotting
 #       "x_max": 110,            < ----- x range maximum for plotting
-#       "abseta": 1,             < ----- Only required for muon .root files***. Defines absolute eta ranges
-#       "numerator": "gold",     < ----- Only required for muon .root files***. Defines numerator for efficiencies
-#       "denominator": "blp"     < ----- Only required for muon .root files***. Defines denominator for efficiencies
+#       "abseta": 1,             < ----- Only impacts muon .root files***. Defines absolute eta ranges
+#       "numerator": "gold",     < ----- Only impacts muon .root files***. Defines numerator for efficiencies
+#       "denominator": "blp"     < ----- Only impacts muon .root files***. Defines denominator for efficiencies
 #     },
 #     "output": {
 #       "plot_dir": "",          < ----- Sets location to save plots to (if left blank, it wont save)

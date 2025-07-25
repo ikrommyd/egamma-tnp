@@ -7,6 +7,7 @@ from egamma_tnp.utils import fitter_sh
 from egamma_tnp.utils.fitter_sh import fit_function, load_histogram, plot_combined_fit
 
 def main():
+    # Reads in config file specified in terminal
     parser = argparse.ArgumentParser()
     parser.add_argument("--config", required=True, help="Path to JSON config file")
     args = parser.parse_args()
@@ -19,6 +20,7 @@ def main():
     root_files_DATA = config["input"]["root_files_DATA"]
     root_files_MC = config["input"]["root_files_MC"]
 
+    # Get fit parameters from config
     fit_type = config["fit"]["fit_type"]
     use_cdf = config["fit"].get("use_cdf", False)
     sigmoid_eff = config["fit"].get("sigmoid_eff", False)
@@ -35,7 +37,9 @@ def main():
     
     # If histogram names aren't specified, try to construct them
     if not hist_pass_name or not hist_fail_name:
-        bin_name = config["fit"].get("bin", "bin0")  # default to bin0
+        bin_name = config["fit"].get("bin", "bin1")
+
+        # num and den are only nessicary for Muon fits
         num = config["fit"].get("numerator", "gold")
         den = config["fit"].get("denominator", "baselineplus")
         
@@ -59,6 +63,7 @@ def main():
         for root_file_path in root_files_DATA:
             print(f"\nProcessing file: {root_file_path}\n")
 
+            # Load histograms from ROOT file
             with uproot.open(root_file_path) as f:
                 hist_pass = load_histogram(f, hist_pass_name, "DATA")
                 hist_fail = load_histogram(f, hist_fail_name, "DATA")
@@ -69,6 +74,7 @@ def main():
 
             print("\nFitting...")
 
+            # Fitting Step
             results = fit_function(
                 fit_type,
                 hist_pass,
@@ -89,6 +95,7 @@ def main():
             plot_path = Path(config["output"]["plot_dir"])/"DATA"/args_bin
             plot_path.mkdir(parents=True, exist_ok=True)
             
+            # If config file has no path so save plots to, it won't save
             if config["output"].get("plot_dir"):
                 plot_combined_fit(
                     results,
@@ -98,7 +105,7 @@ def main():
                     args_mass=mass
                 )
 
-        # Save combined results if specified
+        # If config file has no path so save results to, it won't save
         if config["output"].get("results_file"):
             summary_path = Path(config["output"]["results_file"])
             summary_path.parent.mkdir(parents=True, exist_ok=True)

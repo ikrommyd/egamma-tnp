@@ -89,13 +89,14 @@ def main():
             plot_path = Path(config["output"]["plot_dir"])/"DATA"/args_bin
             plot_path.mkdir(parents=True, exist_ok=True)
             
-            plot_combined_fit(
-                results,
-                plot_dir=plot_path,
-                data_type="DATA",
-                sigmoid_eff=sigmoid_eff,
-                args_mass=mass
-            )
+            if config["output"].get("plot_dir"):
+                plot_combined_fit(
+                    results,
+                    plot_dir=plot_path,
+                    data_type="DATA",
+                    sigmoid_eff=sigmoid_eff,
+                    args_mass=mass
+                )
 
         # Save combined results if specified
         if config["output"].get("results_file"):
@@ -143,16 +144,15 @@ def main():
             # Create plot for each file
             plot_path = Path(config["output"]["plot_dir"])/"MC"/args_bin
             plot_path.mkdir(parents=True, exist_ok=True)
-            print(f"Saving plots to: {plot_path}")
-            print(f"test: {str(plot_path.parent)}")
             
-            plot_combined_fit(
-                results,
-                plot_dir=plot_path,
-                data_type="MC",
-                sigmoid_eff=sigmoid_eff,
-                args_mass=mass
-            )
+            if config["output"].get("plot_dir"):
+                plot_combined_fit(
+                    results,
+                    plot_dir=plot_path,
+                    data_type="MC",
+                    sigmoid_eff=sigmoid_eff,
+                    args_mass=mass
+                )
 
         # Save combined results if specified
         if config["output"].get("results_file"):

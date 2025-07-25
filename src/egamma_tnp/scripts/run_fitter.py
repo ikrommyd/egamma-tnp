@@ -1,3 +1,40 @@
+###############################################################################
+#                            CONFIG.JSON FORMAT
+###############################################################################
+#
+#   {
+#     "mass": "Z",               < ----- Determines what mass you are fitting (Z, Z_muon, JPsi, JPsi_muon)
+#     "input": {
+#       "root_files_DATA": [
+#           ".root DATA file path 1 ..."
+#           ".root DATA file path 2 ..."
+#           ".root DATA file path 3 ..."
+#       ],
+#       "root_files_MC": [
+#           ".root MC file path 1 ..."
+#           ".root MC file path 2 ..."
+#           ".root MC file path 3 ..."
+#       ]
+#     },
+#     "fit": {
+#       "fit_type": "dcb_cms"    < ----- Format is: (signal shape)_(background shape). Signal shapes: (dcb, g, dv, cbg), Background shapes: (lin, exp, cms, bpoly, cheb, ps)
+#       "use_cdf": false,        < ----- If a shape doesnt have a cdf version, defaults back to pdf
+#       "sigmoid_eff": false,    < ----- Switches to an unbounded efficency that is transformed back between 0 and 1 
+#       "bin": "bin(number)",    < ----- Secify which pT range you are fitting (in example, bin0 (5-7), bin1 (7-10), bin2 (10-20), bin3 (20-45), bin4 (45-75), bin5 (75-500))
+#       "interactive": true,     < ----- Turns on interactive window for fitting (very useful for difficult fits)
+#       "x_min": 70,             < ----- x range minimum for plotting
+#       "x_max": 110,            < ----- x range maximum for plotting
+#       "abseta": 1,             < ----- Only required for muon .root files***. Defines absolute eta ranges
+#       "numerator": "gold",     < ----- Only required for muon .root files***. Defines numerator for efficiencies
+#       "denominator": "blp"     < ----- Only required for muon .root files***. Defines denominator for efficiencies
+#     },
+#     "output": {
+#       "plot_dir": "",          < ----- Sets location to save plots to (if left blank, it wont save)
+#       "results_file": ""       < ----- Sets location to save results to (if left blank, it wont save)
+#     }
+#   }
+###############################################################################
+
 import argparse
 import json
 from pathlib import Path

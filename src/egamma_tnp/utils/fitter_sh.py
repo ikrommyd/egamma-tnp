@@ -17,23 +17,36 @@ from scipy.interpolate import BPoly
 from scipy.special import voigt_profile
 from scipy.stats import norm
 
+from egamma_tnp.utils.logger_utils import setup_logger
+
 parser = argparse.ArgumentParser()
 parser.add_argument("--config", required=True, help="Path to JSON config file")
 args = parser.parse_args()
+
+
 with open(args.config) as f:
     config = json.load(f)
     mass = config["mass"]
     x_min = config["fit"].get("x_min", None)
     x_max = config["fit"].get("x_max", None)
+    info = config["info_level"]
+
+    if info == "INFO":
+        logging = setup_logger(level="INFO")
+    elif info == "DEBUG":
+        logging = setup_logger(level="DEBUG")
+    else:
+        import logging
 
 
 def print_minuit_params_table(minuit_obj, sigmoid_eff=False):
+    summary_table = []
     # Header
     header = f"{'idx':>3} | {'name':^14} | {'value':^12} | {'error':^12} | {'MINOS -':^12} | {'MINOS +':^12} | {'fixed':^5} | {'lower':^10} | {'upper':^10}"
     sep = "-" * len(header)
-    print(sep)
-    print(header)
-    print(sep)
+    summary_table.append(f"\n{sep}")
+    summary_table.append(header)
+    summary_table.append(sep)
     # Rows
     for i, p in enumerate(minuit_obj.params):
         low = p.lower_limit if p.lower_limit is not None else ""
@@ -44,7 +57,7 @@ def print_minuit_params_table(minuit_obj, sigmoid_eff=False):
             minos_upper = ""
         else:
             err_str = f"{p.error:12.6f}"
-            merr = minuit_obj.merrors.get(p.name, None)
+            merr = minuit_obj.m_errors.get(p.name, None)
             if merr is not None:
                 minos_lower = f"{merr.lower:.6f}"
                 minos_upper = f"{merr.upper:.6f}"
@@ -52,7 +65,7 @@ def print_minuit_params_table(minuit_obj, sigmoid_eff=False):
                 minos_lower = ""
                 minos_upper = ""
 
-        print(
+        summary_table.append(
             f"{i:3d} | {p.name:14s} | {p.value:12.6f} | {err_str:>12s} | "
             f"{minos_lower:>12} | {minos_upper:>12} | "
             f"{p.is_fixed!s:>5s} | {low!s:10s} | {high!s:10s}"
@@ -71,16 +84,19 @@ def print_minuit_params_table(minuit_obj, sigmoid_eff=False):
                 err_col = f"{(p.error * deriv):.6f}"
 
             # ASYMMETRIC MINOS ERRORS
-            merr = minuit_obj.merrors.get("epsilon", None)
+            merr = minuit_obj.m_errors.get("epsilon", None)
             if not p.is_fixed and merr is not None:
                 lo_col = f"{(merr.lower * deriv):.6f}"
                 hi_col = f"{(merr.upper * deriv):.6f}"
             else:
                 lo_col = hi_col = ""
 
-            print(f"{'':>3} | {'ε_sig':14s} | {sig_val:12.6f} | {err_col:>12s} | {lo_col:>12} | {hi_col:>12} | {fixed_flag:>5s} | {'':10s} | {'':10s}")
+            summary_table.append(
+                f"{'':>3} | {'ε_sig':14s} | {sig_val:12.6f} | {err_col:>12s} | {lo_col:>12} | {hi_col:>12} | {fixed_flag:>5s} | {'':10s} | {'':10s}"
+            )
 
-    print(sep)
+    summary_table.append(sep)
+    return "\n".join(summary_table)
 
 
 def sigmoid(x):
@@ -88,10 +104,12 @@ def sigmoid(x):
 
 
 def print_fit_progress(m, sigmoid_eff=False):
+    summary = []
     eps = m.values["epsilon"]
     if sigmoid_eff:
         eps = sigmoid(eps)
-    print(f"Iteration: N={m.values['N']:.1f}, ε={eps:.3f}, B_p={m.values['B_p']:.1f}, B_f={m.values['B_f']:.1f}, fval={m.fval:.1f}")
+    summary.append(f"Iteration: N={m.values['N']:.1f}, ε={eps:.3f}, B_p={m.values['B_p']:.1f}, B_f={m.values['B_f']:.1f}, fval={m.fval:.1f}")
+    return "\n".join(summary)
 
 
 def print_fit_summary(m, popt, perr, edges_pass, args_bin, BINS_INFO, Pearson_chi2, Poisson_chi2, total_ndof, args_data, fit_type, sigmoid_eff=False):
@@ -107,7 +125,6 @@ def print_fit_summary(m, popt, perr, edges_pass, args_bin, BINS_INFO, Pearson_ch
     # 1) Get Minuit info
     fmin = m.fmin
     fcv = m.fval
-    nfcn = getattr(m, "nfcn", None)
 
     # Status flags
     valid_min = bool(m.valid)
@@ -173,7 +190,7 @@ def print_fit_summary(m, popt, perr, edges_pass, args_bin, BINS_INFO, Pearson_ch
         try:
             lo, hi = edges_pass[0], edges_pass[-1]
             summary.append(f"Histogram Bin: \t{lo:.1f} - {hi:.1f} GeV")
-        except:
+        except Exception:
             pass
     summary.append(f"Fit Success   : {'Yes' if m.valid else 'No'}")
     summary.append("=" * 60)
@@ -345,7 +362,7 @@ def load_histogram(root_file, hist_name, data_label):
         if isinstance(obj, uproot.behaviors.TH1.Histogram):
             values, edges = obj.to_numpy()
             is_mc = ("MC" in data_label) or ("MC" in hist_name)
-            print(f"Histogram: {hist_name}")
+            logging.info(f"Histogram: {hist_name}")
             return {"values": values, "edges": edges, "errors": obj.errors(), "is_mc": is_mc}
     return None
 
@@ -531,7 +548,7 @@ def phase_space(x, a, b, x_min=x_min, x_max=x_max):
     a_clamped = np.clip(a, 0, 20)
     b_clamped = np.clip(b, 0, 20)
 
-    # 2) Work in log‐space
+    # 2) Work in log - space
     t1 = np.clip(x - x_min, 1e-8, None)
     t2 = np.clip(x_max - x, 1e-8, None)
 
@@ -635,10 +652,6 @@ def create_combined_model(fit_type, edges_pass, edges_fail, *params, use_cdf=Fal
     bg_pass_params = [params_dict[f"{p}_pass"] for p in BACKGROUND_MODELS[fit_type.split("_")[1]]["params"]]
     bg_fail_params = [params_dict[f"{p}_fail"] for p in BACKGROUND_MODELS[fit_type.split("_")[1]]["params"]]
 
-    ## Normalize signal and background components
-    bin_widths_pass = np.diff(edges_pass)
-    bin_widths_fail = np.diff(edges_fail)
-
     signal_pass = signal_func(x, *signal_params)
     bg_pass = bg_func(x, *bg_pass_params)
     signal_fail = signal_func(y, *signal_params)
@@ -709,7 +722,7 @@ def fit_function(
     config = FIT_CONFIGS[fit_type]
 
     if use_cdf and (config["signal_cdf"] is None or config["background_cdf"] is None):
-        print(f"[Warning] Model '{fit_type}' missing CDF(s). Disabling CDF mode.")
+        logging.warning(f"[Warning] Model '{fit_type}' missing CDF(s). Disabling CDF mode.")
         use_cdf = False
     param_names = config["param_names"]
 
@@ -856,9 +869,7 @@ def fit_function(
         model_fail = model_cdf_fail
     else:
         model_pass = model_approx_pass
-        model_pass = model_pass
         model_fail = model_approx_fail
-        model_fail = model_fail
 
     # Cost functions depending on if using CDF or PDF
     if use_cdf:
@@ -904,18 +915,19 @@ def fit_function(
         try:
             m.minos(param)
         except Exception as e:
-            print(f"MINOS failed for parameter {param}: {e!s}")
+            logging.warning(f"MINOS failed for parameter {param}: {e!s}")
 
     # Print results
     m.print_level = 0
-    print_minuit_params_table(m, sigmoid_eff=sigmoid_eff)
-    print_fit_progress(m, sigmoid_eff=sigmoid_eff)
+    summary_table = print_minuit_params_table(m, sigmoid_eff=sigmoid_eff)
+    logging.info(summary_table)
+    summary_prog = print_fit_progress(m, sigmoid_eff=sigmoid_eff)
+    logging.info(summary_prog)
 
     # 2. Extract results
     fcv = m.fval
     popt = m.values.to_dict()
     perr = m.errors.to_dict()
-    cov = m.covariance
 
     # NLL chi2and ndof
     chi2 = fcv
@@ -945,7 +957,7 @@ def fit_function(
         m, popt, perr, edges_pass, args_bin, BINS_INFO, Pearson_chi2, Poisson_chi2, total_ndof, args_data, fit_type, sigmoid_eff=sigmoid_eff
     )
 
-    print(summary_text)
+    logging.info(summary_text)
 
     # Check convergence
     if m.fmin.is_valid:
@@ -968,8 +980,8 @@ def fit_function(
 
     minos_errors = {}
     for param in m.parameters:
-        if param in m.merrors:
-            minos_errors[param] = {"lower": m.merrors[param].lower, "upper": m.merrors[param].upper}
+        if param in m.m_errors:
+            minos_errors[param] = {"lower": m.m_errors[param].lower, "upper": m.m_errors[param].upper}
         else:
             minos_errors[param] = {
                 "lower": -m.errors[param],  # Fall back to symmetric errors
@@ -978,7 +990,6 @@ def fit_function(
 
     # Return results
     results = {
-        "param_names": param_names,
         "minos_errors": minos_errors,
         "m": m,
         "type": fit_type,
@@ -1016,7 +1027,7 @@ def fit_function(
 
 def plot_combined_fit(results, plot_dir=".", data_type="DATA", fixed_params=None, sigmoid_eff=False, args_abseta=None, args_mass=None):
     if results is None:
-        print("No results to plot")
+        logging.warning("No results to plot")
         return None, None  # Return None if no results
 
     fixed_params = fixed_params or {}
@@ -1131,7 +1142,7 @@ def plot_combined_fit(results, plot_dir=".", data_type="DATA", fixed_params=None
         fontsize=9,
         verticalalignment="top",
         horizontalalignment="left",
-        bbox=dict(facecolor="white", edgecolor="black", alpha=0.8),
+        bbox={"facecolor": "white", "edgecolor": "black", "alpha": 0.8},
     )
 
     os.makedirs(plot_dir, exist_ok=True)
@@ -1202,7 +1213,7 @@ def plot_combined_fit(results, plot_dir=".", data_type="DATA", fixed_params=None
         fontsize=9,
         verticalalignment="top",
         horizontalalignment="left",
-        bbox=dict(facecolor="white", edgecolor="black", alpha=0.8),
+        bbox={"facecolor": "white", "edgecolor": "black", "alpha": 0.8},
     )
 
     if args_mass == "Z":
@@ -1213,7 +1224,7 @@ def plot_combined_fit(results, plot_dir=".", data_type="DATA", fixed_params=None
         fig_fail.savefig(f"{plot_dir}/{data_type}_{results['type']}_fit_{results['bin']}_abseta{args_abseta}_Fail.png", bbox_inches="tight", dpi=300)
     elif args_mass == "Z_muon":
         fig_fail.savefig(f"{plot_dir}/{data_type}_{results['type']}_fit_{results['bin']}_abseta{args_abseta}_Fail.png", bbox_inches="tight", dpi=300)
-    print(f"Plots saved to {plot_dir}")
+    logging.info(f"Plots saved to {plot_dir}")
 
     return fig_pass, fig_fail
 

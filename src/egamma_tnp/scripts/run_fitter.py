@@ -3,6 +3,7 @@
 ###################################################################################
 #
 #   {
+#     "info_level": "INFO"       < ----- Determines the output level in the terminal. "INFO",outputs useful info. "", won't display anything. "DEBUG" is for debugging
 #     "mass": "Z",               < ----- Determines what mass you are fitting (Z, Z_muon, JPsi, JPsi_muon)
 #     "input": {
 #       "root_files_DATA": [
@@ -18,9 +19,9 @@
 #     },
 #     "fit": {
 #       "fit_type": "dcb_cms"    < ----- Format is: (signal shape)_(background shape). Signal shapes: (dcb, g, dv, cbg), Background shapes: (lin, exp, cms, bpoly, cheb, ps)
-#       "use_cdf": false,        < ----- If a shape doesnt have a cdf version, defaults back to pdf
-#       "sigmoid_eff": false,    < ----- Switches to an unbounded efficency that is transformed back between 0 and 1
-#       "bin": "bin(number)",    < ----- Secify which pT range you are fitting (in example, bin0 (5-7), bin1 (7-10), bin2 (10-20), bin3 (20-45), bin4 (45-75), bin5 (75-500))
+#       "use_cdf": false,        < ----- If a shape does not have a cdf version, defaults back to pdf
+#       "sigmoid_eff": false,    < ----- Switches to an unbounded efficiency that is transformed back between 0 and 1
+#       "bin": "bin(number)",    < ----- Specify which pT range you are fitting (in example, bin0 (5-7), bin1 (7-10), bin2 (10-20), bin3 (20-45), bin4 (45-75), bin5 (75-500))
 #       "interactive": true,     < ----- Turns on interactive window for fitting (very useful for difficult fits)
 #       "x_min": 70,             < ----- x range minimum for plotting
 #       "x_max": 110,            < ----- x range maximum for plotting
@@ -29,8 +30,8 @@
 #       "denominator": "blp"     < ----- Only impacts muon .root files***. Defines denominator for efficiencies
 #     },
 #     "output": {
-#       "plot_dir": "",          < ----- Sets location to save plots to (if left blank, it wont save)
-#       "results_file": ""       < ----- Sets location to save results to (if left blank, it wont save)
+#       "plot_dir": "",          < ----- Sets location to save plots to (if left blank, it won't save)
+#       "results_file": ""       < ----- Sets location to save results to (if left blank, it won't save)
 #     }
 #   }
 ###################################################################################
@@ -45,7 +46,7 @@ from pathlib import Path
 import uproot
 
 from egamma_tnp.utils import fitter_sh
-from egamma_tnp.utils.fitter_sh import fit_function, load_histogram, plot_combined_fit
+from egamma_tnp.utils.fitter_sh import fit_function, load_histogram, logging, plot_combined_fit
 
 
 def main():
@@ -70,8 +71,6 @@ def main():
     args_bin = config["fit"].get("bin", "bin0")
     x_min = config["fit"].get("x_min", None)
     x_max = config["fit"].get("x_max", None)
-
-    print(f"x_min: {x_min}, x_max: {x_max}")
 
     # Get histogram names from config or use defaults
     hist_pass_name = config["fit"].get("hist_pass_name")
@@ -103,7 +102,7 @@ def main():
 
     if root_files_DATA:
         for root_file_path in root_files_DATA:
-            print(f"\nProcessing file: {root_file_path}\n")
+            logging.info(f"\nProcessing file: {root_file_path}\n")
 
             # Load histograms from ROOT file
             with uproot.open(root_file_path) as f:
@@ -111,10 +110,8 @@ def main():
                 hist_fail = load_histogram(f, hist_fail_name, "DATA")
 
             if not hist_pass or not hist_fail:
-                print(f"Warning: Failed to load histograms from {root_file_path}")
+                logging.warning(f"Warning: Failed to load histograms from {root_file_path}")
                 continue
-
-            print("\nFitting...")
 
             # Fitting Step
             results = fit_function(
@@ -149,21 +146,19 @@ def main():
                 # Combine results from all files
                 combined_summary = "\n\n".join(res.get("summary", "No summary available") for res in all_results)
                 f.write(combined_summary)
-            print(f"\nSaved combined fit summary to: {summary_path}")
+            logging.info(f"\nSaved combined fit summary to: {summary_path}")
 
     if root_files_MC:
         for root_file_path in root_files_MC:
-            print(f"\nProcessing file: {root_file_path}\n")
+            logging.info(f"\nProcessing file: {root_file_path}\n")
 
             with uproot.open(root_file_path) as f:
                 hist_pass = load_histogram(f, hist_pass_name, "MC")
                 hist_fail = load_histogram(f, hist_fail_name, "MC")
 
             if not hist_pass or not hist_fail:
-                print(f"Warning: Failed to load histograms from {root_file_path}")
+                logging.warning(f"Warning: Failed to load histograms from {root_file_path}")
                 continue
-
-            print("\nFitting...")
 
             results = fit_function(
                 fit_type,
@@ -196,10 +191,10 @@ def main():
                 # Combine results from all files
                 combined_summary = "\n\n".join(res.get("summary", "No summary available") for res in all_results)
                 f.write(combined_summary)
-            print(f"\nSaved combined fit summary to: {summary_path}")
+            logging.info(f"\nSaved combined fit summary to: {summary_path}")
 
     if not root_files_DATA and not root_files_MC:
-        print("No input files specified.")
+        logging.warning("No input files specified.")
 
 
 if __name__ == "__main__":

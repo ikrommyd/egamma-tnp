@@ -35,7 +35,7 @@
 #     }
 #   }
 ###################################################################################
-# RUN EXAMPLE CONFIG FILE: run-fitter --config src/egamma_tnp/config/config.json
+# RUN EXAMPLE CONFIG FILE: run-fitter --config src/egamma_tnp/config/config_example.json
 ###################################################################################
 from __future__ import annotations
 
@@ -46,7 +46,8 @@ from pathlib import Path
 import uproot
 
 from egamma_tnp.utils import fitter_sh
-from egamma_tnp.utils.fitter_sh import fit_function, load_histogram, logging, plot_combined_fit
+from egamma_tnp.utils.fit_function import fit_function, logging
+from egamma_tnp.utils.fitter_sh import load_histogram, plot_combined_fit
 
 
 def main():
@@ -60,8 +61,8 @@ def main():
 
     # Extract config values
     mass = config["mass"]
-    root_files_DATA = config["input"]["root_files_DATA"]
-    root_files_MC = config["input"]["root_files_MC"]
+    root_files_DATA = config["input"].get("root_files_DATA", {})
+    root_files_MC = config["input"].get("root_files_MC", {})
 
     # Get fit parameters from config
     fit_type = config["fit"]["fit_type"]
@@ -80,7 +81,7 @@ def main():
     if not hist_pass_name or not hist_fail_name:
         bin_name = config["fit"].get("bin", "bin1")
 
-        # num and den are only nessicary for Muon fits
+        # num and den are only necessary for Muon fits
         num = config["fit"].get("numerator", "gold")
         den = config["fit"].get("denominator", "baselineplus")
 
@@ -100,8 +101,10 @@ def main():
 
     all_results = []
 
+    pass_fail_summary = []
+
     if root_files_DATA:
-        for root_file_path in root_files_DATA:
+        for plot_name, root_file_path in root_files_DATA.items():
             logging.info(f"\nProcessing file: {root_file_path}\n")
 
             # Load histograms from ROOT file
@@ -134,22 +137,19 @@ def main():
             plot_path = Path(config["output"]["plot_dir"]) / "DATA" / args_bin
             plot_path.mkdir(parents=True, exist_ok=True)
 
-            # If config file has no path so save plots to, it won't save
+            # If config file has no path to save plots to, it won't save
             if config["output"].get("plot_dir"):
-                plot_combined_fit(results, plot_dir=plot_path, data_type="DATA", sigmoid_eff=sigmoid_eff, args_mass=mass)
+                fig_pass, fig_fail = plot_combined_fit(results, plot_dir=plot_path, data_type="DATA", sigmoid_eff=sigmoid_eff, args_mass=mass)
+                fig_pass.savefig(plot_path / f"{plot_name}_Pass.png", bbox_inches="tight", dpi=300)
+                fig_fail.savefig(plot_path / f"{plot_name}_Fail.png", bbox_inches="tight", dpi=300)
 
-        # If config file has no path so save results to, it won't save
-        if config["output"].get("results_file"):
-            summary_path = Path(config["output"]["results_file"])
-            summary_path.parent.mkdir(parents=True, exist_ok=True)
-            with open(summary_path, "w") as f:
-                # Combine results from all files
-                combined_summary = "\n\n".join(res.get("summary", "No summary available") for res in all_results)
-                f.write(combined_summary)
-            logging.info(f"\nSaved combined fit summary to: {summary_path}")
+            if results["message"].is_valid:
+                pass_fail_summary.append(f"{plot_name} fit passed!")
+            else:
+                pass_fail_summary.append(f"{plot_name} fit failed!")
 
     if root_files_MC:
-        for root_file_path in root_files_MC:
+        for plot_name, root_file_path in root_files_MC.items():
             logging.info(f"\nProcessing file: {root_file_path}\n")
 
             with uproot.open(root_file_path) as f:
@@ -181,7 +181,14 @@ def main():
             plot_path.mkdir(parents=True, exist_ok=True)
 
             if config["output"].get("plot_dir"):
-                plot_combined_fit(results, plot_dir=plot_path, data_type="MC", sigmoid_eff=sigmoid_eff, args_mass=mass)
+                fig_pass, fig_fail = plot_combined_fit(results, plot_dir=plot_path, data_type="MC", sigmoid_eff=sigmoid_eff, args_mass=mass)
+                fig_pass.savefig(plot_path / f"{plot_name}_Pass.png", bbox_inches="tight", dpi=300)
+                fig_fail.savefig(plot_path / f"{plot_name}_Fail.png", bbox_inches="tight", dpi=300)
+
+            if results["message"].is_valid:
+                pass_fail_summary.append(f"{plot_name} fit passed!")
+            else:
+                pass_fail_summary.append(f"{plot_name} fit failed!")
 
         # Save combined results if specified
         if config["output"].get("results_file"):
@@ -195,6 +202,9 @@ def main():
 
     if not root_files_DATA and not root_files_MC:
         logging.warning("No input files specified.")
+
+    logging.info("\nFit Summary:")
+    logging.info("\n".join(pass_fail_summary))
 
 
 if __name__ == "__main__":

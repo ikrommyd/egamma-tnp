@@ -45,7 +45,7 @@ from pathlib import Path
 
 import uproot
 
-from egamma_tnp.utils import fitter_sh
+from egamma_tnp.utils import fitter_plot_model
 from egamma_tnp.utils.fit_function import fit_function, logging
 from egamma_tnp.utils.fitter_plot_model import load_histogram, plot_combined_fit
 
@@ -87,7 +87,7 @@ def main():
 
         if mass in ["Z", "JPsi"]:
             # For electron TnP
-            bin_suffix, _ = fitter_sh.BINS_INFO[bin_name]
+            bin_suffix, _ = fitter_plot_model.BINS_INFO[bin_name]
             hist_pass_name = f"{bin_name}_{bin_suffix}_Pass"
             hist_fail_name = f"{bin_name}_{bin_suffix}_Fail"
         elif mass in ["Z_muon", "JPsi_muon"]:

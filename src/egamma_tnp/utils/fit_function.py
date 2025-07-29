@@ -3,7 +3,7 @@ from __future__ import annotations
 import numpy as np
 from iminuit import Minuit, cost
 
-from egamma_tnp.utils.fitter_sh import (
+from egamma_tnp.utils.fitter_plot_model import (
     BINS_INFO,
     FIT_CONFIGS,
     CombinedCost,

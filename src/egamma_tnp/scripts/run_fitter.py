@@ -7,14 +7,14 @@
 #     "mass": "Z",               < ----- Determines what mass you are fitting (Z, Z_muon, JPsi, JPsi_muon)
 #     "input": {
 #       "root_files_DATA": [
-#           ".root DATA file path 1 ..."
-#           ".root DATA file path 2 ..."
-#           ".root DATA file path 3 ..."
+#           "NAME DATA 1":   ".root DATA file path 1 ..."          < ----- The name will be the name of the plot file that is saved in plot_dir
+#           "NAME DATA 2":   ".root DATA file path 2 ..."          < ----- The name will be the name of the plot file that is saved in plot_dir
+#           "NAME DATA 3":   ".root DATA file path 3 ..."          < ----- The name will be the name of the plot file that is saved in plot_dir
 #       ],
 #       "root_files_MC": [
-#           ".root MC file path 1 ..."
-#           ".root MC file path 2 ..."
-#           ".root MC file path 3 ..."
+#           "NAME MC 1":     ".root MC file path 1 ..."            < ----- The name will be the name of the plot file that is saved in plot_dir
+#           "NAME MC 2":     ".root MC file path 2 ..."            < ----- The name will be the name of the plot file that is saved in plot_dir
+#           "NAME MC 3":     ".root MC file path 3 ..."            < ----- The name will be the name of the plot file that is saved in plot_dir
 #       ]
 #     },
 #     "fit": {
@@ -47,7 +47,7 @@ import uproot
 
 from egamma_tnp.utils import fitter_sh
 from egamma_tnp.utils.fit_function import fit_function, logging
-from egamma_tnp.utils.fitter_sh import load_histogram, plot_combined_fit
+from egamma_tnp.utils.fitter_plot_model import load_histogram, plot_combined_fit
 
 
 def main():

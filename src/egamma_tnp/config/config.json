@@ -28,5 +28,12 @@
   "output": {
     "plot_dir": "plots/gold_blp_big",
     "results_file": ""
+  },
+  "scale_factors": {
+    "data_mc_pair": {
+        "SF_bin_3_dcb_cms_barrel_1": ["Z_DATA_bin_3_dcb_cms_barrel_1", "Z_MC_bin_3_dcb_cms_barrel_1"],
+        "SF_bin_3_dcb_cms_barrel_2": ["Z_DATA_bin_3_dcb_cms_barrel_2", "Z_MC_bin_3_dcb_cms_barrel_2"],
+        "SF_bin_3_dcb_cms_endcap": ["Z_DATA_bin_3_dcb_cms_endcap", "Z_MC_bin_3_dcb_cms_endcap"]
+   }
   }
 }

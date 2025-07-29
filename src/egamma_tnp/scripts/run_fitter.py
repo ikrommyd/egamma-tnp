@@ -43,6 +43,7 @@ import argparse
 import json
 from pathlib import Path
 
+import numpy as np
 import uproot
 
 from egamma_tnp.utils import fitter_plot_model
@@ -103,6 +104,11 @@ def main():
 
     pass_fail_summary = []
 
+    DATA_efficiency = {}
+    MC_efficiency = {}
+    DATA_efficiency_err = {}
+    MC_efficiency_err = {}
+
     if root_files_DATA:
         for plot_name, root_file_path in root_files_DATA.items():
             logging.info(f"\nProcessing file: {root_file_path}\n")
@@ -148,6 +154,9 @@ def main():
             else:
                 pass_fail_summary.append(f"{plot_name} fit failed!")
 
+            DATA_efficiency[plot_name] = results["popt"]["epsilon"]
+            DATA_efficiency_err[plot_name] = results["perr"]["epsilon"]
+
     if root_files_MC:
         for plot_name, root_file_path in root_files_MC.items():
             logging.info(f"\nProcessing file: {root_file_path}\n")
@@ -190,6 +199,9 @@ def main():
             else:
                 pass_fail_summary.append(f"{plot_name} fit failed!")
 
+            MC_efficiency[plot_name] = results["popt"]["epsilon"]
+            MC_efficiency_err[plot_name] = results["perr"]["epsilon"]
+
         # Save combined results if specified
         if config["output"].get("results_file"):
             summary_path = Path(config["output"]["results_file"])
@@ -205,6 +217,28 @@ def main():
 
     logging.info("\nFit Summary:")
     logging.info("\n".join(pass_fail_summary))
+
+    any_sf_computed = False  # Track if any SF was successfully calculated
+
+    if config["scale_factors"].get("data_mc_pair"):
+        for sf_name, (data_name, mc_name) in config["scale_factors"]["data_mc_pair"].items():
+            data_eff = DATA_efficiency.get(data_name)
+            data_eff_err = DATA_efficiency_err.get(data_name)
+            mc_eff = MC_efficiency.get(mc_name)
+            mc_eff_err = MC_efficiency_err.get(mc_name)
+
+            if None in (data_eff, data_eff_err, mc_eff, mc_eff_err):
+                logging.warning(f"{sf_name}: Missing efficiency values. Scale factor = None")
+                continue
+
+            scale_factor = data_eff / mc_eff
+            scale_factor_err = np.sqrt((data_eff_err / data_eff) ** 2 + (mc_eff_err / mc_eff) ** 2) * scale_factor
+
+            logging.info(f"{sf_name}: {scale_factor:.5f} ± {scale_factor_err:.5f}")
+            any_sf_computed = True
+
+        if not any_sf_computed:
+            logging.info("No scale factors calculated.")
 
 
 if __name__ == "__main__":

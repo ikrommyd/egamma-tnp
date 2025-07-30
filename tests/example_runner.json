@@ -76,6 +76,7 @@
                     "el_eta",
                     "el_phi"
                 ],
+                "weight": "weight",
                 "uproot_options": null
             }
         },
@@ -93,6 +94,7 @@
                     "el_eta",
                     "el_phi"
                 ],
+                "weight": null,
                 "uproot_options": {
                     "allow_read_errors_with_report": true,
                     "timeout": 120

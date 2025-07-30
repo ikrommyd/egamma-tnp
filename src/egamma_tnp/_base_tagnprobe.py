@@ -342,7 +342,7 @@ class BaseTagNProbe:
             vars : list, optional
                 A list of the fields that refer to the Pt, Eta, and Phi of the probes.
                 Must be in the order of Pt, Eta, and Phi.
-                The default is ["el_pt", "el_eta", "el_phi"]
+                The default is ["el_pt", "el_eta", "el_phi"].
             weight : str or None, optional
                 The name of the weight field in the probes arrays.
                 If None, no weights are applied when filling the histograms.

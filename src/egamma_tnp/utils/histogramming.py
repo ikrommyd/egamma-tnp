@@ -73,6 +73,7 @@ def fill_pt_eta_phi_cutncount_histograms(
     phi_regions_eta=None,
     eta_regions_phi=None,
     vars=None,
+    weight="weight",
 ):
     """Get the Pt, Eta and Phi histograms of the passing and failing probes.
 
@@ -104,6 +105,10 @@ def fill_pt_eta_phi_cutncount_histograms(
             A list of the fields that refer to the Pt, Eta, and Phi of the probes.
             Must be in the order of Pt, Eta, and Phi.
             The default is ["el_pt", "el_eta", "el_phi"].
+        weight : str or None, optional
+            The name of the weight field in the probes arrays.
+            If None, no weights are applied when filling the histograms.
+            The default is "weight".
 
     Returns
     -------
@@ -123,9 +128,14 @@ def fill_pt_eta_phi_cutncount_histograms(
 
     import egamma_tnp
 
-    if "weight" not in passing_probes.fields or "weight" not in failing_probes.fields:
-        passing_probes["weight"] = 1
-        failing_probes["weight"] = 1
+    assert weight is None or isinstance(weight, str), "Weight must be a string or None."
+    if weight is None:
+        weight = "weight"
+        passing_probes[weight] = 1
+        failing_probes[weight] = 1
+    elif weight is not None and (weight not in passing_probes.fields or weight not in failing_probes.fields):
+        passing_probes[weight] = 1
+        failing_probes[weight] = 1
     passing_probes, failing_probes = flatten_array(passing_probes), flatten_array(failing_probes)
 
     if plateau_cut is None:
@@ -158,8 +168,8 @@ def fill_pt_eta_phi_cutncount_histograms(
     eta_fail = failing_probes[vars[1]]
     phi_pass = passing_probes[vars[2]]
     phi_fail = failing_probes[vars[2]]
-    passing_probes_weight = passing_probes.weight
-    failing_probes_weight = failing_probes.weight
+    passing_probes_weight = passing_probes[weight]
+    failing_probes_weight = failing_probes[weight]
 
     histograms = {}
     histograms["pt"] = {}
@@ -228,6 +238,7 @@ def fill_pt_eta_phi_mll_histograms(
     phi_regions_eta=None,
     eta_regions_phi=None,
     vars=None,
+    weight="weight",
 ):
     """Get the 2D histograms of Pt, Eta and Phi vs mll of the passing and failing probes.
 
@@ -259,6 +270,10 @@ def fill_pt_eta_phi_mll_histograms(
             A list of the fields that refer to the Pt, Eta, and Phi of the probes.
             Must be in the order of Pt, Eta, and Phi.
             The default is ["el_pt", "el_eta", "el_phi"].
+        weight : str or None, optional
+            The name of the weight field in the probes arrays.
+            If None, no weights are applied when filling the histograms.
+            The default is "weight".
 
     Returns
     -------
@@ -278,9 +293,14 @@ def fill_pt_eta_phi_mll_histograms(
 
     import egamma_tnp
 
-    if "weight" not in passing_probes.fields or "weight" not in failing_probes.fields:
-        passing_probes["weight"] = 1
-        failing_probes["weight"] = 1
+    assert weight is None or isinstance(weight, str), "Weight must be a string or None."
+    if weight is None:
+        weight = "weight"
+        passing_probes[weight] = 1
+        failing_probes[weight] = 1
+    elif weight is not None and (weight not in passing_probes.fields or weight not in failing_probes.fields):
+        passing_probes[weight] = 1
+        failing_probes[weight] = 1
     passing_probes, failing_probes = flatten_array(passing_probes), flatten_array(failing_probes)
 
     if plateau_cut is None:
@@ -315,8 +335,8 @@ def fill_pt_eta_phi_mll_histograms(
     phi_fail = failing_probes[vars[2]]
     mll_pass = passing_probes.pair_mass
     mll_fail = failing_probes.pair_mass
-    passing_probes_weight = passing_probes.weight
-    failing_probes_weight = failing_probes.weight
+    passing_probes_weight = passing_probes[weight]
+    failing_probes_weight = failing_probes[weight]
 
     histograms = {}
     histograms["pt"] = {}
@@ -391,6 +411,7 @@ def fill_nd_cutncount_histograms(
     passing_probes,
     failing_probes,
     vars=None,
+    weight="weight",
 ):
     """
     Get the N-dimensional histogram of the passing and failing probes.
@@ -405,6 +426,10 @@ def fill_nd_cutncount_histograms(
         vars : list, optional
             A list of the fields to use as axes in the histogram.
             The default is ["el_pt", "el_eta", "el_phi"].
+        weight : str or None, optional
+            The name of the weight field in the probes arrays.
+            If None, no weights are applied when filling the histograms.
+            The default is "weight".
 
     Returns
     -------
@@ -429,9 +454,14 @@ def fill_nd_cutncount_histograms(
 
     import egamma_tnp
 
-    if "weight" not in passing_probes.fields or "weight" not in failing_probes.fields:
-        passing_probes["weight"] = 1
-        failing_probes["weight"] = 1
+    assert weight is None or isinstance(weight, str), "Weight must be a string or None."
+    if weight is None:
+        weight = "weight"
+        passing_probes[weight] = 1
+        failing_probes[weight] = 1
+    elif weight is not None and (weight not in passing_probes.fields or weight not in failing_probes.fields):
+        passing_probes[weight] = 1
+        failing_probes[weight] = 1
     passing_probes, failing_probes = flatten_array(passing_probes), flatten_array(failing_probes)
 
     if any(egamma_tnp.binning.get(f"{var}_bins") is None for var in vars):
@@ -446,8 +476,8 @@ def fill_nd_cutncount_histograms(
     hpass = Hist(*axes, storage=hist.storage.Weight())
     hfail = Hist(*axes, storage=hist.storage.Weight())
 
-    hpass.fill(*[passing_probes[var] for var in vars], weight=passing_probes.weight)
-    hfail.fill(*[failing_probes[var] for var in vars], weight=failing_probes.weight)
+    hpass.fill(*[passing_probes[var] for var in vars], weight=passing_probes[weight])
+    hfail.fill(*[failing_probes[var] for var in vars], weight=failing_probes[weight])
 
     return {"passing": hpass, "failing": hfail}
 
@@ -456,6 +486,7 @@ def fill_nd_mll_histograms(
     passing_probes,
     failing_probes,
     vars=None,
+    weight="weight",
 ):
     """
     Get the N+1-dimensional histogram of the passing and failing probes.
@@ -470,6 +501,10 @@ def fill_nd_mll_histograms(
         vars : list, optional
             A list of the fields to use as axes in the histogram.
             The default is ["el_pt", "el_eta", "el_phi"].
+        weight : str or None, optional
+            The name of the weight field in the probes arrays.
+            If None, no weights are applied when filling the histograms.
+            The default is "weight".
 
     Returns
     -------
@@ -494,9 +529,14 @@ def fill_nd_mll_histograms(
 
     import egamma_tnp
 
-    if "weight" not in passing_probes.fields or "weight" not in failing_probes.fields:
-        passing_probes["weight"] = 1
-        failing_probes["weight"] = 1
+    assert weight is None or isinstance(weight, str), "Weight must be a string or None."
+    if weight is None:
+        weight = "weight"
+        passing_probes[weight] = 1
+        failing_probes[weight] = 1
+    elif weight is not None and (weight not in passing_probes.fields or weight not in failing_probes.fields):
+        passing_probes[weight] = 1
+        failing_probes[weight] = 1
     passing_probes, failing_probes = flatten_array(passing_probes), flatten_array(failing_probes)
 
     if any(egamma_tnp.binning.get(f"{var}_bins") is None for var in vars):
@@ -512,8 +552,8 @@ def fill_nd_mll_histograms(
     hpass = Hist(*axes, storage=hist.storage.Weight())
     hfail = Hist(*axes, storage=hist.storage.Weight())
 
-    hpass.fill(*[passing_probes[var] for var in vars], passing_probes.pair_mass, weight=passing_probes.weight)
-    hfail.fill(*[failing_probes[var] for var in vars], failing_probes.pair_mass, weight=failing_probes.weight)
+    hpass.fill(*[passing_probes[var] for var in vars], passing_probes.pair_mass, weight=passing_probes[weight])
+    hfail.fill(*[failing_probes[var] for var in vars], failing_probes.pair_mass, weight=failing_probes[weight])
 
     return {"passing": hpass, "failing": hfail}
 

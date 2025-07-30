@@ -90,6 +90,7 @@ def test_cli():
         phi_regions_eta=None,
         eta_regions_phi=None,
         vars=["el_pt", "el_eta", "el_phi"],
+        weight="weight",
         uproot_options=None,
     )
     get_nd_tnp_histograms_1_hlt = workflow.get_nd_tnp_histograms(
@@ -97,6 +98,7 @@ def test_cli():
         cut_and_count=False,
         mass_range=None,
         vars=["el_pt", "el_eta", "el_phi"],
+        weight=None,
         uproot_options=None,
     )
     get_nd_tnp_histograms_1_id = workflow.get_nd_tnp_histograms(
@@ -104,6 +106,7 @@ def test_cli():
         cut_and_count=False,
         mass_range=None,
         vars=["el_pt", "el_eta", "el_phi"],
+        weight=None,
         uproot_options=None,
     )
 

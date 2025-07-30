@@ -32,8 +32,16 @@
 #     "output": {
 #       "plot_dir": "",          < ----- Sets location to save plots to (if left blank, it won't save)
 #       "results_file": ""       < ----- Sets location to save results to (if left blank, it won't save)
+#    },
+#    "scale_factors": {
+#        "data_mc_pair": {                                      < ----- If left blank, will skip scale factor calculations
+#            "Scale Factor 1": ["NAME DATA 1", "NAME MC 1"],    < ----- Outputs scale factor of two file specified. DATA must be put before MC
+#            "Scale Factor 2": ["NAME DATA 2", "NAME MC 2"],    < ----- Outputs scale factor of two file specified. DATA must be put before MC
+#            "Scale Factor 3": ["NAME DATA 3", "NAME MC 3"]     < ----- Outputs scale factor of two file specified. DATA must be put before MC
 #     }
-#   }
+#    }
+#  }
+
 ###################################################################################
 # RUN EXAMPLE CONFIG FILE: run-fitter --config src/egamma_tnp/config/config_example.json
 ###################################################################################

@@ -1,0 +1,31 @@
+{
+    "Run2024C": {
+        "files": [
+            "/eos/cms/store/group/phys_egamma/tnpTuples/ikrommyd/Nano2024-test/EGamma0_Run2024C-PromptReco-v1_NANOAOD.parquet",
+            "/eos/cms/store/group/phys_egamma/tnpTuples/ikrommyd/Nano2024-test/EGamma1_Run2024C-PromptReco-v1_NANOAOD.parquet"
+        ],
+        "luminosity": 0.00,
+        "Legend": "Run2024C",
+        "isMC": false,
+        "is_target": true,
+        "goldenjson": "https://cms-service-dqmdc.web.cern.ch/CAF/certification/Collisions24/Cert_Collisions2024_eraC_Golden.json"
+    },
+    "DYTo2L": {
+        "files": [
+            "/eos/cms/store/group/phys_egamma/tnpTuples/ikrommyd/Nano2024-test/DYTo2L_MLL-50_TuneCP5_13p6TeV_pythia8_Run3Winter24NanoAOD-KeepSi_133X_mcRun3_2024_realistic_v8-v2_NANOAODSIM.parquet"
+        ],
+        "luminosity": null,
+        "Legend": "MC",
+        "isMC": true,
+        "is_target": false
+    },
+    "DYto2L_M-50": {
+        "files": [
+            "/eos/cms/store/group/phys_egamma/tnpTuples/ikrommyd/Nano2024-test/DYto2L_M-50_TuneCP5_13p6TeV_pythia8_Run3Winter24NanoAOD-KeepSi_133X_mcRun3_2024_realistic_v8-v2_NANOAODSIM.parquet"
+        ],
+        "lumi": "gg",
+        "Legend": "M2",
+        "isMC": true,
+        "is_target": false
+    }
+}

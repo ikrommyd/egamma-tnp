@@ -11,7 +11,7 @@ from scipy.interpolate import BPoly
 from scipy.special import voigt_profile
 from scipy.stats import norm
 
-from egamma_tnp.utils.logger_utils import setup_logger
+from egamma_tnp.utils.logger_utils_fit import setup_logger
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--config", required=True, help="Path to JSON config file")
@@ -25,7 +25,7 @@ with open(args.config) as f:
     x_max = config["fit"].get("x_max", None)
     info = config["info_level"]
 
-    if info == "INFO":
+    if info == "INFO" or info == "INFO_2":
         logging = setup_logger(level="INFO")
     elif info == "DEBUG":
         logging = setup_logger(level="DEBUG")
@@ -335,7 +335,7 @@ def shape_params(mass):
                 "pdf": cms,
                 "cdf": None,
                 "params": ["beta", "gamma", "loc"],
-                "bounds": {"beta": (-0.5, 0.1, 1.5), "gamma": (0, 0.1, 2), "loc": (-100, 90, 200)},
+                "bounds": {"beta": (-0.5, 0.02, 0.3), "gamma": (0, 0.074, 0.1), "loc": (50, 90, 150)},
             },
         }
 
@@ -404,7 +404,7 @@ def shape_params(mass):
                 "pdf": cms,
                 "cdf": None,
                 "params": ["beta", "gamma", "loc"],
-                "bounds": {"beta": (-0.5, 0.1, 10), "gamma": (0, 0.1, 10), "loc": (-100, 3, 100)},
+                "bounds": {"beta": (-0.5, 0.02, 0.3), "gamma": (0, 0.074, 0.1), "loc": (-4, 3, 10)},
             },
         }
 

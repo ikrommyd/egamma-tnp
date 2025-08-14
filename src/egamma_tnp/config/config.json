@@ -1,5 +1,5 @@
 {
-  "info_level": "INFO",
+  "info_level": "INFO_2",
   "mass": "Z",
   "input": {
     "root_files_DATA": {
@@ -17,7 +17,7 @@
     "fit_type": "dcb_cms",
     "use_cdf": false,
     "sigmoid_eff": false,
-    "bin": "bin3",
+    "bin": ["bin3"],
     "interactive": false,
     "x_min": 70,
     "x_max": 110,
@@ -26,7 +26,7 @@
     "denominator": "baselineplus"
   },
   "output": {
-    "plot_dir": "plots/gold_blp_big",
+    "plot_dir": "",
     "results_file": ""
   },
   "scale_factors": {

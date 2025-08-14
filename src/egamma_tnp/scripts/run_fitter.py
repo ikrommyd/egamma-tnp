@@ -3,10 +3,10 @@
 ###################################################################################
 #
 #   {
-#     "info_level": "INFO"       < ----- Determines the output level in the terminal. "INFO",outputs useful info. "", won't display anything. "DEBUG" is for debugging
-#     "mass": "Z",               < ----- Determines what mass you are fitting (Z, Z_muon, JPsi, JPsi_muon)
+#     "info_level": "INFO_2"       < ----- INFO, DEBUG, or INFO_2 (more verbose) (leave blank for no output)
+#     "mass": "Z",                 < ----- Determines what mass you are fitting (Z, Z_muon, JPsi, JPsi_muon)
 #     "input": {
-#       "root_files_DATA": [
+#       "root_files_DATA": [                                  < ----- The name will be the name of the plot file that is saved in plot_dir
 #           "NAME DATA 1":   ".root DATA file path 1 ..."          < ----- The name will be the name of the plot file that is saved in plot_dir
 #           "NAME DATA 2":   ".root DATA file path 2 ..."          < ----- The name will be the name of the plot file that is saved in plot_dir
 #           "NAME DATA 3":   ".root DATA file path 3 ..."          < ----- The name will be the name of the plot file that is saved in plot_dir
@@ -21,20 +21,20 @@
 #       "fit_type": "dcb_cms"    < ----- Format is: (signal shape)_(background shape). Signal shapes: (dcb, g, dv, cbg), Background shapes: (lin, exp, cms, bpoly, cheb, ps)
 #       "use_cdf": false,        < ----- If a shape does not have a cdf version, defaults back to pdf
 #       "sigmoid_eff": false,    < ----- Switches to an unbounded efficiency that is transformed back between 0 and 1
-#       "bin": "bin(number)",    < ----- Specify which pT range you are fitting (in example, bin0 (5-7), bin1 (7-10), bin2 (10-20), bin3 (20-45), bin4 (45-75), bin5 (75-500))
+#       "bin": ["bin0", "bin1, etc"],    < ----- Specify which pT range(s) you are fitting (in example, bin0 (5-7), bin1 (7-10), bin2 (10-20), bin3 (20-45), bin4 (45-75), bin5 (75-500))
 #       "interactive": true,     < ----- Turns on interactive window for fitting (very useful for difficult fits)
 #       "x_min": 70,             < ----- x range minimum for plotting
 #       "x_max": 110,            < ----- x range maximum for plotting
-#       "abseta": 1,             < ----- Only impacts muon .root files***. Defines absolute eta ranges
-#       "numerator": "gold",     < ----- Only impacts muon .root files***. Defines numerator for efficiencies
-#       "denominator": "blp"     < ----- Only impacts muon .root files***. Defines denominator for efficiencies
+#       "abseta": 1,             < ----- ***Only impacts muon .root files. Defines absolute eta ranges
+#       "numerator": "gold",     < ----- ***Only impacts muon .root files. Defines numerator for efficiencies
+#       "denominator": "blp"     < ----- ***Only impacts muon .root files. Defines denominator for efficiencies
 #     },
 #     "output": {
 #       "plot_dir": "",          < ----- Sets location to save plots to (if left blank, it won't save)
 #       "results_file": ""       < ----- Sets location to save results to (if left blank, it won't save)
 #    },
 #    "scale_factors": {
-#        "data_mc_pair": {                                      < ----- If left blank, will skip scale factor calculations
+#        "data_mc_pair": {                                      < ----- Creates explicit scale factors for pairs of data and MC files (useful for comparing one file to multiple others)
 #            "Scale Factor 1": ["NAME DATA 1", "NAME MC 1"],    < ----- Outputs scale factor of two file specified. DATA must be put before MC
 #            "Scale Factor 2": ["NAME DATA 2", "NAME MC 2"],    < ----- Outputs scale factor of two file specified. DATA must be put before MC
 #            "Scale Factor 3": ["NAME DATA 3", "NAME MC 3"]     < ----- Outputs scale factor of two file specified. DATA must be put before MC
@@ -49,18 +49,38 @@ from __future__ import annotations
 
 import argparse
 import json
+import warnings
+from collections import defaultdict
 from pathlib import Path
 
+import matplotlib.pyplot as plt
 import numpy as np
 import uproot
+from rich import box
+from rich.console import Console
+from rich.panel import Panel
+from rich.progress import BarColumn, Progress, TaskProgressColumn, TextColumn
+from rich.table import Table
 
-from egamma_tnp.utils import fitter_plot_model
 from egamma_tnp.utils.fit_function import fit_function, logging
-from egamma_tnp.utils.fitter_plot_model import load_histogram, plot_combined_fit
+from egamma_tnp.utils.fitter_plot_model import BINS_INFO, load_histogram, plot_combined_fit
+from egamma_tnp.utils.logger_utils_fit import CustomTimeElapsedColumn, print_efficiency_summary
+
+# Suppress specific Minuit warnings about fixed parameters
+warnings.filterwarnings("ignore", message="Cannot scan over fixed parameter")
+console = Console()
+
+COLOR_BORDER = "#00B4D8"
+COLOR_PRIMARY = "#E6EDF3"
+COLOR_SECONDARY = "#AAB3BF"
+COLOR_SUCCESS = "#06D6A0"
+COLOR_ERROR = "#E63946"
+COLOR_HIGHLIGHT = "#FFB703"
+COLOR_WARNING = "#F77F00"
+COLOR_BG_DARK = "#0D1117"
 
 
 def main():
-    # Reads in config file specified in terminal
     parser = argparse.ArgumentParser()
     parser.add_argument("--config", required=True, help="Path to JSON config file")
     args = parser.parse_args()
@@ -68,185 +88,318 @@ def main():
     with open(args.config) as f:
         config = json.load(f)
 
-    # Extract config values
     mass = config["mass"]
     root_files_DATA = config["input"].get("root_files_DATA", {})
     root_files_MC = config["input"].get("root_files_MC", {})
 
-    # Get fit parameters from config
     fit_type = config["fit"]["fit_type"]
     use_cdf = config["fit"].get("use_cdf", False)
     sigmoid_eff = config["fit"].get("sigmoid_eff", False)
     interactive = config["fit"].get("interactive", False)
     args_bin = config["fit"].get("bin", "bin0")
+    if isinstance(args_bin, str):
+        args_bin = [args_bin]
     x_min = config["fit"].get("x_min", None)
     x_max = config["fit"].get("x_max", None)
-
-    # Get histogram names from config or use defaults
-    hist_pass_name = config["fit"].get("hist_pass_name")
-    hist_fail_name = config["fit"].get("hist_fail_name")
-
-    # If histogram names aren't specified, try to construct them
-    if not hist_pass_name or not hist_fail_name:
-        bin_name = config["fit"].get("bin", "bin1")
-
-        # num and den are only necessary for Muon fits
-        num = config["fit"].get("numerator", "gold")
-        den = config["fit"].get("denominator", "baselineplus")
-
-        if mass in ["Z", "JPsi"]:
-            # For electron TnP
-            bin_suffix, _ = fitter_plot_model.BINS_INFO[bin_name]
-            hist_pass_name = f"{bin_name}_{bin_suffix}_Pass"
-            hist_fail_name = f"{bin_name}_{bin_suffix}_Fail"
-        elif mass in ["Z_muon", "JPsi_muon"]:
-            # For muon TnP
-            abseta = config["fit"].get("abseta", 1)
-            pt = int(bin_name.split("bin")[1])
-            hist_pass_name = f"NUM_{num}_DEN_{den}_abseta_{abseta}_pt_{pt}_Pass"
-            hist_fail_name = f"NUM_{num}_DEN_{den}_abseta_{abseta}_pt_{pt}_Fail"
-        else:
-            raise ValueError(f"Unknown mass: {mass}")
+    info = config["info_level"]
 
     all_results = []
+    data_msg_per_bin = []
+    mc_msg_per_bin = []
+    data_msg = []
+    mc_msg = []
+    data_eff_per_bin, data_err_per_bin, mc_eff_per_bin, mc_err_per_bin, sf_per_bin, sf_err_per_bin = [], [], [], [], [], []
+    output_tables_data = defaultdict(list)
+    output_progs_data = defaultdict(list)
+    output_texts_data = defaultdict(list)
+    output_tables_mc = defaultdict(list)
+    output_progs_mc = defaultdict(list)
+    output_texts_mc = defaultdict(list)
+    all_pt_bins = []
+    console = Console()
 
-    pass_fail_summary = []
+    with Progress(
+        TextColumn("[bold magenta]{task.description}"),
+        BarColumn(),
+        TaskProgressColumn(),
+        CustomTimeElapsedColumn(),
+        console=console,
+    ) as progress:
+        for pt in args_bin:
+            data_eff_list = []
+            data_err_list = []
+            mc_eff_list = []
+            mc_err_list = []
+            sf_list = []
+            sf_err_list = []
 
-    DATA_efficiency = {}
-    MC_efficiency = {}
-    DATA_efficiency_err = {}
-    MC_efficiency_err = {}
+            data_msg_parts = []
+            mc_msg_parts = []
 
-    if root_files_DATA:
-        for plot_name, root_file_path in root_files_DATA.items():
-            logging.info(f"\nProcessing file: {root_file_path}\n")
+            has_data = len(root_files_DATA) > 0
+            has_mc = len(root_files_MC) > 0
 
-            # Load histograms from ROOT file
-            with uproot.open(root_file_path) as f:
-                hist_pass = load_histogram(f, hist_pass_name, "DATA")
-                hist_fail = load_histogram(f, hist_fail_name, "DATA")
+            task_data = None
+            task_mc = None
 
-            if not hist_pass or not hist_fail:
-                logging.warning(f"Warning: Failed to load histograms from {root_file_path}")
-                continue
-
-            # Fitting Step
-            results = fit_function(
-                fit_type,
-                hist_pass,
-                hist_fail,
-                use_cdf=use_cdf,
-                args_bin=args_bin,
-                args_data="DATA",
-                args_mass=mass,
-                sigmoid_eff=sigmoid_eff,
-                interactive=interactive,
-                x_min=x_min,
-                x_max=x_max,
-            )
-
-            all_results.append(results)
-
-            # Create plot for each file
-            plot_path = Path(config["output"]["plot_dir"]) / "DATA" / args_bin
-            plot_path.mkdir(parents=True, exist_ok=True)
-
-            # If config file has no path to save plots to, it won't save
-            if config["output"].get("plot_dir"):
-                fig_pass, fig_fail = plot_combined_fit(results, plot_dir=plot_path, data_type="DATA", sigmoid_eff=sigmoid_eff, args_mass=mass)
-                fig_pass.savefig(plot_path / f"{plot_name}_Pass.png", bbox_inches="tight", dpi=300)
-                fig_fail.savefig(plot_path / f"{plot_name}_Fail.png", bbox_inches="tight", dpi=300)
-
-            if results["message"].is_valid:
-                pass_fail_summary.append(f"{plot_name} fit passed!")
+            if has_data:
+                task_data = progress.add_task(f"    [cyan]DATA ({pt})", total=len(root_files_DATA))
             else:
-                pass_fail_summary.append(f"{plot_name} fit failed!")
+                progress.console.print(f"[yellow]No DATA files to fit for {pt}")
 
-            DATA_efficiency[plot_name] = results["popt"]["epsilon"]
-            DATA_efficiency_err[plot_name] = results["perr"]["epsilon"]
-
-    if root_files_MC:
-        for plot_name, root_file_path in root_files_MC.items():
-            logging.info(f"\nProcessing file: {root_file_path}\n")
-
-            with uproot.open(root_file_path) as f:
-                hist_pass = load_histogram(f, hist_pass_name, "MC")
-                hist_fail = load_histogram(f, hist_fail_name, "MC")
-
-            if not hist_pass or not hist_fail:
-                logging.warning(f"Warning: Failed to load histograms from {root_file_path}")
-                continue
-
-            results = fit_function(
-                fit_type,
-                hist_pass,
-                hist_fail,
-                use_cdf=use_cdf,
-                args_bin=args_bin,
-                args_data="MC",
-                args_mass=mass,
-                sigmoid_eff=sigmoid_eff,
-                interactive=interactive,
-                x_min=x_min,
-                x_max=x_max,
-            )
-
-            all_results.append(results)
-
-            # Create plot for each file
-            plot_path = Path(config["output"]["plot_dir"]) / "MC" / args_bin
-            plot_path.mkdir(parents=True, exist_ok=True)
-
-            if config["output"].get("plot_dir"):
-                fig_pass, fig_fail = plot_combined_fit(results, plot_dir=plot_path, data_type="MC", sigmoid_eff=sigmoid_eff, args_mass=mass)
-                fig_pass.savefig(plot_path / f"{plot_name}_Pass.png", bbox_inches="tight", dpi=300)
-                fig_fail.savefig(plot_path / f"{plot_name}_Fail.png", bbox_inches="tight", dpi=300)
-
-            if results["message"].is_valid:
-                pass_fail_summary.append(f"{plot_name} fit passed!")
+            if has_mc:
+                task_mc = progress.add_task(f"    [cyan]MC   ({pt})", total=len(root_files_MC))
             else:
-                pass_fail_summary.append(f"{plot_name} fit failed!")
+                progress.console.print(f"[yellow]No MC files to fit for {pt}")
 
-            MC_efficiency[plot_name] = results["popt"]["epsilon"]
-            MC_efficiency_err[plot_name] = results["perr"]["epsilon"]
+            hist_pass_name = config["fit"].get("hist_pass_name")
+            hist_fail_name = config["fit"].get("hist_fail_name")
+            if not hist_pass_name or not hist_fail_name:
+                bin_suffix, bin_range = BINS_INFO[pt]
+                if mass in ["Z", "JPsi"]:
+                    hist_pass_name = f"{pt}_{bin_suffix}_Pass"
+                    hist_fail_name = f"{pt}_{bin_suffix}_Fail"
+                else:
+                    abseta = config["fit"].get("abseta", 1)
+                    pt_hist = int(pt.split("bin")[1])
+                    num = config["fit"].get("numerator", "gold")
+                    den = config["fit"].get("denominator", "baselineplus")
+                    hist_pass_name = f"NUM_{num}_DEN_{den}_abseta_{abseta}_pt_{pt_hist}_Pass"
+                    hist_fail_name = f"NUM_{num}_DEN_{den}_abseta_{abseta}_pt_{pt_hist}_Fail"
 
-        # Save combined results if specified
-        if config["output"].get("results_file"):
-            summary_path = Path(config["output"]["results_file"])
-            summary_path.parent.mkdir(parents=True, exist_ok=True)
-            with open(summary_path, "w") as f:
-                # Combine results from all files
-                combined_summary = "\n\n".join(res.get("summary", "No summary available") for res in all_results)
-                f.write(combined_summary)
-            logging.info(f"\nSaved combined fit summary to: {summary_path}")
+            data_eff_dict = {}
+            data_err_dict = {}
+            mc_eff_dict = {}
+            mc_err_dict = {}
 
-    if not root_files_DATA and not root_files_MC:
-        logging.warning("No input files specified.")
+            data_items = list(root_files_DATA.items())
+            mc_items = list(root_files_MC.items())
 
-    logging.info("\nFit Summary:")
-    logging.info("\n".join(pass_fail_summary))
+            # Pad shorter list with (None, None)
+            max_len = max(len(data_items), len(mc_items))
+            data_items += [(None, None)] * (max_len - len(data_items))
+            mc_items += [(None, None)] * (max_len - len(mc_items))
 
-    any_sf_computed = False  # Track if any SF was successfully calculated
+            data_eff_all = {}
+            data_err_all = {}
+            mc_eff_all = {}
+            mc_err_all = {}
 
-    if config["scale_factors"].get("data_mc_pair"):
-        for sf_name, (data_name, mc_name) in config["scale_factors"]["data_mc_pair"].items():
-            data_eff = DATA_efficiency.get(data_name)
-            data_eff_err = DATA_efficiency_err.get(data_name)
-            mc_eff = MC_efficiency.get(mc_name)
-            mc_eff_err = MC_efficiency_err.get(mc_name)
+            for i in range(max_len):
+                data_key, data_path = data_items[i]
+                mc_key, mc_path = mc_items[i]
 
-            if None in (data_eff, data_eff_err, mc_eff, mc_eff_err):
-                logging.warning(f"{sf_name}: Missing efficiency values. Scale factor = None")
+                # Defaults
+                data_eff, data_err = None, None
+                mc_eff, mc_err = None, None
+                data_msg = None
+                mc_msg = None
+
+                # ---- Process DATA ----
+                if data_key is not None and has_data:
+                    progress.update(task_data, description=f"    [cyan]DATA ({pt}): [yellow]{data_key}")
+
+                    with uproot.open(data_path) as f:
+                        h_pass = load_histogram(f, hist_pass_name, "DATA")
+                        h_fail = load_histogram(f, hist_fail_name, "DATA")
+
+                    res = fit_function(
+                        fit_type,
+                        h_pass,
+                        h_fail,
+                        use_cdf=use_cdf,
+                        args_bin=pt,
+                        args_data="DATA",
+                        args_mass=mass,
+                        sigmoid_eff=sigmoid_eff,
+                        interactive=interactive,
+                        x_min=x_min,
+                        x_max=x_max,
+                        data_name=data_key,
+                        mc_name=None,
+                    )
+
+                    data_eff_dict[data_key] = res["popt"]["epsilon"]
+                    data_err_dict[data_key] = res["perr"]["epsilon"]
+
+                    if data_key and data_eff is not None:
+                        data_eff_all[data_key] = data_eff
+                        data_err_all[data_key] = data_err
+
+                    plot_path = Path(config["output"]["plot_dir"]) / "DATA" / pt
+                    plot_path.mkdir(parents=True, exist_ok=True)
+
+                    if config["output"].get("plot_dir"):
+                        fig_pass, fig_fail = plot_combined_fit(res, plot_path, data_type="DATA", sigmoid_eff=sigmoid_eff, args_mass=mass)
+                        fig_pass.savefig(plot_path / f"{data_key}_Pass.png", bbox_inches="tight", dpi=300)
+                        fig_fail.savefig(plot_path / f"{data_key}_Fail.png", bbox_inches="tight", dpi=300)
+                        plt.close(fig_pass)
+                        plt.close(fig_fail)
+                        plt.close("all")
+
+                    output_tables_data[pt].append(res.get("sum_table", ""))
+                    output_progs_data[pt].append(res.get("sum_prog", ""))
+                    output_texts_data[pt].append(res.get("sum_text", ""))
+
+                    all_results.append(res)
+
+                    eps, err = res["popt"]["epsilon"], res["perr"]["epsilon"]
+                    data_eff, data_err = eps, err
+                    if data_key is not None:
+                        data_msg = f"{data_key} fit {'passed' if res['message'].is_valid else 'failed'}"
+                    else:
+                        data_msg = "DATA N/A"
+
+                    if data_msg:
+                        data_msg_parts.append(data_msg)
+                    else:
+                        data_msg_parts.append("N/A")
+
+                    progress.update(task_data, advance=1, completed=i + 1, style="green" if res["message"].is_valid else "red")
+
+                elif has_data:
+                    # No data file for this index, still advance progress bar
+                    progress.update(task_data, advance=1, completed=i + 1)
+
+                # ---- Process MC ----
+                if mc_key is not None and has_mc:
+                    progress.update(task_mc, description=f"    [cyan]MC ({pt}): [yellow]{mc_key}")
+
+                    with uproot.open(mc_path) as f:
+                        h_pass = load_histogram(f, hist_pass_name, "MC")
+                        h_fail = load_histogram(f, hist_fail_name, "MC")
+
+                    res = fit_function(
+                        fit_type,
+                        h_pass,
+                        h_fail,
+                        use_cdf=use_cdf,
+                        args_bin=pt,
+                        args_data="MC",
+                        args_mass=mass,
+                        sigmoid_eff=sigmoid_eff,
+                        interactive=interactive,
+                        x_min=x_min,
+                        x_max=x_max,
+                        data_name=None,
+                        mc_name=mc_key,
+                    )
+
+                    mc_eff_dict[mc_key] = res["popt"]["epsilon"]
+                    mc_err_dict[mc_key] = res["perr"]["epsilon"]
+
+                    if mc_key and mc_eff is not None:
+                        mc_eff_all[mc_key] = mc_eff
+                        mc_err_all[mc_key] = mc_err
+
+                    plot_path = Path(config["output"]["plot_dir"]) / "MC" / pt
+                    plot_path.mkdir(parents=True, exist_ok=True)
+
+                    if config["output"].get("plot_dir"):
+                        fig_pass, fig_fail = plot_combined_fit(res, plot_path, data_type="MC", sigmoid_eff=sigmoid_eff, args_mass=mass)
+                        fig_pass.savefig(plot_path / f"{mc_key}_Pass.png", bbox_inches="tight", dpi=300)
+                        fig_fail.savefig(plot_path / f"{mc_key}_Fail.png", bbox_inches="tight", dpi=300)
+                        plt.close(fig_pass)
+                        plt.close(fig_fail)
+                        plt.close("all")
+
+                    output_tables_mc[pt].append(res.get("sum_table", ""))
+                    output_progs_mc[pt].append(res.get("sum_prog", ""))
+                    output_texts_mc[pt].append(res.get("sum_text", ""))
+
+                    all_results.append(res)
+
+                    eps, err = res["popt"]["epsilon"], res["perr"]["epsilon"]
+                    mc_eff, mc_err = eps, err
+                    if mc_key is not None:
+                        mc_msg = f"{mc_key} fit {'passed' if res['message'].is_valid else 'failed'}"
+                    else:
+                        mc_msg = "MC N/A"
+
+                    if mc_msg:
+                        mc_msg_parts.append(mc_msg)
+                    else:
+                        mc_msg_parts.append("N/A")
+
+                    progress.update(task_mc, advance=1, completed=i + 1, style="green" if res["message"].is_valid else "red")
+
+                elif has_mc:
+                    # No MC file for this index, still advance progress bar
+                    progress.update(task_mc, advance=1, completed=i + 1)
+
+                data_eff_list.append(data_eff)
+                data_err_list.append(data_err)
+                mc_eff_list.append(mc_eff)
+                mc_err_list.append(mc_err)
+
+                if data_eff is not None and mc_eff is not None and mc_eff != 0:
+                    sf_val = data_eff / mc_eff
+                    sf_err_val = np.sqrt((data_err / data_eff) ** 2 + (mc_err / mc_eff) ** 2) * sf_val
+                else:
+                    sf_val = None
+                    sf_err_val = None
+
+                sf_list.append(sf_val)
+                sf_err_list.append(sf_err_val)
+
+            # After loop
+            data_eff_per_bin.append(data_eff_list)
+            data_err_per_bin.append(data_err_list)
+            mc_eff_per_bin.append(mc_eff_list)
+            mc_err_per_bin.append(mc_err_list)
+            sf_per_bin.append(sf_list)
+            sf_err_per_bin.append(sf_err_list)
+            data_msg_per_bin.append(data_msg_parts)
+            mc_msg_per_bin.append(mc_msg_parts)
+            all_pt_bins.append(pt)
+
+    # Summary logging
+    if info == "INFO_2":
+        logging.info("\nFit Summary:")
+        for pt in all_pt_bins:
+            for text_data, text_mc in zip(output_texts_data[pt], output_texts_mc[pt]):
+                console.print(text_data)
+                console.print(text_mc)
+
+    # Final SF output summary
+    print_efficiency_summary(
+        all_pt_bins, data_msg_per_bin, mc_msg_per_bin, data_eff_per_bin, data_err_per_bin, mc_eff_per_bin, mc_err_per_bin, sf_per_bin, sf_err_per_bin
+    )
+
+    if config.get("scale_factors", {}).get("data_mc_pair"):
+        table = Table(show_header=True, header_style=f"{COLOR_HIGHLIGHT}", box=box.ROUNDED)
+        table.add_column("Pair Name", style=f"{COLOR_PRIMARY}", justify="right", no_wrap=True)
+        table.add_column("Efficiency Summary", style=f"{COLOR_PRIMARY}", justify="left")
+
+        for pair_name, (data_key, mc_key) in config["scale_factors"]["data_mc_pair"].items():
+            data_eff = data_eff_dict.get(data_key)
+            data_err = data_err_dict.get(data_key)
+            mc_eff = mc_eff_dict.get(mc_key)
+            mc_err = mc_err_dict.get(mc_key)
+
+            if None in (data_eff, data_err, mc_eff, mc_err):
+                eff_line = "DATA: N/A | MC: N/A | SF: N/A"
+                table.add_row(pair_name, eff_line)
                 continue
 
-            scale_factor = data_eff / mc_eff
-            scale_factor_err = np.sqrt((data_eff_err / data_eff) ** 2 + (mc_eff_err / mc_eff) ** 2) * scale_factor
+            sf = data_eff / mc_eff if mc_eff != 0 else None
+            sf_err = (np.sqrt((data_err / data_eff) ** 2 + (mc_err / mc_eff) ** 2) * sf) if sf else None
 
-            logging.info(f"{sf_name}: {scale_factor:.5f} ± {scale_factor_err:.5f}")
-            any_sf_computed = True
+            if sf is not None:
+                eff_line = f"DATA: {data_eff:.5f} ± {data_err:.5f} | MC: {mc_eff:.5f} ± {mc_err:.5f} | SF: {sf:.5f} ± {sf_err:.5f}"
+            else:
+                eff_line = f"DATA: {data_eff:.5f} ± {data_err:.5f} | MC: {mc_eff:.5f} ± {mc_err:.5f} | SF: N/A (MC=0)"
 
-        if not any_sf_computed:
-            logging.info("No scale factors calculated.")
+            table.add_row(pair_name, eff_line)
+
+        console.print(
+            Panel.fit(
+                table,
+                title="[b {COLOR_PRIMARY}]Explicit Scale Factors[/b {COLOR_PRIMARY}]",
+                border_style=f"{COLOR_BORDER}",
+                padding=(1, 2),
+            )
+        )
 
 
 if __name__ == "__main__":

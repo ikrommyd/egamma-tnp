@@ -1,7 +1,10 @@
 # Developed by: Sebastian Arturo Hortua, University of Kansas
 from __future__ import annotations
 
+import argparse
+import json
 import os
+import warnings
 
 import matplotlib.pyplot as plt
 import mplhep as hep
@@ -9,6 +12,19 @@ import numpy as np
 import uproot
 
 from egamma_tnp.utils.fitter_shapes import logging, mass, shape_params, sigmoid
+
+warnings.filterwarnings("ignore", message="Cannot scan over fixed parameter")
+
+parser = argparse.ArgumentParser()
+parser.add_argument("--config", required=True, help="Path to JSON config file")
+args = parser.parse_args()
+
+
+with open(args.config) as f:
+    config = json.load(f)
+
+root_files_DATA = config["input"].get("root_files_DATA", {})
+root_files_MC = config["input"].get("root_files_MC", {})
 
 
 # Setup stuff
@@ -23,7 +39,7 @@ def get_bin_info(mass):
             for i, (lo, hi) in enumerate([(5, 7), (7, 10), (10, 20), (20, 45), (45, 75), (75, 500)])
         }
     elif mass == "JPsi":
-        return {f"bin{i}": (f"pt_{lo}p00To{hi}p00", f"{lo:.2f}-{hi:.2f}") for i, (lo, hi) in enumerate([(5, 7), (7, 10), (10, 20)])}
+        return {f"bin{i}": (f"pt_{lo}p00To{hi}p00", f"{lo:.2f}-{hi:.2f}") for i, (lo, hi) in enumerate([(2, 3), (3, 4), (4, 5), (5, 7)])}
     elif mass == "JPsi_muon":
         return {
             f"bin{i}": (f"pt_{lo}p00To{hi}p00", f"{lo:.2f}-{hi:.2f}")
@@ -71,214 +87,6 @@ for sig_name, sig_config in SIGNAL_MODELS.items():
             "background_pdf": bg_config["pdf"],
             "background_cdf": bg_config.get("cdf"),
         }
-
-
-# Logs for terminal
-def print_minuit_params_table(minuit_obj, sigmoid_eff=False):
-    summary_table = []
-    # Header
-    header = f"{'idx':>3} | {'name':^14} | {'value':^12} | {'error':^12} | {'MINOS -':^12} | {'MINOS +':^12} | {'fixed':^5} | {'lower':^10} | {'upper':^10}"
-    sep = "-" * len(header)
-    summary_table.append(f"\n{sep}")
-    summary_table.append(header)
-    summary_table.append(sep)
-    # Rows
-    for i, p in enumerate(minuit_obj.params):
-        low = p.lower_limit if p.lower_limit is not None else ""
-        high = p.upper_limit if p.upper_limit is not None else ""
-        if p.is_fixed:
-            err_str = "fixed"
-            minos_lower = ""
-            minos_upper = ""
-        else:
-            err_str = f"{p.error:12.6f}"
-            merr = minuit_obj.merrors.get(p.name, None)
-            if merr is not None:
-                minos_lower = f"{merr.lower:.6f}"
-                minos_upper = f"{merr.upper:.6f}"
-            else:
-                minos_lower = ""
-                minos_upper = ""
-
-        summary_table.append(
-            f"{i:3d} | {p.name:14s} | {p.value:12.6f} | {err_str:>12s} | "
-            f"{minos_lower:>12} | {minos_upper:>12} | "
-            f"{p.is_fixed!s:>5s} | {low!s:10s} | {high!s:10s}"
-        )
-
-        # SYMMETRIC ERRORS
-        if sigmoid_eff and p.name == "epsilon":
-            raw = p.value
-            sig_val = 1 / (1 + np.exp(-raw))
-            deriv = sig_val * (1 - sig_val)
-            fixed_flag = str(p.is_fixed)
-
-            if p.is_fixed:
-                err_col = "fixed"
-            else:
-                err_col = f"{(p.error * deriv):.6f}"
-
-            # ASYMMETRIC MINOS ERRORS
-            merr = minuit_obj.merrors.get("epsilon", None)
-            if not p.is_fixed and merr is not None:
-                lo_col = f"{(merr.lower * deriv):.6f}"
-                hi_col = f"{(merr.upper * deriv):.6f}"
-            else:
-                lo_col = hi_col = ""
-
-            summary_table.append(
-                f"{'':>3} | {'ε_sig':14s} | {sig_val:12.6f} | {err_col:>12s} | {lo_col:>12} | {hi_col:>12} | {fixed_flag:>5s} | {'':10s} | {'':10s}"
-            )
-
-    summary_table.append(sep)
-    return "\n".join(summary_table)
-
-
-def print_fit_progress(m, sigmoid_eff=False):
-    summary = []
-    eps = m.values["epsilon"]
-    if sigmoid_eff:
-        eps = sigmoid(eps)
-    summary.append(f"Iteration: N={m.values['N']:.1f}, ε={eps:.3f}, B_p={m.values['B_p']:.1f}, B_f={m.values['B_f']:.1f}, fval={m.fval:.1f}")
-    return "\n".join(summary)
-
-
-def print_fit_summary(m, popt, perr, edges_pass, args_bin, BINS_INFO, Pearson_chi2, Poisson_chi2, total_ndof, args_data, fit_type, sigmoid_eff=False):
-    tol = 1e-8
-    params_at_limit = []
-    for p in m.params:
-        if p.lower_limit is not None and abs(p.value - p.lower_limit) < tol * max(1.0, abs(p.lower_limit)):
-            params_at_limit.append(p.name)
-        if p.upper_limit is not None and abs(p.value - p.upper_limit) < tol * max(1.0, abs(p.upper_limit)):
-            params_at_limit.append(p.name)
-    any_at_limit = bool(params_at_limit)
-
-    # 1) Get Minuit info
-    fmin = m.fmin
-    fcv = m.fval
-
-    # Status flags
-    valid_min = bool(m.valid)
-    # EDM threshold
-    if hasattr(fmin, "is_above_max_edm"):
-        above_edm = fmin.is_above_max_edm
-    elif hasattr(fmin, "has_above_max_edm"):
-        above_edm = fmin.has_above_max_edm
-    else:
-        above_edm = False
-
-    # 2) Print info on how the fit went
-
-    # Call limit reached?
-    reached_call_limit = getattr(fmin, "has_reached_call_limit", False)
-
-    # Hesse
-    hesse_failed = getattr(fmin, "hesse_failed", False)
-
-    # Covariance accuracy
-    cov_accurate = getattr(fmin, "has_accurate_covar", False)
-
-    # 3) Build status messages
-    status_map = [
-        (valid_min, "Valid Minimum", "INVALID Minimum"),
-        (not any_at_limit, "No parameters at limit", "Some parameters at limit"),
-        (not above_edm, "Below EDM threshold", "Above EDM threshold"),
-        (not reached_call_limit, "Below call limit", "Reached call limit"),
-        (not hesse_failed, "Hesse ok", "Hesse failed"),
-        (cov_accurate, "Covariance ok", "Covariance APPROXIMATE"),
-    ]
-
-    summary = []
-    # 4) Print the combined summary box
-    summary.append("\n" + "#" * 60)
-    summary.append("\n" + "=" * 60)
-    # Title
-    summary.append(f"Fit Summary: {args_data}, {args_bin}, {fit_type}")
-    summary.append("=" * 60)
-    for cond, good_msg, bad_msg in status_map:
-        summary.append(good_msg if cond else bad_msg)
-    summary.append(f"Fit valid: {m.valid}")
-    if m.covariance is None:
-        summary.append("ERROR: Covariance matrix not available")
-    else:
-        summary.append("Covariance matrix complete")
-    summary.append("-" * 60)
-
-    # 5) Fit Type and Histogram Bin
-    try:
-        bin_suffix, bin_range = BINS_INFO[args_bin]
-    except Exception:
-        bin_suffix, bin_range = args_bin, None
-    summary.append(f"Fit Type      : {args_bin}_{bin_suffix} Pass and Fail")
-    if bin_range is not None:
-        try:
-            lo, hi = edges_pass[0], edges_pass[-1]
-            summary.append(f"Histogram Bin : {lo:.1f} - {hi:.1f} GeV")
-        except Exception:
-            summary.append("Histogram Bin: (unknown range)")
-    else:
-        # fallback
-        try:
-            lo, hi = edges_pass[0], edges_pass[-1]
-            summary.append(f"Histogram Bin: \t{lo:.1f} - {hi:.1f} GeV")
-        except Exception:
-            pass
-    summary.append(f"Fit Success   : {'Yes' if m.valid else 'No'}")
-    summary.append("=" * 60)
-
-    # 6) Fit Parameters table, can add more if needed
-    summary.append("Fit Parameters:")
-    if "N" in popt:
-        summary.append(f"  Total N          = {popt['N']:.1f} ± {perr.get('N', float('nan')):.1f}")
-    if "epsilon" in popt:
-        if sigmoid_eff:
-            eff = sigmoid(popt["epsilon"])
-            eff_err = abs(perr.get("epsilon", float("nan")) * eff * (1 - eff))
-            summary.append(f"  Efficiency ε     = {eff:.6f} ± {eff_err:.10f} (sigmoid)")
-        else:
-            summary.append(f"  Efficiency ε     = {popt['epsilon']:.6f} ± {perr.get('epsilon', float('nan')):.10f}")
-    if "B_p" in popt:
-        summary.append(f"  Background B_p   = {popt['B_p']:.1f} ± {perr.get('B_p', float('nan')):.1f}")
-    if "B_f" in popt:
-        summary.append(f"  Background B_f   = {popt['B_f']:.1f} ± {perr.get('B_f', float('nan')):.1f}")
-    summary.append("-" * 60)
-
-    # 7) Goodness-of-Fit
-    summary.append("Goodness-of-Fit:")
-    chi2 = fcv
-    reduced_chi2 = getattr(m.fmin, "reduced_chi2", None)
-    summary.append(f"  NLL     χ² / ndf = {chi2:.2f} / {total_ndof} = {reduced_chi2:.3f}")
-    # Print Pearson and Poisson χ² / ndf
-    Pearson_red = Pearson_chi2 / total_ndof if total_ndof else None
-    Poisson_red = Poisson_chi2 / total_ndof if total_ndof else None
-    summary.append(f"  Pearson χ² / ndf = {Pearson_chi2:.2f} / {total_ndof} = {Pearson_red:.3f}")
-    summary.append(f"  Poisson χ² / ndf = {Poisson_chi2:.2f} / {total_ndof} = {Poisson_red:.3f}")
-    summary.append("-" * 60)
-
-    # 8) Efficiency line
-    if "epsilon" in popt:
-        try:
-            lo, hi = edges_pass[0], edges_pass[-1]
-            if sigmoid_eff:
-                eff = sigmoid(popt["epsilon"])
-                eff_err = abs(perr.get("epsilon", float("nan")) * eff * (1 - eff))
-                summary.append("Efficiency:")
-                summary.append(f"  ε = {eff:.4f} ± {eff_err:.4f} (bin {lo:.1f} - {hi:.1f} GeV, sigmoid)")
-            else:
-                summary.append("Efficiency:")
-                summary.append(f"  ε = {popt['epsilon']:.4f} ± {perr.get('epsilon', float('nan')):.4f} (bin {lo:.1f} - {hi:.1f} GeV)")
-        except Exception:
-            if sigmoid_eff:
-                eff = sigmoid(popt["epsilon"])
-                eff_err = abs(perr.get("epsilon", float("nan")) * eff * (1 - eff))
-                summary.append(f"Efficiency: ε = {eff:.4f} ± {eff_err:.4f} (sigmoid)")
-            else:
-                summary.append(f"Efficiency: ε = {popt['epsilon']:.4f} ± {perr.get('epsilon', float('nan')):.4f}")
-    # Bottom border
-    summary.append("=" * 60 + "\n")
-    summary.append("#" * 60)
-
-    return "\n".join(summary)
 
 
 # Things to make simultaneous model
@@ -485,9 +293,19 @@ def load_histogram(root_file, hist_name, data_label):
         if isinstance(obj, uproot.behaviors.TH1.Histogram):
             values, edges = obj.to_numpy()
             is_mc = ("MC" in data_label) or ("MC" in hist_name)
-            logging.info(f"Histogram: {hist_name}")
+            # logging.info(f"Histogram: {hist_name}")
             return {"values": values, "edges": edges, "errors": obj.errors(), "is_mc": is_mc}
     return None
+
+
+def fig_to_array(fig):
+    """Convert a Matplotlib figure to a NumPy array (RGBA)."""
+    fig.canvas.draw()
+    w, h = fig.canvas.get_width_height()
+    buf = np.frombuffer(fig.canvas.tostring_argb(), dtype=np.uint8).reshape(h, w, 4)
+    # Convert ARGB to RGBA
+    buf = buf[:, :, [1, 2, 3, 0]]
+    return buf
 
 
 # Plot fits

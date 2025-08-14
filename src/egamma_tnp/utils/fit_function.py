@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import numpy as np
 from iminuit import Minuit, cost
+from matplotlib import pyplot as plt
 
 from egamma_tnp.utils.fitter_plot_model import (
     BINS_INFO,
@@ -11,11 +12,36 @@ from egamma_tnp.utils.fitter_plot_model import (
     calculate_custom_chi2,
     create_combined_model,
     logging,
-    print_fit_progress,
-    print_fit_summary,
-    print_minuit_params_table,
 )
 from egamma_tnp.utils.fitter_shapes import x_max, x_min
+from egamma_tnp.utils.logger_utils_fit import print_fit_summary_rich
+
+
+def solo_fit(m, var_name):
+    # Fix all parameters
+    for p in m.parameters:
+        m.fixed[p] = True
+
+    # Unfix only the one we want to fit
+    if var_name not in m.parameters:
+        raise ValueError(f"{var_name} is not a valid parameter name.")
+
+    m.fixed[var_name] = False
+
+    # Run minimization
+    m.migrad()
+
+    # Fix everything again
+    for p in m.parameters:
+        m.fixed[p] = False
+
+    # Return the validity of the minimization
+    return m.valid
+
+
+fit_prog = []
+fit_summary = []
+fit_text_sum = []
 
 
 def fit_function(
@@ -31,6 +57,8 @@ def fit_function(
     args_data=None,
     sigmoid_eff=False,
     args_mass=None,
+    data_name=None,
+    mc_name=None,
 ):
     fixed_params = fixed_params or {}
 
@@ -95,7 +123,7 @@ def fit_function(
         bounds = config["bounds"].copy()
         bounds.update(
             {
-                "N": (B_p_p0 + B_f_p0, N_p0, np.inf),
+                "N": (B_p_p0 + B_f_p0, N_p0 * 10, np.inf),
                 "B_p": (0, B_p_p0 / 4, np.inf),
                 "B_f": (0, B_f_p0, np.inf),
             }
@@ -128,7 +156,7 @@ def fit_function(
         bounds = config["bounds"].copy()
         bounds.update(
             {
-                "N": (0, N_p0, np.inf),
+                "N": (0, N_p0 * 10, np.inf),
                 "B_p": (0, B_p_p0, np.inf),
                 "B_f": (0, B_f_p0, np.inf),
             }
@@ -230,18 +258,30 @@ def fit_function(
         for _i in range(10):
             m.migrad()
 
+        if not m.valid:
+            # Find parameters that fail solo_fit
+            fall_back_params = [p for p in m.parameters if not solo_fit(m, p)]
+
+            # Fix failing parameters
+            for p in fall_back_params:
+                m.fixed[p] = True
+
+            try:
+                for _i in range(10):
+                    m.migrad()
+            except Exception as e:
+                logging.warning(f"MIGRAD failed: {e!s}")
+
+    plt.close("all")
+
     for param in m.parameters:
         try:
             m.minos(param)
         except Exception as e:
-            logging.warning(f"MINOS failed for parameter {param}: {e!s}")
+            logging.debug(f"MINOS failed: {e!s}")
 
     # Print results
     m.print_level = 0
-    summary_table = print_minuit_params_table(m, sigmoid_eff=sigmoid_eff)
-    logging.info(summary_table)
-    summary_prog = print_fit_progress(m, sigmoid_eff=sigmoid_eff)
-    logging.info(summary_prog)
 
     # 2. Extract results
     fcv = m.fval
@@ -272,11 +312,24 @@ def fit_function(
     Poisson_tot_red_chi2 = Poisson_chi2 / total_ndof
 
     # Output fit summary to terminal
-    summary_text = print_fit_summary(
-        m, popt, perr, edges_pass, args_bin, BINS_INFO, Pearson_chi2, Poisson_chi2, total_ndof, args_data, fit_type, sigmoid_eff=sigmoid_eff
+    summary_text = print_fit_summary_rich(
+        m,
+        popt,
+        perr,
+        edges_pass,
+        args_bin,
+        BINS_INFO,
+        Pearson_chi2,
+        Poisson_chi2,
+        total_ndof,
+        args_data,
+        fit_type,
+        sigmoid_eff=sigmoid_eff,
+        DATA_NAME=data_name,
+        MC_NAME=mc_name,
     )
 
-    logging.info(summary_text)
+    fit_text_sum.append(summary_text)
 
     # Check convergence
     if m.fmin.is_valid:
@@ -337,8 +390,8 @@ def fit_function(
         "converged": converged,
         "bin_widths_pass": bin_widths_pass,
         "bin_widths_fail": bin_widths_fail,
+        "sum_text": summary_text,
     }
 
-    results["summary"] = summary_text
     results["bin"] = args_bin
     return results

@@ -57,9 +57,10 @@ import matplotlib.pyplot as plt
 import numpy as np
 import uproot
 from rich import box
-from rich.console import Console
+from rich.console import Console, Group
+from rich.live import Live
 from rich.panel import Panel
-from rich.progress import BarColumn, Progress, TaskProgressColumn, TextColumn
+from rich.progress import BarColumn, Progress, TaskProgressColumn, TextColumn, TimeRemainingColumn
 from rich.table import Table
 
 from egamma_tnp.utils.fit_function import fit_function, logging
@@ -118,13 +119,29 @@ def main():
     all_pt_bins = []
     console = Console()
 
-    with Progress(
+    bins_progress = Progress(
         TextColumn("[bold magenta]{task.description}"),
+        BarColumn(),
+        TaskProgressColumn(),
+        TimeRemainingColumn(),  # <-- Only here
+        console=console,
+    )
+
+    # Sub progress bars (DATA/MC per bin)
+    sub_progress = Progress(
+        TextColumn("[cyan]{task.description}"),
         BarColumn(),
         TaskProgressColumn(),
         CustomTimeElapsedColumn(),
         console=console,
-    ) as progress:
+    )
+
+    progress_group = Group(bins_progress, sub_progress)
+
+    with Live(progress_group, refresh_per_second=5, console=console):
+        total_fits = len(args_bin) * (len(root_files_DATA) + len(root_files_MC))
+        task_bins = bins_progress.add_task("Fitting bins", total=total_fits)
+
         for pt in args_bin:
             data_eff_list = []
             data_err_list = []
@@ -132,7 +149,6 @@ def main():
             mc_err_list = []
             sf_list = []
             sf_err_list = []
-
             data_msg_parts = []
             mc_msg_parts = []
 
@@ -143,14 +159,14 @@ def main():
             task_mc = None
 
             if has_data:
-                task_data = progress.add_task(f"    [cyan]DATA ({pt})", total=len(root_files_DATA))
+                task_data = sub_progress.add_task(f"    DATA ({pt})", total=len(root_files_DATA))
             else:
-                progress.console.print(f"[yellow]No DATA files to fit for {pt}")
+                sub_progress.console.print(f"[yellow]No DATA files to fit for {pt}")
 
             if has_mc:
-                task_mc = progress.add_task(f"    [cyan]MC   ({pt})", total=len(root_files_MC))
+                task_mc = sub_progress.add_task(f"    MC   ({pt})", total=len(root_files_MC))
             else:
-                progress.console.print(f"[yellow]No MC files to fit for {pt}")
+                sub_progress.console.print(f"[yellow]No MC files to fit for {pt}")
 
             hist_pass_name = config["fit"].get("hist_pass_name")
             hist_fail_name = config["fit"].get("hist_fail_name")
@@ -197,7 +213,7 @@ def main():
 
                 # ---- Process DATA ----
                 if data_key is not None and has_data:
-                    progress.update(task_data, description=f"    [cyan]DATA ({pt}): [yellow]{data_key}")
+                    sub_progress.update(task_data, description=f"    [cyan]DATA ({pt}): [yellow]{data_key}")
 
                     with uproot.open(data_path) as f:
                         h_pass = load_histogram(f, hist_pass_name, "DATA")
@@ -255,15 +271,17 @@ def main():
                     else:
                         data_msg_parts.append("N/A")
 
-                    progress.update(task_data, advance=1, completed=i + 1, style="green" if res["message"].is_valid else "red")
+                    sub_progress.update(task_data, advance=1, style="green" if res["message"].is_valid else "red")
+                    bins_progress.update(task_bins, advance=1)  # <-- update main bin progress
 
                 elif has_data:
                     # No data file for this index, still advance progress bar
-                    progress.update(task_data, advance=1, completed=i + 1)
+                    sub_progress.update(task_data, advance=1, completed=i + 1)
+                    bins_progress.update(task_bins, advance=1)  # <-- update main bin progress
 
                 # ---- Process MC ----
                 if mc_key is not None and has_mc:
-                    progress.update(task_mc, description=f"    [cyan]MC ({pt}): [yellow]{mc_key}")
+                    sub_progress.update(task_mc, description=f"    [cyan]MC   ({pt}): [yellow]{mc_key}")
 
                     with uproot.open(mc_path) as f:
                         h_pass = load_histogram(f, hist_pass_name, "MC")
@@ -321,11 +339,13 @@ def main():
                     else:
                         mc_msg_parts.append("N/A")
 
-                    progress.update(task_mc, advance=1, completed=i + 1, style="green" if res["message"].is_valid else "red")
+                    sub_progress.update(task_mc, advance=1, style="green" if res["message"].is_valid else "red")
+                    bins_progress.update(task_bins, advance=1)  # <-- update main bin progress
 
                 elif has_mc:
                     # No MC file for this index, still advance progress bar
-                    progress.update(task_mc, advance=1, completed=i + 1)
+                    sub_progress.update(task_mc, advance=1)
+                    bins_progress.update(task_bins, advance=1)  # <-- update main bin progress
 
                 data_eff_list.append(data_eff)
                 data_err_list.append(data_err)
@@ -341,6 +361,10 @@ def main():
 
                 sf_list.append(sf_val)
                 sf_err_list.append(sf_err_val)
+
+            style = "green" if res["message"].is_valid else "red"
+            sub_progress.update(task_data, description=f"    [bold]DATA ({pt}): [{style}]{data_key}")
+            sub_progress.update(task_mc, description=f"    [bold]MC   ({pt}): [{style}]{mc_key}")
 
             # After loop
             data_eff_per_bin.append(data_eff_list)

@@ -25,26 +25,19 @@ with open(args.config) as f:
 
 root_files_DATA = config["input"].get("root_files_DATA", {})
 root_files_MC = config["input"].get("root_files_MC", {})
+bin_ranges = config["fit"].get("bin_ranges", [])
 
 
 # Setup stuff
 def get_bin_info(mass):
     if mass == "Z":
-        return {
-            f"bin{i}": (f"pt_{lo}p00To{hi}p00", f"{lo:.2f}-{hi:.2f}") for i, (lo, hi) in enumerate([(5, 7), (7, 10), (10, 20), (20, 45), (45, 75), (75, 500)])
-        }
+        return {f"bin{i}": (f"pt_{lo}p00To{hi}p00", f"{lo:.2f}-{hi:.2f}") for i, (lo, hi) in enumerate(bin_ranges)}
     elif mass == "Z_muon":
-        return {
-            f"bin{i + 1}": (f"pt_{lo}p00To{hi}p00", f"{lo:.2f}-{hi:.2f}")
-            for i, (lo, hi) in enumerate([(5, 7), (7, 10), (10, 20), (20, 45), (45, 75), (75, 500)])
-        }
+        return {f"bin{i + 1}": (f"pt_{lo}p00To{hi}p00", f"{lo:.2f}-{hi:.2f}") for i, (lo, hi) in enumerate(bin_ranges)}
     elif mass == "JPsi":
-        return {f"bin{i}": (f"pt_{lo}p00To{hi}p00", f"{lo:.2f}-{hi:.2f}") for i, (lo, hi) in enumerate([(2, 3), (3, 4), (4, 5), (5, 7)])}
+        return {f"bin{i}": (f"pt_{lo}p00To{hi}p00", f"{lo:.2f}-{hi:.2f}") for i, (lo, hi) in enumerate(bin_ranges)}
     elif mass == "JPsi_muon":
-        return {
-            f"bin{i}": (f"pt_{lo}p00To{hi}p00", f"{lo:.2f}-{hi:.2f}")
-            for i, (lo, hi) in enumerate([(3, 4), (4, 5), (5, 6), (6, 7), (7, 8), (8, 9), (9, 10), (10, 30)])
-        }
+        return {f"bin{i}": (f"pt_{lo}p00To{hi}p00", f"{lo:.2f}-{hi:.2f}") for i, (lo, hi) in enumerate(bin_ranges)}
 
 
 BINS_INFO = get_bin_info(mass)

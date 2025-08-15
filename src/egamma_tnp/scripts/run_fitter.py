@@ -18,10 +18,11 @@
 #       ]
 #     },
 #     "fit": {
+#       "bin_ranges": [[5,7], [7,10], [10,20], [20,45], [45,75], [75,500]],    < ----- Specify which pT range(s) you are fitting (in example, bin0 (5-7), bin1 (7-10), bin2 (10-20), bin3 (20-45), bin4 (45-75), bin5 (75-500))
+#       "bin": ["bin0", "bin1, etc"],    < ----- Specify which pT range(s) you are fitting (in example, bin0 (5-7), bin1 (7-10), bin2 (10-20), bin3 (20-45), bin4 (45-75), bin5 (75-500))
 #       "fit_type": "dcb_cms"    < ----- Format is: (signal shape)_(background shape). Signal shapes: (dcb, g, dv, cbg), Background shapes: (lin, exp, cms, bpoly, cheb, ps)
 #       "use_cdf": false,        < ----- If a shape does not have a cdf version, defaults back to pdf
 #       "sigmoid_eff": false,    < ----- Switches to an unbounded efficiency that is transformed back between 0 and 1
-#       "bin": ["bin0", "bin1, etc"],    < ----- Specify which pT range(s) you are fitting (in example, bin0 (5-7), bin1 (7-10), bin2 (10-20), bin3 (20-45), bin4 (45-75), bin5 (75-500))
 #       "interactive": true,     < ----- Turns on interactive window for fitting (very useful for difficult fits)
 #       "x_min": 70,             < ----- x range minimum for plotting
 #       "x_max": 110,            < ----- x range maximum for plotting
@@ -219,7 +220,7 @@ def main():
                         h_pass = load_histogram(f, hist_pass_name, "DATA")
                         h_fail = load_histogram(f, hist_fail_name, "DATA")
 
-                    res = fit_function(
+                    res_data = fit_function(
                         fit_type,
                         h_pass,
                         h_fail,
@@ -235,8 +236,8 @@ def main():
                         mc_name=None,
                     )
 
-                    data_eff_dict[data_key] = res["popt"]["epsilon"]
-                    data_err_dict[data_key] = res["perr"]["epsilon"]
+                    data_eff_dict[data_key] = res_data["popt"]["epsilon"]
+                    data_err_dict[data_key] = res_data["perr"]["epsilon"]
 
                     if data_key and data_eff is not None:
                         data_eff_all[data_key] = data_eff
@@ -246,23 +247,23 @@ def main():
                     plot_path.mkdir(parents=True, exist_ok=True)
 
                     if config["output"].get("plot_dir"):
-                        fig_pass, fig_fail = plot_combined_fit(res, plot_path, data_type="DATA", sigmoid_eff=sigmoid_eff, args_mass=mass)
+                        fig_pass, fig_fail = plot_combined_fit(res_data, plot_path, data_type="DATA", sigmoid_eff=sigmoid_eff, args_mass=mass)
                         fig_pass.savefig(plot_path / f"{data_key}_Pass.png", bbox_inches="tight", dpi=300)
                         fig_fail.savefig(plot_path / f"{data_key}_Fail.png", bbox_inches="tight", dpi=300)
                         plt.close(fig_pass)
                         plt.close(fig_fail)
                         plt.close("all")
 
-                    output_tables_data[pt].append(res.get("sum_table", ""))
-                    output_progs_data[pt].append(res.get("sum_prog", ""))
-                    output_texts_data[pt].append(res.get("sum_text", ""))
+                    output_tables_data[pt].append(res_data.get("sum_table", ""))
+                    output_progs_data[pt].append(res_data.get("sum_prog", ""))
+                    output_texts_data[pt].append(res_data.get("sum_text", ""))
 
-                    all_results.append(res)
+                    all_results.append(res_data)
 
-                    eps, err = res["popt"]["epsilon"], res["perr"]["epsilon"]
+                    eps, err = res_data["popt"]["epsilon"], res_data["perr"]["epsilon"]
                     data_eff, data_err = eps, err
                     if data_key is not None:
-                        data_msg = f"{data_key} fit {'passed' if res['message'].is_valid else 'failed'}"
+                        data_msg = f"{data_key} fit {'passed' if res_data['message'].is_valid else 'failed'}"
                     else:
                         data_msg = "DATA N/A"
 
@@ -271,7 +272,8 @@ def main():
                     else:
                         data_msg_parts.append("N/A")
 
-                    sub_progress.update(task_data, advance=1, style="green" if res["message"].is_valid else "red")
+                    style_data = "green" if res_data["message"].is_valid else "red"
+                    sub_progress.update(task_data, advance=1, style="green" if res_data["message"].is_valid else "red")
                     bins_progress.update(task_bins, advance=1)  # <-- update main bin progress
 
                 elif has_data:
@@ -287,7 +289,7 @@ def main():
                         h_pass = load_histogram(f, hist_pass_name, "MC")
                         h_fail = load_histogram(f, hist_fail_name, "MC")
 
-                    res = fit_function(
+                    res_mc = fit_function(
                         fit_type,
                         h_pass,
                         h_fail,
@@ -303,8 +305,8 @@ def main():
                         mc_name=mc_key,
                     )
 
-                    mc_eff_dict[mc_key] = res["popt"]["epsilon"]
-                    mc_err_dict[mc_key] = res["perr"]["epsilon"]
+                    mc_eff_dict[mc_key] = res_mc["popt"]["epsilon"]
+                    mc_err_dict[mc_key] = res_mc["perr"]["epsilon"]
 
                     if mc_key and mc_eff is not None:
                         mc_eff_all[mc_key] = mc_eff
@@ -314,23 +316,23 @@ def main():
                     plot_path.mkdir(parents=True, exist_ok=True)
 
                     if config["output"].get("plot_dir"):
-                        fig_pass, fig_fail = plot_combined_fit(res, plot_path, data_type="MC", sigmoid_eff=sigmoid_eff, args_mass=mass)
+                        fig_pass, fig_fail = plot_combined_fit(res_mc, plot_path, data_type="MC", sigmoid_eff=sigmoid_eff, args_mass=mass)
                         fig_pass.savefig(plot_path / f"{mc_key}_Pass.png", bbox_inches="tight", dpi=300)
                         fig_fail.savefig(plot_path / f"{mc_key}_Fail.png", bbox_inches="tight", dpi=300)
                         plt.close(fig_pass)
                         plt.close(fig_fail)
                         plt.close("all")
 
-                    output_tables_mc[pt].append(res.get("sum_table", ""))
-                    output_progs_mc[pt].append(res.get("sum_prog", ""))
-                    output_texts_mc[pt].append(res.get("sum_text", ""))
+                    output_tables_mc[pt].append(res_mc.get("sum_table", ""))
+                    output_progs_mc[pt].append(res_mc.get("sum_prog", ""))
+                    output_texts_mc[pt].append(res_mc.get("sum_text", ""))
 
-                    all_results.append(res)
+                    all_results.append(res_mc)
 
-                    eps, err = res["popt"]["epsilon"], res["perr"]["epsilon"]
+                    eps, err = res_mc["popt"]["epsilon"], res_mc["perr"]["epsilon"]
                     mc_eff, mc_err = eps, err
                     if mc_key is not None:
-                        mc_msg = f"{mc_key} fit {'passed' if res['message'].is_valid else 'failed'}"
+                        mc_msg = f"{mc_key} fit {'passed' if res_mc['message'].is_valid else 'failed'}"
                     else:
                         mc_msg = "MC N/A"
 
@@ -339,7 +341,8 @@ def main():
                     else:
                         mc_msg_parts.append("N/A")
 
-                    sub_progress.update(task_mc, advance=1, style="green" if res["message"].is_valid else "red")
+                    style_mc = "green" if res_mc["message"].is_valid else "red"
+                    sub_progress.update(task_mc, advance=1, style="green" if res_mc["message"].is_valid else "red")
                     bins_progress.update(task_bins, advance=1)  # <-- update main bin progress
 
                 elif has_mc:
@@ -362,9 +365,8 @@ def main():
                 sf_list.append(sf_val)
                 sf_err_list.append(sf_err_val)
 
-            style = "green" if res["message"].is_valid else "red"
-            sub_progress.update(task_data, description=f"    [bold]DATA ({pt}): [{style}]{data_key}")
-            sub_progress.update(task_mc, description=f"    [bold]MC   ({pt}): [{style}]{mc_key}")
+            sub_progress.update(task_data, description=f"    [bold]DATA ({pt}): [{style_data}]{data_key}")
+            sub_progress.update(task_mc, description=f"    [bold]MC   ({pt}): [{style_mc}]{mc_key}")
 
             # After loop
             data_eff_per_bin.append(data_eff_list)

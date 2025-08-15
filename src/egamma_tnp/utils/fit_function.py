@@ -16,29 +16,6 @@ from egamma_tnp.utils.fitter_plot_model import (
 from egamma_tnp.utils.fitter_shapes import x_max, x_min
 from egamma_tnp.utils.logger_utils_fit import print_fit_summary_rich
 
-
-def solo_fit(m, var_name):
-    # Fix all parameters
-    for p in m.parameters:
-        m.fixed[p] = True
-
-    # Unfix only the one we want to fit
-    if var_name not in m.parameters:
-        raise ValueError(f"{var_name} is not a valid parameter name.")
-
-    m.fixed[var_name] = False
-
-    # Run minimization
-    m.migrad()
-
-    # Fix everything again
-    for p in m.parameters:
-        m.fixed[p] = False
-
-    # Return the validity of the minimization
-    return m.valid
-
-
 fit_prog = []
 fit_summary = []
 fit_text_sum = []
@@ -88,7 +65,6 @@ def fit_function(
     mask_pass = (centers_pass >= x_min) & (centers_pass <= x_max)
     mask_fail = (centers_fail >= x_min) & (centers_fail <= x_max)
 
-    mask_pass = (centers_pass >= x_min) & (centers_pass <= x_max)
     edge_mask = np.zeros(len(edges_pass), dtype=bool)
     edge_mask[:-1] |= mask_pass
     edge_mask[1:] |= mask_pass
@@ -250,27 +226,41 @@ def fit_function(
 
     # Interactive Fitter
     plotter = PassFailPlotter(c_pass, errors_pass, c_fail, errors_fail, len(edges_pass), edges_pass, edges_fail, fit_type, sigmoid_eff=sigmoid_eff)
+
     if interactive:
+        m.strategy = 1
         m.interactive(plotter)
     else:
-        # RUN FITTER HERE
-        m.simplex()
-        for _i in range(10):
-            m.migrad()
+        # Set default strategy
+        m.strategy = 1
+
+        # Try a full Migrad first
+        m.migrad(iterate=50)
+        m.hesse()
 
         if not m.valid:
-            # Find parameters that fail solo_fit
-            fall_back_params = [p for p in m.parameters if not solo_fit(m, p)]
+            fall_back_params = []
 
-            # Fix failing parameters
+            m.strategy = 2
+            m.migrad(iterate=1)
+            # First fix all parameters
+            for p in m.parameters:
+                m.fixed[p] = True
+            for p in m.parameters:
+                m.fixed[p] = False
+                m.strategy = 2
+                m.migrad()
+                if not m.fmin.is_valid:
+                    fall_back_params.append(p)
+                    m.fixed[p] = True
+            m.fixed[p] = True
             for p in fall_back_params:
                 m.fixed[p] = True
 
-            try:
-                for _i in range(10):
-                    m.migrad()
-            except Exception as e:
-                logging.warning(f"MIGRAD failed: {e!s}")
+            # Final Migrad + Hesse
+            m.strategy = 1
+            m.migrad(iterate=50)
+            m.hesse()
 
     plt.close("all")
 

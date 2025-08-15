@@ -13,13 +13,12 @@ from rich.progress import TimeElapsedColumn
 from rich.table import Table
 from rich.text import Text
 
+warnings.filterwarnings("ignore", message="Cannot scan over fixed parameter")
+
 
 def sigmoid(x):
     return 1 / (1 + np.exp(-x))
 
-
-# Suppress specific Minuit warnings about fixed parameters
-warnings.filterwarnings("ignore", message="Cannot scan over fixed parameter")
 
 console = Console()
 

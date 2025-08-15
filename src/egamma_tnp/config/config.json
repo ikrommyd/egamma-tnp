@@ -14,10 +14,11 @@
     }
   },
   "fit": {
+    "bin": ["bin2"],
+    "bin_ranges": [[5,7], [7,10], [10,20], [20,45], [45,75], [75,500]],
     "fit_type": "dcb_cms",
     "use_cdf": false,
     "sigmoid_eff": false,
-    "bin": ["bin3"],
     "interactive": false,
     "x_min": 70,
     "x_max": 110,

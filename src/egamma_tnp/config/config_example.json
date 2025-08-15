@@ -1,5 +1,5 @@
 {
-  "info_level": "INFO",
+  "info_level": "INFO_2",
   "mass": "Z",
   "input": {
     "root_files_DATA": {
@@ -10,11 +10,12 @@
     }
   },
   "fit": {
+    "bin": ["bin2"],
+    "bin_ranges": [[5,7], [7,10], [10,20], [20,45], [45,75], [75,500]],
     "fit_type": "dcb_cms",
     "use_cdf": false,
     "sigmoid_eff": false,
-    "bin": "bin3",
-    "interactive": true,
+    "interactive": false,
     "x_min": 70,
     "x_max": 110,
     "abseta": 1,
@@ -22,7 +23,7 @@
     "denominator": "baselineplus"
   },
   "output": {
-    "plot_dir": "plots/example",
+    "plot_dir": "",
     "results_file": ""
   },
   "scale_factors": {

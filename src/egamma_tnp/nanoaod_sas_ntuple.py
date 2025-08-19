@@ -8,6 +8,7 @@ from coffea.lumi_tools import LumiMask
 from coffea.nanoevents import NanoAODSchema
 from coffea.nanoevents.methods import nanoaod
 import warnings
+import correctionlib
 
 from egamma_tnp._base_tagnprobe import BaseSaSNtuples
 from egamma_tnp.utils import calculate_photon_SC_eta, custom_delta_r
@@ -132,11 +133,11 @@ class ScaleAndSmearingNtupleFromNanoAOD(BaseSaSNtuples):
         
         good_events = good_events[ak.num(good_events.Electron) >= 2]
         electrons = good_events.Electron
-        electron_fields = electrons.fields
+        electron_fields = list(electrons.fields)
 
         # get the matched photons
         matched_photons = good_events.Photon[electrons.photonIdx]
-        photon_fields = matched_photons.fields
+        photon_fields = list(matched_photons.fields)
 
         # update the vars dictionary with the fields to save
         if vars is None:
@@ -163,7 +164,7 @@ class ScaleAndSmearingNtupleFromNanoAOD(BaseSaSNtuples):
         good_events["Electron"] = electrons
         sorted_electrons = good_events.Electron[ak.argsort(good_events.Electron.pt, ascending=False)]
 
-        dielectrons = process_zcands(events=good_events, leptons=sorted_electrons, mass_range=mass_range, lead_pt_cut=self.lead_pt_cut, prefixes=("ele_lead", "ele_sublead"))
+        dielectrons = process_zcands(leptons=sorted_electrons, mass_range=mass_range, lead_pt_cut=self.lead_pt_cut, prefixes=("ele_lead", "ele_sublead"))
         dielectrons = save_event_variables(good_events, dielectrons, vars=vars)
         dielectrons = apply_pileup_weights(dielectrons, good_events)
         
@@ -201,165 +202,8 @@ class ScaleAndSmearingNtupleFromNanoAOD(BaseSaSNtuples):
 
     
 
-
-class ZmumuNtupleFromNanoAOD(BaseSaSNtuples):
-    def __init__(
-        self,
-        fileset,
-        *,
-        lead_pt_cut=20,
-        sublead_pt_cut=10,
-        eta_cut=2.4,
-        trigger_paths=None,
-        extra_zcands_mask=None,
-        extra_filter=None,
-        extra_filter_args=None,
-    ):
-        """Electron Tag and Probe efficiency from NanoAOD and EGamma NanoAOD.
-
-        Parameters
-        ----------
-        fileset: dict
-            The fileset to calculate the trigger efficiencies for.
-        filters: dict
-            The names of the filters to calculate the efficiencies for.
-        is_photon_filter: dict or None, optional
-            Whether the filters to calculate the efficiencies are photon filters. The default is all False.
-        trigger_pt: dict or None, optional
-            The Pt threshold of the trigger to calculate the efficiencies over that threshold. Required for trigger efficiencies.
-            The default is None.
-        tags_pt_cut: int or float, optional
-            The Pt cut to apply to the tag electrons. The default is 35.
-        probes_pt_cuts: int or float, optional
-            The Pt threshold of the probe electron to calculate efficiencies over that threshold. The default is None.
-        tags_abseta_cut: int or float, optional
-            The absolute Eta cut to apply to the tag electrons. The default is 2.5.
-        sub_abseta_cut: int or float, optional
-            The absolute Eta cut to apply to the probe electrons. The default is 2.5.
-        sub_abseta_cut: int or float, optional
-            The absolute Eta cut to apply to the probe electrons. The default is 2.5.
-        filterbit: dict or None, optional
-            The filterbit used to match probes with trigger objects. Required for trigger efficiencies.
-            The default is None.
-        cutbased_id: str, optional
-            ID expression to apply to the probes. An example is "cutBased >= 2".
-            If None, no cutbased ID is applied. The default is None.
-        extra_zcands_mask: str, optional
-            An extra mask to apply to the Z candidates. The default is None.
-            Must be of the form `zcands.tag/probe.<mask> & zcands.tag/probe.<mask> & ...`.
-        extra_filter: Callable, optional
-            An extra function to filter the events. The default is None.
-            Must take in a coffea NanoEventsArray and return a filtered NanoEventsArray of the events you want to keep.
-        extra_filter_args: dict, optional
-            Extra arguments to pass to extra_filter. The default is {}.
-        use_sc_eta: bool, optional
-            Use the supercluster Eta instead of the Eta from the primary vertex. The default is False.
-        use_sc_phi: bool, optional
-            Use the supercluster Phi instead of the Phi from the primary vertex. The default is False.
-        avoid_ecal_transition_tags: bool, optional
-            Whether to avoid the ECAL transition region for the tags with an eta cut. The default is True.
-        avoid_ecal_transition_probes: bool, optional
-            Whether to avoid the ECAL transition region for the probes with an eta cut. The default is False.
-        require_event_to_pass_hlt_filter: bool, optional
-            Also require the event to have passed the filter HLT filter under study to consider a probe belonging to that event as passing.
-            The default is True.
-        """
-        
-
-        super().__init__(
-            fileset=fileset,
-            lead_pt_cut=lead_pt_cut,
-            sublead_pt_cut=sublead_pt_cut,
-            eta_cut=eta_cut,
-            trigger_paths=trigger_paths,
-            extra_zcands_mask=extra_zcands_mask,
-            extra_filter=extra_filter,
-            extra_filter_args=extra_filter_args,
-            avoid_ecal_transition=False,
-            schemaclass=NanoAODSchema,
-        )
-
-        self.lead_pt_cut = lead_pt_cut
-        self.sublead_pt_cut = sublead_pt_cut
-        self.eta_cut = eta_cut
-
-    def __repr__(self):
-        n_of_files = 0
-        for dataset in self.fileset.values():
-            n_of_files += len(dataset["files"])
-        return f"ZmumuNtupleFromNanoAOD(Number of files: {n_of_files})"
-
-    
-    
-    def find_lepton_pairs(self, events, mass_range=(50,130), vars=None):
-
-        if self.extra_filter is not None:
-            events = self.extra_filter(events, **self.extra_filter_args)
-        if events.metadata.get("isMC") is None:
-            events.metadata["isMC"] = hasattr(events, "GenPart")
-        if events.metadata.get("goldenJSON") and not events.metadata.get("isMC"):
-            lumimask = LumiMask(events.metadata["goldenJSON"])
-            mask = lumimask(events.run, events.luminosityBlock)
-            events = events[mask]
-
-        # apply the trigger path filter if specified
-        good_events = apply_trigger_paths(events, self.trigger_paths)
-
-        # selecting electrons with a photn matching and passing the pt and eta cuts
-        good_events["Muon"] = good_events.Muon[(good_events.Muon.pt > self.sublead_pt_cut) & (np.abs(good_events.Muon.eta) < self.eta_cut)]
-        good_events = good_events[ak.num(good_events.Muon) >= 2]
-
-        if vars is None:
-            vars = {"Muon": good_events.Muon.fields}
-        else:
-            if "Muon" not in vars or vars["Muon"] == "all":
-                vars["Muon"] = good_events.Muon.fields
-
-        # # add GenPart information if available
-        # if good_events.metadata.get("isMC"): 
-        #     good_events.Muon["gen_pt"] = good_events.GenPart[good_events.Muon.genPartIdx].pt
-        #     vars["Muon"] += ["gen_pt"]
-
-
-        sorted_muons = good_events.Muon[ak.argsort(good_events.Muon.pt, ascending=False)]
-
-        dimuons = process_zcands(events=good_events, leptons=sorted_muons, mass_range=mass_range, lead_pt_cut=self.lead_pt_cut, prefixes=("muon_lead", "muon_sublead"))
-        dimuons = save_event_variables(good_events, dimuons, vars=vars)
-        dimuons = apply_pileup_weights(dimuons, good_events)
-        
-        # flatten the output
-        output = {}
-        for field in ak.fields(dimuons):
-            prefix = {"muon_lead": "lead", "muon_sublead": "sublead"}.get(field, "")
-            if len(prefix) > 0:
-                for subfield in ak.fields(dimuons[field]):
-                    if subfield not in vars.get("Muon", []):
-                        continue
-                    else:
-                        output[f"{prefix}_{subfield}"] = dimuons[field][subfield]
-            else:
-                output[field] = dimuons[field]
-
-        return dak.zip(output)
-
-
-
-    @staticmethod
-    def _trigger_match(leptons, trigobjs, pdgid, pt, filterbit):
-        pass_pt = trigobjs.pt > pt
-        pass_id = abs(trigobjs.id) == pdgid
-        pass_filterbit = (trigobjs.filterBits & (0x1 << filterbit)) != 0
-        trigger_cands = trigobjs[pass_pt & pass_id & pass_filterbit]
-        delta_r = leptons.metric_table(trigger_cands, metric=custom_delta_r)
-        pass_delta_r = delta_r < 0.1
-        trig_matched_locs = dak.any(pass_delta_r, axis=2)
-
-        return trig_matched_locs
-
-
 def process_zcands(
     leptons,
-    events,
     lead_pt_cut=20,
     mass_range=(50, 130),
     prefixes=("ele_lead", "ele_sublead")
@@ -385,10 +229,11 @@ def process_zcands(
     dileptons = dileptons[ak.argsort(dileptons.pt, ascending=False)]
 
     dileptons = dileptons[(dileptons.mass > mass_range[0]) & (dileptons.mass < mass_range[1])]
+    dileptons = dileptons[dileptons.ele_lead.charge != dileptons.ele_sublead.charge]
     selection_mask = ~ak.is_none(dileptons)
     dileptons = dileptons[selection_mask]
 
-    return dileptons
+    return ak.firsts(dileptons)
 
 def save_event_variables(events, dileptons,vars=None):
     dileptons["event"] = events.event
@@ -418,6 +263,7 @@ def save_event_variables(events, dileptons,vars=None):
 def apply_pileup_weights(dileptons, events):
     if events.metadata.get("isMC"):
         if "pileupJSON" in events.metadata:
+            print(f"Loading pileup correction from {events.metadata['pileupJSON']}")
             pileup_corr = load_correction(events.metadata["pileupJSON"])
         elif "pileupData" in events.metadata and "pileupMC" in events.metadata:
             pileup_corr = create_correction(events.metadata["pileupData"], events.metadata["pileupMC"])

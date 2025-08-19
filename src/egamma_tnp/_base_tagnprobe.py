@@ -299,6 +299,7 @@ class BaseTagNProbe:
         phi_regions_eta=None,
         eta_regions_phi=None,
         vars=None,
+        weight="weight",
         uproot_options=None,
         compute=False,
         scheduler=None,
@@ -342,6 +343,10 @@ class BaseTagNProbe:
                 A list of the fields that refer to the Pt, Eta, and Phi of the probes.
                 Must be in the order of Pt, Eta, and Phi.
                 The default is ["el_pt", "el_eta", "el_phi"].
+            weight : str or None, optional
+                The name of the weight field in the probes arrays.
+                If None, no weights are applied when filling the histograms.
+                The default is "weight".
             uproot_options : dict, optional
                 Options to pass to uproot. Pass at least {"allow_read_errors_with_report": True} to turn on file access reports.
             compute : bool, optional
@@ -388,6 +393,7 @@ class BaseTagNProbe:
                 eta_regions_pt=eta_regions_pt,
                 phi_regions_eta=phi_regions_eta,
                 eta_regions_phi=eta_regions_phi,
+                weight=weight,
             )
         else:
             data_manipulation = partial(
@@ -400,6 +406,7 @@ class BaseTagNProbe:
                 eta_regions_pt=eta_regions_pt,
                 phi_regions_eta=phi_regions_eta,
                 eta_regions_phi=eta_regions_phi,
+                weight=weight,
             )
 
         to_compute = apply_to_fileset(
@@ -431,6 +438,7 @@ class BaseTagNProbe:
         cut_and_count=True,
         mass_range=None,
         vars=None,
+        weight="weight",
         uproot_options=None,
         compute=False,
         scheduler=None,
@@ -456,6 +464,10 @@ class BaseTagNProbe:
                 The variables to use to fill the N-dimensional histograms. The default is ["el_pt", "el_eta", "el_phi"].
                 These vars will be used to fill the N-dimensional histograms.
                 If cut_and_count is False, one more invariant mass axis will be added to the histograms.
+            weight: str or None, optional
+                The name of the weight field in the probes arrays.
+                If None, no weights are applied when filling the histograms.
+                The default is "weight".
             uproot_options : dict, optional
                 Options to pass to uproot. Pass at least {"allow_read_errors_with_report": True} to turn on file access reports.
             compute : bool, optional
@@ -500,6 +512,7 @@ class BaseTagNProbe:
                 eta_regions_pt=None,
                 phi_regions_eta=None,
                 eta_regions_phi=None,
+                weight=weight,
             )
         else:
             data_manipulation = partial(
@@ -512,6 +525,7 @@ class BaseTagNProbe:
                 eta_regions_pt=None,
                 phi_regions_eta=None,
                 eta_regions_phi=None,
+                weight=weight,
             )
 
         to_compute = apply_to_fileset(
@@ -570,6 +584,7 @@ class BaseTagNProbe:
         eta_regions_pt,
         phi_regions_eta,
         eta_regions_phi,
+        weight,
     ):
         from egamma_tnp.utils import (
             fill_nd_cutncount_histograms,
@@ -589,12 +604,14 @@ class BaseTagNProbe:
                 phi_regions_eta=phi_regions_eta,
                 eta_regions_phi=eta_regions_phi,
                 vars=vars,
+                weight=weight,
             )
         else:
             return fill_nd_cutncount_histograms(
                 passing_probes,
                 failing_probes,
                 vars=vars,
+                weight=weight,
             )
 
     def _make_mll_histograms(
@@ -608,6 +625,7 @@ class BaseTagNProbe:
         eta_regions_pt,
         phi_regions_eta,
         eta_regions_phi,
+        weight,
     ):
         from egamma_tnp.utils import (
             fill_nd_mll_histograms,
@@ -627,12 +645,14 @@ class BaseTagNProbe:
                 phi_regions_eta=phi_regions_eta,
                 eta_regions_phi=eta_regions_phi,
                 vars=vars,
+                weight=weight,
             )
         else:
             return fill_nd_mll_histograms(
                 passing_probes,
                 failing_probes,
                 vars=vars,
+                weight=weight,
             )
 
 class BaseSaSNtuples:

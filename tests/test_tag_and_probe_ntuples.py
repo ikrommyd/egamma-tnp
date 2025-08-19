@@ -29,7 +29,7 @@ def test_mini_tag_and_probe_electrons():
         tags_abseta_cut=2.17,
     )
 
-    events = NanoEventsFactory.from_root({os.path.abspath("tests/samples/TnPNTuples_el.root"): "fitter_tree"}, schemaclass=BaseSchema, delayed=False).events()
+    events = NanoEventsFactory.from_root({os.path.abspath("tests/samples/TnPNTuples_el.root"): "fitter_tree"}, schemaclass=BaseSchema, mode="virtual").events()
     solution = mini_tag_and_probe_electrons(events)
     result = tag_n_probe.get_passing_and_failing_probes(
         "passingCutBasedTight122XV1", cut_and_count=False, vars=["el_pt", "el_eta", "truePU", "tag_Ele_eta"], compute=True
@@ -55,7 +55,7 @@ def test_mini_tag_and_probe_photons():
         tags_abseta_cut=2.17,
     )
 
-    events = NanoEventsFactory.from_root({os.path.abspath("tests/samples/TnPNTuples_ph.root"): "fitter_tree"}, schemaclass=BaseSchema, delayed=False).events()
+    events = NanoEventsFactory.from_root({os.path.abspath("tests/samples/TnPNTuples_ph.root"): "fitter_tree"}, schemaclass=BaseSchema, mode="virtual").events()
     solution = mini_tag_and_probe_photons(events)
     result = tag_n_probe.get_passing_and_failing_probes(
         "passingCutBasedTight122XV1", cut_and_count=False, vars=["ph_et", "ph_eta", "truePU", "tag_Ele_eta"], compute=True
@@ -81,7 +81,7 @@ def test_nano_tag_and_probe_electrons():
         tags_abseta_cut=2.17,
     )
 
-    events = NanoEventsFactory.from_root({os.path.abspath("tests/samples/NanoNTuples_el.root"): "Events"}, schemaclass=BaseSchema, delayed=False).events()
+    events = NanoEventsFactory.from_root({os.path.abspath("tests/samples/NanoNTuples_el.root"): "Events"}, schemaclass=BaseSchema, mode="virtual").events()
     solution = nano_tag_and_probe_electrons(events)
     result = tag_n_probe.get_passing_and_failing_probes("cutBased >= 4", cut_and_count=False, vars=["el_pt", "el_eta", "PV_npvs", "tag_Ele_eta"], compute=True)[
         "sample"
@@ -107,7 +107,7 @@ def test_nano_tag_and_probe_photons():
         tags_abseta_cut=2.17,
     )
 
-    events = NanoEventsFactory.from_root({os.path.abspath("tests/samples/NanoNTuples_ph.root"): "Events"}, schemaclass=BaseSchema, delayed=False).events()
+    events = NanoEventsFactory.from_root({os.path.abspath("tests/samples/NanoNTuples_ph.root"): "Events"}, schemaclass=BaseSchema, mode="virtual").events()
     solution = nano_tag_and_probe_photons(events)
     result = tag_n_probe.get_passing_and_failing_probes("cutBased >= 3", cut_and_count=False, vars=["ph_pt", "ph_eta", "PV_npvs", "tag_Ele_eta"], compute=True)[
         "sample"

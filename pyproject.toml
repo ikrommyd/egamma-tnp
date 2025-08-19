@@ -36,10 +36,10 @@ classifiers = [
 ]
 dependencies = [
   "click>=8.0.4",
-  "coffea[dask,rucio]>=2024.5.0",
+  "coffea[dask,rucio]>=2025.7.0",
   "dask<2025",
   "distributed<2025",
-  "scipy<1.16",
+  "pyarrow<21.0.0",
 ]
 dynamic = ["version"]
 
@@ -105,6 +105,7 @@ ignore = [
     "PLR",     # Design related pylint codes
     "ISC001",  # Conflicts with the formatter in 0.1.2
     "G004",    # Logging f-string
+    "PLC0415", # Import-outside-top-level
 ]
 unfixable = [
     "T20",  # Removes print statements

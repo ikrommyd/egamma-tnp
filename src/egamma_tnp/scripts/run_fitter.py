@@ -1,3 +1,5 @@
+# Developed by: Sebastian Arturo Hortua, University of Kansas
+
 ###################################################################################
 #                            CONFIG.JSON FORMAT
 ###################################################################################
@@ -365,8 +367,10 @@ def main():
                 sf_list.append(sf_val)
                 sf_err_list.append(sf_err_val)
 
-            sub_progress.update(task_data, description=f"    [bold]DATA ({pt}): [{style_data}]{data_key}")
-            sub_progress.update(task_mc, description=f"    [bold]MC   ({pt}): [{style_mc}]{mc_key}")
+            if task_data is not None and task_data in sub_progress.task_ids:
+                sub_progress.update(task_data, description=f"    [bold]DATA ({pt}): [{style_data}]{data_key}")
+            if task_mc is not None and task_mc in sub_progress.task_ids:
+                sub_progress.update(task_mc, description=f"    [bold]MC   ({pt}): [{style_mc}]{mc_key}")
 
             # After loop
             data_eff_per_bin.append(data_eff_list)
@@ -392,37 +396,40 @@ def main():
         all_pt_bins, data_msg_per_bin, mc_msg_per_bin, data_eff_per_bin, data_err_per_bin, mc_eff_per_bin, mc_err_per_bin, sf_per_bin, sf_err_per_bin
     )
 
+    # If explicit scale_factors are in config, use the per-bin last-seen values (falls back to None)
     if config.get("scale_factors", {}).get("data_mc_pair"):
-        table = Table(show_header=True, header_style=f"{COLOR_HIGHLIGHT}", box=box.ROUNDED)
-        table.add_column("Pair Name", style=f"{COLOR_PRIMARY}", justify="right", no_wrap=True)
-        table.add_column("Efficiency Summary", style=f"{COLOR_PRIMARY}", justify="left")
+        table = Table(show_header=True, header_style="bold magenta", box=box.ROUNDED)
+        table.add_column("Pair Name", style="cyan", justify="right", no_wrap=True)
+        table.add_column("Bin", style="green", justify="center", no_wrap=True)
+        table.add_column("Efficiency Summary", style="white", justify="left")
 
         for pair_name, (data_key, mc_key) in config["scale_factors"]["data_mc_pair"].items():
-            data_eff = data_eff_dict.get(data_key)
-            data_err = data_err_dict.get(data_key)
-            mc_eff = mc_eff_dict.get(mc_key)
-            mc_err = mc_err_dict.get(mc_key)
+            for pt in all_pt_bins:
+                data_eff = data_eff_dict.get(data_key)
+                data_err = data_err_dict.get(data_key)
+                mc_eff = mc_eff_dict.get(mc_key)
+                mc_err = mc_err_dict.get(mc_key)
 
-            if None in (data_eff, data_err, mc_eff, mc_err):
-                eff_line = "DATA: N/A | MC: N/A | SF: N/A"
-                table.add_row(pair_name, eff_line)
-                continue
+                if None in (data_eff, data_err, mc_eff, mc_err):
+                    eff_line = "DATA: N/A | MC: N/A | SF: N/A"
+                    table.add_row(pair_name, str(pt), eff_line)
+                    continue
 
-            sf = data_eff / mc_eff if mc_eff != 0 else None
-            sf_err = (np.sqrt((data_err / data_eff) ** 2 + (mc_err / mc_eff) ** 2) * sf) if sf else None
+                sf = data_eff / mc_eff if mc_eff != 0 else None
+                sf_err = np.sqrt((data_err / data_eff) ** 2 + (mc_err / mc_eff) ** 2) * sf if (sf and data_eff and mc_eff) else None
 
-            if sf is not None:
-                eff_line = f"DATA: {data_eff:.5f} ± {data_err:.5f} | MC: {mc_eff:.5f} ± {mc_err:.5f} | SF: {sf:.5f} ± {sf_err:.5f}"
-            else:
-                eff_line = f"DATA: {data_eff:.5f} ± {data_err:.5f} | MC: {mc_eff:.5f} ± {mc_err:.5f} | SF: N/A (MC=0)"
+                if sf is not None:
+                    eff_line = f"DATA: {data_eff:.5f} ± {data_err:.5f} | MC: {mc_eff:.5f} ± {mc_err:.5f} | SF: {sf:.5f} ± {sf_err:.5f}"
+                else:
+                    eff_line = f"DATA: {data_eff:.5f} ± {data_err:.5f} | MC: {mc_eff:.5f} ± {mc_err:.5f} | SF: N/A (MC=0)"
 
-            table.add_row(pair_name, eff_line)
+                table.add_row(pair_name, str(pt), eff_line)
 
         console.print(
             Panel.fit(
                 table,
-                title="[b {COLOR_PRIMARY}]Explicit Scale Factors[/b {COLOR_PRIMARY}]",
-                border_style=f"{COLOR_BORDER}",
+                title="[bold yellow]Explicit Scale Factors (Per Bin)[/bold yellow]",
+                border_style="bright_blue",
                 padding=(1, 2),
             )
         )

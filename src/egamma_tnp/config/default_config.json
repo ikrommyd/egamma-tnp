@@ -14,7 +14,7 @@
     }
   },
   "fit": {
-    "bin": ["bin2"],
+    "bin": ["bin0", "bin1", "bin2", "bin3", "bin4", "bin5"],
     "bin_ranges": [[5,7], [7,10], [10,20], [20,45], [45,75], [75,500]],
     "fit_type": "dcb_cms",
     "use_cdf": false,
@@ -27,7 +27,7 @@
     "denominator": "baselineplus"
   },
   "output": {
-    "plot_dir": "",
+    "plot_dir": "Example_plots/",
     "results_file": ""
   },
   "scale_factors": {

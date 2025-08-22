@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import awkward as ak
-from coffea.nanoevents.methods import nanoaod
+import numpy as np
 
 from egamma_tnp.utils import custom_delta_r
 
@@ -123,12 +123,8 @@ def tag_and_probe_electrons(events, is_id):
 
 def tag_and_probe_photons(events, start_from_diphotons, is_id):
     # TODO: remove this temporary fix when https://github.com/scikit-hep/vector/issues/498 is resolved
-    photon_dict = {field: events.Photon[field] for field in events.Photon.fields} | {
-        "mass": ak.zeros_like(events.Photon.pt),
-        "charge": ak.zeros_like(events.Photon.pt),
-    }
-
-    events["Photon"] = ak.zip(photon_dict, with_name="Photon", behavior=nanoaod.behavior)
+    events["Photon", "mass"] = ak.zeros_like(events.Photon.pt)
+    events["Photon", "charge"] = ak.zeros_like(events.Photon.pt, dtype=np.int32)
 
     events["Photon", "eta_to_use"] = events.Photon.eta
     events["Photon", "phi_to_use"] = events.Photon.phi

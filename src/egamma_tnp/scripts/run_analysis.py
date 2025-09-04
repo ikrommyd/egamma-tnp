@@ -135,7 +135,7 @@ def main():
             memory=args.memory,
             disk=args.disk,
             image_type="singularity",
-            worker_image="/cvmfs/unpacked.cern.ch/gitlab-registry.cern.ch/cms-egamma/egamma-tnp:lxplus-el9-latest",
+            worker_image="/cvmfs/unpacked.cern.ch/registry.cern.ch/cms-egamma/egamma-tnp:lxplus-el9-latest",
             death_timeout="3600",
             scheduler_options={"port": args.port, "host": socket.gethostname(), "dashboard_address": args.dashboard_address},
             log_directory=args.log_directory,

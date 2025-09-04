@@ -13,10 +13,12 @@
     {
       "name": "get_sas_ntuples",
       "args": {
-        "vars": {"Photon": ["pt", "eta", "phi", "seedGain", "superclusterEta", "r9", "sieie", "hoe",
-                             "cutBased", "mvaID", "mvaID_WP80", "mvaID_WP90"],
-                 "Electron": ["pt", "eta", "phi", "seedGain", "charge", "superclusterEta", "r9", "sieie", "hoe",
-                              "cutBased", "cutBased_HEEP", "mvaIso", "mvaIso_WP80", "mvaIso_WP90", "mvaNoIso", "mvaNoIso_WP80", "mvaNoIso_WP90"],
+         "vars": {"Photon": ["pt", "eta", "phi", "seedGain", "superclusterEta", "r9", "sieie", "hoe", "hoe_PUcorr", "s4", "phiWidth", "etaWidth", "sieip", "sipip", "esEffSigmaRR", "esEnergyOverRawE",
+                            "cutBased", "mvaID", "mvaID_WP80", "mvaID_WP90",
+                            "ecalPFClusterIso", "hcalPFClusterIso", "trkSumPtHollowConeDR03", "trkSumPtSolidConeDR04", "pfChargedIso", "pfChargedIsoWorstVtx"],
+                 "Electron": ["pt", "eta", "phi", "seedGain", "charge", "superclusterEta", "r9", "sieie", "hoe", "convVeto", "eInvMinusPInv", "fbrem",
+                              "cutBased", "cutBased_HEEP", "mvaIso", "mvaIso_WP80", "mvaIso_WP90", "mvaIso_WPHZZ", "mvaNoIso", "mvaNoIso_WP80", "mvaNoIso_WP90",
+                              "pfRelIso03_all", "pfRelIso03_chg", "dr03EcalRecHitSumEt", "dr03HcalDepth1TowerSumEt", "dr03TkSumPt"],
                  "PuppiMET": ["pt", "phi", "sumEt"],
                  "Rho": "all"},
         "mass_range": [50.0, 130.0],

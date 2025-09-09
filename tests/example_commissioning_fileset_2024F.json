@@ -1,0 +1,28 @@
+{
+    "samples_to_compare": {
+        "Run2024F": {
+            "files": [
+                "/eos/cms/store/group/phys_egamma/tnpTuples/ikrommyd/NTuples/EGamma0_Run2024F-PromptEGMNano-v1_NANOAOD.parquet",
+                "/eos/cms/store/group/phys_egamma/tnpTuples/ikrommyd/NTuples/EGamma1_Run2024F-PromptEGMNano-v1_NANOAOD.parquet"
+            ],
+            "Legend": "Data2024F",
+            "isMC": false,
+            "is_reference": false,
+            "goldenjson": "https://cms-service-dqmdc.web.cern.ch/CAF/certification/Collisions24/Cert_Collisions2024_378981_384052_Golden.json"
+        },
+        "DYTo2L": {
+            "files": [
+                "/eos/cms/store/group/phys_egamma/tnpTuples/ikrommyd/NTuples/DYto2L-4Jets_MLL-50_TuneCP5_13p6TeV_madgraphMLM-pythia8_Run3Winter24NanoAOD-EGMNanoV14_133X_mcRun3_2024_realistic_v10_ext2-v2_NANOAODSIM.parquet"
+            ],
+            "Legend": "MC",
+            "isMC": true,
+            "is_reference": true
+        }
+    },
+    "pileup_histogram": "data_pileup/MyDataPileupHistogram_2024F.root",
+    "CMS_label": "Preliminary",
+    "com": 13.6,
+    "lumi": 2.02,
+    "norm_sample": "Run2024F",
+    "output_dir": "Run2024F_vs_Winter24MC"
+}

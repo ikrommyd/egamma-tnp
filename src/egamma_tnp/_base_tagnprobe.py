@@ -655,6 +655,7 @@ class BaseTagNProbe:
                 weight=weight,
             )
 
+
 class BaseSaSNtuples:
     """Base class for Tag and Probe classes."""
 
@@ -673,7 +674,6 @@ class BaseSaSNtuples:
     ):
         if extra_filter_args is None:
             extra_filter_args = {}
-        
 
         self.fileset = fileset
         self.lead_pt_cut = lead_pt_cut
@@ -685,8 +685,7 @@ class BaseSaSNtuples:
         self.extra_filter_args = extra_filter_args
         self.avoid_ecal_transition = avoid_ecal_transition
         self.schemaclass = schemaclass
-        self.default_vars = None 
-
+        self.default_vars = None
 
     def get_sas_ntuples(
         self,

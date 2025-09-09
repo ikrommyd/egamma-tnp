@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import getpass
 import gzip
 import json
 import os

@@ -6,6 +6,7 @@ import subprocess
 import sys
 from pathlib import Path
 from typing import Iterable
+
 import yaml
 
 from egamma_tnp.utils.logger_utils import setup_logger
@@ -103,6 +104,7 @@ def read_input_file(input_txt: str, mode: str, logger) -> list[tuple]:
             fset.append((name, path, {}))
     return fset
 
+
 def read_input_yaml(input_yaml: str, mode: str, logger) -> list[tuple]:
     """
     Read the input text file and parse dataset names and paths.
@@ -196,7 +198,7 @@ def get_dataset_dict_local(fset: Iterable[Iterable[str]], recursive: bool, exten
     for name, dir_paths, meta in fset:
         if isinstance(dir_paths, str):
             dir_paths = [dir_paths]
-        
+
         for dir_path in dir_paths:
             logger.info(f"Collecting files for local dataset '{name}': '{dir_path}'")
             directory = Path(dir_path)
@@ -219,7 +221,7 @@ def get_dataset_dict_local(fset: Iterable[Iterable[str]], recursive: bool, exten
 
             except Exception as e:
                 logger.error(f"Error while collecting files from directory '{dir_path}': {e}")
-        
+
         fdict[name]["metadata"] = meta
 
     return fdict
@@ -240,7 +242,6 @@ def main():
         logger.error("Input file must have a '.txt' ot '.yaml' extension and be a text file!")
         sys.exit(1)
 
-    
     if not fset:
         logger.error(f"No valid entries found in '{args.input}'. Exiting.")
         sys.exit(1)

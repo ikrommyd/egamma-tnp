@@ -1,6 +1,6 @@
 # Running on Lxplus
 
-Example to produce the Zee ntuples used to derive EGM Scale and Smearing corrections (https://gitlab.cern.ch/pgaigne/law_ijazz2p0). 
+Example to produce the Zee ntuples used to derive EGM Scale and Smearing corrections (https://gitlab.cern.ch/pgaigne/law_ijazz2p0).
 
 
 
@@ -16,7 +16,7 @@ voms-proxy-init --voms cms -valid 192:00
 apptainer shell -B ${XDG_RUNTIME_DIR} -B /afs -B /cvmfs/cms.cern.ch --bind /tmp  --bind /eos/user --bind /etc/sysconfig/ngbauth-submit  --env KRB5CCNAME=${XDG_RUNTIME_DIR}/krb5cc /cvmfs/unpacked.cern.ch/registry.cern.ch/cms-egamma/egamma-tnp:lxplus-el9-latest
 ```
 
-#### (Optionnal) Install local changes 
+#### (Optionnal) Install local changes
 ```
 pip install -e .
 ```

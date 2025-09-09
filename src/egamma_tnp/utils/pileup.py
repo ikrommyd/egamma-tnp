@@ -56,7 +56,10 @@ def create_correction(pu_data_histogram, pu_mc_array, outfile=None, normalize_pu
     return correctionlib_wrapper(corr)
 
 
-def get_pileup_weight(true_pileup, pileup_corr):
+def get_pileup_weight(true_pileup, pileup_corr, syst=False):
     if len(pileup_corr._corr.inputs) == 2:
-        return pileup_corr(true_pileup, "nominal")
+        if syst:
+            return pileup_corr(true_pileup, "nominal"), pileup_corr(true_pileup, "up"), pileup_corr(true_pileup, "down")
+        else:
+            return pileup_corr(true_pileup, "nominal")
     return pileup_corr(true_pileup)

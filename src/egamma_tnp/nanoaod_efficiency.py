@@ -2,11 +2,10 @@ from __future__ import annotations
 
 import awkward as ak  # noqa: F401
 import dask_awkward as dak
-import numpy as np  # noqa: F401
+import numpy as np
 from coffea.analysis_tools import Weights
 from coffea.lumi_tools import LumiMask
 from coffea.nanoevents import NanoAODSchema
-from coffea.nanoevents.methods import nanoaod
 
 from egamma_tnp._base_tagnprobe import BaseTagNProbe
 from egamma_tnp.utils import calculate_photon_SC_eta, custom_delta_r
@@ -142,6 +141,12 @@ class ElectronTagNProbeFromNanoAOD(BaseTagNProbe):
         return f"ElectronTagNProbeFromNanoAOD(Filters: {self.filters}, Number of files: {n_of_files})"
 
     def find_probes(self, events, cut_and_count, mass_range, vars):
+        if events.metadata.get("isMC") is None:
+            events.metadata["isMC"] = hasattr(events, "GenPart")
+        if events.metadata.get("isMC") and "genWeight" in events.fields:
+            sum_genw_before_presel = dak.sum(events.genWeight)
+        else:
+            sum_genw_before_presel = dak.num(events[events.run > -999], axis=0)
         if self.use_sc_eta:
             if "superclusterEta" in events.Electron.fields:
                 events["Electron", "eta_to_use"] = events.Electron.superclusterEta
@@ -156,8 +161,6 @@ class ElectronTagNProbeFromNanoAOD(BaseTagNProbe):
             events["Electron", "phi_to_use"] = events.Electron.phi
         if self.extra_filter is not None:
             events = self.extra_filter(events, **self.extra_filter_args)
-        if events.metadata.get("isMC") is None:
-            events.metadata["isMC"] = hasattr(events, "GenPart")
         if events.metadata.get("goldenJSON") and not events.metadata.get("isMC"):
             lumimask = LumiMask(events.metadata["goldenJSON"])
             mask = lumimask(events.run, events.luminosityBlock)
@@ -251,7 +254,7 @@ class ElectronTagNProbeFromNanoAOD(BaseTagNProbe):
                 weights.add("PUWeight", pileup_weight)
             else:
                 weights.add("PUWeight", dak.ones_like(all_probe_events.event))
-            probe_dict["weight"] = weights.partial_weight(include=["PUWeight", "genWeight"])
+            probe_dict["weight"] = weights.partial_weight(include=["PUWeight", "genWeight"]) / sum_genw_before_presel
             probe_dict["weight_gen"] = weights.partial_weight(include=["genWeight"])
             probe_dict["weight_total"] = weights.weight()
 
@@ -492,12 +495,15 @@ class PhotonTagNProbeFromNanoAOD(BaseTagNProbe):
 
     def find_probes(self, events, cut_and_count, mass_range, vars):
         # TODO: remove this temporary fix when https://github.com/scikit-hep/vector/issues/498 is resolved
-        photon_dict = {field: events.Photon[field] for field in events.Photon.fields} | {
-            "mass": dak.zeros_like(events.Photon.pt),
-            "charge": dak.zeros_like(events.Photon.pt),
-        }
-        events["Photon"] = dak.zip(photon_dict, with_name="Photon", behavior=nanoaod.behavior)
+        events["Photon", "mass"] = dak.zeros_like(events.Photon.pt)
+        events["Photon", "charge"] = dak.zeros_like(events.Photon.pt, dtype=np.int32)
 
+        if events.metadata.get("isMC") is None:
+            events.metadata["isMC"] = hasattr(events, "GenPart")
+        if events.metadata.get("isMC") and "genWeight" in events.fields:
+            sum_genw_before_presel = dak.sum(events.genWeight)
+        else:
+            sum_genw_before_presel = dak.num(events[events.run > -999], axis=0)
         if self.use_sc_eta:
             if "superclusterEta" not in events.Photon.fields:
                 events["Photon", "superclusterEta"] = calculate_photon_SC_eta(events.Photon, events.PV)
@@ -517,8 +523,6 @@ class PhotonTagNProbeFromNanoAOD(BaseTagNProbe):
             events["Electron", "phi_to_use"] = events.Electron.phi
         if self.extra_filter is not None:
             events = self.extra_filter(events, **self.extra_filter_args)
-        if events.metadata.get("isMC") is None:
-            events.metadata["isMC"] = hasattr(events, "GenPart")
         if events.metadata.get("goldenJSON") and not events.metadata.get("isMC"):
             lumimask = LumiMask(events.metadata["goldenJSON"])
             mask = lumimask(events.run, events.luminosityBlock)
@@ -623,7 +627,7 @@ class PhotonTagNProbeFromNanoAOD(BaseTagNProbe):
                 weights.add("PUWeight", pileup_weight)
             else:
                 weights.add("PUWeight", dak.ones_like(all_probe_events.event))
-            probe_dict["weight"] = weights.partial_weight(include=["PUWeight", "genWeight"])
+            probe_dict["weight"] = weights.partial_weight(include=["PUWeight", "genWeight"]) / sum_genw_before_presel
             probe_dict["weight_gen"] = weights.partial_weight(include=["genWeight"])
             probe_dict["weight_total"] = weights.weight()
 

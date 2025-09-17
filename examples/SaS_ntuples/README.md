@@ -16,7 +16,7 @@ voms-proxy-init --voms cms -valid 192:00
 apptainer shell -B ${XDG_RUNTIME_DIR} -B /afs -B /cvmfs/cms.cern.ch --bind /tmp  --bind /eos/user --bind /etc/sysconfig/ngbauth-submit  --env KRB5CCNAME=${XDG_RUNTIME_DIR}/krb5cc /cvmfs/unpacked.cern.ch/registry.cern.ch/cms-egamma/egamma-tnp:lxplus-el9-latest
 ```
 
-#### Install local changes 
+#### Install local changes
 ```
 pip install -e .
 <!-- export PATH="$HOME/.local/bin:$PATH" -->

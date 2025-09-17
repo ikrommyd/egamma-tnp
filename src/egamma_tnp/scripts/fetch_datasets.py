@@ -151,7 +151,7 @@ def get_dataset_dict_grid(fset: Iterable[Iterable[str]], xrd: str, dbs_instance:
             datasets_list = [datasets]
         else:
             datasets_list = datasets
-        for dataset in datasetss_list:
+        for dataset in datasets_list:
             logger.info(f"Fetching files for dataset '{name}': '{dataset}'")
             private_appendix = "" if not dataset.endswith("/USER") else " instance=prod/phys03"
             try:

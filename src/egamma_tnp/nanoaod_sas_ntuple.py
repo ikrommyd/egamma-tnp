@@ -146,7 +146,7 @@ class ScaleAndSmearingNtupleFromNanoAOD(BaseSaSNtuples):
                 vars["Electron"] = electron_fields
             if "Photon" not in vars:
                 vars["Photon"] = []
-                warnings.warn("vars does not contain 'Photon' key, not saving photon variables", UserWarning)
+                warnings.warn("vars does not contain 'Photon' key, not saving photon variables", UserWarning, stacklevel=2)
             elif vars["Photon"] == "all":
                 vars["Photon"] = photon_fields
 
@@ -254,7 +254,7 @@ def save_event_variables(events, dileptons, vars=None):
 def apply_pileup_weights(dileptons, events):
     if events.metadata.get("isMC"):
         if "pileupJSON" in events.metadata:
-            print(f"Loading pileup correction from {events.metadata['pileupJSON']}")
+            # print(f"Loading pileup correction from {events.metadata['pileupJSON']}")
             pileup_corr = load_correction(events.metadata["pileupJSON"])
         elif "pileupData" in events.metadata and "pileupMC" in events.metadata:
             pileup_corr = create_correction(events.metadata["pileupData"], events.metadata["pileupMC"])

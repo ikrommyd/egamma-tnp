@@ -197,9 +197,11 @@ def get_dataset_dict_local(fset: Iterable[Iterable[str]], recursive: bool, exten
 
     for name, dir_paths, meta in fset:
         if isinstance(dir_paths, str):
-            dir_paths = [dir_paths]
+            paths = [dir_paths]
+        else:
+            paths = dir_paths
 
-        for dir_path in dir_paths:
+        for dir_path in paths:
             logger.info(f"Collecting files for local dataset '{name}': '{dir_path}'")
             directory = Path(dir_path)
             if not directory.is_dir():
@@ -239,7 +241,7 @@ def main():
         # Read and parse the input YAML file
         fset = read_input_yaml(args.input, args.mode, logger)
     else:
-        logger.error("Input file must have a '.txt' ot '.yaml' extension and be a text file!")
+        logger.error("Input file must have a '.txt' or '.yaml' extension and be a text file!")
         sys.exit(1)
 
     if not fset:

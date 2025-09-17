@@ -16,9 +16,10 @@ voms-proxy-init --voms cms -valid 192:00
 apptainer shell -B ${XDG_RUNTIME_DIR} -B /afs -B /cvmfs/cms.cern.ch --bind /tmp  --bind /eos/user --bind /etc/sysconfig/ngbauth-submit  --env KRB5CCNAME=${XDG_RUNTIME_DIR}/krb5cc /cvmfs/unpacked.cern.ch/registry.cern.ch/cms-egamma/egamma-tnp:lxplus-el9-latest
 ```
 
-#### (Optionnal) Install local changes
+#### Install local changes 
 ```
 pip install -e .
+<!-- export PATH="$HOME/.local/bin:$PATH" -->
 ```
 ### Go into SaS example directory
 ```
@@ -38,4 +39,4 @@ fetch-datasets -i Run3_NanoV15/input24.yaml
 run-analysis --config config.json  --fileset Run3_NanoV15/input24.json  --output outputFolder --executor dask/lxplus --scaleout 100 --memory 5GiB --log-directory logs
 ```
 
-Use `--executor distributed` to run interactivly on the node instead of using HTCondor.
+Use `--executor distributed` to run interactively on the node instead of using HTCondor.

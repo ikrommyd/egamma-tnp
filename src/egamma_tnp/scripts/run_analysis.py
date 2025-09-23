@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import getpass
 import gzip
 import json
 import os
@@ -10,7 +11,7 @@ import dask
 from dask.diagnostics import ProgressBar
 from dask.distributed import Client, LocalCluster, performance_report, progress
 
-# from egamma_tnp.config import binning_manager
+from egamma_tnp.config import binning_manager
 from egamma_tnp.utils import runner_utils
 from egamma_tnp.utils.logger_utils import setup_logger
 from egamma_tnp.utils.misc import check_port, get_proxy
@@ -25,8 +26,8 @@ def main():
     else:
         logger = setup_logger(level="INFO")
     logger.info("Starting the E/Gamma Tag and Probe workflow")
-    # logger.info(f"Default binning is located at {os.path.join(os.path.dirname(binning_manager.__file__), 'default_binning.json')}")
-    # logger.info(f"Runtime binning is located at {os.path.join(os.path.dirname(binning_manager.__file__), f'/tmp/runtime_binning_{getpass.getuser()}.json')}")
+    logger.info(f"Default binning is located at {os.path.join(os.path.dirname(binning_manager.__file__), 'default_binning.json')}")
+    logger.info(f"Runtime binning is located at {os.path.join(os.path.dirname(binning_manager.__file__), f'/tmp/runtime_binning_{getpass.getuser()}.json')}")
 
     if args.executor != "distributed":
         if args.scaleout is None:

@@ -70,7 +70,7 @@ def get_fetcher_args() -> argparse.Namespace:
         "--limit",
         type=int,
         default=-1,
-        help="Filter files by extensions (e.g., .root .txt) (only for local mode). If not specified, all files are included.",
+        help="Limit to the first N files of each dataset in sample JSON. If not specified, all files are included.",
     )
     return parser.parse_args()
 

@@ -77,7 +77,7 @@ def main():
 
         client = Client(dashboard_address=args.dashboard_address)
         logger.info(f"Preprocessing the fileset with client: {client}")
-        fileset = preprocess(fileset, step_size=100_000, skip_bad_files=True, scheduler=None)[0]
+        fileset = preprocess(fileset, step_size=100_000, skip_bad_files=True, scheduler=client)[0]
         logger.info("Done preprocessing the fileset")
         client.shutdown()
 
@@ -248,6 +248,12 @@ def main():
     out = runner_utils.process_out(out, args.output)
     logger.info(f"Final output after post-processing:\n{out}")
     logger.info("Finished the E/Gamma Tag and Probe workflow")
+    if cluster:
+        logger.info("Shutting down the cluster")
+        cluster.close()
+    if client:
+        logger.info("Shutting down the client")
+        client.close()
 
 
 if __name__ == "__main__":

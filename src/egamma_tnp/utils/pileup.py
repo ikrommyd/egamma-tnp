@@ -2,12 +2,12 @@ from __future__ import annotations
 
 import correctionlib
 import correctionlib.convert
+import dask_awkward as dak
 import hist
 import numpy as np
 import uproot
-from coffea.lookup_tools.correctionlib_wrapper import correctionlib_wrapper
 from coffea.analysis_tools import Weights
-import dask_awkward as dak
+from coffea.lookup_tools.correctionlib_wrapper import correctionlib_wrapper
 
 
 def load_correction(correction_file, name=None):
@@ -85,7 +85,7 @@ def apply_pileup_weights(dileptons, events, sum_genw_before_presel=1.0, syst=Fal
         if pileup_corr is not None:
             pileup_weight_nom, pileup_weight_up, pileup_weight_down = get_pileup_weight(dileptons.nTrueInt, pileup_corr, syst=syst)
             weights.add("Pileup", pileup_weight_nom, pileup_weight_up if syst else None, pileup_weight_down if syst else None)
-            
+
             dileptons["weight_central"] = pileup_weight_nom
             if syst:
                 dileptons["weight_central_PileupUp"] = weights.partial_weight(include=["Pileup"], modifier="PileupUp")
@@ -98,6 +98,6 @@ def apply_pileup_weights(dileptons, events, sum_genw_before_presel=1.0, syst=Fal
 
         else:
             dileptons["weight_central"] = dak.ones_like(events.event)
-            dileptons["weight"] = dileptons["genWeight"] 
+            dileptons["weight"] = dileptons["genWeight"]
 
     return dileptons

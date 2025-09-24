@@ -140,7 +140,9 @@ class ScaleAndSmearingNtupleFromNanoAOD(BaseNTuplizer):
         good_events["Electron"] = electrons
         sorted_electrons = good_events.Electron[ak.argsort(good_events.Electron.pt, ascending=False)]
 
-        dielectrons = ScaleAndSmearingNtupleFromNanoAOD._process_zcands(leptons=sorted_electrons, mass_range=mass_range, lead_pt_cut=self.lead_pt_cut, prefixes=("ele_lead", "ele_sublead"))
+        dielectrons = ScaleAndSmearingNtupleFromNanoAOD._process_zcands(
+            leptons=sorted_electrons, mass_range=mass_range, lead_pt_cut=self.lead_pt_cut, prefixes=("ele_lead", "ele_sublead")
+        )
         dielectrons = ScaleAndSmearingNtupleFromNanoAOD._save_event_variables(good_events, dielectrons, vars=vars)
         dielectrons = apply_pileup_weights(dielectrons, good_events, sum_genw_before_presel=sum_genw_before_presel, syst=True)
 
@@ -227,8 +229,3 @@ class ScaleAndSmearingNtupleFromNanoAOD(BaseNTuplizer):
                     dileptons[f"{collection}_{var}"] = events[collection][var]
 
         return dileptons
-
-
-
-
-

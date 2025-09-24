@@ -665,7 +665,6 @@ class BaseNTuplizer:
         fileset,
         schemaclass,
     ):
-        
         self.fileset = fileset
         self.schemaclass = schemaclass
         self.default_vars = None
@@ -772,7 +771,7 @@ class BaseNTuplizer:
             good_events = events
 
         return good_events
-    
+
     @staticmethod
     def apply_goldenJSON(events):
         lumimask = LumiMask(events.metadata["goldenJSON"])

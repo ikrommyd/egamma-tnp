@@ -46,7 +46,7 @@
 #  }
 
 ###################################################################################
-# RUN EXAMPLE CONFIG FILE: run-fitter --config src/egamma_tnp/config/default_config.json
+# RUN ON A CONFIG FILE: run-fitter --config config.json
 ###################################################################################
 from __future__ import annotations
 

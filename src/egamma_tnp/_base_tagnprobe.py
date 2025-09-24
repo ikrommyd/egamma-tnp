@@ -4,6 +4,7 @@ from functools import partial
 
 import dask_awkward as dak
 from coffea.dataset_tools import apply_to_fileset
+from coffea.lumi_tools import LumiMask
 
 
 class BaseTagNProbe:
@@ -656,38 +657,20 @@ class BaseTagNProbe:
             )
 
 
-class BaseSaSNtuples:
-    """Base class for Tag and Probe classes."""
+class BaseNTuplizer:
+    """Base class for any NTuplizer classes."""
 
     def __init__(
         self,
         fileset,
-        lead_pt_cut,
-        sublead_pt_cut,
-        eta_cut,
-        trigger_paths,
-        extra_zcands_mask,
-        extra_filter,
-        extra_filter_args,
-        avoid_ecal_transition,
         schemaclass,
     ):
-        if extra_filter_args is None:
-            extra_filter_args = {}
-
+        
         self.fileset = fileset
-        self.lead_pt_cut = lead_pt_cut
-        self.sublead_pt_cut = sublead_pt_cut
-        self.eta_cut = eta_cut
-        self.trigger_paths = trigger_paths
-        self.extra_zcands_mask = extra_zcands_mask
-        self.extra_filter = extra_filter
-        self.extra_filter_args = extra_filter_args
-        self.avoid_ecal_transition = avoid_ecal_transition
         self.schemaclass = schemaclass
         self.default_vars = None
 
-    def get_sas_ntuples(
+    def get_ntuples(
         self,
         mass_range=None,
         vars=None,
@@ -697,45 +680,37 @@ class BaseSaSNtuples:
         scheduler=None,
         progress=False,
     ):
-        """Get arrays of tag, probe and event-level variables.
-        WARNING: Not recommended to be used for large datasets as the arrays can be very large.
+        """
+        Get arrays of lepton pair and event-level variables.
+
+        WARNING: Not recommended for large datasets as the arrays can be very large.
 
         Parameters
         ----------
-            cut_and_count: bool, optional
-                Whether to use the cut and count method to find the probes coming from a Z boson.
-                If False, invariant mass histograms of the tag-probe pairs will be filled to be fit by a Signal+Background model.
-                The default is True.
-            mass_range: int or float or tuple of two ints or floats, optional
-                The allowed mass range of the dilepton pairs.
-                If it is a single value, it represents the mass window around the Z mass.
-                If it is a tuple of two values, it represents the upper and lower bounds of the mass range.
-                If None, the default is 30 GeV around the Z mass for cut and count efficiencies and 50-130 GeV range otherwise.
-                The default is None.
-            vars: list, optional
-                The list of variables of the probes to return. The default is ["el_pt", "el_eta", "el_phi"].
-            flat: bool, optional
-                Whether to return flat arrays. The otherwise output needs to be flattenable.
-                The default is False.
-            uproot_options : dict, optional
-                Options to pass to uproot. Pass at least {"allow_read_errors_with_report": True} to turn on file access reports.
-            compute : bool, optional
-                Whether to return the computed arrays or the delayed arrays.
-                The default is False.
-            scheduler : str, optional
-                The dask scheduler to use. The default is None.
-                Only used if compute is True.
-            progress : bool, optional
-                Whether to show a progress bar if `compute` is True. The default is False.
-                Only meaningful if compute is True and no distributed Client is used.
+        mass_range : int, float, or tuple of two ints/floats, optional
+            Allowed mass range for the dilepton pairs.
+            If a single value, it is the mass window around the Z mass.
+            If a tuple, it is the lower and upper bounds.
+            Default is (50, 130).
+        vars : list, optional
+            List of variables to return. Defaults to self.default_vars.
+        flat : bool, optional
+            Whether to return flat arrays. Default is False.
+        uproot_options : dict, optional
+            Options to pass to uproot. For file access reports, use {"allow_read_errors_with_report": True}.
+        compute : bool, optional
+            Whether to return computed arrays or delayed arrays. Default is False.
+        scheduler : str, optional
+            Dask scheduler to use if compute is True. Default is None.
+        progress : bool, optional
+            Show a progress bar if compute is True. Default is False.
 
         Returns
         -------
-            A tuple of the form (array, report) if `allow_read_errors_with_report` is True, otherwise just arrays.
-            arrays: a zip object containing the fields specified in `vars` and a field with a boolean array for each filter.
-                It will also contain the `pair_mass` field if cut_and_count is False.
-            report: dict of awkward arrays of the same form as fileset.
-                For each dataset an awkward array that contains information about the file access is present.
+        arrays : zip object or similar
+            Contains fields specified in `vars`. May include `pair_mass` if relevant.
+        report : dict, optional
+            If file access reporting is enabled, a dict of arrays with file access info for each dataset.
         """
         if uproot_options is None:
             uproot_options = {}
@@ -774,3 +749,33 @@ class BaseSaSNtuples:
             return computed[0]
 
         return to_compute
+
+    @staticmethod
+    def apply_trigger_paths(events, trigger_paths):
+        if trigger_paths is not None:
+            trigger_names = []
+            if isinstance(trigger_paths, str):
+                trigger_paths = [trigger_paths]
+            # Remove wildcards from trigger paths and find the corresponding fields in events.HLT
+            for trigger in trigger_paths:
+                actual_trigger = trigger.replace("*", "")
+                for field in events.HLT.fields:
+                    if field.startswith(actual_trigger):
+                        trigger_names.append(field)
+            # Select events that pass any of the specified trigger paths
+            trigger_mask = events.run < 0
+            for trigger in trigger_names:
+                trigger_mask = trigger_mask | getattr(events.HLT, trigger)
+
+            good_events = events[trigger_mask]
+        else:
+            good_events = events
+
+        return good_events
+    
+    @staticmethod
+    def apply_goldenJSON(events):
+        lumimask = LumiMask(events.metadata["goldenJSON"])
+        mask = lumimask(events.run, events.luminosityBlock)
+        events = events[mask]
+        return events

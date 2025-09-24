@@ -6,6 +6,8 @@ import hist
 import numpy as np
 import uproot
 from coffea.lookup_tools.correctionlib_wrapper import correctionlib_wrapper
+from coffea.analysis_tools import Weights
+import dask_awkward as dak
 
 
 def load_correction(correction_file, name=None):
@@ -63,3 +65,39 @@ def get_pileup_weight(true_pileup, pileup_corr, syst=False):
         else:
             return pileup_corr(true_pileup, "nominal")
     return pileup_corr(true_pileup)
+
+
+def apply_pileup_weights(dileptons, events, sum_genw_before_presel=1.0, syst=False):
+    if events.metadata.get("isMC"):
+        weights = Weights(size=None, storeIndividual=True)
+        if "pileupJSON" in events.metadata:
+            pileup_corr = load_correction(events.metadata["pileupJSON"])
+        elif "pileupData" in events.metadata and "pileupMC" in events.metadata:
+            pileup_corr = create_correction(events.metadata["pileupData"], events.metadata["pileupMC"])
+        else:
+            pileup_corr = None
+
+        if "genWeight" in events.fields:
+            weights.add("genWeight", events.genWeight)
+        else:
+            weights.add("genWeight", dak.ones_like(events.event))
+
+        if pileup_corr is not None:
+            pileup_weight_nom, pileup_weight_up, pileup_weight_down = get_pileup_weight(dileptons.nTrueInt, pileup_corr, syst=syst)
+            weights.add("Pileup", pileup_weight_nom, pileup_weight_up if syst else None, pileup_weight_down if syst else None)
+            
+            dileptons["weight_central"] = pileup_weight_nom
+            if syst:
+                dileptons["weight_central_PileupUp"] = weights.partial_weight(include=["Pileup"], modifier="PileupUp")
+                dileptons["weight_central_PileupDown"] = weights.partial_weight(include=["Pileup"], modifier="PileupDown")
+
+            dileptons["weight"] = weights.partial_weight(include=["Pileup", "genWeight"]) / sum_genw_before_presel
+            if syst:
+                dileptons["weight_PileupUp"] = weights.partial_weight(include=["Pileup", "genWeight"], modifier="PileupUp")
+                dileptons["weight_PileupDown"] = weights.partial_weight(include=["Pileup", "genWeight"], modifier="PileupDown")
+
+        else:
+            dileptons["weight_central"] = dak.ones_like(events.event)
+            dileptons["weight"] = dileptons["genWeight"] 
+
+    return dileptons

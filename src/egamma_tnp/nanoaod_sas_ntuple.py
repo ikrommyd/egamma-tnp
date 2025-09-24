@@ -5,15 +5,14 @@ import warnings
 import awkward as ak
 import dask_awkward as dak
 import numpy as np
-from coffea.lumi_tools import LumiMask
 from coffea.nanoevents import NanoAODSchema
 
-from egamma_tnp._base_tagnprobe import BaseSaSNtuples
+from egamma_tnp._base_tagnprobe import BaseNTuplizer
 from egamma_tnp.utils import calculate_photon_SC_eta, custom_delta_r
-from egamma_tnp.utils.pileup import create_correction, get_pileup_weight, load_correction
+from egamma_tnp.utils.pileup import apply_pileup_weights
 
 
-class ScaleAndSmearingNtupleFromNanoAOD(BaseSaSNtuples):
+class ScaleAndSmearingNtupleFromNanoAOD(BaseNTuplizer):
     def __init__(
         self,
         fileset,
@@ -27,68 +26,46 @@ class ScaleAndSmearingNtupleFromNanoAOD(BaseSaSNtuples):
         extra_filter_args=None,
         avoid_ecal_transition=False,
     ):
-        """Scale and Smearing ntuples from NanoAOD and EGamma NanoAOD.
+        """
+        Initialize the ScaleAndSmearingNtupleFromNanoAOD class.
 
         Parameters
         ----------
-        fileset: dict
-            The fileset to calculate the trigger efficiencies for.
-        filters: dict
-            The names of the filters to calculate the efficiencies for.
-        is_photon_filter: dict or None, optional
-            Whether the filters to calculate the efficiencies are photon filters. The default is all False.
-        trigger_pt: dict or None, optional
-            The Pt threshold of the trigger to calculate the efficiencies over that threshold. Required for trigger efficiencies.
-            The default is None.
-        tags_pt_cut: int or float, optional
-            The Pt cut to apply to the tag electrons. The default is 35.
-        probes_pt_cuts: int or float, optional
-            The Pt threshold of the probe electron to calculate efficiencies over that threshold. The default is None.
-        tags_abseta_cut: int or float, optional
-            The absolute Eta cut to apply to the tag electrons. The default is 2.5.
-        sub_abseta_cut: int or float, optional
-            The absolute Eta cut to apply to the probe electrons. The default is 2.5.
-        sub_abseta_cut: int or float, optional
-            The absolute Eta cut to apply to the probe electrons. The default is 2.5.
-        filterbit: dict or None, optional
-            The filterbit used to match probes with trigger objects. Required for trigger efficiencies.
-            The default is None.
-        cutbased_id: str, optional
-            ID expression to apply to the probes. An example is "cutBased >= 2".
-            If None, no cutbased ID is applied. The default is None.
-        extra_zcands_mask: str, optional
-            An extra mask to apply to the Z candidates. The default is None.
-            Must be of the form `zcands.tag/probe.<mask> & zcands.tag/probe.<mask> & ...`.
-        extra_filter: Callable, optional
-            An extra function to filter the events. The default is None.
-            Must take in a coffea NanoEventsArray and return a filtered NanoEventsArray of the events you want to keep.
-        extra_filter_args: dict, optional
-            Extra arguments to pass to extra_filter. The default is {}.
-        use_sc_eta: bool, optional
-            Use the supercluster Eta instead of the Eta from the primary vertex. The default is False.
-        use_sc_phi: bool, optional
-            Use the supercluster Phi instead of the Phi from the primary vertex. The default is False.
-        avoid_ecal_transition_tags: bool, optional
-            Whether to avoid the ECAL transition region for the tags with an eta cut. The default is True.
-        avoid_ecal_transition_probes: bool, optional
-            Whether to avoid the ECAL transition region for the probes with an eta cut. The default is False.
-        require_event_to_pass_hlt_filter: bool, optional
-            Also require the event to have passed the filter HLT filter under study to consider a probe belonging to that event as passing.
-            The default is True.
+        fileset : dict
+            Dictionary specifying the input files to process.
+        lead_pt_cut : float, optional
+            Minimum transverse momentum for the leading electron (default: 20).
+        sublead_pt_cut : float, optional
+            Minimum transverse momentum for the subleading electron (default: 10).
+        eta_cut : float, optional
+            Maximum absolute pseudorapidity for electrons (default: 2.5).
+        trigger_paths : list or str, optional
+            List of trigger path names to apply as event selection (default: None).
+        extra_zcands_mask : str, optional
+            Additional mask expression to apply to Z candidates (default: None).
+        extra_filter : Callable, optional
+            Function to further filter events. Should accept and return a NanoEventsArray (default: None).
+        extra_filter_args : dict, optional
+            Arguments to pass to extra_filter (default: None).
+        avoid_ecal_transition : bool, optional
+            If True, exclude electrons in the ECAL transition region (default: False).
         """
 
         super().__init__(
             fileset=fileset,
-            lead_pt_cut=lead_pt_cut,
-            sublead_pt_cut=sublead_pt_cut,
-            eta_cut=eta_cut,
-            trigger_paths=trigger_paths,
-            extra_zcands_mask=extra_zcands_mask,
-            extra_filter=extra_filter,
-            extra_filter_args=extra_filter_args,
-            avoid_ecal_transition=avoid_ecal_transition,
             schemaclass=NanoAODSchema,
         )
+
+        self.lead_pt_cut = lead_pt_cut
+        self.sublead_pt_cut = sublead_pt_cut
+        self.eta_cut = eta_cut
+        self.trigger_paths = trigger_paths
+        self.extra_zcands_mask = extra_zcands_mask
+        self.extra_filter = extra_filter
+        if extra_filter_args is None:
+            extra_filter_args = {}
+        self.extra_filter_args = extra_filter_args
+        self.avoid_ecal_transition = avoid_ecal_transition
 
     def __repr__(self):
         n_of_files = 0
@@ -99,17 +76,18 @@ class ScaleAndSmearingNtupleFromNanoAOD(BaseSaSNtuples):
     def find_lepton_pairs(self, events, mass_range=(50, 130), vars=None):
         if events.metadata.get("isMC") is None:
             events.metadata["isMC"] = hasattr(events, "GenPart")
-            if events.metadata["isMC"]:
-                events.metadata["sum_genw_presel"] = str(dak.sum(events.genWeight))
+            if events.metadata.get("isMC") and "genWeight" in events.fields:
+                sum_genw_before_presel = dak.sum(events.genWeight)
+            else:
+                sum_genw_before_presel = dak.num(events[events.run > -999], axis=0)
         if self.extra_filter is not None:
             events = self.extra_filter(events, **self.extra_filter_args)
+
         if events.metadata.get("goldenJSON") and not events.metadata.get("isMC"):
-            lumimask = LumiMask(events.metadata["goldenJSON"])
-            mask = lumimask(events.run, events.luminosityBlock)
-            events = events[mask]
+            events = BaseNTuplizer.apply_goldenJSON(events)
 
         # apply the trigger path filter if specified
-        good_events = apply_trigger_paths(events, self.trigger_paths)
+        good_events = BaseNTuplizer.apply_trigger_paths(events, self.trigger_paths)
 
         # add superclusterEta to the Photon and Electron objects if not already present
         if "superclusterEta" not in good_events.Photon.fields:
@@ -162,9 +140,9 @@ class ScaleAndSmearingNtupleFromNanoAOD(BaseSaSNtuples):
         good_events["Electron"] = electrons
         sorted_electrons = good_events.Electron[ak.argsort(good_events.Electron.pt, ascending=False)]
 
-        dielectrons = process_zcands(leptons=sorted_electrons, mass_range=mass_range, lead_pt_cut=self.lead_pt_cut, prefixes=("ele_lead", "ele_sublead"))
-        dielectrons = save_event_variables(good_events, dielectrons, vars=vars)
-        dielectrons = apply_pileup_weights(dielectrons, good_events)
+        dielectrons = ScaleAndSmearingNtupleFromNanoAOD._process_zcands(leptons=sorted_electrons, mass_range=mass_range, lead_pt_cut=self.lead_pt_cut, prefixes=("ele_lead", "ele_sublead"))
+        dielectrons = ScaleAndSmearingNtupleFromNanoAOD._save_event_variables(good_events, dielectrons, vars=vars)
+        dielectrons = apply_pileup_weights(dielectrons, good_events, sum_genw_before_presel=sum_genw_before_presel, syst=True)
 
         # flatten the output
         output = {}
@@ -195,106 +173,62 @@ class ScaleAndSmearingNtupleFromNanoAOD(BaseSaSNtuples):
 
         return trig_matched_locs
 
+    @staticmethod
+    def _process_zcands(leptons, lead_pt_cut=20, mass_range=(50, 130), prefixes=("ele_lead", "ele_sublead")):
+        dileptons = ak.combinations(leptons, 2, fields=[prefixes[0], prefixes[1]])
+        # Apply the cut on the leading leptons's pT
+        dileptons = dileptons[dileptons[prefixes[0]].pt > lead_pt_cut]
 
-def process_zcands(leptons, lead_pt_cut=20, mass_range=(50, 130), prefixes=("ele_lead", "ele_sublead")):
-    dileptons = ak.combinations(leptons, 2, fields=[prefixes[0], prefixes[1]])
-    # Apply the cut on the leading leptons's pT
-    dileptons = dileptons[dileptons[prefixes[0]].pt > lead_pt_cut]
+        # Combine four-momenta of the two leptons
+        dilepton_4mom = dileptons[prefixes[0]] + dileptons[prefixes[1]]
+        dileptons["pt"] = dilepton_4mom.pt
+        dileptons["eta"] = dilepton_4mom.eta
+        dileptons["phi"] = dilepton_4mom.phi
+        dileptons["mass"] = dilepton_4mom.mass
+        dileptons["charge"] = dilepton_4mom.charge
 
-    # Combine four-momenta of the two leptons
-    dilepton_4mom = dileptons[prefixes[0]] + dileptons[prefixes[1]]
-    dileptons["pt"] = dilepton_4mom.pt
-    dileptons["eta"] = dilepton_4mom.eta
-    dileptons["phi"] = dilepton_4mom.phi
-    dileptons["mass"] = dilepton_4mom.mass
-    dileptons["charge"] = dilepton_4mom.charge
+        # Calculate rapidity
+        dilepton_pz = dilepton_4mom.z
+        dilepton_e = dilepton_4mom.energy
+        dileptons["rapidity"] = 0.5 * np.log((dilepton_e + dilepton_pz) / (dilepton_e - dilepton_pz))
 
-    # Calculate rapidity
-    dilepton_pz = dilepton_4mom.z
-    dilepton_e = dilepton_4mom.energy
-    dileptons["rapidity"] = 0.5 * np.log((dilepton_e + dilepton_pz) / (dilepton_e - dilepton_pz))
+        # Sort dielectron candidates by pT in descending order
+        dileptons = dileptons[ak.argsort(dileptons.pt, ascending=False)]
 
-    # Sort dielectron candidates by pT in descending order
-    dileptons = dileptons[ak.argsort(dileptons.pt, ascending=False)]
+        dileptons = dileptons[(dileptons.mass > mass_range[0]) & (dileptons.mass < mass_range[1])]
+        dileptons = dileptons[dileptons.ele_lead.charge != dileptons.ele_sublead.charge]
+        selection_mask = ~ak.is_none(dileptons)
+        dileptons = dileptons[selection_mask]
 
-    dileptons = dileptons[(dileptons.mass > mass_range[0]) & (dileptons.mass < mass_range[1])]
-    dileptons = dileptons[dileptons.ele_lead.charge != dileptons.ele_sublead.charge]
-    selection_mask = ~ak.is_none(dileptons)
-    dileptons = dileptons[selection_mask]
+        return ak.firsts(dileptons)
 
-    return ak.firsts(dileptons)
-
-
-def save_event_variables(events, dileptons, vars=None):
-    dileptons["event"] = events.event
-    dileptons["lumi"] = events.luminosityBlock
-    dileptons["run"] = events.run
-    # nPV just for validation of pileup reweighting
-    dileptons["nPV"] = events.PV.npvs
-    if hasattr(events.Rho, "fixedGridRhoAll"):
-        dileptons["fixedGridRhoAll"] = events.Rho.fixedGridRhoAll
-    # annotate dielectrons with dZ information (difference between z position of GenVtx and PV) as required by flashggfinalfits
-    if events.metadata.get("isMC"):
-        dileptons["genWeight"] = events.genWeight
-        dileptons["nTrueInt"] = events.Pileup.nTrueInt
-        dileptons["dZ"] = events.GenVtx.z - events.PV.z
-    # Fill zeros for data because there is no GenVtx for data, obviously
-    else:
-        dileptons["dZ"] = ak.zeros_like(events.PV.z)
-
-    # save variables from other collections if specified
-    for collection in vars.keys() if vars is not None else []:
-        if collection not in ["Electron", "Photon", "Muon"]:
-            for var in events[collection].fields if vars[collection] == "all" else vars[collection]:
-                dileptons[f"{collection}_{var}"] = events[collection][var]
-
-    return dileptons
-
-
-def apply_pileup_weights(dileptons, events):
-    if events.metadata.get("isMC"):
-        if "pileupJSON" in events.metadata:
-            # print(f"Loading pileup correction from {events.metadata['pileupJSON']}")
-            pileup_corr = load_correction(events.metadata["pileupJSON"])
-        elif "pileupData" in events.metadata and "pileupMC" in events.metadata:
-            pileup_corr = create_correction(events.metadata["pileupData"], events.metadata["pileupMC"])
+    @staticmethod
+    def _save_event_variables(events, dileptons, vars=None):
+        dileptons["event"] = events.event
+        dileptons["lumi"] = events.luminosityBlock
+        dileptons["run"] = events.run
+        # nPV and fixedGridRhoAll just for validation of pileup reweighting
+        dileptons["nPV"] = events.PV.npvs
+        if hasattr(events.Rho, "fixedGridRhoAll"):
+            dileptons["fixedGridRhoAll"] = events.Rho.fixedGridRhoAll
+        # annotate dielectrons with dZ information (difference between z position of GenVtx and PV) as required by flashggfinalfits
+        if events.metadata.get("isMC"):
+            dileptons["genWeight"] = events.genWeight
+            dileptons["nTrueInt"] = events.Pileup.nTrueInt
+            dileptons["dZ"] = events.GenVtx.z - events.PV.z
+        # Fill zeros for data because there is no GenVtx for data, obviously
         else:
-            pileup_corr = None
-        if pileup_corr is not None:
-            pileup_weight_nom, pileup_weight_up, pileup_weight_down = get_pileup_weight(dileptons.nTrueInt, pileup_corr, syst=True)
-            dileptons["weight_central"] = pileup_weight_nom
-            dileptons["weight_central_PileupUp"] = pileup_weight_up
-            dileptons["weight_central_PileupDown"] = pileup_weight_down
+            dileptons["dZ"] = ak.zeros_like(events.PV.z)
 
-            dileptons["weight"] = pileup_weight_nom * dileptons["genWeight"]
-            dileptons["weight_PileupUp"] = pileup_weight_up * dileptons["genWeight"]
-            dileptons["weight_PileupDown"] = pileup_weight_down * dileptons["genWeight"]
+        # save variables from other collections if specified
+        for collection in vars.keys() if vars is not None else []:
+            if collection not in ["Electron", "Photon", "Muon"]:
+                for var in events[collection].fields if vars[collection] == "all" else vars[collection]:
+                    dileptons[f"{collection}_{var}"] = events[collection][var]
 
-        else:
-            dileptons["weight_central"] = ak.ones_like(dileptons.pt)
-            dileptons["weight"] = dileptons["genWeight"]
-
-    return dileptons
+        return dileptons
 
 
-def apply_trigger_paths(events, trigger_paths):
-    if trigger_paths is not None:
-        trigger_names = []
-        if isinstance(trigger_paths, str):
-            trigger_paths = [trigger_paths]
-        # Remove wildcards from trigger paths and find the corresponding fields in events.HLT
-        for trigger in trigger_paths:
-            actual_trigger = trigger.replace("*", "")
-            for field in events.HLT.fields:
-                if field.startswith(actual_trigger):
-                    trigger_names.append(field)
-        # Select events that pass any of the specified trigger paths
-        trigger_mask = events.run < 0
-        for trigger in trigger_names:
-            trigger_mask = trigger_mask | getattr(events.HLT, trigger)
 
-        good_events = events[trigger_mask]
-    else:
-        good_events = events
 
-    return good_events
+

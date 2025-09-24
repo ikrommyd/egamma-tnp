@@ -19,7 +19,6 @@ apptainer shell -B ${XDG_RUNTIME_DIR} -B /afs -B /cvmfs/cms.cern.ch --bind /tmp 
 #### Install local changes
 ```
 pip install -e .
-<!-- export PATH="$HOME/.local/bin:$PATH" -->
 ```
 ### Go into SaS example directory
 ```

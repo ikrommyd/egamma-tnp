@@ -4,14 +4,14 @@
     "lead_pt_cut": 20.0,
     "sublead_pt_cut": 10.0,
     "eta_cut": 2.5,
-    "avoid_ecal_transition": false,
+    "avoid_ecal_transition": true,
     "trigger_paths": [
       "Ele23_Ele12_CaloIdL_TrackIdL_IsoVL*"
     ]
   },
   "methods": [
     {
-      "name": "get_sas_ntuples",
+      "name": "get_ntuples",
       "args": {
          "vars": {"Photon": ["pt", "eta", "phi", "seedGain", "superclusterEta", "r9", "sieie", "hoe", "hoe_PUcorr", "s4", "phiWidth", "etaWidth", "sieip", "sipip", "esEffSigmaRR", "esEnergyOverRawE",
                             "cutBased", "mvaID", "mvaID_WP80", "mvaID_WP90",

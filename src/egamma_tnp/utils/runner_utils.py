@@ -159,7 +159,7 @@ def run_methods(instance, methods):
                 raise ValueError(f"Argument `{arg}` is not allowed to be specified in the JSON configuration file.")
 
         # Handle methods with a list of filters
-        if method_name not in ["get_tnp_arrays", "get_sas_ntuples"]:
+        if method_name not in ["get_tnp_arrays", "get_ntuples"]:
             new_method_args = method_args.copy()
             del new_method_args["filter"]
             modified_filters = [method_args["filter"]] if isinstance(method_args["filter"], str) else method_args["filter"]
@@ -225,7 +225,7 @@ def process_to_compute(to_compute, output_dir, repartition_n=5, skip_report=Fals
         method_counts[method] = method_counts.get(method, 0) + 1
         subdir_name = f"{method}_{method_counts[method]}"
 
-        if method in ["get_tnp_arrays", "get_sas_ntuples"]:
+        if method in ["get_tnp_arrays", "get_ntuples"]:
             if isinstance(result, tuple):
                 arrays, reports = result
             else:
@@ -328,7 +328,7 @@ def process_out(out, output_dir):
                     save_histogram_dict_to_pickle(hist_dict, output_dir, dataset, subdir_name, filename)
 
         if reports:
-            if method in ["get_tnp_arrays", "get_sas_ntuples"]:
+            if method in ["get_tnp_arrays", "get_ntuples"]:
                 for dataset, report in reports.items():
                     save_report_to_json(report, output_dir, dataset, subdir_name)
             else:

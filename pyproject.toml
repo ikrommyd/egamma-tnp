@@ -49,6 +49,11 @@ Homepage = "https://github.com/iasonkrom/egamma-tnp"
 "Bug Tracker" = "https://github.com/iasonkrom/egamma-tnp/issues"
 
 [project.optional-dependencies]
+fit = [
+  "iminuit",
+  "ipywidgets",
+  "PySide6",
+]
 dev = [
   "pre-commit",
   "ruff",

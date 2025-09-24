@@ -37,6 +37,7 @@ classifiers = [
 dependencies = [
   "click>=8.0.4",
   "coffea[dask,rucio]>=2025.7.0",
+  "awkward!=2.8.9",
   "dask<2025",
   "distributed<2025",
   "pyarrow<21.0.0",

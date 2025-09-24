@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from functools import partial
+
 import numpy as np
 from numba_stats import cmsshape
 from numpy.polynomial.chebyshev import Chebyshev
@@ -173,7 +175,7 @@ def CB_G(x, mu, sigma, alpha, n, sigma2):
     return y_total / normalization
 
 
-def phase_space(x, a, b, x_min=x_min, x_max=x_max):
+def phase_space(x, a, b, x_min, x_max):
     # Clip exponents into a safe range
     a_clamped = np.clip(a, 0, 20)
     b_clamped = np.clip(b, 0, 20)
@@ -193,7 +195,7 @@ def phase_space(x, a, b, x_min=x_min, x_max=x_max):
     return pdf / (norm if norm > 0 else 1e-8)
 
 
-def linear_pdf(x, b, C, x_min=x_min, x_max=x_max):
+def linear_pdf(x, b, C, x_min, x_max):
     x_mid = 0.5 * (x_min + x_max)
     lin = b * (x - x_mid) + C
 
@@ -205,7 +207,7 @@ def linear_pdf(x, b, C, x_min=x_min, x_max=x_max):
     return lin / denom
 
 
-def linear_cdf(x, b, C, x_min=x_min, x_max=x_max):
+def linear_cdf(x, b, C, x_min, x_max):
     x = np.asarray(x)
     den = 0.5 * b * (x_max**2 - x_min**2) + C * (x_max - x_min)
     if den <= 0:
@@ -220,7 +222,7 @@ def linear_cdf(x, b, C, x_min=x_min, x_max=x_max):
     return cdf
 
 
-def exponential_pdf(x, C, x_min=x_min, x_max=x_max):
+def exponential_pdf(x, C):
     z = -C * x
     z_max = np.max(z)
     # subtract z_max to stabilize
@@ -235,17 +237,17 @@ def exponential_pdf(x, C, x_min=x_min, x_max=x_max):
     return np.exp(z) / norm
 
 
-def exponential_cdf(x, C, x_min=x_min, x_max=x_max):
+def exponential_cdf(x, C):
     cdf = 1 - np.exp(-C * x)
     return cdf
 
 
-def chebyshev_background(x, *coeffs, x_min=x_min, x_max=x_max):
+def chebyshev_background(x, *coeffs, x_min, x_max):
     x_norm = 2 * (x - x_min) / (x_max - x_min) - 1
     return Chebyshev(coeffs)(x_norm) / np.trapezoid(Chebyshev(coeffs)(x_norm), x)
 
 
-def bernstein_poly(x, *coeffs, x_min=x_min, x_max=x_max):
+def bernstein_poly(x, *coeffs, x_min, x_max):
     c = np.array(coeffs).reshape(-1, 1)
     return BPoly(c, [x_min, x_max])(x)
 
@@ -260,7 +262,7 @@ def sigmoid(x):
 
 
 # Shape parameters
-def shape_params(mass):
+def shape_params(mass, x_min, x_max):
     if mass == "Z" or mass == "Z_muon":
         SIGNAL_MODELS = {
             "dcb": {
@@ -286,21 +288,26 @@ def shape_params(mass):
 
         BACKGROUND_MODELS = {
             "ps": {
-                "pdf": lambda x, a, b: phase_space(x, a, b, x_min=x_min, x_max=x_max),
+                "pdf": partial(phase_space, x_min=x_min, x_max=x_max),
                 "cdf": None,
                 "params": ["a", "b"],
                 "bounds": {"a": (0, 0.5, 10), "b": (0, 1, 30)},
             },
-            "lin": {"pdf": linear_pdf, "cdf": linear_cdf, "params": ["b", "C"], "bounds": {"b": (-1, 0.1, 1), "C": (0, 0.1, 10)}},
+            "lin": {
+                "pdf": partial(linear_pdf, x_min=x_min, x_max=x_max),
+                "cdf": partial(linear_cdf, x_min=x_min, x_max=x_max),
+                "params": ["b", "C"],
+                "bounds": {"b": (-1, 0.1, 1), "C": (0, 0.1, 10)},
+            },
             "exp": {"pdf": exponential_pdf, "cdf": exponential_cdf, "params": ["C"], "bounds": {"C": (-10, 0.1, 10)}},
             "cheb": {
-                "pdf": chebyshev_background,
+                "pdf": partial(chebyshev_background, x_min=x_min, x_max=x_max),
                 "cdf": None,
                 "params": ["c0", "c1", "c2"],
                 "bounds": {"c0": (0.001, 1, 3), "c1": (0.001, 1, 3), "c2": (0.001, 1, 3)},
             },
             "bpoly": {
-                "pdf": bernstein_poly,
+                "pdf": partial(bernstein_poly, x_min=x_min, x_max=x_max),
                 "cdf": None,
                 "params": ["c0", "c1", "c2"],
                 "bounds": {
@@ -355,21 +362,26 @@ def shape_params(mass):
 
         BACKGROUND_MODELS = {
             "ps": {
-                "pdf": lambda x, a, b: phase_space(x, a, b, x_min=x_min, x_max=x_max),
+                "pdf": partial(phase_space, x_min=x_min, x_max=x_max),
                 "cdf": None,
                 "params": ["a", "b"],
                 "bounds": {"a": (0, 0.5, 10), "b": (0, 1, 30)},
             },
-            "lin": {"pdf": linear_pdf, "cdf": linear_cdf, "params": ["b", "C"], "bounds": {"b": (-1, 0.1, 1), "C": (0, 0.1, 10)}},
+            "lin": {
+                "pdf": partial(linear_pdf, x_min=x_min, x_max=x_max),
+                "cdf": partial(linear_cdf, x_min=x_min, x_max=x_max),
+                "params": ["b", "C"],
+                "bounds": {"b": (-1, 0.1, 1), "C": (0, 0.1, 10)},
+            },
             "exp": {"pdf": exponential_pdf, "cdf": exponential_cdf, "params": ["C"], "bounds": {"C": (-10, 0.1, 10)}},
             "cheb": {
-                "pdf": chebyshev_background,
+                "pdf": partial(chebyshev_background, x_min=x_min, x_max=x_max),
                 "cdf": None,
                 "params": ["c0", "c1", "c2"],
                 "bounds": {"c0": (0.001, 1, 3), "c1": (0.001, 1, 3), "c2": (0.001, 1, 3)},
             },
             "bpoly": {
-                "pdf": bernstein_poly,
+                "pdf": partial(bernstein_poly, x_min=x_min, x_max=x_max),
                 "cdf": None,
                 "params": ["c0", "c1", "c2"],
                 "bounds": {

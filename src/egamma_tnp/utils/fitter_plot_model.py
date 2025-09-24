@@ -16,7 +16,7 @@ logger = logging.getLogger(__name__)
 
 
 # Setup stuff
-def get_bin_info(mass):
+def get_bin_info(mass, bin_ranges):
     if mass == "Z":
         return {f"bin{i}": (f"pt_{lo}p00To{hi}p00", f"{lo:.2f}-{hi:.2f}") for i, (lo, hi) in enumerate(bin_ranges)}
     elif mass == "Z_muon":
@@ -27,11 +27,11 @@ def get_bin_info(mass):
         return {f"bin{i}": (f"pt_{lo}p00To{hi}p00", f"{lo:.2f}-{hi:.2f}") for i, (lo, hi) in enumerate(bin_ranges)}
 
 
-BINS_INFO = get_bin_info(mass)
+BINS_INFO = get_bin_info(mass, bin_ranges)
 
 FIT_CONFIGS = {}
 
-SIGNAL_MODELS, BACKGROUND_MODELS = shape_params(mass)
+SIGNAL_MODELS, BACKGROUND_MODELS = shape_params(mass, x_min, x_max)
 
 for sig_name, sig_config in SIGNAL_MODELS.items():
     for bg_name, bg_config in BACKGROUND_MODELS.items():

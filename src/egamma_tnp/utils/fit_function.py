@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import logging
+
 import numpy as np
 from iminuit import Minuit, cost
 from matplotlib import pyplot as plt
@@ -13,10 +15,11 @@ from egamma_tnp.utils.fitter_plot_model import (
     PassFailPlotter,
     calculate_custom_chi2,
     create_combined_model,
-    logging,
 )
 from egamma_tnp.utils.fitter_shapes import x_max, x_min
-from egamma_tnp.utils.logger_utils_fit import print_fit_summary_rich
+from egamma_tnp.utils.logger_utils import print_fit_summary_rich
+
+logger = logging.getLogger(__name__)
 
 fit_prog = []
 fit_summary = []
@@ -47,7 +50,7 @@ def fit_function(
     config = FIT_CONFIGS[fit_type]
 
     if use_cdf and (config["signal_cdf"] is None or config["background_cdf"] is None):
-        logging.warning(f"[Warning] Model '{fit_type}' missing CDF(s). Disabling CDF mode.")
+        logger.warning(f"[Warning] Model '{fit_type}' missing CDF(s). Disabling CDF mode.")
         use_cdf = False
     param_names = config["param_names"]
 
@@ -270,7 +273,7 @@ def fit_function(
         try:
             m.minos(param)
         except Exception as e:
-            logging.debug(f"MINOS failed: {e!s}")
+            logger.debug(f"MINOS failed: {e!s}")
 
     # Print results
     m.print_level = 0

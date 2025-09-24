@@ -5,7 +5,7 @@
 ###################################################################################
 #
 #   {
-#     "info_level": "INFO_2"       < ----- INFO, DEBUG, or INFO_2 (more verbose) (leave blank for no output)
+#     "info_level": "INFO"       < ----- INFO or DEBUG (more verbose)
 #     "mass": "Z",                 < ----- Determines what mass you are fitting (Z, Z_muon, JPsi, JPsi_muon)
 #     "input": {
 #       "root_files_DATA": [                                  < ----- The name will be the name of the plot file that is saved in plot_dir
@@ -52,7 +52,6 @@ from __future__ import annotations
 
 import argparse
 import json
-import warnings
 from collections import defaultdict
 from pathlib import Path
 
@@ -66,12 +65,10 @@ from rich.panel import Panel
 from rich.progress import BarColumn, Progress, TaskProgressColumn, TextColumn, TimeRemainingColumn
 from rich.table import Table
 
-from egamma_tnp.utils.fit_function import fit_function, logging
+from egamma_tnp.utils.fit_function import fit_function
 from egamma_tnp.utils.fitter_plot_model import BINS_INFO, load_histogram, plot_combined_fit
-from egamma_tnp.utils.logger_utils_fit import CustomTimeElapsedColumn, print_efficiency_summary
+from egamma_tnp.utils.logger_utils import CustomTimeElapsedColumn, print_efficiency_summary, setup_logger
 
-# Suppress specific Minuit warnings about fixed parameters
-warnings.filterwarnings("ignore", message="Cannot scan over fixed parameter")
 console = Console()
 
 COLOR_BORDER = "#00B4D8"
@@ -106,6 +103,10 @@ def main():
     x_min = config["fit"].get("x_min", None)
     x_max = config["fit"].get("x_max", None)
     info = config["info_level"]
+    if info == "DEBUG":
+        logger = setup_logger(level="DEBUG")
+    else:
+        logger = setup_logger(level="INFO")
 
     all_results = []
     data_msg_per_bin = []
@@ -384,12 +385,11 @@ def main():
             all_pt_bins.append(pt)
 
     # Summary logging
-    if info == "INFO_2":
-        logging.info("\nFit Summary:")
-        for pt in all_pt_bins:
-            for text_data, text_mc in zip(output_texts_data[pt], output_texts_mc[pt]):
-                console.print(text_data)
-                console.print(text_mc)
+    logger.info("\nFit Summary:")
+    for pt in all_pt_bins:
+        for text_data, text_mc in zip(output_texts_data[pt], output_texts_mc[pt]):
+            console.print(text_data)
+            console.print(text_mc)
 
     # Final SF output summary
     print_efficiency_summary(

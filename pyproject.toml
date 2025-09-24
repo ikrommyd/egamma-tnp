@@ -51,6 +51,8 @@ Homepage = "https://github.com/iasonkrom/egamma-tnp"
 [project.optional-dependencies]
 fit = [
   "iminuit",
+  "scipy",
+  "numba-stats",
   "ipywidgets",
   "PySide6",
 ]

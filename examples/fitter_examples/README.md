@@ -5,7 +5,7 @@ run-fitter --config config.json
 Format for the config file used for the fitter:
 ```
 {
-  "info_level": "INFO_2"       < ----- INFO, DEBUG, or INFO_2 (more verbose) (leave blank for no output)
+  "info_level": "INFO"       < ----- INFO, or DEBUG (more verbose)
   "mass": "Z",                 < ----- Determines what mass you are fitting (Z, Z_muon, JPsi, JPsi_muon)
   "input": {
     "root_files_DATA": [                                  < ----- The name will be the name of the plot file that is saved in plot_dir

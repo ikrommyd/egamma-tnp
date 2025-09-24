@@ -2,9 +2,6 @@
 
 from __future__ import annotations
 
-import argparse
-import json
-
 import numpy as np
 from numba_stats import cmsshape
 from numpy.polynomial.chebyshev import Chebyshev
@@ -12,27 +9,6 @@ from scipy import special
 from scipy.interpolate import BPoly
 from scipy.special import voigt_profile
 from scipy.stats import norm
-
-from egamma_tnp.utils.logger_utils_fit import setup_logger
-
-parser = argparse.ArgumentParser()
-parser.add_argument("--config", required=True, help="Path to JSON config file")
-args = parser.parse_args()
-
-# Load config file to be used
-with open(args.config) as f:
-    config = json.load(f)
-    mass = config["mass"]
-    x_min = config["fit"].get("x_min", None)
-    x_max = config["fit"].get("x_max", None)
-    info = config["info_level"]
-
-    if info == "INFO" or info == "INFO_2":
-        logging = setup_logger(level="INFO")
-    elif info == "DEBUG":
-        logging = setup_logger(level="DEBUG")
-    else:
-        pass
 
 
 # Shape definitions

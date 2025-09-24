@@ -2,31 +2,17 @@
 
 from __future__ import annotations
 
-import argparse
-import json
+import logging
 import os
-import warnings
 
 import matplotlib.pyplot as plt
 import mplhep as hep
 import numpy as np
 import uproot
 
-from egamma_tnp.utils.fitter_shapes import logging, mass, shape_params, sigmoid
+from egamma_tnp.utils.fitter_shapes import mass, shape_params, sigmoid
 
-warnings.filterwarnings("ignore", message="Cannot scan over fixed parameter")
-
-parser = argparse.ArgumentParser()
-parser.add_argument("--config", required=True, help="Path to JSON config file")
-args = parser.parse_args()
-
-
-with open(args.config) as f:
-    config = json.load(f)
-
-root_files_DATA = config["input"].get("root_files_DATA", {})
-root_files_MC = config["input"].get("root_files_MC", {})
-bin_ranges = config["fit"].get("bin_ranges", [])
+logger = logging.getLogger(__name__)
 
 
 # Setup stuff
@@ -287,7 +273,7 @@ def load_histogram(root_file, hist_name, data_label):
         if isinstance(obj, uproot.behaviors.TH1.Histogram):
             values, edges = obj.to_numpy()
             is_mc = ("MC" in data_label) or ("MC" in hist_name)
-            # logging.info(f"Histogram: {hist_name}")
+            # logger.info(f"Histogram: {hist_name}")
             return {"values": values, "edges": edges, "errors": obj.errors(), "is_mc": is_mc}
     return None
 
@@ -305,7 +291,7 @@ def fig_to_array(fig):
 # Plot fits
 def plot_combined_fit(results, plot_dir=".", data_type="DATA", fixed_params=None, sigmoid_eff=False, args_abseta=None, args_mass=None):
     if results is None:
-        logging.warning("No results to plot")
+        logger.warning("No results to plot")
         return None, None  # Return None if no results
 
     fixed_params = fixed_params or {}

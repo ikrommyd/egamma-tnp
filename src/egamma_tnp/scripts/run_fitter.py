@@ -1,5 +1,3 @@
-# Developed by: Sebastian Arturo Hortua, University of Kansas
-
 ###################################################################################
 #                            CONFIG.JSON FORMAT
 ###################################################################################
@@ -65,8 +63,7 @@ from rich.panel import Panel
 from rich.progress import BarColumn, Progress, TaskProgressColumn, TextColumn, TimeRemainingColumn
 from rich.table import Table
 
-from egamma_tnp.utils.fit_function import fit_function
-from egamma_tnp.utils.fitter_plot_model import BINS_INFO, load_histogram, plot_combined_fit
+from egamma_tnp.utils.fitter_utils import BINS_INFO, fit_function, load_histogram, plot_combined_fit
 from egamma_tnp.utils.logger_utils import CustomTimeElapsedColumn, print_efficiency_summary, setup_logger
 
 console = Console()

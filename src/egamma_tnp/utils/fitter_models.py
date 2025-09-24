@@ -1,5 +1,3 @@
-# Developed by: Sebastian Arturo Hortua, University of Kansas
-
 from __future__ import annotations
 
 from functools import partial

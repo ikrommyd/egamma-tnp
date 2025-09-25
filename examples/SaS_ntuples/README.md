@@ -21,17 +21,22 @@ pip install -e .
 cd examples/SaS_ntuples
 ```
 
+### Download goldenJSON and pileup json
+```
+sh download_jsons.sh
+```
+
 ### Get input datasets list of files to be processed
 
 Use yaml format to set up metadata for Golden JSON and pileup reweighting
 
 ```
-fetch-datasets --input input.yaml --where Eurasia
+fetch-datasets --input input24.yaml --where Eurasia
 ```
 
 ### Launch SaS ntuples production using 100 jobs in htcondor (~45 minutes to process 2024 data and MC)
 ```
-run-analysis --config config.json  --fileset input.json  --output output --executor dask/lxplus --scaleout 100 --memory 5GiB --log-directory logs
+run-analysis --config config.json  --fileset input24.json  --output output --executor dask/lxplus --scaleout 100 --memory 5GiB --log-directory logs
 ```
 
 Use `--executor distributed` to run interactively on the node instead of using HTCondor.

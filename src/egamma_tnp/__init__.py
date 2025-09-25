@@ -6,6 +6,7 @@ warnings.filterwarnings("ignore", category=FutureWarning, module="coffea.*")
 
 from egamma_tnp.config import binning
 from egamma_tnp.nanoaod_efficiency import ElectronTagNProbeFromNanoAOD, PhotonTagNProbeFromNanoAOD
+from egamma_tnp.nanoaod_sas_ntuples import ScaleAndSmearingNTuplesFromNanoAOD
 from egamma_tnp.ntuple_efficiency import (
     ElectronTagNProbeFromMiniNTuples,
     ElectronTagNProbeFromNanoNTuples,
@@ -24,6 +25,7 @@ __all__ = (
     "PhotonTagNProbeFromMiniNTuples",
     "PhotonTagNProbeFromNanoAOD",
     "PhotonTagNProbeFromNanoNTuples",
+    "ScaleAndSmearingNTuplesFromNanoAOD",
     "binning",
 )
 

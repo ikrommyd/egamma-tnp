@@ -173,7 +173,7 @@ class ScaleAndSmearingNTuplesFromNanoAOD(BaseNTuplizer):
         dileptons["charge"] = dilepton_4mom.charge
 
         # Calculate rapidity
-        dilepton_pz = dilepton_4mom.z
+        dilepton_pz = dilepton_4mom.pz
         dilepton_e = dilepton_4mom.energy
         dileptons["rapidity"] = 0.5 * np.log((dilepton_e + dilepton_pz) / (dilepton_e - dilepton_pz))
 

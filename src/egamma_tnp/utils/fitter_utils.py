@@ -78,7 +78,7 @@ def setup(config):
 # Things to make simultaneous model
 class PassFailPlotter:
     def __init__(
-        self, config, cost_func_pass, error_func_pass, cost_func_fail, error_func_fail, n_bins_pass, edges_pass, edges_fail, fit_type, sigmoid_eff=False
+        self, fitter_config, cost_func_pass, error_func_pass, cost_func_fail, error_func_fail, n_bins_pass, edges_pass, edges_fail, fit_type, sigmoid_eff=False
     ):
         self.cost = cost_func_pass
         self.error_pass = error_func_pass
@@ -87,7 +87,7 @@ class PassFailPlotter:
         self.n_bins_pass = n_bins_pass
         self.edges_pass = edges_pass
         self.edges_fail = edges_fail
-        BINS_INFO, SIGNAL_MODELS, BACKGROUND_MODELS, FIT_CONFIGS = setup(config)
+        BINS_INFO, SIGNAL_MODELS, BACKGROUND_MODELS, FIT_CONFIGS = setup(fitter_config)
         self.param_names = FIT_CONFIGS[fit_type]["param_names"]
         self.signal_func = FIT_CONFIGS[fit_type]["signal_pdf"]
         self.bg_func = FIT_CONFIGS[fit_type]["background_pdf"]
@@ -219,8 +219,8 @@ def calculate_custom_chi2(values, errors, model, n_params):
     return Pearson_chi2, Poisson_chi2, ndof
 
 
-def create_combined_model(config, fit_type, edges_pass, edges_fail, *params, use_cdf=False, sigmoid_eff=False):
-    BINS_INFO, SIGNAL_MODELS, BACKGROUND_MODELS, FIT_CONFIGS = setup(config)
+def create_combined_model(fitter_config, fit_type, edges_pass, edges_fail, *params, use_cdf=False, sigmoid_eff=False):
+    BINS_INFO, SIGNAL_MODELS, BACKGROUND_MODELS, FIT_CONFIGS = setup(fitter_config)
     config = FIT_CONFIGS[fit_type]
 
     # If either CDF is missing, fall back to PDF mode for the entire region
@@ -299,12 +299,12 @@ def fig_to_array(fig):
 
 
 # Plot fits
-def plot_combined_fit(config, results, plot_dir=".", data_type="DATA", fixed_params=None, sigmoid_eff=False, args_abseta=None, args_mass=None):
+def plot_combined_fit(fitter_config, results, plot_dir=".", data_type="DATA", fixed_params=None, sigmoid_eff=False, args_abseta=None, args_mass=None):
     if results is None:
         logger.warning("No results to plot")
         return None, None  # Return None if no results
 
-    BINS_INFO, SIGNAL_MODELS, BACKGROUND_MODELS, FIT_CONFIGS = setup(config)
+    BINS_INFO, SIGNAL_MODELS, BACKGROUND_MODELS, FIT_CONFIGS = setup(fitter_config)
     fixed_params = fixed_params or {}
     fit_type = results["type"]
     config = FIT_CONFIGS[fit_type]
@@ -492,7 +492,7 @@ fit_text_sum = []
 
 
 def fit_function(
-    config,
+    fitter_config,
     fit_type,
     hist_pass,
     hist_fail,
@@ -508,7 +508,7 @@ def fit_function(
     data_name=None,
     mc_name=None,
 ):
-    BINS_INFO, SIGNAL_MODELS, BACKGROUND_MODELS, FIT_CONFIGS = setup(config)
+    BINS_INFO, SIGNAL_MODELS, BACKGROUND_MODELS, FIT_CONFIGS = setup(fitter_config)
     fixed_params = fixed_params or {}
 
     if fit_type not in FIT_CONFIGS:
@@ -640,19 +640,19 @@ def fit_function(
         bounds_high.append(b[2])
 
     def model_approx_pass(edges, *params):
-        result_pass, _ = create_combined_model(config, fit_type, edges_pass, edges_fail, *params, sigmoid_eff=sigmoid_eff)
+        result_pass, _ = create_combined_model(fitter_config, fit_type, edges_pass, edges_fail, *params, sigmoid_eff=sigmoid_eff)
         return result_pass
 
     def model_approx_fail(edges, *params):
-        _, result_fail = create_combined_model(config, fit_type, edges_pass, edges_fail, *params, sigmoid_eff=sigmoid_eff)
+        _, result_fail = create_combined_model(fitter_config, fit_type, edges_pass, edges_fail, *params, sigmoid_eff=sigmoid_eff)
         return result_fail
 
     def model_cdf_pass(edges, *params):
-        result_pass, _ = create_combined_model(config, fit_type, edges_pass, edges_fail, *params, use_cdf=True, sigmoid_eff=sigmoid_eff)
+        result_pass, _ = create_combined_model(fitter_config, fit_type, edges_pass, edges_fail, *params, use_cdf=True, sigmoid_eff=sigmoid_eff)
         return result_pass
 
     def model_cdf_fail(edges, *params):
-        _, result_fail = create_combined_model(config, fit_type, edges_pass, edges_fail, *params, use_cdf=True, sigmoid_eff=sigmoid_eff)
+        _, result_fail = create_combined_model(fitter_config, fit_type, edges_pass, edges_fail, *params, use_cdf=True, sigmoid_eff=sigmoid_eff)
         return result_fail
 
     bin_widths_pass = np.diff(edges_pass)
@@ -697,7 +697,9 @@ def fit_function(
     m.hesse()
 
     # Interactive Fitter
-    plotter = PassFailPlotter(config, c_pass, errors_pass, c_fail, errors_fail, len(edges_pass), edges_pass, edges_fail, fit_type, sigmoid_eff=sigmoid_eff)
+    plotter = PassFailPlotter(
+        fitter_config, c_pass, errors_pass, c_fail, errors_fail, len(edges_pass), edges_pass, edges_fail, fit_type, sigmoid_eff=sigmoid_eff
+    )
 
     if interactive:
         m.strategy = 1

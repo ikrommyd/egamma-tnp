@@ -118,6 +118,12 @@ def main():
     output_progs_mc = defaultdict(list)
     output_texts_mc = defaultdict(list)
     all_pt_bins = []
+
+    data_eff_dict = defaultdict(dict)
+    data_err_dict = defaultdict(dict)
+    mc_eff_dict = defaultdict(dict)
+    mc_err_dict = defaultdict(dict)
+
     console = Console()
 
     bins_progress = Progress(
@@ -185,11 +191,6 @@ def main():
                     hist_pass_name = f"NUM_{num}_DEN_{den}_abseta_{abseta}_pt_{pt_hist}_Pass"
                     hist_fail_name = f"NUM_{num}_DEN_{den}_abseta_{abseta}_pt_{pt_hist}_Fail"
 
-            data_eff_dict = {}
-            data_err_dict = {}
-            mc_eff_dict = {}
-            mc_err_dict = {}
-
             data_items = list(root_files_DATA.items())
             mc_items = list(root_files_MC.items())
 
@@ -202,6 +203,9 @@ def main():
             data_err_all = {}
             mc_eff_all = {}
             mc_err_all = {}
+
+            style_data = "green"
+            style_mc = "green"
 
             for i in range(max_len):
                 data_key, data_path = data_items[i]
@@ -238,8 +242,9 @@ def main():
                         mc_name=None,
                     )
 
-                    data_eff_dict[data_key] = res_data["popt"]["epsilon"]
-                    data_err_dict[data_key] = res_data["perr"]["epsilon"]
+                    # store per-pt nested
+                    data_eff_dict[pt][data_key] = res_data["popt"]["epsilon"]
+                    data_err_dict[pt][data_key] = res_data["perr"]["epsilon"]
 
                     if data_key and data_eff is not None:
                         data_eff_all[data_key] = data_eff
@@ -275,7 +280,7 @@ def main():
                         data_msg_parts.append("N/A")
 
                     style_data = "green" if res_data["message"].is_valid else "red"
-                    sub_progress.update(task_data, advance=1, style="green" if res_data["message"].is_valid else "red")
+                    sub_progress.update(task_data, advance=1, style=style_data)
                     bins_progress.update(task_bins, advance=1)  # <-- update main bin progress
 
                 elif has_data:
@@ -308,8 +313,8 @@ def main():
                         mc_name=mc_key,
                     )
 
-                    mc_eff_dict[mc_key] = res_mc["popt"]["epsilon"]
-                    mc_err_dict[mc_key] = res_mc["perr"]["epsilon"]
+                    mc_eff_dict[pt][mc_key] = res_mc["popt"]["epsilon"]
+                    mc_err_dict[pt][mc_key] = res_mc["perr"]["epsilon"]
 
                     if mc_key and mc_eff is not None:
                         mc_eff_all[mc_key] = mc_eff
@@ -345,7 +350,7 @@ def main():
                         mc_msg_parts.append("N/A")
 
                     style_mc = "green" if res_mc["message"].is_valid else "red"
-                    sub_progress.update(task_mc, advance=1, style="green" if res_mc["message"].is_valid else "red")
+                    sub_progress.update(task_mc, advance=1, style=style_mc)
                     bins_progress.update(task_bins, advance=1)  # <-- update main bin progress
 
                 elif has_mc:
@@ -358,9 +363,10 @@ def main():
                 mc_eff_list.append(mc_eff)
                 mc_err_list.append(mc_err)
 
-                if data_eff is not None and mc_eff is not None and mc_eff != 0:
+                if None not in (data_eff, data_err, mc_eff, mc_err) and mc_eff != 0 and data_eff != 0:
                     sf_val = data_eff / mc_eff
-                    sf_err_val = np.sqrt((data_err / data_eff) ** 2 + (mc_err / mc_eff) ** 2) * sf_val
+                    rel_err = np.sqrt((data_err / data_eff) ** 2 + (mc_err / mc_eff) ** 2)
+                    sf_err_val = sf_val * rel_err
                 else:
                     sf_val = None
                     sf_err_val = None
@@ -405,23 +411,28 @@ def main():
 
         for pair_name, (data_key, mc_key) in config["scale_factors"]["data_mc_pair"].items():
             for pt in all_pt_bins:
-                data_eff = data_eff_dict.get(data_key)
-                data_err = data_err_dict.get(data_key)
-                mc_eff = mc_eff_dict.get(mc_key)
-                mc_err = mc_err_dict.get(mc_key)
+                data_eff = data_eff_dict.get(pt, {}).get(data_key)
+                data_err = data_err_dict.get(pt, {}).get(data_key)
+                mc_eff = mc_eff_dict.get(pt, {}).get(mc_key)
+                mc_err = mc_err_dict.get(pt, {}).get(mc_key)
 
                 if None in (data_eff, data_err, mc_eff, mc_err):
                     eff_line = "DATA: N/A | MC: N/A | SF: N/A"
                     table.add_row(pair_name, str(pt), eff_line)
                     continue
 
-                sf = data_eff / mc_eff if mc_eff != 0 else None
-                sf_err = np.sqrt((data_err / data_eff) ** 2 + (mc_err / mc_eff) ** 2) * sf if (sf and data_eff and mc_eff) else None
+                if mc_eff != 0 and data_eff != 0:
+                    sf = data_eff / mc_eff
+                    rel_err = np.sqrt((data_err / data_eff) ** 2 + (mc_err / mc_eff) ** 2)
+                    sf_err = sf * rel_err
+                else:
+                    sf = None
+                    sf_err = None
 
                 if sf is not None:
                     eff_line = f"DATA: {data_eff:.5f} ± {data_err:.5f} | MC: {mc_eff:.5f} ± {mc_err:.5f} | SF: {sf:.5f} ± {sf_err:.5f}"
                 else:
-                    eff_line = f"DATA: {data_eff:.5f} ± {data_err:.5f} | MC: {mc_eff:.5f} ± {mc_err:.5f} | SF: N/A (MC=0)"
+                    eff_line = f"DATA: {data_eff:.5f} ± {data_err:.5f} | MC: {mc_eff:.5f} ± {mc_err:.5f} | SF: N/A (MC or DATA=0)"
 
                 table.add_row(pair_name, str(pt), eff_line)
 
@@ -437,3 +448,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+

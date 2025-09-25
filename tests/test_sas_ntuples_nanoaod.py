@@ -15,7 +15,7 @@ def assert_arrays_equal(a1, a2):
         assert ak.all(a1[i] == a2[i])
 
 
-def test_tag_and_probe_electrons_trigger():
+def test_sas_ntuplizer():
     fileset = {"sample": {"files": {os.path.abspath("tests/samples/DYto2E.root"): "Events"}}}
 
     ntuplizer = ScaleAndSmearingNTuplesFromNanoAOD(

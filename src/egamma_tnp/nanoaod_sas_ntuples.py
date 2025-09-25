@@ -7,7 +7,7 @@ import numpy as np
 from coffea.nanoevents import NanoAODSchema
 
 from egamma_tnp._base_ntuplizer import BaseNTuplizer
-from egamma_tnp.utils import calculate_photon_SC_eta, custom_delta_r
+from egamma_tnp.utils import calculate_photon_SC_eta
 from egamma_tnp.utils.pileup import apply_pileup_weights
 
 
@@ -31,7 +31,7 @@ class ScaleAndSmearingNTuplesFromNanoAOD(BaseNTuplizer):
             fileset: dict
                 Dictionary specifying the input files to process.
             lead_pt_cut: float, optional
-                Minimum transverse momentum for the leading electron. The default is 20.
+                Minimum transverse momentem for the leading electron. The default is 20.
             sublead_pt_cut: float, optional
                 Minimum transverse momentum for the subleading electron. The default is 10.
             eta_cut: float, optional
@@ -92,7 +92,7 @@ class ScaleAndSmearingNTuplesFromNanoAOD(BaseNTuplizer):
 
         # selecting electrons with a photon matching and passing the pt and eta cuts
         good_events["Electron"] = good_events.Electron[
-            (good_events.Electron.photonIdx > -1)
+            (good_events.Electron.photonIdx != -1)
             & (good_events.Electron.pt > self.sublead_pt_cut)
             & (np.abs(good_events.Electron.superclusterEta) < self.eta_cut)
         ]
@@ -157,18 +157,6 @@ class ScaleAndSmearingNTuplesFromNanoAOD(BaseNTuplizer):
                 output[field] = dielectrons[field]
 
         return dak.zip(output)
-
-    @staticmethod
-    def _trigger_match(leptons, trigobjs, pdgid, pt, filterbit):
-        pass_pt = trigobjs.pt > pt
-        pass_id = abs(trigobjs.id) == pdgid
-        pass_filterbit = (trigobjs.filterBits & (0x1 << filterbit)) != 0
-        trigger_cands = trigobjs[pass_pt & pass_id & pass_filterbit]
-        delta_r = leptons.metric_table(trigger_cands, metric=custom_delta_r)
-        pass_delta_r = delta_r < 0.1
-        trig_matched_locs = dak.any(pass_delta_r, axis=2)
-
-        return trig_matched_locs
 
     @staticmethod
     def _process_leptons(leptons, lead_pt_cut, mass_range, prefixes):

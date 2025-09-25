@@ -27,8 +27,8 @@ def test_tag_and_probe_electrons_trigger():
         avoid_ecal_transition=True,
     )
 
-    # events = NanoEventsFactory.from_root({os.path.abspath("tests/samples/DYto2E.root"): "Events"}, mode="virtual").events()
-    # solution = sas_ntuples(events)
+    events = NanoEventsFactory.from_root({os.path.abspath("tests/samples/DYto2E.root"): "Events"}, mode="virtual").events()
+    solution = sas_ntuples(events)
     vars = {
         "Photon": [
             "pt",
@@ -84,6 +84,6 @@ def test_tag_and_probe_electrons_trigger():
         "Rho": "all",
     }
     result = ntuplizer.get_ntuples(mass_range=(60, 120), vars=vars, flat=True, compute=True)["sample"]
-    # assert_arrays_equal(result, solution)
+    assert_arrays_equal(result, solution)
     assert len(result) == 686
-    # assert len(solution) == 686
+    assert len(solution) == 686

@@ -1,0 +1,52 @@
+
+datasets:
+  - name: DataC_2024
+    dataset:
+      - /EGamma0/Run2024C-MINIv6NANOv15-v1/NANOAOD
+      - /EGamma1/Run2024C-MINIv6NANOv15-v1/NANOAOD
+    metadata:
+      goldenJSON: jsons/Cert_Collisions2024_378981_386951_Golden.json
+  - name: DataD_2024
+    dataset:
+      - /EGamma0/Run2024D-MINIv6NANOv15-v1/NANOAOD
+      - /EGamma1/Run2024D-MINIv6NANOv15-v1/NANOAOD
+    metadata:
+      goldenJSON: jsons/Cert_Collisions2024_378981_386951_Golden.json
+  - name: DataE_2024
+    dataset:
+      - /EGamma0/Run2024E-MINIv6NANOv15-v1/NANOAOD
+      - /EGamma1/Run2024E-MINIv6NANOv15-v1/NANOAOD
+    metadata:
+      goldenJSON: jsons/Cert_Collisions2024_378981_386951_Golden.json
+  - name: DataF_2024
+    dataset:
+      - /EGamma0/Run2024F-MINIv6NANOv15-v1/NANOAOD
+      - /EGamma1/Run2024F-MINIv6NANOv15-v1/NANOAOD
+    metadata:
+      goldenJSON: jsons/Cert_Collisions2024_378981_386951_Golden.json
+  - name: DataG_2024
+    dataset:
+      - /EGamma0/Run2024G-MINIv6NANOv15-v2/NANOAOD
+      - /EGamma1/Run2024G-MINIv6NANOv15-v2/NANOAOD
+    metadata:
+      goldenJSON: jsons/Cert_Collisions2024_378981_386951_Golden.json
+  - name: DataH_2024
+    dataset:
+      - /EGamma0/Run2024H-MINIv6NANOv15-v2/NANOAOD
+      - /EGamma1/Run2024H-MINIv6NANOv15-v1/NANOAOD
+    metadata:
+      goldenJSON: jsons/Cert_Collisions2024_378981_386951_Golden.json
+  - name: DataI_2024
+    dataset:
+      - /EGamma0/Run2024I-MINIv6NANOv15-v1/NANOAOD
+      - /EGamma1/Run2024I-MINIv6NANOv15-v1/NANOAOD
+      - /EGamma0/Run2024I-MINIv6NANOv15_v2-v1/NANOAOD
+      - /EGamma1/Run2024I-MINIv6NANOv15_v2-v1/NANOAOD
+    metadata:
+      goldenJSON: jsons/Cert_Collisions2024_378981_386951_Golden.json
+
+  - name: DYto2E_2024
+    dataset:
+      - /DYto2E-2Jets_Bin-MLL-50_TuneCP5_13p6TeV_amcatnloFXFX-pythia8/RunIII2024Summer24NanoAODv15-150X_mcRun3_2024_realistic_v2-v4/NANOAODSIM
+    metadata:
+      pileupJSON: jsons/puWeights_2024.json.gz

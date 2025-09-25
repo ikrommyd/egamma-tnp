@@ -49,6 +49,13 @@ Homepage = "https://github.com/iasonkrom/egamma-tnp"
 "Bug Tracker" = "https://github.com/iasonkrom/egamma-tnp/issues"
 
 [project.optional-dependencies]
+fit = [
+  "iminuit",
+  "scipy",
+  "numba-stats",
+  "ipywidgets",
+  "PySide6",
+]
 dev = [
   "pre-commit",
   "ruff",
@@ -57,6 +64,7 @@ dev = [
 
 [project.scripts]
 run-analysis = "egamma_tnp.scripts.run_analysis:main"
+run-fitter = "egamma_tnp.scripts.run_fitter:main"
 dataset-query = "egamma_tnp.scripts.dataset_query:main"
 merge-parquet = "egamma_tnp.scripts.merge_parquet:main"
 prepare-histograms = "egamma_tnp.scripts.prepare_histograms:main"

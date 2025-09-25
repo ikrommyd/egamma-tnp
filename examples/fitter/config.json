@@ -1,0 +1,34 @@
+{
+  "info_level": "INFO",
+  "mass": "Z",
+  "input": {
+    "root_files_DATA": {
+      "Z_DATA_bin_3_dcb_cms_barrel_1": "path/to/data_hists_root_file.root"
+    },
+    "root_files_MC": {
+      "Z_MC_bin_3_dcb_cms_barrel_1": "path/to/mc_hists_root_file.root"
+    }
+  },
+  "fit": {
+    "bin": ["bin2"],
+    "bin_ranges": [[5,7], [7,10], [10,20], [20,45], [45,75], [75,500]],
+    "fit_type": "dcb_cms",
+    "use_cdf": false,
+    "sigmoid_eff": false,
+    "interactive": false,
+    "x_min": 70,
+    "x_max": 110,
+    "abseta": 1,
+    "numerator": "gold",
+    "denominator": "baselineplus"
+  },
+  "output": {
+    "plot_dir": "Example_plots/",
+    "results_file": ""
+  },
+  "scale_factors": {
+    "data_mc_pair": {
+        "SF_example_bin_3_dcb_cms_barrel_1": ["Z_DATA_bin_3_dcb_cms_barrel_1", "Z_MC_bin_3_dcb_cms_barrel_1"]
+   }
+  }
+}

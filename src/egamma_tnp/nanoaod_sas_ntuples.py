@@ -74,7 +74,7 @@ class ScaleAndSmearingNTuplesFromNanoAOD(BaseNTuplizer):
             if events.metadata.get("isMC") and "genWeight" in events.fields:
                 sum_genw_before_presel = dak.sum(events.genWeight)
             else:
-                sum_genw_before_presel = dak.num(events[events.run > -999], axis=0)
+                sum_genw_before_presel = 1.0
         if self.extra_filter is not None:
             events = self.extra_filter(events, **self.extra_filter_args)
 

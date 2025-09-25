@@ -146,7 +146,7 @@ class ElectronTagNProbeFromNanoAOD(BaseTagNProbe):
         if events.metadata.get("isMC") and "genWeight" in events.fields:
             sum_genw_before_presel = dak.sum(events.genWeight)
         else:
-            sum_genw_before_presel = dak.num(events[events.run > -999], axis=0)
+            sum_genw_before_presel = 1.0
         if self.use_sc_eta:
             if "superclusterEta" in events.Electron.fields:
                 events["Electron", "eta_to_use"] = events.Electron.superclusterEta
@@ -503,7 +503,7 @@ class PhotonTagNProbeFromNanoAOD(BaseTagNProbe):
         if events.metadata.get("isMC") and "genWeight" in events.fields:
             sum_genw_before_presel = dak.sum(events.genWeight)
         else:
-            sum_genw_before_presel = dak.num(events[events.run > -999], axis=0)
+            sum_genw_before_presel = 1.0
         if self.use_sc_eta:
             if "superclusterEta" not in events.Photon.fields:
                 events["Photon", "superclusterEta"] = calculate_photon_SC_eta(events.Photon, events.PV)

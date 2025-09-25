@@ -21,10 +21,9 @@ def assert_histograms_equal(h1, h2, flow):
 
 
 def assert_arrays_equal(a1, a2):
+    assert sorted(a1.fields) == sorted(a2.fields)
     for i in a1.fields:
         assert ak.all(a1[i] == a2[i])
-    for j in a2.fields:
-        assert ak.all(a1[j] == a2[j])
 
 
 def test_cli():

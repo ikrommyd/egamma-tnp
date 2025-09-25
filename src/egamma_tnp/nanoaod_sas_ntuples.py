@@ -2,12 +2,11 @@ from __future__ import annotations
 
 import warnings
 
-import awkward as ak
 import dask_awkward as dak
 import numpy as np
 from coffea.nanoevents import NanoAODSchema
 
-from egamma_tnp._base_tagnprobe import BaseNTuplizer
+from egamma_tnp._base_ntuplizer import BaseNTuplizer
 from egamma_tnp.utils import calculate_photon_SC_eta, custom_delta_r
 from egamma_tnp.utils.pileup import apply_pileup_weights
 
@@ -21,34 +20,31 @@ class ScaleAndSmearingNTuplesFromNanoAOD(BaseNTuplizer):
         sublead_pt_cut=10,
         eta_cut=2.5,
         trigger_paths=None,
-        extra_zcands_mask=None,
         extra_filter=None,
         extra_filter_args=None,
         avoid_ecal_transition=False,
     ):
-        """
-        Initialize the ScaleAndSmearingNTuplesFromNanoAOD class.
+        """Scale and smear NTuples from NanoAOD.
 
         Parameters
         ----------
-        fileset : dict
-            Dictionary specifying the input files to process.
-        lead_pt_cut : float, optional
-            Minimum transverse momentum for the leading electron (default: 20).
-        sublead_pt_cut : float, optional
-            Minimum transverse momentum for the subleading electron (default: 10).
-        eta_cut : float, optional
-            Maximum absolute pseudorapidity for electrons (default: 2.5).
-        trigger_paths : list or str, optional
-            List of trigger path names to apply as event selection (default: None).
-        extra_zcands_mask : str, optional
-            Additional mask expression to apply to Z candidates (default: None).
-        extra_filter : Callable, optional
-            Function to further filter events. Should accept and return a NanoEventsArray (default: None).
-        extra_filter_args : dict, optional
-            Arguments to pass to extra_filter (default: None).
-        avoid_ecal_transition : bool, optional
-            If True, exclude electrons in the ECAL transition region (default: False).
+            fileset: dict
+                Dictionary specifying the input files to process.
+            lead_pt_cut: float, optional
+                Minimum transverse momentum for the leading electron. The default is 20.
+            sublead_pt_cut: float, optional
+                Minimum transverse momentum for the subleading electron. The default is 10.
+            eta_cut: float, optional
+                Maximum absolute pseudorapidity for electrons. The default is 2.5.
+            trigger_paths: list or str, optional
+                List of trigger path names to apply as event selection. The default is None.
+            extra_filter: Callable, optional
+                Function to further filter events. The default is None.
+                Must take in a coffea NanoEventsArray and return a filtered NanoEventsArray of the events you want to keep.
+            extra_filter_args: dict, optional
+                Arguments to pass to extra_filter. The default is {}.
+            avoid_ecal_transition: bool, optional
+                Whether to exclude electrons in the ECAL transition region. The default is False.
         """
 
         super().__init__(
@@ -60,7 +56,6 @@ class ScaleAndSmearingNTuplesFromNanoAOD(BaseNTuplizer):
         self.sublead_pt_cut = sublead_pt_cut
         self.eta_cut = eta_cut
         self.trigger_paths = trigger_paths
-        self.extra_zcands_mask = extra_zcands_mask
         self.extra_filter = extra_filter
         if extra_filter_args is None:
             extra_filter_args = {}
@@ -73,7 +68,7 @@ class ScaleAndSmearingNTuplesFromNanoAOD(BaseNTuplizer):
             n_of_files += len(dataset["files"])
         return f"ScaleAndSmearingNTuplesFromNanoAOD(Number of files: {n_of_files})"
 
-    def find_lepton_pairs(self, events, mass_range=(50, 130), vars=None):
+    def make_ntuples(self, events, mass_range, vars):
         if events.metadata.get("isMC") is None:
             events.metadata["isMC"] = hasattr(events, "GenPart")
             if events.metadata.get("isMC") and "genWeight" in events.fields:
@@ -84,10 +79,10 @@ class ScaleAndSmearingNTuplesFromNanoAOD(BaseNTuplizer):
             events = self.extra_filter(events, **self.extra_filter_args)
 
         if events.metadata.get("goldenJSON") and not events.metadata.get("isMC"):
-            events = BaseNTuplizer.apply_goldenJSON(events)
+            events = self.apply_goldenJSON(events)
 
         # apply the trigger path filter if specified
-        good_events = BaseNTuplizer.apply_trigger_paths(events, self.trigger_paths)
+        good_events = self.apply_trigger_paths(events, self.trigger_paths)
 
         # add superclusterEta to the Photon and Electron objects if not already present
         if "superclusterEta" not in good_events.Photon.fields:
@@ -108,7 +103,7 @@ class ScaleAndSmearingNTuplesFromNanoAOD(BaseNTuplizer):
                 ~((np.abs(good_events.Electron.superclusterEta) > 1.4442) & (np.abs(good_events.Electron.superclusterEta) < 1.566))
             ]
 
-        good_events = good_events[ak.num(good_events.Electron) >= 2]
+        good_events = good_events[dak.num(good_events.Electron) >= 2]
         electrons = good_events.Electron
         electron_fields = list(electrons.fields)
 
@@ -138,9 +133,9 @@ class ScaleAndSmearingNTuplesFromNanoAOD(BaseNTuplizer):
             electrons[f"pho_{var}"] = matched_photons[var]
 
         good_events["Electron"] = electrons
-        sorted_electrons = good_events.Electron[ak.argsort(good_events.Electron.pt, ascending=False)]
+        sorted_electrons = good_events.Electron[dak.argsort(good_events.Electron.pt, ascending=False)]
 
-        dielectrons = ScaleAndSmearingNTuplesFromNanoAOD._process_zcands(
+        dielectrons = ScaleAndSmearingNTuplesFromNanoAOD._process_leptons(
             leptons=sorted_electrons, mass_range=mass_range, lead_pt_cut=self.lead_pt_cut, prefixes=("ele_lead", "ele_sublead")
         )
         dielectrons = ScaleAndSmearingNTuplesFromNanoAOD._save_event_variables(good_events, dielectrons, vars=vars)
@@ -148,10 +143,10 @@ class ScaleAndSmearingNTuplesFromNanoAOD(BaseNTuplizer):
 
         # flatten the output
         output = {}
-        for field in ak.fields(dielectrons):
+        for field in dak.fields(dielectrons):
             prefix = {"ele_lead": "lead", "ele_sublead": "sublead"}.get(field, "")
             if len(prefix) > 0:
-                for subfield in ak.fields(dielectrons[field]):
+                for subfield in dak.fields(dielectrons[field]):
                     if subfield.startswith("pho_") and (subfield[4:] not in vars.get("Photon", [])):
                         continue
                     elif not (subfield.startswith("pho_")) and subfield not in vars.get("Electron", []):
@@ -176,8 +171,8 @@ class ScaleAndSmearingNTuplesFromNanoAOD(BaseNTuplizer):
         return trig_matched_locs
 
     @staticmethod
-    def _process_zcands(leptons, lead_pt_cut=20, mass_range=(50, 130), prefixes=("ele_lead", "ele_sublead")):
-        dileptons = ak.combinations(leptons, 2, fields=[prefixes[0], prefixes[1]])
+    def _process_leptons(leptons, lead_pt_cut, mass_range, prefixes):
+        dileptons = dak.combinations(leptons, 2, fields=[prefixes[0], prefixes[1]])
         # Apply the cut on the leading leptons's pT
         dileptons = dileptons[dileptons[prefixes[0]].pt > lead_pt_cut]
 
@@ -195,17 +190,17 @@ class ScaleAndSmearingNTuplesFromNanoAOD(BaseNTuplizer):
         dileptons["rapidity"] = 0.5 * np.log((dilepton_e + dilepton_pz) / (dilepton_e - dilepton_pz))
 
         # Sort dielectron candidates by pT in descending order
-        dileptons = dileptons[ak.argsort(dileptons.pt, ascending=False)]
+        dileptons = dileptons[dak.argsort(dileptons.pt, ascending=False)]
 
         dileptons = dileptons[(dileptons.mass > mass_range[0]) & (dileptons.mass < mass_range[1])]
         dileptons = dileptons[dileptons.ele_lead.charge != dileptons.ele_sublead.charge]
-        selection_mask = ~ak.is_none(dileptons)
+        selection_mask = ~dak.is_none(dileptons)
         dileptons = dileptons[selection_mask]
 
-        return ak.firsts(dileptons)
+        return dak.firsts(dileptons)
 
     @staticmethod
-    def _save_event_variables(events, dileptons, vars=None):
+    def _save_event_variables(events, dileptons, vars):
         dileptons["event"] = events.event
         dileptons["lumi"] = events.luminosityBlock
         dileptons["run"] = events.run
@@ -220,7 +215,7 @@ class ScaleAndSmearingNTuplesFromNanoAOD(BaseNTuplizer):
             dileptons["dZ"] = events.GenVtx.z - events.PV.z
         # Fill zeros for data because there is no GenVtx for data, obviously
         else:
-            dileptons["dZ"] = ak.zeros_like(events.PV.z)
+            dileptons["dZ"] = dak.zeros_like(events.PV.z)
 
         # save variables from other collections if specified
         for collection in vars.keys() if vars is not None else []:

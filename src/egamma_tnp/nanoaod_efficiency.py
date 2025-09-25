@@ -40,50 +40,50 @@ class ElectronTagNProbeFromNanoAOD(BaseTagNProbe):
 
         Parameters
         ----------
-        fileset: dict
-            The fileset to calculate the trigger efficiencies for.
-        filters: dict
-            The names of the filters to calculate the efficiencies for.
-        is_photon_filter: dict or None, optional
-            Whether the filters to calculate the efficiencies are photon filters. The default is all False.
-        trigger_pt: dict or None, optional
-            The Pt threshold of the trigger to calculate the efficiencies over that threshold. Required for trigger efficiencies.
-            The default is None.
-        tags_pt_cut: int or float, optional
-            The Pt cut to apply to the tag electrons. The default is 35.
-        probes_pt_cut: int or float, optional
-            The Pt threshold of the probe electron to calculate efficiencies over that threshold. The default is None.
-        tags_abseta_cut: int or float, optional
-            The absolute Eta cut to apply to the tag electrons. The default is 2.5.
-        probes_abseta_cut: int or float, optional
-            The absolute Eta cut to apply to the probe electrons. The default is 2.5.
-        probes_abseta_cut: int or float, optional
-            The absolute Eta cut to apply to the probe electrons. The default is 2.5.
-        filterbit: dict or None, optional
-            The filterbit used to match probes with trigger objects. Required for trigger efficiencies.
-            The default is None.
-        cutbased_id: str, optional
-            ID expression to apply to the probes. An example is "cutBased >= 2".
-            If None, no cutbased ID is applied. The default is None.
-        extra_zcands_mask: str, optional
-            An extra mask to apply to the Z candidates. The default is None.
-            Must be of the form `zcands.tag/probe.<mask> & zcands.tag/probe.<mask> & ...`.
-        extra_filter: Callable, optional
-            An extra function to filter the events. The default is None.
-            Must take in a coffea NanoEventsArray and return a filtered NanoEventsArray of the events you want to keep.
-        extra_filter_args: dict, optional
-            Extra arguments to pass to extra_filter. The default is {}.
-        use_sc_eta: bool, optional
-            Use the supercluster Eta instead of the Eta from the primary vertex. The default is False.
-        use_sc_phi: bool, optional
-            Use the supercluster Phi instead of the Phi from the primary vertex. The default is False.
-        avoid_ecal_transition_tags: bool, optional
-            Whether to avoid the ECAL transition region for the tags with an eta cut. The default is True.
-        avoid_ecal_transition_probes: bool, optional
-            Whether to avoid the ECAL transition region for the probes with an eta cut. The default is False.
-        require_event_to_pass_hlt_filter: bool, optional
-            Also require the event to have passed the filter HLT filter under study to consider a probe belonging to that event as passing.
-            The default is True.
+            fileset: dict
+                The fileset to calculate the trigger efficiencies for.
+            filters: dict
+                The names of the filters to calculate the efficiencies for.
+            is_photon_filter: dict or None, optional
+                Whether the filters to calculate the efficiencies are photon filters. The default is all False.
+            trigger_pt: dict or None, optional
+                The Pt threshold of the trigger to calculate the efficiencies over that threshold. Required for trigger efficiencies.
+                The default is None.
+            tags_pt_cut: int or float, optional
+                The Pt cut to apply to the tag electrons. The default is 35.
+            probes_pt_cut: int or float, optional
+                The Pt threshold of the probe electron to calculate efficiencies over that threshold. The default is None.
+            tags_abseta_cut: int or float, optional
+                The absolute Eta cut to apply to the tag electrons. The default is 2.5.
+            probes_abseta_cut: int or float, optional
+                The absolute Eta cut to apply to the probe electrons. The default is 2.5.
+            probes_abseta_cut: int or float, optional
+                The absolute Eta cut to apply to the probe electrons. The default is 2.5.
+            filterbit: dict or None, optional
+                The filterbit used to match probes with trigger objects. Required for trigger efficiencies.
+                The default is None.
+            cutbased_id: str, optional
+                ID expression to apply to the probes. An example is "cutBased >= 2".
+                If None, no cutbased ID is applied. The default is None.
+            extra_zcands_mask: str, optional
+                An extra mask to apply to the Z candidates. The default is None.
+                Must be of the form `zcands.tag/probe.<mask> & zcands.tag/probe.<mask> & ...`.
+            extra_filter: Callable, optional
+                An extra function to filter the events. The default is None.
+                Must take in a coffea NanoEventsArray and return a filtered NanoEventsArray of the events you want to keep.
+            extra_filter_args: dict, optional
+                Extra arguments to pass to extra_filter. The default is {}.
+            use_sc_eta: bool, optional
+                Use the supercluster Eta instead of the Eta from the primary vertex. The default is False.
+            use_sc_phi: bool, optional
+                Use the supercluster Phi instead of the Phi from the primary vertex. The default is False.
+            avoid_ecal_transition_tags: bool, optional
+                Whether to avoid the ECAL transition region for the tags with an eta cut. The default is True.
+            avoid_ecal_transition_probes: bool, optional
+                Whether to avoid the ECAL transition region for the probes with an eta cut. The default is False.
+            require_event_to_pass_hlt_filter: bool, optional
+                Also require the event to have passed the filter HLT filter under study to consider a probe belonging to that event as passing.
+                The default is True.
         """
         assert isinstance(filters, dict) or filters is None, (
             "filters must be a dictionary with filter names as keys and filter expressions as values all represented as strings or None"
@@ -388,52 +388,52 @@ class PhotonTagNProbeFromNanoAOD(BaseTagNProbe):
 
         Parameters
         ----------
-        fileset: dict
-            The fileset to calculate the trigger efficiencies for.
-        filters: dict
-            The names of the filters to calculate the efficiencies for.
-        is_electron_filter: dict or None, optional
-            Whether the filters to calculate the efficiencies are electron filters. The default is False.
-        start_from_diphotons: bool, optional
-            Whether to consider photon-photon pairs as tag-probe pairs.
-            If True, it will consider photon-photon pairs as tag-probe pairs and request that the tag has an associated electron and pixel seed.
-            If False, it will consider electron-photon pairs as tag-probe pairs and request that they are not associated with each other and dR > 0.1 between them.
-            The default is True.
-        trigger_pt: dict or None, optional
-            The Pt threshold of the trigger to calculate the efficiencies over that threshold.
-        tags_pt_cut: int or float, optional
-            The Pt cut to apply to the tag photons. The default is 35.
-        probes_pt_cut: int or float, optional
-            The Pt threshold of the probe photon to calculate efficiencies over that threshold. The default is None.
-        tags_abseta_cut: int or float, optional
-            The absolute Eta cut to apply to the tag photons. The default is 2.5.
-        probes_abseta_cut: int or float, optional
-            The absolute Eta cut to apply to the probe photons. The default is 2.5.
-        filterbit: dict or None, optional
-            The filterbit used to match probes with trigger objects. Required for trigger efficiencies.
-            The default is None.
-        cutbased_id: str, optional
-            ID expression to apply to the probes. An example is "cutBased >= 2".
-            If None, no cutbased ID is applied. The default is None.
-        extra_zcands_mask: str, optional
-            An extra mask to apply to the Z candidates. The default is None.
-            Must be of the form `zcands.tag/probe.<mask> & zcands.tag/probe.<mask> & ...`.
-        extra_filter: Callable, optional
-            An extra function to filter the events. The default is None.
-            Must take in a coffea NanoEventsArray and return a filtered NanoEventsArray of the events you want to keep.
-        extra_filter_args: dict, optional
-            Extra arguments to pass to extra_filter. The default is {}.
-        use_sc_eta: bool, optional
-            Use the supercluster Eta instead of the Eta from the primary vertex. The default is False.
-        use_sc_phi: bool, optional
-            Use the supercluster Phi instead of the Phi from the primary vertex. The default is False.
-        avoid_ecal_transition_tags: bool, optional
-            Whether to avoid the ECAL transition region for the tags with an eta cut. The default is True.
-        avoid_ecal_transition_probes: bool, optional
-            Whether to avoid the ECAL transition region for the probes with an eta cut. The default is False.
-        require_event_to_pass_hlt_filter: bool, optional
-            Also require the event to have passed the filter HLT filter under study to consider a probe belonging to that event as passing.
-            The default is True.
+            fileset: dict
+                The fileset to calculate the trigger efficiencies for.
+            filters: dict
+                The names of the filters to calculate the efficiencies for.
+            is_electron_filter: dict or None, optional
+                Whether the filters to calculate the efficiencies are electron filters. The default is False.
+            start_from_diphotons: bool, optional
+                Whether to consider photon-photon pairs as tag-probe pairs.
+                If True, it will consider photon-photon pairs as tag-probe pairs and request that the tag has an associated electron and pixel seed.
+                If False, it will consider electron-photon pairs as tag-probe pairs and request that they are not associated with each other and dR > 0.1 between them.
+                The default is True.
+            trigger_pt: dict or None, optional
+                The Pt threshold of the trigger to calculate the efficiencies over that threshold.
+            tags_pt_cut: int or float, optional
+                The Pt cut to apply to the tag photons. The default is 35.
+            probes_pt_cut: int or float, optional
+                The Pt threshold of the probe photon to calculate efficiencies over that threshold. The default is None.
+            tags_abseta_cut: int or float, optional
+                The absolute Eta cut to apply to the tag photons. The default is 2.5.
+            probes_abseta_cut: int or float, optional
+                The absolute Eta cut to apply to the probe photons. The default is 2.5.
+            filterbit: dict or None, optional
+                The filterbit used to match probes with trigger objects. Required for trigger efficiencies.
+                The default is None.
+            cutbased_id: str, optional
+                ID expression to apply to the probes. An example is "cutBased >= 2".
+                If None, no cutbased ID is applied. The default is None.
+            extra_zcands_mask: str, optional
+                An extra mask to apply to the Z candidates. The default is None.
+                Must be of the form `zcands.tag/probe.<mask> & zcands.tag/probe.<mask> & ...`.
+            extra_filter: Callable, optional
+                An extra function to filter the events. The default is None.
+                Must take in a coffea NanoEventsArray and return a filtered NanoEventsArray of the events you want to keep.
+            extra_filter_args: dict, optional
+                Extra arguments to pass to extra_filter. The default is {}.
+            use_sc_eta: bool, optional
+                Use the supercluster Eta instead of the Eta from the primary vertex. The default is False.
+            use_sc_phi: bool, optional
+                Use the supercluster Phi instead of the Phi from the primary vertex. The default is False.
+            avoid_ecal_transition_tags: bool, optional
+                Whether to avoid the ECAL transition region for the tags with an eta cut. The default is True.
+            avoid_ecal_transition_probes: bool, optional
+                Whether to avoid the ECAL transition region for the probes with an eta cut. The default is False.
+            require_event_to_pass_hlt_filter: bool, optional
+                Also require the event to have passed the filter HLT filter under study to consider a probe belonging to that event as passing.
+                The default is True.
         """
         assert isinstance(filters, dict) or filters is None, (
             "filters must be a dictionary with filter names as keys and filter expressions as values all represented as strings or None"

@@ -27,51 +27,59 @@ def get_bin_info(mass, bin_ranges):
         return {f"bin{i}": (f"pt_{lo}p00To{hi}p00", f"{lo:.2f}-{hi:.2f}") for i, (lo, hi) in enumerate(bin_ranges)}
 
 
-BINS_INFO = get_bin_info(mass, bin_ranges)
+def setup(config):
+    mass = config["mass"]
+    bin_ranges = config["fit"].get("bin_ranges", [])
+    x_min = config["fit"].get("x_min", None)
+    x_max = config["fit"].get("x_max", None)
 
-FIT_CONFIGS = {}
+    BINS_INFO = get_bin_info(mass, bin_ranges)
+    FIT_CONFIGS = {}
 
-SIGNAL_MODELS, BACKGROUND_MODELS = shape_params(mass, x_min, x_max)
+    SIGNAL_MODELS, BACKGROUND_MODELS = shape_params(mass, x_min, x_max)
 
-for sig_name, sig_config in SIGNAL_MODELS.items():
-    for bg_name, bg_config in BACKGROUND_MODELS.items():
-        fit_type = f"{sig_name}_{bg_name}"
+    for sig_name, sig_config in SIGNAL_MODELS.items():
+        for bg_name, bg_config in BACKGROUND_MODELS.items():
+            fit_type = f"{sig_name}_{bg_name}"
 
-        # Build parameter names list
-        param_names = ["N", "epsilon", "B_p", "B_f"]
+            # Build parameter names list
+            param_names = ["N", "epsilon", "B_p", "B_f"]
 
-        # Add SHARED signal parameters (not pass/fail)
-        param_names.extend(sig_config["params"])
+            # Add SHARED signal parameters (not pass/fail)
+            param_names.extend(sig_config["params"])
 
-        # Add pass/fail versions of background parameters
-        for p in bg_config["params"]:
-            param_names.extend([f"{p}_pass", f"{p}_fail"])
+            # Add pass/fail versions of background parameters
+            for p in bg_config["params"]:
+                param_names.extend([f"{p}_pass", f"{p}_fail"])
 
-        # Build bounds dictionary
-        bounds = {"N": (0, 100000, np.inf), "epsilon": (0, 0.9, 1), "B_p": (0, 10000, np.inf), "B_f": (0, 10000, np.inf)}
+            # Build bounds dictionary
+            bounds = {"N": (0, 100000, np.inf), "epsilon": (0, 0.9, 1), "B_p": (0, 10000, np.inf), "B_f": (0, 10000, np.inf)}
 
-        # Signal Bounds
-        for p, b in sig_config["bounds"].items():
-            bounds[p] = b
+            # Signal Bounds
+            for p, b in sig_config["bounds"].items():
+                bounds[p] = b
 
-        # Background Bounds
-        for p, b in bg_config["bounds"].items():
-            bounds[f"{p}_pass"] = b
-            bounds[f"{p}_fail"] = b
+            # Background Bounds
+            for p, b in bg_config["bounds"].items():
+                bounds[f"{p}_pass"] = b
+                bounds[f"{p}_fail"] = b
 
-        FIT_CONFIGS[fit_type] = {
-            "param_names": param_names,
-            "bounds": bounds,
-            "signal_pdf": sig_config["pdf"],
-            "signal_cdf": sig_config.get("cdf"),
-            "background_pdf": bg_config["pdf"],
-            "background_cdf": bg_config.get("cdf"),
-        }
+            FIT_CONFIGS[fit_type] = {
+                "param_names": param_names,
+                "bounds": bounds,
+                "signal_pdf": sig_config["pdf"],
+                "signal_cdf": sig_config.get("cdf"),
+                "background_pdf": bg_config["pdf"],
+                "background_cdf": bg_config.get("cdf"),
+            }
+    return BINS_INFO, SIGNAL_MODELS, BACKGROUND_MODELS, FIT_CONFIGS
 
 
 # Things to make simultaneous model
 class PassFailPlotter:
-    def __init__(self, cost_func_pass, error_func_pass, cost_func_fail, error_func_fail, n_bins_pass, edges_pass, edges_fail, fit_type, sigmoid_eff=False):
+    def __init__(
+        self, config, cost_func_pass, error_func_pass, cost_func_fail, error_func_fail, n_bins_pass, edges_pass, edges_fail, fit_type, sigmoid_eff=False
+    ):
         self.cost = cost_func_pass
         self.error_pass = error_func_pass
         self.cost_fail = cost_func_fail
@@ -79,6 +87,7 @@ class PassFailPlotter:
         self.n_bins_pass = n_bins_pass
         self.edges_pass = edges_pass
         self.edges_fail = edges_fail
+        BINS_INFO, SIGNAL_MODELS, BACKGROUND_MODELS, FIT_CONFIGS = setup(config)
         self.param_names = FIT_CONFIGS[fit_type]["param_names"]
         self.signal_func = FIT_CONFIGS[fit_type]["signal_pdf"]
         self.bg_func = FIT_CONFIGS[fit_type]["background_pdf"]
@@ -210,7 +219,8 @@ def calculate_custom_chi2(values, errors, model, n_params):
     return Pearson_chi2, Poisson_chi2, ndof
 
 
-def create_combined_model(fit_type, edges_pass, edges_fail, *params, use_cdf=False, sigmoid_eff=False):
+def create_combined_model(config, fit_type, edges_pass, edges_fail, *params, use_cdf=False, sigmoid_eff=False):
+    BINS_INFO, SIGNAL_MODELS, BACKGROUND_MODELS, FIT_CONFIGS = setup(config)
     config = FIT_CONFIGS[fit_type]
 
     # If either CDF is missing, fall back to PDF mode for the entire region
@@ -289,11 +299,12 @@ def fig_to_array(fig):
 
 
 # Plot fits
-def plot_combined_fit(results, plot_dir=".", data_type="DATA", fixed_params=None, sigmoid_eff=False, args_abseta=None, args_mass=None):
+def plot_combined_fit(config, results, plot_dir=".", data_type="DATA", fixed_params=None, sigmoid_eff=False, args_abseta=None, args_mass=None):
     if results is None:
         logger.warning("No results to plot")
         return None, None  # Return None if no results
 
+    BINS_INFO, SIGNAL_MODELS, BACKGROUND_MODELS, FIT_CONFIGS = setup(config)
     fixed_params = fixed_params or {}
     fit_type = results["type"]
     config = FIT_CONFIGS[fit_type]
@@ -481,13 +492,14 @@ fit_text_sum = []
 
 
 def fit_function(
+    config,
     fit_type,
     hist_pass,
     hist_fail,
+    x_min,
+    x_max,
     fixed_params=None,
     use_cdf=False,
-    x_min=x_min,
-    x_max=x_max,
     interactive=False,
     args_bin=None,
     args_data=None,
@@ -496,6 +508,7 @@ def fit_function(
     data_name=None,
     mc_name=None,
 ):
+    BINS_INFO, SIGNAL_MODELS, BACKGROUND_MODELS, FIT_CONFIGS = setup(config)
     fixed_params = fixed_params or {}
 
     if fit_type not in FIT_CONFIGS:
@@ -627,19 +640,19 @@ def fit_function(
         bounds_high.append(b[2])
 
     def model_approx_pass(edges, *params):
-        result_pass, _ = create_combined_model(fit_type, edges_pass, edges_fail, *params, sigmoid_eff=sigmoid_eff)
+        result_pass, _ = create_combined_model(config, fit_type, edges_pass, edges_fail, *params, sigmoid_eff=sigmoid_eff)
         return result_pass
 
     def model_approx_fail(edges, *params):
-        _, result_fail = create_combined_model(fit_type, edges_pass, edges_fail, *params, sigmoid_eff=sigmoid_eff)
+        _, result_fail = create_combined_model(config, fit_type, edges_pass, edges_fail, *params, sigmoid_eff=sigmoid_eff)
         return result_fail
 
     def model_cdf_pass(edges, *params):
-        result_pass, _ = create_combined_model(fit_type, edges_pass, edges_fail, *params, use_cdf=True, sigmoid_eff=sigmoid_eff)
+        result_pass, _ = create_combined_model(config, fit_type, edges_pass, edges_fail, *params, use_cdf=True, sigmoid_eff=sigmoid_eff)
         return result_pass
 
     def model_cdf_fail(edges, *params):
-        _, result_fail = create_combined_model(fit_type, edges_pass, edges_fail, *params, use_cdf=True, sigmoid_eff=sigmoid_eff)
+        _, result_fail = create_combined_model(config, fit_type, edges_pass, edges_fail, *params, use_cdf=True, sigmoid_eff=sigmoid_eff)
         return result_fail
 
     bin_widths_pass = np.diff(edges_pass)
@@ -684,7 +697,7 @@ def fit_function(
     m.hesse()
 
     # Interactive Fitter
-    plotter = PassFailPlotter(c_pass, errors_pass, c_fail, errors_fail, len(edges_pass), edges_pass, edges_fail, fit_type, sigmoid_eff=sigmoid_eff)
+    plotter = PassFailPlotter(config, c_pass, errors_pass, c_fail, errors_fail, len(edges_pass), edges_pass, edges_fail, fit_type, sigmoid_eff=sigmoid_eff)
 
     if interactive:
         m.strategy = 1

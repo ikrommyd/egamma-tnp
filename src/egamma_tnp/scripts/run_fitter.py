@@ -63,7 +63,7 @@ from rich.panel import Panel
 from rich.progress import BarColumn, Progress, TaskProgressColumn, TextColumn, TimeRemainingColumn
 from rich.table import Table
 
-from egamma_tnp.utils.fitter_utils import BINS_INFO, fit_function, load_histogram, plot_combined_fit
+from egamma_tnp.utils.fitter_utils import fit_function, get_bin_info, load_histogram, plot_combined_fit
 from egamma_tnp.utils.logger_utils import CustomTimeElapsedColumn, print_efficiency_summary, setup_logger
 
 console = Console()
@@ -171,6 +171,7 @@ def main():
 
             hist_pass_name = config["fit"].get("hist_pass_name")
             hist_fail_name = config["fit"].get("hist_fail_name")
+            BINS_INFO = get_bin_info(mass, config["fit"].get("bin_ranges", []))
             if not hist_pass_name or not hist_fail_name:
                 bin_suffix, bin_range = BINS_INFO[pt]
                 if mass in ["Z", "JPsi"]:
@@ -221,6 +222,7 @@ def main():
                         h_fail = load_histogram(f, hist_fail_name, "DATA")
 
                     res_data = fit_function(
+                        config,
                         fit_type,
                         h_pass,
                         h_fail,
@@ -247,7 +249,7 @@ def main():
                     plot_path.mkdir(parents=True, exist_ok=True)
 
                     if config["output"].get("plot_dir"):
-                        fig_pass, fig_fail = plot_combined_fit(res_data, plot_path, data_type="DATA", sigmoid_eff=sigmoid_eff, args_mass=mass)
+                        fig_pass, fig_fail = plot_combined_fit(config, res_data, plot_path, data_type="DATA", sigmoid_eff=sigmoid_eff, args_mass=mass)
                         fig_pass.savefig(plot_path / f"{data_key}_Pass.png", bbox_inches="tight", dpi=300)
                         fig_fail.savefig(plot_path / f"{data_key}_Fail.png", bbox_inches="tight", dpi=300)
                         plt.close(fig_pass)
@@ -290,6 +292,7 @@ def main():
                         h_fail = load_histogram(f, hist_fail_name, "MC")
 
                     res_mc = fit_function(
+                        config,
                         fit_type,
                         h_pass,
                         h_fail,
@@ -316,7 +319,7 @@ def main():
                     plot_path.mkdir(parents=True, exist_ok=True)
 
                     if config["output"].get("plot_dir"):
-                        fig_pass, fig_fail = plot_combined_fit(res_mc, plot_path, data_type="MC", sigmoid_eff=sigmoid_eff, args_mass=mass)
+                        fig_pass, fig_fail = plot_combined_fit(config, res_mc, plot_path, data_type="MC", sigmoid_eff=sigmoid_eff, args_mass=mass)
                         fig_pass.savefig(plot_path / f"{mc_key}_Pass.png", bbox_inches="tight", dpi=300)
                         fig_fail.savefig(plot_path / f"{mc_key}_Fail.png", bbox_inches="tight", dpi=300)
                         plt.close(fig_pass)

@@ -12,7 +12,7 @@ from egamma_tnp.utils import calculate_photon_SC_eta, custom_delta_r
 from egamma_tnp.utils.pileup import apply_pileup_weights
 
 
-class ScaleAndSmearingNtupleFromNanoAOD(BaseNTuplizer):
+class ScaleAndSmearingNTuplesFromNanoAOD(BaseNTuplizer):
     def __init__(
         self,
         fileset,
@@ -27,7 +27,7 @@ class ScaleAndSmearingNtupleFromNanoAOD(BaseNTuplizer):
         avoid_ecal_transition=False,
     ):
         """
-        Initialize the ScaleAndSmearingNtupleFromNanoAOD class.
+        Initialize the ScaleAndSmearingNTuplesFromNanoAOD class.
 
         Parameters
         ----------
@@ -71,7 +71,7 @@ class ScaleAndSmearingNtupleFromNanoAOD(BaseNTuplizer):
         n_of_files = 0
         for dataset in self.fileset.values():
             n_of_files += len(dataset["files"])
-        return f"ScaleAndSmearingNtupleFromNanoAOD(Number of files: {n_of_files})"
+        return f"ScaleAndSmearingNTuplesFromNanoAOD(Number of files: {n_of_files})"
 
     def find_lepton_pairs(self, events, mass_range=(50, 130), vars=None):
         if events.metadata.get("isMC") is None:
@@ -140,10 +140,10 @@ class ScaleAndSmearingNtupleFromNanoAOD(BaseNTuplizer):
         good_events["Electron"] = electrons
         sorted_electrons = good_events.Electron[ak.argsort(good_events.Electron.pt, ascending=False)]
 
-        dielectrons = ScaleAndSmearingNtupleFromNanoAOD._process_zcands(
+        dielectrons = ScaleAndSmearingNTuplesFromNanoAOD._process_zcands(
             leptons=sorted_electrons, mass_range=mass_range, lead_pt_cut=self.lead_pt_cut, prefixes=("ele_lead", "ele_sublead")
         )
-        dielectrons = ScaleAndSmearingNtupleFromNanoAOD._save_event_variables(good_events, dielectrons, vars=vars)
+        dielectrons = ScaleAndSmearingNTuplesFromNanoAOD._save_event_variables(good_events, dielectrons, vars=vars)
         dielectrons = apply_pileup_weights(dielectrons, good_events, sum_genw_before_presel=sum_genw_before_presel, syst=True)
 
         # flatten the output

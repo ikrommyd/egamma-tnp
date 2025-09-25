@@ -66,7 +66,6 @@ def get_fetcher_args() -> argparse.Namespace:
         help="Filter files by extensions (e.g., .root .txt) (only for local mode). If not specified, all files are included.",
     )
     parser.add_argument(
-        "-l",
         "--limit",
         type=int,
         default=-1,

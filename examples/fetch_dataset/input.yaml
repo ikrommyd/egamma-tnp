@@ -19,4 +19,4 @@ datasets:
     dataset:
       - /DYto2L-2Jets_MLL-50_TuneCP5_13p6TeV_amcatnloFXFX-pythia8/Run3Summer23NanoAODv13-133X_mcRun3_2023_realistic_ForNanov13_v1-v1/NANOAODSIM
     metadata:
-      pileup: json/puWeights_2023_Summer23.json.gz
+      pileupJSON: json/puWeights_2023_Summer23.json.gz

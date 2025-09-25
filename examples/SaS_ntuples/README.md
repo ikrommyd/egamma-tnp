@@ -2,10 +2,6 @@
 
 Example to produce the Zee ntuples used to derive EGM Scale and Smearing corrections (https://gitlab.cern.ch/pgaigne/law_ijazz2p0).
 
-
-
-
-
 ### Activate proxy
 
 ```
@@ -27,15 +23,16 @@ cd examples/SaS_ntuples
 
 ### Get input datasets list of files to be processed
 
-Use yaml format to set up metadata for GoldenJSON and pileup reweighting
+Use yaml format to set up metadata for Golden JSON and pileup reweighting
 
 ```
-fetch-datasets -i Run3_NanoV15/input24.yaml
+fetch-datasets --input input.yaml --where Eurasia
 ```
 
 ### Launch SaS ntuples production using 100 jobs in htcondor (~45 minutes to process 2024 data and MC)
 ```
-run-analysis --config config.json  --fileset Run3_NanoV15/input24.json  --output outputFolder --executor dask/lxplus --scaleout 100 --memory 5GiB --log-directory logs
+run-analysis --config config.json  --fileset input.json  --output output --executor dask/lxplus --scaleout 100 --memory 5GiB --log-directory logs
 ```
 
 Use `--executor distributed` to run interactively on the node instead of using HTCondor.
+Use `run-analysis --help` to see all options.

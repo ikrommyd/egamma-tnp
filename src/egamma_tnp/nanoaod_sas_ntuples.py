@@ -196,7 +196,7 @@ class ScaleAndSmearingNTuplesFromNanoAOD(BaseNTuplizer):
         dileptons["nPV"] = events.PV.npvs
         if hasattr(events, "Rho") and hasattr(events.Rho, "fixedGridRhoAll"):
             dileptons["fixedGridRhoAll"] = events.Rho.fixedGridRhoAll
-        elif hasattr(events, "fixedGridRhoFastjetAll"): # NanoAODv9
+        elif hasattr(events, "fixedGridRhoFastjetAll"):  # NanoAODv9
             dileptons["fixedGridRhoFastjetAll"] = events.fixedGridRhoFastjetAll
         # annotate dielectrons with dZ information (difference between z position of GenVtx and PV) as required by flashggfinalfits
         if events.metadata.get("isMC"):

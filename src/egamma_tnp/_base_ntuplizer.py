@@ -124,7 +124,7 @@ class BaseNTuplizer:
                 trigger_paths = [trigger_paths]
             # Remove wildcards from trigger paths and find the corresponding fields in events.HLT
             for trigger in trigger_paths:
-                actual_trigger = trigger.replace("*", "")
+                actual_trigger = trigger.replace("*", "").replace("HLT_", "")
                 for field in events.HLT.fields:
                     if field.startswith(actual_trigger):
                         trigger_names.append(field)

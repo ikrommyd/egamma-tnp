@@ -9,14 +9,14 @@ import yaml
 
 # Import models to ensure PDFs are registered
 import egamma_tnp.fitter.models  # noqa: F401
-from egamma_tnp.fitter.utils import fit_single_histogram, load_custom_models, parse_bin_name
+from egamma_tnp.fitter.utils import fit_single_histogram, load_custom_models
 
 
 def main():
     parser = argparse.ArgumentParser(description="Fit individual histogram bins")
     parser.add_argument("--config", required=True, help="Path to YAML config file")
     parser.add_argument("--input", required=True, help="Path to input ROOT file")
-    parser.add_argument("--bin", help="Bin to fit (e.g., '01pass' or '01fail'). If not specified, fits all bins.")
+    parser.add_argument("--bin", help="Bin to fit (e.g., '1_pass' or '5_fail'). If not specified, fits all bins.")
     parser.add_argument("--interactive", action="store_true", help="Enable interactive fitting")
     args = parser.parse_args()
 
@@ -39,7 +39,32 @@ def main():
 
         if args.bin:
             # Fit single bin
-            bin_num, pass_fail = parse_bin_name(args.bin)
+            # Parse bin format: "1_pass" or "5_fail"
+            if "_" not in args.bin:
+                raise ValueError(f"Invalid bin format: {args.bin}. Expected format: '1_pass' or '5_fail'")
+
+            bin_num_str, pass_fail_str = args.bin.split("_", 1)
+
+            # Normalize pass/fail
+            pass_fail = "Pass" if pass_fail_str.lower() in ["pass", "p"] else "Fail"
+
+            # Determine the zero-padding width from the ROOT file
+            # Find all bin numbers in the file
+            bin_pattern_all = re.compile(r"^bin(\d+)_.*_(Pass|Fail)(?:;.*)?$")
+            bin_numbers = []
+            for key in all_keys:
+                match = bin_pattern_all.match(key)
+                if match:
+                    bin_numbers.append(match.group(1))
+
+            if not bin_numbers:
+                raise ValueError("No bin histograms found in the ROOT file")
+
+            # Determine padding width from the bin numbers
+            max_width = max(len(bn) for bn in bin_numbers)
+
+            # Pad the user-provided bin number
+            bin_num = bin_num_str.zfill(max_width)
 
             # Create regex pattern: bin{num}_*_{Pass/Fail}
             pattern = re.compile(rf"^bin{bin_num}_.*_{pass_fail}(?:;.*)?$")

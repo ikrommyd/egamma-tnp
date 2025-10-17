@@ -49,6 +49,10 @@ def fit_single_histogram(hist_name, h, config, interactive=False):
     # Extract fit configuration
     fit_range = tuple(config["fit_range"])
 
+    # Print histogram info before fitting
+    print(f"\nHistogram: {hist_name}")
+    print(f"Fit range: {fit_range}\n")
+
     # Create PDFs from config
     signal_config = config["signal"]
     signal_pdf_name = signal_config["pdf"]
@@ -79,6 +83,4 @@ def fit_single_histogram(hist_name, h, config, interactive=False):
         result = fitter.fit()
 
     # Print minuit object
-    print(f"\nHistogram: {hist_name}")
-    print(f"Fit range: {fit_range}\n")
     print(result)

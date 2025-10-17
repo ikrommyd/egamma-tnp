@@ -9,9 +9,7 @@ import numpy as np
 _PDF_REGISTRY = {}
 
 
-def register_pdf(name: str):
-    """Decorator to register a PDF class with a string name."""
-
+def register_pdf(name):
     def decorator(cls):
         _PDF_REGISTRY[name] = cls
         return cls
@@ -19,8 +17,7 @@ def register_pdf(name: str):
     return decorator
 
 
-def get_pdf_class(name: str):
-    """Get a PDF class by its registered name."""
+def get_pdf_class(name):
     if name not in _PDF_REGISTRY:
         raise ValueError(f"PDF '{name}' not found in registry. Available PDFs: {list(_PDF_REGISTRY.keys())}")
     return _PDF_REGISTRY[name]

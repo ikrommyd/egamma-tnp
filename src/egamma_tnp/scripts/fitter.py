@@ -64,44 +64,8 @@ def construct_histogram_name(bin_info: str, pass_fail: str) -> str:
     return f"bin{bin_info}_*_{pass_fail}"
 
 
-def main():
-    parser = argparse.ArgumentParser(description="Fit individual histogram bins")
-    parser.add_argument("--config", required=True, help="Path to YAML config file")
-    parser.add_argument("--input", required=True, help="Path to input ROOT file")
-    parser.add_argument("--bin", required=True, help="Bin to fit (e.g., '01pass' or '01fail')")
-    parser.add_argument("--interactive", action="store_true", help="Enable interactive fitting")
-    args = parser.parse_args()
-
-    # Load config
-    config_path = Path(args.config)
-    with open(config_path) as f:
-        config = yaml.safe_load(f)
-
-    # Parse bin name
-    bin_num, pass_fail = parse_bin_name(args.bin)
-
-    # Open ROOT file and find matching histogram
-    with uproot.open(args.input) as f:
-        # Create regex pattern: bin{num}_*_{Pass/Fail}
-        pattern = re.compile(rf"^bin{bin_num}_.*_{pass_fail}(?:;.*)?$")
-
-        # Find histogram matching the pattern
-        all_keys = f.keys()
-        matching_keys = [key for key in all_keys if pattern.match(key)]
-
-        if not matching_keys:
-            raise ValueError(f"No histogram found matching pattern: bin{bin_num}_.*_{pass_fail}")
-        if len(matching_keys) > 1:
-            # Strip cycle numbers for display
-            display_keys = [key.split(";")[0] for key in matching_keys]
-            raise ValueError(f"Multiple histograms match pattern bin{bin_num}_.*_{pass_fail}:\n" + "\n".join(f"  - {key}" for key in display_keys))
-
-        hist_name = matching_keys[0]
-        hist_name_display = hist_name.split(";")[0]
-
-        # Load histogram
-        h = f[hist_name].to_hist()
-
+def fit_single_histogram(hist_name: str, h, config: dict, interactive: bool = False) -> None:
+    """Fit a single histogram and print results."""
     # Extract fit configuration
     fit_range = tuple(config["fit_range"])
 
@@ -129,15 +93,85 @@ def main():
     # Create and run fitter
     fitter = Fitter(h, sig_pdf, bkg_pdf, fit_range, param_config)
 
-    if args.interactive:
+    if interactive:
         result = fitter.interactive()
     else:
         result = fitter.fit()
 
     # Print minuit object
-    print(f"\nHistogram: {hist_name_display}")
+    print(f"\nHistogram: {hist_name}")
     print(f"Fit range: {fit_range}\n")
     print(result)
+
+
+def main():
+    parser = argparse.ArgumentParser(description="Fit individual histogram bins")
+    parser.add_argument("--config", required=True, help="Path to YAML config file")
+    parser.add_argument("--input", required=True, help="Path to input ROOT file")
+    parser.add_argument("--bin", help="Bin to fit (e.g., '01pass' or '01fail'). If not specified, fits all bins.")
+    parser.add_argument("--interactive", action="store_true", help="Enable interactive fitting")
+    args = parser.parse_args()
+
+    # Load config
+    config_path = Path(args.config)
+    with open(config_path) as f:
+        config = yaml.safe_load(f)
+
+    # Open ROOT file
+    with uproot.open(args.input) as f:
+        all_keys = f.keys()
+
+        if args.bin:
+            # Fit single bin
+            bin_num, pass_fail = parse_bin_name(args.bin)
+
+            # Create regex pattern: bin{num}_*_{Pass/Fail}
+            pattern = re.compile(rf"^bin{bin_num}_.*_{pass_fail}(?:;.*)?$")
+
+            # Find histogram matching the pattern
+            matching_keys = [key for key in all_keys if pattern.match(key)]
+
+            if not matching_keys:
+                raise ValueError(f"No histogram found matching pattern: bin{bin_num}_.*_{pass_fail}")
+            if len(matching_keys) > 1:
+                # Strip cycle numbers for display
+                display_keys = [key.split(";")[0] for key in matching_keys]
+                raise ValueError(f"Multiple histograms match pattern bin{bin_num}_.*_{pass_fail}:\n" + "\n".join(f"  - {key}" for key in display_keys))
+
+            hist_name = matching_keys[0]
+            hist_name_display = hist_name.split(";")[0]
+
+            # Load histogram
+            h = f[hist_name].to_hist()
+
+            # Fit the histogram
+            fit_single_histogram(hist_name_display, h, config, args.interactive)
+
+        else:
+            # Fit all bins
+            # Pattern to match bin histograms: bin<number>_..._Pass or bin<number>_..._Fail
+            bin_pattern = re.compile(r"^bin\d+_.*_(Pass|Fail)(?:;.*)?$")
+            histogram_keys = [key for key in all_keys if bin_pattern.match(key)]
+
+            if not histogram_keys:
+                raise ValueError("No bin histograms found in the ROOT file")
+
+            print(f"Found {len(histogram_keys)} histograms to fit\n")
+
+            for hist_key in histogram_keys:
+                hist_name_display = hist_key.split(";")[0]
+
+                try:
+                    # Load histogram
+                    h = f[hist_key].to_hist()
+
+                    # Fit the histogram
+                    fit_single_histogram(hist_name_display, h, config, args.interactive)
+
+                except Exception as e:
+                    print(f"\nWARNING: Failed to fit {hist_name_display}")
+                    print(f"Error: {e}\n")
+                    continue
 
 
 if __name__ == "__main__":

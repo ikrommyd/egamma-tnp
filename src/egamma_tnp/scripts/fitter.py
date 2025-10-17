@@ -8,7 +8,9 @@ Usage:
 from __future__ import annotations
 
 import argparse
+import importlib.util
 import re
+import sys
 from pathlib import Path
 
 import uproot
@@ -18,6 +20,29 @@ import yaml
 import egamma_tnp.fitter.models  # noqa: F401
 from egamma_tnp.fitter.basepdf import get_pdf_class
 from egamma_tnp.fitter.fit import Fitter
+
+
+def load_custom_models(models_file: str | Path) -> None:
+    """Load custom PDF models from a Python file.
+
+    The file should define PDF classes decorated with @register_pdf that inherit from BasePDF.
+
+    Args:
+        models_file: Path to Python file containing custom PDF models
+    """
+    models_path = Path(models_file).resolve()
+
+    if not models_path.exists():
+        raise FileNotFoundError(f"Custom models file not found: {models_path}")
+
+    # Load the module from file
+    spec = importlib.util.spec_from_file_location("custom_models", models_path)
+    if spec is None or spec.loader is None:
+        raise ImportError(f"Could not load module from {models_path}")
+
+    module = importlib.util.module_from_spec(spec)
+    sys.modules["custom_models"] = module
+    spec.loader.exec_module(module)
 
 
 def parse_bin_name(bin_name: str) -> tuple[str, str]:
@@ -116,6 +141,14 @@ def main():
     config_path = Path(args.config)
     with open(config_path) as f:
         config = yaml.safe_load(f)
+
+    # Load custom models if specified
+    if "custom_models" in config:
+        custom_models_path = config["custom_models"]
+        # Resolve path relative to config file if it's a relative path
+        if not Path(custom_models_path).is_absolute():
+            custom_models_path = config_path.parent / custom_models_path
+        load_custom_models(custom_models_path)
 
     # Open ROOT file
     with uproot.open(args.input) as f:

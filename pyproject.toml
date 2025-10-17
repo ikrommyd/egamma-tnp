@@ -64,7 +64,8 @@ dev = [
 
 [project.scripts]
 run-analysis = "egamma_tnp.scripts.run_analysis:main"
-run-fitter = "egamma_tnp.scripts.run_fitter:main"
+run-fitter-legacy = "egamma_tnp.scripts.run_fitter:main"
+run-fitter = "egamma_tnp.scripts.fitter:main"
 dataset-query = "egamma_tnp.scripts.dataset_query:main"
 merge-parquet = "egamma_tnp.scripts.merge_parquet:main"
 prepare-histograms = "egamma_tnp.scripts.prepare_histograms:main"
@@ -129,3 +130,4 @@ isort.required-imports = ["from __future__ import annotations"]
 "src/egamma_tnp/__init__.py" = ["E402"]
 "tests/example_extra_filter.py" = ["T201"]
 "src/egamma_tnp/utils/rucio_utils.py" = ["T201"]
+"src/egamma_tnp/scripts/fitter.py" = ["T201"]

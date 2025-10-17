@@ -22,7 +22,8 @@ class Fitter:
 
         self._sig_params = list(config["signal"].keys())
         self._bkg_params = list(config["background"].keys())
-        self._yield_params = list(config["yields"].keys())
+        # Always use sig_frac and bkg_frac as yield parameters
+        self._yield_params = ["sig_frac", "bkg_frac"]
         self._all_params = self._sig_params + self._bkg_params + self._yield_params
 
         def model_pdf(xe, *args):
@@ -34,7 +35,7 @@ class Fitter:
             sig_pdf = self._signal_pdf.pdf(xe, **sig_kwargs)
             bkg_pdf = self._background_pdf.pdf(xe, **bkg_kwargs)
 
-            return params["n_sig"] * sig_pdf + params["n_bkg"] * bkg_pdf
+            return params["sig_frac"] * sig_pdf + params["bkg_frac"] * bkg_pdf
 
         # Tell iminuit the parameter names using __signature__
         params_signature = [Parameter("xe", Parameter.POSITIONAL_OR_KEYWORD)]
@@ -70,10 +71,39 @@ class Fitter:
             if "limits" in param_config:
                 limits[param_name] = param_config["limits"]
 
-        for param_name, param_config in config["yields"].items():
-            init_values[param_name] = param_config["init"]
+        # Calculate total sum of variances for yield normalization
+        total_variance = hist_sliced.variances().sum()
+
+        # Handle yield parameters with default values and fraction-based initialization
+        yield_defaults = {
+            "sig_frac": {"init": 0.5, "limits": (0, 1.2)},
+            "bkg_frac": {"init": 0.5, "limits": (0, 1.2)},
+        }
+
+        # Get yield config or use empty dict if not provided
+        yields_config = config.get("yields", {})
+
+        for param_name in ["sig_frac", "bkg_frac"]:
+            # Get user config or default
+            param_config = yields_config.get(param_name, yield_defaults[param_name])
+
+            # Convert fraction to actual value
+            init_fraction = param_config.get("init", yield_defaults[param_name]["init"])
+            init_values[param_name] = init_fraction * total_variance
+
+            # Convert limit fractions to actual values
             if "limits" in param_config:
-                limits[param_name] = param_config["limits"]
+                limit_fractions = param_config["limits"]
+                limits[param_name] = (
+                    limit_fractions[0] * total_variance,
+                    limit_fractions[1] * total_variance,
+                )
+            else:
+                default_limits = yield_defaults[param_name]["limits"]
+                limits[param_name] = (
+                    default_limits[0] * total_variance,
+                    default_limits[1] * total_variance,
+                )
 
         self.minuit = Minuit(cost, **init_values)
         self.minuit.strategy = 2

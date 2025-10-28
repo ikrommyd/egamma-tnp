@@ -93,11 +93,11 @@ def apply_pileup_weights(dileptons, events, sum_genw_before_presel=1.0, syst=Fal
 
             dileptons["weight"] = weights.partial_weight(include=["Pileup", "genWeight"]) / sum_genw_before_presel
             if syst:
-                dileptons["weight_PileupUp"] = weights.partial_weight(include=["Pileup", "genWeight"], modifier="PileupUp")
-                dileptons["weight_PileupDown"] = weights.partial_weight(include=["Pileup", "genWeight"], modifier="PileupDown")
+                dileptons["weight_PileupUp"] = weights.partial_weight(include=["Pileup", "genWeight"], modifier="PileupUp") / sum_genw_before_presel
+                dileptons["weight_PileupDown"] = weights.partial_weight(include=["Pileup", "genWeight"], modifier="PileupDown") / sum_genw_before_presel
 
         else:
             dileptons["weight_central"] = dak.ones_like(events.event)
-            dileptons["weight"] = dileptons["genWeight"]
+            dileptons["weight"] = dileptons["genWeight"] / sum_genw_before_presel
 
     return dileptons

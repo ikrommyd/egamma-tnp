@@ -87,7 +87,7 @@ tests/output/ (output folder)
 ### The fileset JSON
 The fileset JSON defines the input datasets, their root files, and some metadata like whether the dataset is MC or data, golden JSON for data, pileup weights for MC etc.
 An example of such a structure can be seen below:
-```
+```json
 {
   "Data": {
     "files": {
@@ -120,7 +120,7 @@ and then use them as input files in the fileset JSON.
 ### The runner JSON
 Defines the filters (cuts) and tasks that produce histograms/outputs.
 Example filter block (probe electron):
-```
+```json
 {
   "filters": {
     "HLT_Ele30_WPTight_Gsf": "HLT_Ele30_WPTight_Gsf",
@@ -130,7 +130,7 @@ Example filter block (probe electron):
 ```
 This means that we will check the efficiency against two filters. One is where the a probe is considered passing if it fired the HLT_Ele30_WPTight_Gsf trigger, and the other is where the probe is considered passing if its cutBased ID is at least 2.
 Once defined, pass these filters into methods that produce histograms or NTuples like so in the same JSON:
-```
+```json
 {
   "name": "get_nd_tnp_histograms",
   "args": {

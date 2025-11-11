@@ -222,7 +222,7 @@ Use `fetch-datasets` to resolve each dataset into full file paths. Choose an xro
 ```
 Run the fetching like so:
 ```
-fetch_datasets.py  --input samples.txt --where Eurasia
+fetch-datasets  --input samples.txt --where Eurasia
 ```
 
 This generates a `<txt file name>.json` with the full list of files per dataset that you can feed into pre-processing.

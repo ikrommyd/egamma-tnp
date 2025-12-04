@@ -18,11 +18,11 @@ class Normal(BasePDF):
 # Define DoubleCrystalBall PDF
 @register_pdf("DoubleCrystalBall")
 class DoubleCrystalBall(BasePDF):
-    def _unnormalized_pdf(self, x, mu, sigma, alphal, nl, alphar, nr):
-        return crystalball_ex.pdf(x, alphal, nl, sigma, alphar, nr, sigma, mu)
+    def _unnormalized_pdf(self, x, mu, alphal, nl, sigmal, alphar, nr, sigmar):
+        return crystalball_ex.pdf(x, alphal, nl, sigmal, alphar, nr, sigmar, mu)
 
-    def _unnormalized_cdf(self, x, mu, sigma, alphal, nl, alphar, nr):
-        return crystalball_ex.cdf(x, alphal, nl, sigma, alphar, nr, sigma, mu)
+    def _unnormalized_cdf(self, x, mu, alphal, nl, sigmal, alphar, nr, sigmar):
+        return crystalball_ex.cdf(x, alphal, nl, sigmal, alphar, nr, sigmar, mu)
 
 
 # Define Exponential PDF

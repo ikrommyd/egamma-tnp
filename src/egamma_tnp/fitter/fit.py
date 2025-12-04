@@ -22,13 +22,13 @@ class Fitter:
 
         self._sig_params = list(config["signal"].keys())
         self._bkg_params = list(config["background"].keys())
-        # Use only n_sig; n_bkg is computed as total_variance - n_sig
+        # Use only n_sig; n_bkg is computed as total_counts - n_sig
         self._yield_params = ["n_sig"]
         self._all_params = self._sig_params + self._bkg_params + self._yield_params
 
-        # Calculate total variance first (needed for model_pdf closure)
+        # Calculate total counts first (needed for model_pdf closure)
         hist_sliced_temp = hist[fit_range[0] * 1j : fit_range[1] * 1j]
-        total_variance = hist_sliced_temp.variances().sum()
+        total_counts = hist_sliced_temp.values().sum()
 
         def model_pdf(xe, *args):
             params = dict(zip(self._all_params, args))
@@ -39,9 +39,9 @@ class Fitter:
             sig_pdf = self._signal_pdf.pdf(xe, **sig_kwargs)
             bkg_pdf = self._background_pdf.pdf(xe, **bkg_kwargs)
 
-            # n_sig is the signal count; n_bkg = total_variance - n_sig
+            # n_sig is the signal count; n_bkg = total_counts - n_sig
             n_sig = params["n_sig"]
-            n_bkg = total_variance - n_sig
+            n_bkg = total_counts - n_sig
             return n_sig * sig_pdf + n_bkg * bkg_pdf
 
         # Tell iminuit the parameter names using __signature__
@@ -92,20 +92,20 @@ class Fitter:
 
         # Convert sig_frac fraction to actual n_sig count
         init_sig_frac = sig_frac_config.get("init", yield_defaults["sig_frac"]["init"])
-        init_values["n_sig"] = init_sig_frac * total_variance
+        init_values["n_sig"] = init_sig_frac * total_counts
 
         # Convert limit fractions to actual values
         if "limits" in sig_frac_config:
             limit_fractions = sig_frac_config["limits"]
             limits["n_sig"] = (
-                limit_fractions[0] * total_variance,
-                limit_fractions[1] * total_variance,
+                limit_fractions[0] * total_counts,
+                limit_fractions[1] * total_counts,
             )
         else:
             default_limits = yield_defaults["sig_frac"]["limits"]
             limits["n_sig"] = (
-                default_limits[0] * total_variance,
-                default_limits[1] * total_variance,
+                default_limits[0] * total_counts,
+                default_limits[1] * total_counts,
             )
 
         self.minuit = Minuit(cost, **init_values)

@@ -40,7 +40,6 @@ dependencies = [
   "awkward!=2.8.9",
   "dask<2025",
   "distributed<2025",
-  "pyarrow<21.0.0",
 ]
 dynamic = ["version"]
 

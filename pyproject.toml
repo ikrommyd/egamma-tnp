@@ -38,8 +38,8 @@ dependencies = [
   "click>=8.0.4",
   "coffea[dask,rucio]>=2025.7.0",
   "awkward!=2.8.9",
-  "dask<2025",
-  "distributed<2025",
+  "dask>=2025.3.1,<2025.4.0",
+  "distributed>=2025.3.1,<2025.4.0",
 ]
 dynamic = ["version"]
 

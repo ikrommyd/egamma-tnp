@@ -393,7 +393,7 @@ def main():
     # Summary logging
     logger.info("\nFit Summary:")
     for pt in all_pt_bins:
-        for text_data, text_mc in zip(output_texts_data[pt], output_texts_mc[pt]):
+        for text_data, text_mc in zip(output_texts_data[pt], output_texts_mc[pt], strict=True):
             console.print(text_data)
             console.print(text_mc)
 

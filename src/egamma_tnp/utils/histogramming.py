@@ -623,7 +623,7 @@ def _convert_nd_mll_hist_to_1d_hists(h4d, axes):
         title_parts = []
 
         # Construct details using the given order
-        for ax, idx in zip(axes, idx_combination):
+        for ax, idx in zip(axes, idx_combination, strict=True):
             min_edge = h.axes[ax].edges[idx]
             max_edge = h.axes[ax].edges[idx + 1]
             vars_details[ax] = {"min": min_edge, "max": max_edge}

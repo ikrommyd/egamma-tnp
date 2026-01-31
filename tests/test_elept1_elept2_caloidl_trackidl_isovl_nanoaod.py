@@ -128,6 +128,7 @@ def test_local_compute(do_preprocess, allow_read_errors_with_report):
         [1181.0, 0.0],
         [1181.0, 0.0],
         [1272.0, 1317.0],
+        strict=True,
     ):
         res = tag_n_probe.get_1d_pt_eta_phi_tnp_histograms(
             "HLT_Ele23_Ele12_CaloIdL_TrackIdL_IsoVL_Leg1" if tag_n_probe == tag_n_probe_leg1 else "HLT_Ele23_Ele12_CaloIdL_TrackIdL_IsoVL_Leg2",
@@ -212,6 +213,7 @@ def test_distributed_compute(do_preprocess, allow_read_errors_with_report):
             [1181.0, 0.0],
             [1181.0, 0.0],
             [1272.0, 1317.0],
+            strict=True,
         ):
             res = tag_n_probe.get_1d_pt_eta_phi_tnp_histograms(
                 "HLT_Ele23_Ele12_CaloIdL_TrackIdL_IsoVL_Leg1" if tag_n_probe == tag_n_probe_leg1 else "HLT_Ele23_Ele12_CaloIdL_TrackIdL_IsoVL_Leg2",

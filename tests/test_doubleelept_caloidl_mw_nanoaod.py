@@ -126,6 +126,7 @@ def test_local_compute(do_preprocess, allow_read_errors_with_report):
         [0.0, 0.0],
         [0.0, 0.0],
         [893.0, 893.0],
+        strict=True,
     ):
         res = tag_n_probe.get_1d_pt_eta_phi_tnp_histograms(
             "HLT_DoubleEle33_CaloIdL_MW_SeededLeg" if tag_n_probe is tag_n_probe_leg1 else "HLT_DoubleEle33_CaloIdL_MW_UnseededLeg",
@@ -208,6 +209,7 @@ def test_distributed_compute(do_preprocess, allow_read_errors_with_report):
             [0.0, 0.0],
             [0.0, 0.0],
             [893.0, 893.0],
+            strict=True,
         ):
             res = tag_n_probe.get_1d_pt_eta_phi_tnp_histograms(
                 "HLT_DoubleEle33_CaloIdL_MW_SeededLeg" if tag_n_probe is tag_n_probe_leg1 else "HLT_DoubleEle33_CaloIdL_MW_UnseededLeg",

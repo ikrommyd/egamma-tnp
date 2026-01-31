@@ -419,7 +419,7 @@ Some basic commands:
                 print(f"Filtering replicas with [green]: {' '.join(sites_to_use)}")
 
                 output = []
-                for ifile, (files, sites) in enumerate(zip(outfiles, outsites)):
+                for ifile, (files, sites) in enumerate(zip(outfiles, outsites, strict=True)):
                     random.shuffle(sites_to_use)
                     found = False
                     # loop on shuffled selected sites until one is found
@@ -436,7 +436,7 @@ Some basic commands:
 
                     if not found:
                         print(f"[bold red]No replica found compatible with sites selection for file #{ifile}. The available sites are:")
-                        for f, s in zip(files, sites):
+                        for f, s in zip(files, sites, strict=True):
                             print(f"\t- [green]{s} [cyan]{f}")
                         return
 
@@ -445,7 +445,7 @@ Some basic commands:
 
             elif mode == "round-robin":
                 output = []
-                for _ifile, (files, sites) in enumerate(zip(outfiles, outsites)):
+                for _ifile, (files, sites) in enumerate(zip(outfiles, outsites, strict=True)):
                     # selecting randomly from the sites
                     iS = random.randint(0, len(sites) - 1)
                     output.append(files[iS])
@@ -455,7 +455,7 @@ Some basic commands:
 
             elif mode == "first":
                 output = []
-                for _ifile, (files, sites) in enumerate(zip(outfiles, outsites)):
+                for _ifile, (files, sites) in enumerate(zip(outfiles, outsites, strict=True)):
                     output.append(files[0])
                     files_by_site[sites[0]].append(files[0])
                 self.replica_results[dataset] = output

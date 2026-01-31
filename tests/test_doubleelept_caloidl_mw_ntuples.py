@@ -127,7 +127,7 @@ def test_local_compute(do_preprocess, allow_read_errors_with_report):
         avoid_ecal_transition_tags=False,
     )
 
-    for tag_n_probe, target_pt, target_eta_phi in zip([tag_n_probe_leg1, tag_n_probe_leg2], [361.0, 367.0], [372.0, 378.0]):
+    for tag_n_probe, target_pt, target_eta_phi in zip([tag_n_probe_leg1, tag_n_probe_leg2], [361.0, 367.0], [372.0, 378.0], strict=True):
         res = tag_n_probe.get_1d_pt_eta_phi_tnp_histograms(
             "passHltDoubleEle33CaloIdLMWSeedLegL1match" if tag_n_probe == tag_n_probe_leg1 else "passHltDoubleEle33CaloIdLMWUnsLeg",
             uproot_options={"allow_read_errors_with_report": allow_read_errors_with_report},
@@ -208,7 +208,7 @@ def test_distributed_compute(do_preprocess, allow_read_errors_with_report):
     )
 
     with Client():
-        for tag_n_probe, target_pt, target_eta_phi in zip([tag_n_probe_leg1, tag_n_probe_leg2], [361.0, 367.0], [372.0, 378.0]):
+        for tag_n_probe, target_pt, target_eta_phi in zip([tag_n_probe_leg1, tag_n_probe_leg2], [361.0, 367.0], [372.0, 378.0], strict=True):
             res = tag_n_probe.get_1d_pt_eta_phi_tnp_histograms(
                 "passHltDoubleEle33CaloIdLMWSeedLegL1match" if tag_n_probe == tag_n_probe_leg1 else "passHltDoubleEle33CaloIdLMWUnsLeg",
                 uproot_options={"allow_read_errors_with_report": allow_read_errors_with_report},

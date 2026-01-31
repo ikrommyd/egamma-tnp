@@ -87,7 +87,16 @@ def print_efficiency_summary(
     all_pt_bins, data_msg_per_bin, mc_msg_per_bin, data_eff_per_bin, data_err_per_bin, mc_eff_per_bin, mc_err_per_bin, sf_per_bin, sf_err_per_bin
 ):
     for pt, data_msg, mc_msg, data_list, data_err_list, mc_list, mc_err_list, sf_list, sf_err_list in zip(
-        all_pt_bins, data_msg_per_bin, mc_msg_per_bin, data_eff_per_bin, data_err_per_bin, mc_eff_per_bin, mc_err_per_bin, sf_per_bin, sf_err_per_bin
+        all_pt_bins,
+        data_msg_per_bin,
+        mc_msg_per_bin,
+        data_eff_per_bin,
+        data_err_per_bin,
+        mc_eff_per_bin,
+        mc_err_per_bin,
+        sf_per_bin,
+        sf_err_per_bin,
+        strict=True,
     ):
         table = Table(show_header=True, header_style=f"bold {COLOR_HIGHLIGHT}", box=box.ROUNDED)
         table.add_column("DATA status", style=COLOR_BORDER, justify="right", no_wrap=True)

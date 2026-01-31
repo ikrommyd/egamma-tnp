@@ -97,7 +97,7 @@ class PassFailPlotter:
         plt.rcParams.update({"font.size": 8})  # sets global font size
 
     def __call__(self, args):
-        param_dict = dict(zip(self.param_names, args))
+        param_dict = dict(zip(self.param_names, args, strict=True))
 
         # Split the data
         data_pass = self.cost.data
@@ -238,7 +238,7 @@ def create_combined_model(fitter_config, fit_type, edges_pass, edges_fail, *para
     else:
         x = 0.5 * (edges_pass[:-1] + edges_pass[1:])
         y = 0.5 * (edges_fail[:-1] + edges_fail[1:])
-    params_dict = dict(zip(param_names, params))
+    params_dict = dict(zip(param_names, params, strict=True))
 
     # Shared signal parameters
     signal_params = [params_dict[p] for p in SIGNAL_MODELS[fit_type.split("_")[0]]["params"]]

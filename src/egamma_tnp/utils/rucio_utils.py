@@ -112,8 +112,7 @@ def _get_pfn_for_site(path, rules):
                 return new_pfn
     else:
         # not adding any slash as the path usually starts with it
-        if path.startswith("/"):
-            path = path[1:]
+        path = path.removeprefix("/")
         return rules + "/" + path
 
 

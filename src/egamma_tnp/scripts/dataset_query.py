@@ -672,22 +672,21 @@ Some basic commands:
             step_size_safety_factor = FloatPrompt.ask("[yellow bold]Step size safety factor", default=0.5)
 
         # init a local Dask cluster
-        with self.console.status("[red] Preprocessing files to extract available chunks with dask[/]"):
-            with Client(scheduler_url) as ddcsched:
-                self.preprocessed_available, self.preprocessed_total = preprocess(
-                    self.final_output,
-                    step_size=step_size,
-                    align_clusters=align_to_clusters,
-                    skip_bad_files=True,
-                    recalculate_steps=recalculate_steps,
-                    files_per_batch=files_per_batch,
-                    file_exceptions=file_exceptions,
-                    save_form=save_form,
-                    scheduler=ddcsched,
-                    uproot_options=uproot_options,
-                    step_size_safety_factor=step_size_safety_factor,
-                    allow_empty_datasets=allow_empty_datasets,
-                )
+        with self.console.status("[red] Preprocessing files to extract available chunks with dask[/]"), Client(scheduler_url) as ddcsched:
+            self.preprocessed_available, self.preprocessed_total = preprocess(
+                self.final_output,
+                step_size=step_size,
+                align_clusters=align_to_clusters,
+                skip_bad_files=True,
+                recalculate_steps=recalculate_steps,
+                files_per_batch=files_per_batch,
+                file_exceptions=file_exceptions,
+                save_form=save_form,
+                scheduler=ddcsched,
+                uproot_options=uproot_options,
+                step_size_safety_factor=step_size_safety_factor,
+                allow_empty_datasets=allow_empty_datasets,
+            )
 
         with gzip.open(f"{output_file}_available.json.gz", "wt") as file:
             print(f"Saved available fileset chunks to {output_file}_available.json.gz")

@@ -21,9 +21,7 @@ def get_bin_info(mass, bin_ranges):
         return {f"bin{i}": (f"pt_{lo}p00To{hi}p00", f"{lo:.2f}-{hi:.2f}") for i, (lo, hi) in enumerate(bin_ranges)}
     elif mass == "Z_muon":
         return {f"bin{i + 1}": (f"pt_{lo}p00To{hi}p00", f"{lo:.2f}-{hi:.2f}") for i, (lo, hi) in enumerate(bin_ranges)}
-    elif mass == "JPsi":
-        return {f"bin{i}": (f"pt_{lo}p00To{hi}p00", f"{lo:.2f}-{hi:.2f}") for i, (lo, hi) in enumerate(bin_ranges)}
-    elif mass == "JPsi_muon":
+    elif mass == "JPsi" or mass == "JPsi_muon":
         return {f"bin{i}": (f"pt_{lo}p00To{hi}p00", f"{lo:.2f}-{hi:.2f}") for i, (lo, hi) in enumerate(bin_ranges)}
 
 

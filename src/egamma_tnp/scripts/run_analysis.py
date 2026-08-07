@@ -57,7 +57,7 @@ def main():
         raise ValueError("Limit cannot be 0")
     if args.limit is not None:
         logger.info(f"Limiting each dataset of the fileset to the first {args.limit} files")
-        for dataset in fileset.keys():
+        for dataset in fileset:
             files = fileset[dataset]["files"]
             fileset[dataset]["files"] = dict(list(files.items())[: args.limit])
 
@@ -65,7 +65,7 @@ def main():
         # use xcache for coffea-casa
         xrootd_pfx = "root://"
         xrd_pfx_len = len(xrootd_pfx)
-        for dataset in fileset.keys():
+        for dataset in fileset:
             files = fileset[dataset]["files"]
             newfiles = {}
             for path, value in files.items():

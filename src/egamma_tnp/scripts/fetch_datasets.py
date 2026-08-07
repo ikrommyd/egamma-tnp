@@ -166,11 +166,11 @@ def get_dataset_dict_grid(fset: Iterable[Iterable[str]], xrd: str, dbs_instance:
                     flist = subprocess.check_output(cmd, shell=True, text=True).splitlines()
                 except subprocess.CalledProcessError as e:
                     logger.error(f"dasgoclient command failed for dataset '{dataset}': {e}")
-                    raise e
+                    raise
 
             except Exception as e:
                 logger.error(f"Unexpected error while fetching files for dataset '{dataset}': {e}")
-                raise e
+                raise
 
             flist = [xrd + f for f in flist if f.strip()][:limit]
 
@@ -222,7 +222,7 @@ def get_dataset_dict_local(fset: Iterable[Iterable[str]], recursive: bool, exten
                     fdict[name]["files"].update(dict.fromkeys(files, "Events"))
                 logger.info(f"Found {len(files)} files for local dataset '{name}'.")
 
-            except Exception as e:
+            except Exception as e:  # noqa: BLE001
                 logger.error(f"Error while collecting files from directory '{dir_path}': {e}")
 
         fdict[name]["metadata"] = meta
@@ -278,7 +278,7 @@ def main():
         with open(output_json, "w") as fp:
             json.dump(fdict, fp, indent=4)
         logger.info(f"Successfully wrote data to JSON file '{output_json}'.")
-    except Exception as e:
+    except Exception as e:  # noqa: BLE001
         logger.error(f"Error writing to JSON file '{output_json}': {e}")
         sys.exit(1)
 

@@ -275,7 +275,7 @@ def create_combined_model(fitter_config, fit_type, edges_pass, edges_fail, *para
 
 # Load histograms
 def load_histogram(root_file, hist_name, data_label):
-    keys = {key.split(";")[0]: key for key in root_file.keys()}
+    keys = {key.split(";")[0]: key for key in root_file}
     if hist_name in keys:
         obj = root_file[keys[hist_name]]
         if isinstance(obj, uproot.behaviors.TH1.Histogram):
@@ -739,7 +739,7 @@ def fit_function(
     for param in m.parameters:
         try:
             m.minos(param)
-        except Exception as e:
+        except Exception as e:  # noqa: BLE001
             logger.debug(f"MINOS failed: {e!s}")
 
     # Print results

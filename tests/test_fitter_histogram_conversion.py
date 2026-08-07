@@ -232,7 +232,8 @@ def test_fitter_histogram_saving_1d():
 
     for region in ["barrel", "endcap_loweta", "endcap_higheta"]:
         with uproot.open(f"1d_hists_pt_{region}.root") as f:
-            binning = pickle.load(open(f"1d_binning_pt_{region}.pkl", "rb"))
+            with open(f"1d_binning_pt_{region}.pkl", "rb") as file:
+                binning = pickle.load(file)
             for bin in binning["bins"]:
                 name = bin["name"]
                 min_pt = bin["vars"]["pt"]["min"] * 1j
@@ -245,7 +246,8 @@ def test_fitter_histogram_saving_1d():
                 assert_histograms_equal(saved_failing_hist, hmll1d["pt"][region]["failing"][min_pt:max_pt:sum, :], flow=False)
 
     with uproot.open("1d_hists_eta_entire.root") as f:
-        binning = pickle.load(open("1d_binning_eta_entire.pkl", "rb"))
+        with open("1d_binning_eta_entire.pkl", "rb") as file:
+            binning = pickle.load(file)
         for bin in binning["bins"]:
             name = bin["name"]
             min_eta = bin["vars"]["eta"]["min"] * 1j
@@ -258,7 +260,8 @@ def test_fitter_histogram_saving_1d():
             assert_histograms_equal(saved_failing_hist, hmll1d["eta"]["entire"]["failing"][min_eta:max_eta:sum, :], flow=False)
 
     with uproot.open("1d_hists_phi_entire.root") as f:
-        binning = pickle.load(open("1d_binning_phi_entire.pkl", "rb"))
+        with open("1d_binning_phi_entire.pkl", "rb") as file:
+            binning = pickle.load(file)
         for bin in binning["bins"]:
             name = bin["name"]
             min_phi = bin["vars"]["phi"]["min"] * 1j
@@ -324,7 +327,8 @@ def test_fitter_histogram_saving_3d():
     create_hists_root_file_for_fitter(hmll3d, "3d_hists.root", "3d_binning.pkl", axes=["pt", "eta"])
 
     with uproot.open("3d_hists.root") as f:
-        binning = pickle.load(open("3d_binning.pkl", "rb"))
+        with open("3d_binning.pkl", "rb") as file:
+            binning = pickle.load(file)
         for bin in binning["bins"]:
             name = bin["name"]
             min_eta = bin["vars"]["eta"]["min"] * 1j
@@ -380,7 +384,8 @@ def test_fitter_histogram_saving_against_reference():
 
     create_hists_root_file_for_fitter(hmll3d, "3d_hists.root", "3d_binning.pkl", axes=["el_sc_eta", "el_pt"])
 
-    binning = pickle.load(open("3d_binning.pkl", "rb"))
+    with open("3d_binning.pkl", "rb") as file:
+        binning = pickle.load(file)
     modified_binning = binning.copy()
 
     for bin in modified_binning["bins"]:
@@ -394,7 +399,8 @@ def test_fitter_histogram_saving_against_reference():
         new_cut = current_cut + " && tag_Ele_trigMVA > 0.92  "
         bin["cut"] = new_cut
 
-    egm_tnp_analysis_binning = pickle.load(open(os.path.abspath("tests/samples/fitter_binning.pkl"), "rb"))
+    with open(os.path.abspath("tests/samples/fitter_binning.pkl"), "rb") as file:
+        egm_tnp_analysis_binning = pickle.load(file)
     assert modified_binning == egm_tnp_analysis_binning
 
     with uproot.open("3d_hists.root") as f:
@@ -466,7 +472,8 @@ def test_fitter_histogram_conversion_binning():
         new_cut = current_cut + " && tag_Ele_trigMVA > 0.92  "
         bin["cut"] = new_cut
 
-    egm_tnp_analysis_binning = pickle.load(open(os.path.abspath("tests/samples/fitter_binning.pkl"), "rb"))
+    with open(os.path.abspath("tests/samples/fitter_binning.pkl"), "rb") as file:
+        egm_tnp_analysis_binning = pickle.load(file)
     assert modified_binning == egm_tnp_analysis_binning
 
     for bin in binning["bins"]:

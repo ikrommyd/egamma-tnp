@@ -50,7 +50,7 @@ def setup_logger(level: str = "INFO", logfile: str | None = None, time: bool | N
         file_handler = RichHandler(
             show_time=False,
             rich_tracebacks=True,
-            console=Console(file=open(logfile, "w")),
+            console=Console(file=open(logfile, "w")),  # noqa: SIM115
         )
         file_handler.setFormatter(formatter)
         logger.addHandler(file_handler)

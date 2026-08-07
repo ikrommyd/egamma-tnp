@@ -37,9 +37,9 @@ def get_rucio_client(proxy=None) -> Client:
         nativeClient = Client()
         return nativeClient
 
-    except Exception as e:
+    except Exception:
         print("Wrong Rucio configuration, impossible to create client")
-        raise e
+        raise
 
 
 def get_xrootd_sites_map():
@@ -70,8 +70,9 @@ def get_xrootd_sites_map():
             if not os.path.exists(conf):
                 continue
             try:
-                data = json.load(open(conf))
-            except Exception:
+                with open(conf) as file:
+                    data = json.load(file)
+            except (OSError, ValueError):
                 continue
             for site in data:
                 if site["type"] != "DISK":
@@ -91,7 +92,8 @@ def get_xrootd_sites_map():
 
         lock.acquire()
         try:
-            json.dump(sites_xrootd_access, open(".sites_map.json", "w"))
+            with open(".sites_map.json", "w") as file:
+                json.dump(sites_xrootd_access, file)
         finally:
             lock.release()
 
@@ -196,7 +198,7 @@ def get_dataset_files_replicas(
                 possible_sites = list(filter(lambda key: key not in blocklist_sites, possible_sites))
 
             if len(possible_sites) == 0 and not partial_allowed and not include_redirector:
-                raise Exception(f"No SITE available for file {filedata['name']}")
+                raise RuntimeError(f"No SITE available for file {filedata['name']}")
 
             # now check for regex
             for site in possible_sites:
@@ -230,7 +232,7 @@ def get_dataset_files_replicas(
                 found = True
 
         if not found and not partial_allowed:
-            raise Exception(f"No SITE available for file: \n {filedata['name']}")
+            raise RuntimeError(f"No SITE available for file: \n {filedata['name']}")
         else:
             if mode == "full":
                 outfiles.append(outfile)
@@ -282,7 +284,7 @@ def get_dataset_files_from_dbs(dataset_name: str, dbs_instance: str = "prod/glob
                 outputsites.append(site)
 
     else:
-        raise Exception(f"Dataset {dataset_name} not found on dbs_instance {dbs_instance}")
+        raise RuntimeError(f"Dataset {dataset_name} not found on dbs_instance {dbs_instance}")
 
     return outputfiles, outputsites
 

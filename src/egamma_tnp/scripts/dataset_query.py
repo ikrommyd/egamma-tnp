@@ -30,9 +30,8 @@ def print_dataset_query(query, dataset_list, console, selected=None):
     table.row_styles = ["dim", "none"]
     j = 1
     for name, conds in dataset_list.items():
-        ic = 0
         ncond = len(conds)
-        for c, tiers in conds.items():
+        for ic, (c, tiers) in enumerate(conds.items()):
             dataset = f"/{name}/{c}/{tiers[0]}"
             sel = dataset in selected
             if ic == 0:
@@ -49,7 +48,6 @@ def print_dataset_query(query, dataset_list, console, selected=None):
                     "[green bold]Y" if sel else "[red]N",
                     end_section=ic == ncond - 1,
                 )
-            ic += 1
             j += 1
 
     console.print(table)
@@ -72,7 +70,7 @@ def get_indices_query(input_str: str, maxN: int) -> list[int]:
                         print(f"[red bold]Requested index {t} larger than available elements {maxN}")
                         return False
                     final_tokens.append(i - 1)
-            except Exception:
+            except ValueError:
                 print("[red]Error! Bad formatting for selection string. Use e.g. 1 4 5-9")
                 return False
         elif t == "all":
@@ -233,7 +231,7 @@ Some basic commands:
         isMC = self.is_mc_dataset(dataset)
         try:
             xsec = self.extract_xsec_from_dataset_name(dataset)
-        except Exception:
+        except Exception:  # noqa: BLE001
             xsec = 1.0
         primary_dataset, year_data, era_data = self.extract_era_from_dataset_name(dataset)
         if isMC is True:
@@ -279,10 +277,7 @@ Some basic commands:
 
     def is_mc_dataset(self, dataset_name):
         parts = dataset_name.split("/")
-        if len(parts) > 0 and "SIM" in parts[-1]:
-            return True
-        else:
-            return False
+        return len(parts) > 0 and "SIM" in parts[-1]
 
     def extract_xsec_from_dataset_name(self, dataset_name):
         parts = dataset_name.split("/")
@@ -380,7 +375,7 @@ Some basic commands:
                         mode="full",
                         client=self.rucio_client,
                     )
-                except Exception as e:
+                except Exception as e:  # noqa: BLE001
                     print(f"\n[red bold] Exception: {e}[/]")
                     return
                 self.last_replicas_results = (outfiles, outsites, sites_counts)
@@ -672,22 +667,21 @@ Some basic commands:
             step_size_safety_factor = FloatPrompt.ask("[yellow bold]Step size safety factor", default=0.5)
 
         # init a local Dask cluster
-        with self.console.status("[red] Preprocessing files to extract available chunks with dask[/]"):
-            with Client(scheduler_url) as ddcsched:
-                self.preprocessed_available, self.preprocessed_total = preprocess(
-                    self.final_output,
-                    step_size=step_size,
-                    align_clusters=align_to_clusters,
-                    skip_bad_files=True,
-                    recalculate_steps=recalculate_steps,
-                    files_per_batch=files_per_batch,
-                    file_exceptions=file_exceptions,
-                    save_form=save_form,
-                    scheduler=ddcsched,
-                    uproot_options=uproot_options,
-                    step_size_safety_factor=step_size_safety_factor,
-                    allow_empty_datasets=allow_empty_datasets,
-                )
+        with self.console.status("[red] Preprocessing files to extract available chunks with dask[/]"), Client(scheduler_url) as ddcsched:
+            self.preprocessed_available, self.preprocessed_total = preprocess(
+                self.final_output,
+                step_size=step_size,
+                align_clusters=align_to_clusters,
+                skip_bad_files=True,
+                recalculate_steps=recalculate_steps,
+                files_per_batch=files_per_batch,
+                file_exceptions=file_exceptions,
+                save_form=save_form,
+                scheduler=ddcsched,
+                uproot_options=uproot_options,
+                step_size_safety_factor=step_size_safety_factor,
+                allow_empty_datasets=allow_empty_datasets,
+            )
 
         with gzip.open(f"{output_file}_available.json.gz", "wt") as file:
             print(f"Saved available fileset chunks to {output_file}_available.json.gz")

@@ -109,7 +109,7 @@ def load_function_from_file(function_path):
     with open(file_path) as file:
         code = compile(file.read(), file_path, "exec")
         local_scope = {}  # Use a restricted local scope
-        exec(code, {}, local_scope)  # Execute code in isolated scope
+        exec(code, {}, local_scope)  # noqa: S102  # Execute code in isolated scope
 
         # Return the function if a name is provided, otherwise return all loaded objects
         if function_name:

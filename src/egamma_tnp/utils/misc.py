@@ -288,7 +288,7 @@ def check_port(port):
     try:
         sock.bind(("0.0.0.0", port))
         available = True
-    except Exception:
+    except OSError:
         available = False
     sock.close()
     return available

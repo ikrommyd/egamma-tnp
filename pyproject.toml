@@ -120,6 +120,7 @@ ignore = [
     "G004",    # Logging f-string
     "PLC0415", # Import-outside-top-level
     "RUF059",  # Unused unpacked variable
+    "SIM102"   # Collapsible if statements
 ]
 unfixable = [
     "T20",  # Removes print statements

@@ -443,7 +443,7 @@ def fill_nd_cutncount_histograms(
     if vars is None:
         vars = ["el_pt", "el_eta", "el_phi"]
     if isinstance(vars, str):
-        raise ValueError("Please provide a list of variables and not a single string.")
+        raise TypeError("Please provide a list of variables and not a single string.")
 
     import hist
 
@@ -518,7 +518,7 @@ def fill_nd_mll_histograms(
     if vars is None:
         vars = ["el_pt", "el_eta", "el_phi"]
     if isinstance(vars, str):
-        raise ValueError("Please provide a list of variables and not a single string.")
+        raise TypeError("Please provide a list of variables and not a single string.")
 
     import hist
 
@@ -613,9 +613,8 @@ def _convert_nd_mll_hist_to_1d_hists(h4d, axes):
     # Generate all combinations of specified axes except 'mll'
     total_bins = np.prod([h.axes[ax].size for ax in axes])
     zfill_length = len(str(total_bins))
-    counter = 0
     axes_reversed = axes[::-1]
-    for reversed_idx_combination in itertools.product(*(range(h.axes[ax].size) for ax in axes_reversed)):
+    for counter, reversed_idx_combination in enumerate(itertools.product(*(range(h.axes[ax].size) for ax in axes_reversed))):
         idx_combination = reversed_idx_combination[::-1]
         bin_details = {}
         vars_details = {}
@@ -646,7 +645,6 @@ def _convert_nd_mll_hist_to_1d_hists(h4d, axes):
         bin_details["title"] = "; " + "; ".join(title_parts)
 
         bin_info_list.append(bin_details)
-        counter += 1
 
     binning = {"bins": bin_info_list, "vars": axes}
 
@@ -769,12 +767,10 @@ def create_hists_root_file_for_fitter(hists, root_path, binning_path, axes=None)
         max_number = len(str(len(names)))
 
         with uproot.recreate(root_path) as f:
-            counter = 0
-            for name in names:
+            for counter, name in enumerate(names):
                 counter_str = str(counter).zfill(max_number)
                 f[f"bin{counter_str}_{name}_Pass"] = passing_hists[name]
                 f[f"bin{counter_str}_{name}_Fail"] = failing_hists[name]
-                counter += 1
 
         with fsspec.open(binning_path, "wb") as f:
             pickle.dump(binning, f, protocol=2)
@@ -790,12 +786,10 @@ def create_hists_root_file_for_fitter(hists, root_path, binning_path, axes=None)
                     failing_hists = hists["failing"]
                     names = list(passing_hists.keys())
                     max_number = len(str(len(names)))
-                    counter = 0
-                    for name in names:
+                    for counter, name in enumerate(names):
                         counter_str = str(counter).zfill(max_number)
                         f[f"bin{counter_str}_{name}_Pass"] = passing_hists[name]
                         f[f"bin{counter_str}_{name}_Fail"] = failing_hists[name]
-                        counter += 1
 
                 with fsspec.open(new_binning_path, "wb") as f:
                     pickle.dump(hists["binning"], f, protocol=2)

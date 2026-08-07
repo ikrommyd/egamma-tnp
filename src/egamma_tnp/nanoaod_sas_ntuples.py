@@ -147,9 +147,9 @@ class ScaleAndSmearingNTuplesFromNanoAOD(BaseNTuplizer):
             prefix = {"ele_lead": "lead", "ele_sublead": "sublead"}.get(field, "")
             if len(prefix) > 0:
                 for subfield in dak.fields(dielectrons[field]):
-                    if subfield.startswith("pho_") and (subfield[4:] not in vars.get("Photon", [])):
-                        continue
-                    elif not (subfield.startswith("pho_")) and subfield not in vars.get("Electron", []):
+                    if (subfield.startswith("pho_") and (subfield[4:] not in vars.get("Photon", []))) or (
+                        not (subfield.startswith("pho_")) and subfield not in vars.get("Electron", [])
+                    ):
                         continue
                     else:
                         output[f"{prefix}_{subfield}"] = dielectrons[field][subfield]

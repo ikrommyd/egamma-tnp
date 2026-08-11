@@ -1,0 +1,394 @@
+{
+    "pair_mass": {
+        "name": "pair_mass",
+        "xlabel": "$M_{ee}$ [GeV]",
+        "ylabel": "Events per bin",
+        "hist_range": [80, 100],
+        "n_bins": 60,
+        "custom_bin_edges": null
+    },
+    "el_eta": {
+        "name": "el_eta",
+        "xlabel": "$\\eta$",
+        "ylabel": "Events per bin",
+        "hist_range": { "EB": [-1.5, 1.5], "EE": [-2.5, 2.5] },
+        "n_bins": 60,
+        "custom_bin_edges": null
+    },
+    "el_phi": {
+        "name": "el_phi",
+        "xlabel": "$\\phi$ [rad]",
+        "ylabel": "Events per bin",
+        "hist_range": [-3.2, 3.2],
+        "n_bins": 50,
+        "custom_bin_edges": null
+    },
+    "el_pt": {
+        "name": "el_pt",
+        "xlabel": "$p_{T}$",
+        "ylabel": "Events per bin",
+        "hist_range": [0, 250],
+        "n_bins": 60,
+        "custom_bin_edges": null
+    },
+    "el_superclusterEta": {
+        "name": "el_superclusterEta",
+        "xlabel": "$SC \\eta$",
+        "ylabel": "Events per bin",
+        "hist_range": { "EB": [-1.5, 1.5], "EE": [-2.5, 2.5] },
+        "n_bins": 60,
+        "custom_bin_edges": null
+    },
+    "el_superclusterPhi": {
+        "name": "el_superclusterPhi",
+        "xlabel": "$SC \\phi$ [rad]",
+        "ylabel": "Events per bin",
+        "hist_range": [-3.2, 3.2],
+        "n_bins": 60,
+        "custom_bin_edges": null
+    },
+    "el_lostHits": {
+        "name": "el_lostHits",
+        "xlabel": "Number of missing inner hits",
+        "ylabel": "Events per bin",
+        "hist_range": [0, 5],
+        "n_bins": 5,
+        "custom_bin_edges": null
+    },
+    "el_nBrem": {
+        "name": "el_nBrem",
+        "xlabel": "$N_{brem}$",
+        "ylabel": "Events per bin",
+        "hist_range": [0, 5],
+        "n_bins": 5,
+        "custom_bin_edges": null
+    },
+    "el_DeltaEtaInSC": {
+        "name": "el_DeltaEtaInSC",
+        "xlabel": "$\\Delta \\eta_{in}$",
+        "ylabel": "Events per bin",
+        "hist_range": [-0.015, 0.015],
+        "n_bins": 60,
+        "custom_bin_edges": null
+    },
+    "el_DeltaPhiInSC": {
+        "name": "el_DeltaPhiInSC",
+        "xlabel": "$\\Delta \\phi_{in} [rad]$",
+        "ylabel": "Events per bin",
+        "hist_range": [-0.075, 0.075],
+        "n_bins": 60,
+        "custom_bin_edges": null
+    },
+    "el_PreshowerEnergy": {
+        "name": "el_PreshowerEnergy",
+        "xlabel": "Preshower Energy [GeV]",
+        "ylabel": "Events per bin",
+        "hist_range": [0, 40],
+        "n_bins": 40,
+        "custom_bin_edges": null
+    },
+    "el_dxy": {
+        "name": "el_dxy",
+        "xlabel": "dxy [mm]",
+        "ylabel": "Events per bin",
+        "hist_range": { "EB": [-0.2, 0.2], "EE": [-0.3, 0.3] },
+        "n_bins": 80,
+        "custom_bin_edges": null
+    },
+    "el_dz": {
+        "name": "el_dz",
+        "xlabel": "dz [mm]",
+        "ylabel": "Events per bin",
+        "hist_range": [-0.1, 0.1],
+        "n_bins": 40,
+        "custom_bin_edges": null
+    },
+    "el_eInvMinusPInv": {
+        "name": "el_eInvMinusPInv",
+        "xlabel": "$1/E - 1/p$",
+        "ylabel": "Events per bin",
+        "hist_range": [-0.15, 0.15],
+        "n_bins": 60,
+        "custom_bin_edges": null
+    },
+    "el_eSCOverP": {
+        "name": "el_eSCOverP",
+        "xlabel": "$E_{SC}$/P",
+        "ylabel": "Events per bin",
+        "hist_range": [0, 2],
+        "n_bins": 60,
+        "custom_bin_edges": null
+    },
+    "el_etaWidth": {
+        "name": "el_etaWidth",
+        "xlabel": "$\\eta$ width",
+        "ylabel": "Events per bin",
+        "hist_range": [0.0, 0.025],
+        "n_bins": 60,
+        "custom_bin_edges": null
+    },
+    "el_phiWidth": {
+        "name": "el_phiWidth",
+        "xlabel": "$\\phi$ width [rad]",
+        "ylabel": "Events per bin",
+        "hist_range": [0.0, 0.15],
+        "n_bins": 30,
+        "custom_bin_edges": null
+    },
+    "el_fbrem": {
+        "name": "el_fbrem",
+        "xlabel": "$f_{brem}$",
+        "ylabel": "Events per bin",
+        "hist_range": [0, 1],
+        "n_bins": 30,
+        "custom_bin_edges": null
+    },
+    "el_hoe": {
+        "name": "el_hoe",
+        "xlabel": "H/E",
+        "ylabel": "Events per bin",
+        "hist_range": [0, 0.2],
+        "n_bins": 60,
+        "custom_bin_edges": null
+    },
+    "el_hoeFull5x5": {
+        "name": "el_hoeFull5x5",
+        "xlabel": "H/E Full5x5",
+        "ylabel": "Events per bin",
+        "hist_range": [0, 0.2],
+        "n_bins": 60,
+        "custom_bin_edges": null
+    },
+    "el_full5x5HoverE": {
+        "name": "el_full5x5HoverE",
+        "xlabel": "full5x5HoverE",
+        "ylabel": "Events per bin",
+        "hist_range": [0, 0.2],
+        "n_bins": 60,
+        "custom_bin_edges": null
+    },
+    "el_ecalPFClusIso": {
+        "name": "el_ecalPFClusIso",
+        "xlabel": "ECAL PF cluster isolation [GeV]",
+        "ylabel": "Events per bin",
+        "hist_range": [0, 10],
+        "n_bins": 60,
+        "custom_bin_edges": null
+    },
+    "el_hcalPFClusIso": {
+        "name": "el_hcalPFClusIso",
+        "xlabel": "HCAL PF cluster isolation [GeV]",
+        "ylabel": "Events per bin",
+        "hist_range": [0, 10],
+        "n_bins": 60,
+        "custom_bin_edges": null
+    },
+    "el_pfChargedHadIso": {
+        "name": "el_pfChargedHadIso",
+        "xlabel": "Charged hadron isolation [GeV]",
+        "ylabel": "Events per bin",
+        "hist_range": [0, 5],
+        "n_bins": 60,
+        "custom_bin_edges": null
+    },
+    "el_pfNeutralHadIso": {
+        "name": "el_pfNeutralHadIso",
+        "xlabel": "Neutral hadron isolation [GeV]",
+        "ylabel": "Events per bin",
+        "hist_range": [0, 5],
+        "n_bins": 60,
+        "custom_bin_edges": null
+    },
+    "el_pfPhotonIso": {
+        "name": "el_pfPhotonIso",
+        "xlabel": "Photon isolation [GeV]",
+        "ylabel": "Events per bin",
+        "hist_range": [0, 5],
+        "n_bins": 60,
+        "custom_bin_edges": null
+    },
+    "el_dr03TkSumPt": {
+        "name": "el_dr03TkSumPt",
+        "xlabel": "Track sum $p_{T}$ dr03 [GeV]",
+        "ylabel": "Events per bin",
+        "hist_range": [0, 5],
+        "n_bins": 60,
+        "custom_bin_edges": null
+    },
+    "el_dr03TkSumPtHEEP": {
+        "name": "el_dr03TkSumPtHEEP",
+        "xlabel": "Track sum $p_{T}$ dr03 HEEP [GeV]",
+        "ylabel": "Events per bin",
+        "hist_range": [0, 5],
+        "n_bins": 60,
+        "custom_bin_edges": null
+    },
+    "el_dr03EcalRecHitSumEt": {
+        "name": "el_dr03EcalRecHitSumEt",
+        "xlabel": "dr03EcalRecHitSumEt [GeV]",
+        "ylabel": "Events per bin",
+        "hist_range": [0, 10],
+        "n_bins": 60,
+        "custom_bin_edges": null
+    },
+    "el_dr03HcalDepth1TowerSumEt": {
+        "name": "el_dr03HcalDepth1TowerSumEt",
+        "xlabel": "dr03HcalDepth1TowerSumEt [GeV]",
+        "ylabel": "Events per bin",
+        "hist_range": [0, 10],
+        "n_bins": 60,
+        "custom_bin_edges": null
+    },
+    "el_r9": {
+        "name": "el_r9",
+        "xlabel": "$R_{9}$",
+        "ylabel": "Events per bin",
+        "hist_range": [0.2, 1.5],
+        "n_bins": 60,
+        "custom_bin_edges": null
+    },
+    "el_rawEnergy": {
+        "name": "el_rawEnergy",
+        "xlabel": "SC Raw Energy [GeV]",
+        "ylabel": "Events per bin",
+        "hist_range": [0, 700],
+        "n_bins": 60,
+        "custom_bin_edges": null
+    },
+    "el_scEtOverPt": {
+        "name": "el_scEtOverPt",
+        "xlabel": "SC $E_{T}/p_{T}$",
+        "ylabel": "Events per bin",
+        "hist_range": [-3.2, 3.2],
+        "n_bins": 60,
+        "custom_bin_edges": null
+    },
+    "el_sieie": {
+        "name": "el_sieie",
+        "xlabel": "$\\sigma_{i \\eta i \\eta}$",
+        "ylabel": "Events per bin",
+        "hist_range": { "EB": [0.0, 0.016], "EE": [0.0, 0.04] },
+        "n_bins": 60,
+        "custom_bin_edges": null
+    },
+    "el_sigmaIetaIphiFull5x5": {
+        "name": "el_sigmaIetaIphiFull5x5",
+        "xlabel": "$\\sigma_{i \\eta i \\phi}$ Full5x5",
+        "ylabel": "Events per bin",
+        "hist_range": [0, 1],
+        "n_bins": 60,
+        "custom_bin_edges": null
+    },
+    "el_sigmaIphiIphiFull5x5": {
+        "name": "el_sigmaIphiIphiFull5x5",
+        "xlabel": "$\\sigma_{i \\phi i \\phi}$ Full5x5",
+        "ylabel": "Events per bin",
+        "hist_range": [-3.2, 3.2],
+        "n_bins": 60,
+        "custom_bin_edges": null
+    },
+    "el_superclusterEnergy": {
+        "name": "el_superclusterEnergy",
+        "xlabel": "SC Energy [GeV]",
+        "ylabel": "Events per bin",
+        "hist_range": [0, 700],
+        "n_bins": 60,
+        "custom_bin_edges": null
+    },
+    "el_trackMomentum": {
+        "name": "el_trackMomentum",
+        "xlabel": "Track Momentum [GeV]",
+        "ylabel": "Events per bin",
+        "hist_range": [0, 250],
+        "n_bins": 60,
+        "custom_bin_edges": null
+    },
+    "el_mvaHZZIso": {
+        "name": "el_mvaHZZIso",
+        "xlabel": "HZZ MVA Iso ID score",
+        "ylabel": "Events per bin",
+        "hist_range": [-1, 1],
+        "n_bins": 60,
+        "custom_bin_edges": null
+    },
+    "el_mvaIso": {
+        "name": "el_mvaIso",
+        "xlabel": "MVA Iso ID score",
+        "ylabel": "Events per bin",
+        "hist_range": [-1, 1],
+        "n_bins": 60,
+        "custom_bin_edges": null
+    },
+    "el_mvaNoIso": {
+        "name": "el_mvaNoIso",
+        "xlabel": "MVA noIso ID score",
+        "ylabel": "Events per bin",
+        "hist_range": [-1, 1],
+        "n_bins": 60,
+        "custom_bin_edges": null
+    },
+    "tag_Ele_eta": {
+        "name": "tag_Ele_eta",
+        "xlabel": "Tag $\\eta$",
+        "ylabel": "Events per bin",
+        "hist_range": [-1.5, 1.5],
+        "n_bins": 60,
+        "custom_bin_edges": null
+    },
+    "tag_Ele_phi": {
+        "name": "tag_Ele_phi",
+        "xlabel": "Tag $\\phi$ [rad]",
+        "ylabel": "Events per bin",
+        "hist_range": [-3.2, 3.2],
+        "n_bins": 60,
+        "custom_bin_edges": null
+    },
+    "tag_Ele_pt": {
+        "name": "tag_Ele_pt",
+        "xlabel": "Tag $p_{T}$",
+        "ylabel": "Events per bin",
+        "hist_range": [0, 250],
+        "n_bins": 60,
+        "custom_bin_edges": null
+    },
+    "tag_Ele_superclusterEta": {
+        "name": "tag_Ele_superclusterEta",
+        "xlabel": "$SC \\eta$",
+        "ylabel": "Events per bin",
+        "hist_range": [-1.5, 1.5],
+        "n_bins": 60,
+        "custom_bin_edges": null
+    },
+    "tag_Ele_superclusterPhi": {
+        "name": "tag_Ele_superclusterPhi",
+        "xlabel": "$SC \\phi$ [rad]",
+        "ylabel": "Events per bin",
+        "hist_range": [-3.2, 3.2],
+        "n_bins": 50,
+        "custom_bin_edges": null
+    },
+    "PV_npvs": {
+        "name": "PV_npvs",
+        "xlabel": "Primary vertices",
+        "ylabel": "Events per bin",
+        "hist_range": [0, 70],
+        "n_bins": 70,
+        "custom_bin_edges": null
+    },
+    "Rho_fixedGridRhoAll": {
+        "name": "Rho_fixedGridRhoAll",
+        "xlabel": "$\\rho_{fixedGridRhoAll}$",
+        "ylabel": "Events per bin",
+        "hist_range": [0, 60],
+        "n_bins": 60,
+        "custom_bin_edges": null
+    },
+    "Rho_fixedGridRhoFastjetAll": {
+        "name": "Rho_fixedGridRhoFastjetAll",
+        "xlabel": "$\\rho_{fixedGridRhoFastjetAll}$",
+        "ylabel": "Events per bin",
+        "hist_range": [0, 60],
+        "n_bins": 60,
+        "custom_bin_edges": null
+    }
+}

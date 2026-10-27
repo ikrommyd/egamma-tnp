@@ -1,5 +1,9 @@
 # egamma-tnp
 
+> [!IMPORTANT]
+> Development of egamma-tnp has moved to CERN GitLab: https://gitlab.cern.ch/cms-egamma/egamma-tnp.
+> This GitHub repository is no longer maintained. Please open issues and merge requests there.
+
 [![ci](https://github.com/ikrommyd/egamma-tnp/actions/workflows/ci.yml/badge.svg)](https://github.com/ikrommyd/egamma-tnp/actions?query=workflow%3ACI%2FCD+event%3Aschedule+branch%3Amaster)
 [![PyPI Version](https://badge.fury.io/py/egamma-tnp.svg)](https://badge.fury.io/py/egamma-tnp)
 ![Downloads](https://img.shields.io/pypi/dm/egamma-tnp.svg)
